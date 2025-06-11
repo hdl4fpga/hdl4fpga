@@ -161,25 +161,25 @@ begin
 		variable j : natural;
     begin
 		i := 0;
-		loop
+			get_value(key, key_length, tag("hhhhh : "& hdo(test)&"["&natural'image(1)&"]"));
+		-- loop
 			-- get_value(key, key_length, tag("="));
 			-- get_value(key, key_length, tag(hdo(test)&"["&natural'image(1)&"].ppp=  "));
-			get_value(key, key_length, tag("hhhhh : "& hdo(test)&"["&natural'image(1)&"].ppp=  "));
-			exit when key_length=0;
-			if false and key(1 to key_length)="device" then
-				report LF & key(1 to key_length);
-				j := 0;
-				loop 
-					get_value(key, key_length, hdo(ubskeys)**(".device["&natural'image(j)&"]="));
-					exit when key_length=0;
-					get_value(val, val_length, hdo(test)**(".device"&"."&key(1 to key_length)&"="));
-					exit when val_length=0;
-					report LF & key(1 to key_length) & ":" & val(1 to val_length);
-					j := j + 1;
-				end loop;
-			end if;
-			i := i + 1;
-		end loop;
+			-- exit when key_length=0;
+			-- if false and key(1 to key_length)="device" then
+				-- report LF & key(1 to key_length);
+				-- j := 0;
+				-- loop 
+					-- get_value(key, key_length, hdo(ubskeys)**(".device["&natural'image(j)&"]="));
+					-- exit when key_length=0;
+					-- get_value(val, val_length, hdo(test)**(".device"&"."&key(1 to key_length)&"="));
+					-- exit when val_length=0;
+					-- report LF & key(1 to key_length) & ":" & val(1 to val_length);
+					-- j := j + 1;
+				-- end loop;
+			-- end if;
+			-- i := i + 1;
+		-- end loop;
 		-- report LF & xxx;
         -- report LF & '"' & string'(hdo(obj)**"[1].text1=ffff.") & '"';
         -- report LF & '"' & work.hdo.tag(hdo(obj)&"[1][0]") & '"';
