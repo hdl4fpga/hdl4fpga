@@ -161,7 +161,9 @@ begin
 		variable j : natural;
     begin
 		i := 0;
-			get_value(key, key_length, tag("hhhhh : "& hdo(test)&"["&natural'image(3)&"]"));
+			-- get_value(key, key_length, tag("hhhhh : "& hdo(test)&"["&natural'image(3)&"]"));
+			get_value(key, key_length, tag("hhhhh : "& hdo(test)&"[1][2]"));
+			-- get_value(key, key_length, tag("hhhhh : "& hdo(test)));
 		-- loop
 			-- get_value(key, key_length, tag("="));
 			-- get_value(key, key_length, tag(hdo(test)&"["&natural'image(1)&"].ppp=  "));

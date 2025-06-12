@@ -1156,25 +1156,30 @@ package body hdo is
 
     				position := position + 1;
     			when ']' =>
+    				assert ((log_flags/log_locatevalue) mod 2=0)            --|note
+    					report indent("token close" & at(object, position)) --|note
+    					severity note;                                      --|note
+
     				if closed then
-    					assert false                                            --|note
-    						report indent("token close" & at(object, position)) --|note
-    						severity note;                                      --|note
+    					assert false
+    						report "array haven't been opened yet" & at(object, position)
+    						severity failure;
     					exit;
     				end if;
+
     				if open_char/='[' then
     					assert false
     						report "@locatevalue : " & "wrong close token " & at(object, position) & " opened by " & character'image(open_char)
     						severity failure;
     				end if;
 
+    				closed   := true;
+    				position := position + 1;
+    			when '}' =>
     				assert ((log_flags/log_locatevalue) mod 2=0)            --|note
     					report indent("token close" & at(object, position)) --|note
     					severity note;                                      --|note
 
-    				closed   := true;
-    				position := position + 1;
-    			when '}' =>
     				if closed then
     					assert false                                               --|note
     						report indent("close path at " & at(object, position)) --|note
@@ -1186,10 +1191,6 @@ package body hdo is
     						report indent("wrong close path at " & at(object, position) & " opened by " & character'image(open_char))
     						severity failure;
     				end if;
-
-    				assert ((log_flags/log_locatevalue) mod 2=0)            --|note
-    					report indent("token close" & at(object, position)) --|note
-    					severity note;                                      --|note
 
     				closed   := true;
     				position := position + 1;
@@ -1220,6 +1221,11 @@ package body hdo is
     						value_length   := position-value_position;
     					end if;
 					else
+						tag_position   := position;
+						tag_length     := 0;
+						value_position := position;
+						value_length   := 0;
+
 						assert ((log_flags/log_locatevalue) mod 2=0)                                             --|note
 							report indent("domain not found : " & field(object, domain_position, domain_length)) --|note
 							severity note;                                                                       --|note
@@ -1234,6 +1240,11 @@ package body hdo is
     					severity note;                                                          --|note
     				exit;
 				elsif closed then
+					tag_position   := position;
+					tag_length     := 0;
+					value_position := position;
+					value_length   := 0;
+
 					assert ((log_flags/log_locatevalue) mod 2=0)                                                 --|note
 						report indent("out of range " & field("domain", object, domain_position, domain_length)) --|note
 						severity note;                                                                           --|note
@@ -1245,9 +1256,9 @@ package body hdo is
     		assert ((log_flags/log_locatevalue) mod 2=0)                      --|note
     			report indent("tag" & field(object,tag_position, tag_length)) --|note
     			severity note;                                                --|note
-    		assert ((log_flags/log_locatevalue) mod 2=0)                                       --|note
-    			report indent("value" & field(object,value_position, position-value_position)) --|note
-    			severity note;                                                                 --|note
+    		assert ((log_flags/log_locatevalue) mod 2=0)                            --|note
+    			report indent("value" & field(object,value_position, value_length)) --|note
+    			severity note;                                                      --|note
 
 			assert ((log_flags/log_locatevalue) mod 2=0) --|note
 				report indent("#locatevalue")            --|note
@@ -1303,8 +1314,8 @@ package body hdo is
 						report indent(field("default", object,default_position,default_length)) --|note
 						severity note;                                                          --|note
 
-					value_position := default_position;
-					value_length := default_length;
+					value_position  := default_position;
+					value_length    := default_length;
 					object_position := value_position;
 					exit;
 				end if;
@@ -1323,29 +1334,29 @@ package body hdo is
 			object_position := object'left;
 		end if;
 
-		assert ((log_flags/log_resolve) mod 2=0)                                    --|note
+		assert ((log_flags/log_resolve) mod 2=0)                                      --|note
 			report indent(field("tag", object, domain_position, domain_length))       --|note
-			severity note;                                                          --|note
-		assert ((log_flags/log_resolve) mod 2=0)                                    --|note
+			severity note;                                                            --|note
+		assert ((log_flags/log_resolve) mod 2=0)                                      --|note
 			report indent(field("dafault", object, default_position, default_length)) --|note
-			severity note;                                                          --|note
-		assert ((log_flags/log_resolve) mod 2=0)                                    --|note
+			severity note;                                                            --|note
+		assert ((log_flags/log_resolve) mod 2=0)                                      --|note
 			report indent(field("value", object, value_position, value_length))       --|note
-			severity note;                                                          --|note
+			severity note;                                                            --|note
 		
 		parse_tagvaluepathdefault(
-			object,         object_position,
+			object,           object_position,
 			tag_position,     tag_length, 
 			value_position,   value_length, 
 			path_position,    path_length,
 			default_position, default_length);
 
-		assert ((log_flags/log_resolve) mod 2=0)                             --|note
+		assert ((log_flags/log_resolve) mod 2=0)                               --|note
 			report indent(field("tag",   object, tag_position,  tag_length))   --|note
-			severity note;                                                   --|note
-		assert ((log_flags/log_resolve) mod 2=0)                             --|note
+			severity note;                                                     --|note
+		assert ((log_flags/log_resolve) mod 2=0)                               --|note
 			report indent(field("value", object,value_position, value_length)) --|note
-			severity note;                                                   --|note
+			severity note;                                                     --|note
 
 		assert ((log_flags/log_resolve) mod 2=0) --|note
 			report indent("#resolve")            --|note
