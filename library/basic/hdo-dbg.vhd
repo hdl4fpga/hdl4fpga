@@ -719,7 +719,7 @@ package body hdo is
 
 		variable level : natural := 0;
 
-		variable zzz : character := ' ';
+		variable last_char : character := ' ';
 		impure function indent (
 			constant msg : string)
 			return string is
@@ -732,15 +732,15 @@ package body hdo is
 					level := level - 1;
 				end if;
 			end if;
-			if zzz='@' then
+			if last_char='@' then
 				level := level + 1;
-			elsif zzz='#' then
+			elsif last_char='#' then
 				level := level - 1;
 			end if;
 			if msg'length > 0 then 
-				zzz := msg(msg'left);
+				last_char := msg(msg'left);
 			else
-				zzz := ' ';
+				last_char := ' ';
 			end if;
 			if level > 1 then
 				return format(indentation(1 to 2*(level-1)) & msg, 100);
@@ -795,9 +795,9 @@ package body hdo is
     							severity failure;                                                                                       
     					end if;                                                                                                        
 
-    					assert ((log_flags/log_parsedomain) mod 2=0)                 --|note
+    					assert ((log_flags/log_parsedomain) mod 2=0)                   --|note
     						report indent("closing character " & at(object, position)) --|note
-    						severity note;                                           --|note
+    						severity note;                                             --|note
 
     					position := position + 1;
     				when '}' => 
@@ -808,9 +808,9 @@ package body hdo is
     							severity failure; 
     					end if;
 
-    					assert ((log_flags/log_parsedomain) mod 2=0)                 --|note
+    					assert ((log_flags/log_parsedomain) mod 2=0)                   --|note
     						report indent("closing character " & at(object, position)) --|note
-    						severity note;                                           --|note
+    						severity note;                                             --|note
 
     					position := position + 1;
 
@@ -824,11 +824,11 @@ package body hdo is
     				position := position + 1;
     				skipws(object, position);
     				parse_string(object, position, domain_position, domain_length);
-    				if domain_length=0 then                                              --|note
-    					assert false                                              --|note
+    				if domain_length=0 then                                         --|note
+    					assert false                                                --|note
     						report indent("null path : " & field(object, position)) --|note
-    						severity note;                                        --|note
-    				end if;                                                       --|note
+    						severity note;                                          --|note
+    				end if;                                                         --|note
     				position := domain_position+domain_length;
     				exit;
     			when others =>
@@ -840,9 +840,9 @@ package body hdo is
     			end case;
     		end loop;
 
-    		assert ((log_flags/log_parsedomain) mod 2=0)                 --|note
+    		assert ((log_flags/log_parsedomain) mod 2=0)                                 --|note
     			report indent("domain " & field(object, domain_position, domain_length)) --|note
-    			severity note;                                           --|note
+    			severity note;                                                           --|note
 
     		assert (log_flags/log_parsedomain) mod 2=0 --|note
     			report indent("#parsedomain")          --|note
@@ -863,24 +863,25 @@ package body hdo is
 
     		skipws(object, position);
     		path_position := position;
-    		assert ((log_flags/log_parsepath) mod 2=0)        --|note
+    		assert ((log_flags/log_parsepath) mod 2=0)          --|note
     			report indent("path" & field(object, position)) --|note
-    			severity note;                                --|note
+    			severity note;                                  --|note
 
     		for i in object'range loop
     			parse_domain(object, position, tag_position, tag_length);
-    			assert ((log_flags/log_parsepath) mod 2=0)                         --|note
+    			assert ((log_flags/log_parsepath) mod 2=0)                           --|note
     				report indent("domain" & field(object,tag_position, tag_length)) --|note
-    				severity note;                                                 --|note
+    				severity note;                                                   --|note
 
     			if tag_length=0 then
     				path_length := position-path_position;
     				exit;
     			end if;
     		end loop;
-    		assert ((log_flags/log_parsepath) mod 2=0)              --|note
+
+    		assert ((log_flags/log_parsepath) mod 2=0)                          --|note
     			report indent("path" & field(object,path_position,path_length)) --|note
-    			severity note;                                      --|note
+    			severity note;                                                  --|note
 
 			assert ((log_flags/log_parsepath) mod 2=0) --|note
 				report indent("#parsepath")            --|note
@@ -1118,9 +1119,9 @@ package body hdo is
 				report indent("@locatevalue")            --|note
 				severity note;                           --|note
 	
-    		assert ((log_flags/log_locatevalue) mod 2=0)        --|note
+    		assert ((log_flags/log_locatevalue) mod 2=0)          --|note
     			report indent("object" & field(object, position)) --|note
-    			severity note;                                  --|note
+    			severity note;                                    --|note
 
     		parse_tagvaluepathdefault(
     			object,           position,
