@@ -37,51 +37,61 @@ package hdo is
 		variable tag_position   : inout positive;
 		variable tag_length   : inout natural);
 
-	impure function resolve (
+	impure --|note
+	function resolve (
 		constant object : string)
 		return string;
 
-	impure function resolve (
+	impure --|note 
+	function resolve (
 		constant object : string)
 		return integer;
 
-	impure function resolve (
+	impure --|note 
+	function resolve (
 		constant object : string)
 		return boolean;
 
 	subtype hdo is string;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path   : string)
 		return boolean;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path : string)
 		return integer;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path   : string)
 		return real;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path   : string)
 		return std_ulogic;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path   : string)
 		return std_logic_vector;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path   : string)
 		return character;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path   : string)
 		return hdo;
@@ -90,7 +100,8 @@ package hdo is
 		constant value : string)
 		return integer;
 
-	impure function tag (
+	impure --|note 
+	function tag (
 		constant object : hdo)
 		return string;
 
@@ -239,7 +250,7 @@ package body hdo is
 			return character'pos(char)-character'pos('A')+10;
 		when others =>
 			assert false 
-				report LF & "wrong digit " & character'image(char)
+				report "wrong digit " & character'image(char)
 				severity failure;
 			return -1;
 		end case;
@@ -268,12 +279,12 @@ package body hdo is
 						sign := -1;
 					else
 						assert false
-							report "@to_integer : " & "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value
+							report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value
 							severity failure;
 					end if;
 				else
 					assert false
-						report "@to_integer : " & "Wrong number " & character'image(value(i)) & " " & natural'image(base) 
+						report "Wrong number " & character'image(value(i)) & " " & natural'image(base) 
 						severity failure; 
 				end if;
 			end if;
@@ -359,7 +370,7 @@ package body hdo is
 			return to_bin(value(value'left to value'right), 2);
 		else
 			assert false
-				report "@to_stdlogicvector : " & "value'range is nul"
+				report "value'range is null"
 				severity failure;
 			return "X";
 		end if;
@@ -426,7 +437,7 @@ package body hdo is
 				exit;
 			end if;
 			if not isdigit(value(idx)) then -- Xilinx ISE 14.7 warning complain
-				report LF & "wrong character to_real"
+				report "wrong character to_real"
 				severity failure; 
 			end if; 
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
@@ -716,37 +727,37 @@ package body hdo is
 		variable default_position : positive;
 		variable default_length   : natural;
 
-		variable level     : natural := 0;
-		variable last_char : character := ' ';
+		variable level     : natural := 0;     --|note
+		variable last_char : character := ' '; --|note
 
-		impure function indent (
-			constant msg : string)
-			return   string is
-			variable indentation : string(1 to 40) := (others => ' ');
-		begin
-			if msg'length > 0 then
-				if msg(msg'left)='@' then
-					level := level + 1;
-				elsif msg(msg'left)='#' then
-					level := level - 1;
-				end if;
-			end if;
-			if last_char='@' then
-				level := level + 1;
-			elsif last_char='#' then
-				level := level - 1;
-			end if;
-			if msg'length > 0 then 
-				last_char := msg(msg'left);
-			else
-				last_char := ' ';
-			end if;
-			if level > 1 then
-				return format(indentation(1 to 2*(level-1)) & msg, 100);
-			else
-				return format(msg, 80);
-			end if;
-		end;
+		impure function indent (                                         --|note
+			constant msg : string)                                       --|note
+			return   string is                                           --|note
+			variable indentation : string(1 to 40) := (others => ' ');   --|note
+		begin                                                            --|note
+			if msg'length > 0 then                                       --|note
+				if msg(msg'left)='@' then                                --|note
+					level := level + 1;                                  --|note
+				elsif msg(msg'left)='#' then                             --|note
+					level := level - 1;                                  --|note
+				end if;                                                  --|note
+			end if;                                                      --|note
+			if last_char='@' then                                        --|note
+				level := level + 1;                                      --|note
+			elsif last_char='#' then                                     --|note
+				level := level - 1;                                      --|note
+			end if;                                                      --|note
+			if msg'length > 0 then                                       --|note
+				last_char := msg(msg'left);                              --|note
+			else                                                         --|note
+				last_char := ' ';                                        --|note
+			end if;                                                      --|note
+			if level > 1 then                                            --|note
+				return format(indentation(1 to 2*(level-1)) & msg, 100); --|note
+			else                                                         --|note
+				return format(msg, 80);                                  --|note
+			end if;                                                      --|note
+		end;                                                             --|note
 
     	procedure parse_domain (
     		constant object          : in    string;
@@ -781,7 +792,7 @@ package body hdo is
 
     				if domain_length=0 then
     					assert false
-    						report indent("invalid path : " & field(object,position))
+    						report "invalid path : " & field(object,position)
     						severity failure;
     				end if;
 
@@ -790,7 +801,7 @@ package body hdo is
     				when ']' => 
     					if open_char/='[' then -- Xilinx ISE 14.7 warning complain
     						assert false                                                                                             
-    							report "@parsedomain : " & "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
+    							report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
     							severity failure;                                                                                       
     					end if;                                                                                                        
 
@@ -803,7 +814,7 @@ package body hdo is
 
     					if open_char/='{' then -- Xilinx ISE 14.7 warning complain
     						assert false
-    							report indent("wrong closing character " & at(object, position) & " opened by " & character'image(open_char))
+    							report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
     							severity failure; 
     					end if;
 
@@ -815,7 +826,7 @@ package body hdo is
 
     				when others =>
     					assert false
-    						report indent("wrong token : " & at(object, position))
+    						report "wrong token : " & at(object, position)
     						severity failure;
     				end case;
     				exit;
@@ -1050,15 +1061,15 @@ package body hdo is
     					severity note;                                                      --|note
     			end if;
     		else
-    			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
+    			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                       --|note
     				report indent(field("string", object, value_position, value_length)) --|note
-    				severity note;                                                     --|note
+    				severity note;                                                       --|note
     		end if;
     		skipws(object, position);
     		parse_path(object, position, path_position, path_length);
-    		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                --|note
+    		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                  --|note
     			report indent(field("path", object,path_position, path_length)) --|note
-    			severity note;                                                --|note
+    			severity note;                                                  --|note
 
 			assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 				report indent("#parsetagvaluepath")            --|note
@@ -1179,7 +1190,7 @@ package body hdo is
 
     				if open_char/='[' then
     					assert false
-    						report "@locatevalue : " & "wrong close token " & at(object, position) & " opened by " & character'image(open_char)
+    						report "wrong close token " & at(object, position) & " opened by " & character'image(open_char)
     						severity failure;
     				end if;
 
@@ -1198,7 +1209,7 @@ package body hdo is
     				end if;
     				if open_char/='{' then
     					assert false
-    						report indent("wrong close path at " & at(object, position) & " opened by " & character'image(open_char))
+    						report "wrong close path at " & at(object, position) & " opened by " & character'image(open_char)
     						severity failure;
     				end if;
 
@@ -1381,7 +1392,8 @@ package body hdo is
 			severity note;                       --|note
 	end;
 
-	impure function resolve (
+	impure --|note 
+	function resolve (
 		constant object : string)
 		return string is
 		variable value_position : positive;
@@ -1397,7 +1409,8 @@ package body hdo is
 		end if;
 	end;
 
-	impure function resolve (
+	impure --|note 
+	function resolve (
 		constant object : string)
 		return boolean is
         constant true_value : string := "true";
@@ -1415,7 +1428,8 @@ package body hdo is
 		return true;
 	end;
 
-	impure function resolve (
+	impure --|note 
+	function resolve (
 		constant object : string)
 		return integer is
 		variable value_position : positive;
@@ -1427,7 +1441,8 @@ package body hdo is
 		return to_integer(object(value_position to value_position+value_length-1));
 	end;
 
-	impure function resolve (
+	impure --|note 
+	function resolve (
 		constant object : string)
 		return real is
 		variable value_position : positive;
@@ -1439,7 +1454,8 @@ package body hdo is
 		return to_real(object(value_position to value_position+value_length-1));
 	end;
 
-	impure function resolve (
+	impure --|note 
+	function resolve (
 		constant object : string)
 		return std_logic_vector is
 		variable value_position : positive;
@@ -1451,7 +1467,8 @@ package body hdo is
 		return to_stdlogicvector(escaped(object(value_position to value_position+value_length-1)));
 	end;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path : string)
 		return boolean is
@@ -1459,7 +1476,8 @@ package body hdo is
 		return resolve(string(object) & path);
 	end;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path : string)
 		return integer is
@@ -1469,7 +1487,8 @@ package body hdo is
 		return retval;
 	end;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path : string)
 		return real is
@@ -1477,7 +1496,8 @@ package body hdo is
 		return resolve(string(object) & path);
 	end;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path : string)
 		return std_ulogic is
@@ -1493,7 +1513,8 @@ package body hdo is
 		return 'X';
 	end;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path : string)
 		return std_logic_vector is
@@ -1501,7 +1522,8 @@ package body hdo is
 		return resolve(string(object) & path);
 	end;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path   : string)
 		return character is
@@ -1513,7 +1535,8 @@ package body hdo is
 		return retval(retval'left);
 	end;
 
-	impure function "**" (
+	impure --|note 
+	function "**" (
 		constant object : hdo;
 		constant path   : string)
 		return hdo is
@@ -1521,7 +1544,8 @@ package body hdo is
 		return resolve(string(object) & path);
 	end;
 
-	impure function tag (
+	impure --|note 
+	function tag (
 		constant object : hdo)
 		return string is
 		variable value_position : positive;
