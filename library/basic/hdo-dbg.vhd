@@ -701,28 +701,28 @@ package body hdo is
 	end;
 
 	procedure resolve (
-		constant object         : in    string;
-		variable value_position : inout positive;
-		variable value_length   : inout natural;
-		variable tag_position   : inout positive;
-		variable tag_length     : inout natural) is
+		constant object           : in    string;
+		variable value_position   : inout positive;
+		variable value_length     : inout natural;
+		variable tag_position     : inout positive;
+		variable tag_length       : inout natural) is
 
-		variable object_position         : positive;
+		variable object_position  : positive;
 		variable path_position    : positive;
-		variable path_length    : natural;
-		variable path_index     : positive;
+		variable path_length      : natural;
+		-- variable path_index       : positive;
 
 		variable domain_position  : positive;
-		variable domain_length  : natural;
+		variable domain_length    : natural;
 		variable default_position : positive;
-		variable default_length : natural;
+		variable default_length   : natural;
 
-		variable level : natural := 0;
-
+		variable level     : natural := 0;
 		variable last_char : character := ' ';
+
 		impure function indent (
 			constant msg : string)
-			return string is
+			return   string is
 			variable indentation : string(1 to 40) := (others => ' ');
 		begin
 			if msg'length > 0 then
@@ -1074,7 +1074,7 @@ package body hdo is
 				report indent("@tagvaluepathdefault")                 --|note
 				severity note;                                        --|note
     		parse_tagvaluepath(
-    			object,       position,
+    			object,         position,
     			tag_position,   tag_length, 
     			value_position, value_length, 
     			path_position,  path_length);
@@ -1296,9 +1296,10 @@ package body hdo is
 
 		object_position := value_position;
 		if path_length/=0 then
-			path_index := path_position;
+			-- path_index := path_position;
 			for i in object'range loop -- Avoid synthesizes tools loop-warnings
-				parse_domain(object, path_index, domain_position, domain_length);
+				-- parse_domain(object, path_index, domain_position, domain_length);
+				parse_domain(object, path_position, domain_position, domain_length);
 				exit when domain_length=0;
 
 				assert ((log_flags/log_resolve) mod 2=0)                                   --|note
