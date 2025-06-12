@@ -710,7 +710,6 @@ package body hdo is
 		variable object_position  : positive;
 		variable path_position    : positive;
 		variable path_length      : natural;
-		-- variable path_index       : positive;
 
 		variable domain_position  : positive;
 		variable domain_length    : natural;
@@ -889,10 +888,10 @@ package body hdo is
     	end;
 
     	procedure parse_value (
-    		constant object    : in    string;
-    		variable position    : inout positive;
-    		variable value_position    : inout positive;
-    		variable value_length    : inout natural) is
+    		constant object         : in    string;
+    		variable position       : inout positive;
+    		variable value_position : inout positive;
+    		variable value_length   : inout natural) is
     		variable stack : string(1 to 32);
     		variable stptr : positive := stack'left;
     		procedure push (
@@ -994,53 +993,61 @@ package body hdo is
     		variable path_position  : inout positive;
     		variable path_length    : inout natural) is
     	begin
+
     		assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
     			report indent("@tagvaluepath")                 --|note
     			severity note;                                 --|note
 
-    		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                       --|note
-    			report indent(field("object",object, position, object'right-position+1)) --|note
-    			severity note;                                                       --|note
+			if position > object'right then
+				assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
+					report indent("#tagvaluepath")                 --|note
+					severity note;                                 --|note
+				return;
+			end if;
+
+    		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                           --|note
+    			report indent(field("object", object, position, object'right-position+1)) --|note
+    			severity note;                                                           --|note
 
     		parse_string(object, position, value_position, value_length);
     		skipws(object, position);
     		tag_position := value_position;
-    		tag_length := 0;
+    		tag_length   := 0;
     		if position <= object'right then
     			if value_length=0 then
-    				tag_length   := 0;
+    				tag_length     := 0;
     				value_position := position;
-    				value_length := object'right-position+1; 
+    				value_length   := object'right-position+1; 
     				parse_value(object, position, value_position, value_length);
     				if position > object'right then                                            --|note
-    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                   --|note
+    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
     						report indent(field("value",object, value_position, value_length)) --|note
-    						severity note;                                                   --|note
-    				else                                                                     --|note
-    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                   --|note
+    						severity note;                                                     --|note
+    				else                                                                       --|note
+    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
     						report indent(field("value",object, value_position, value_length)) --|note
-    						severity note;                                                   --|note
-    				end if;                                                                  --|note
+    						severity note;                                                     --|note
+    				end if;                                                                    --|note
     			elsif object(position)/=':' then
-    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                    --|note
+    				tag_length     := 0;
+    				tag_position   := value_position;
+
+    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
     					report indent(field("value", object, value_position, value_length)) --|note
-    					severity note;                                                    --|note
-    				tag_length := 0;
-    				tag_position := value_position;
+    					severity note;                                                      --|note
     			else
     				tag_position   := value_position;
-    				tag_length   := value_length;
+    				tag_length     := value_length;
     				position       := position + 1;
-    				value_position := position;
-    				value_length := object'right-position+1; 
     				skipws(object, position);
     				parse_value(object, position, value_position, value_length);
-    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                    --|note
+
+    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
     					report indent(field("tag",   object, tag_position,   tag_length))   --|note
-    					severity note;                                                    --|note
-    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                    --|note
+    					severity note;                                                      --|note
+    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
     					report indent(field("value", object, value_position, value_length)) --|note
-    					severity note;                                                    --|note
+    					severity note;                                                      --|note
     			end if;
     		else
     			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
@@ -1073,6 +1080,7 @@ package body hdo is
 			assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0) --|note
 				report indent("@tagvaluepathdefault")                 --|note
 				severity note;                                        --|note
+
     		parse_tagvaluepath(
     			object,         position,
     			tag_position,   tag_length, 
@@ -1080,14 +1088,15 @@ package body hdo is
     			path_position,  path_length);
 
     		skipws(object, position);
+    		default_position := position+1;
+			default_length   := 0;
     		if path_length/=0 then
     			if object'right >= position then
     				if object(position)='=' then
-    					default_position := position+1;
     					default_length := object'right-position;
-    					assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                 --|note
-    						report indent(field("default", object,default_position,default_length)) --|note
-    						severity note;                                                        --|note
+    					assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                     --|note
+    						report indent(field("default", object, default_position, default_length)) --|note
+    						severity note;                                                            --|note
     				end if;
     			end if;
     		end if;
@@ -1099,7 +1108,7 @@ package body hdo is
 
     	procedure locate_value (
     		constant object          : in    string;
-    		variable position          : inout positive;
+    		variable position        : inout positive;
     		constant domain_position : in    positive;
     		constant domain_length   : in    positive;
     		variable tag_position    : inout positive;
@@ -1130,9 +1139,9 @@ package body hdo is
     			path_position,    path_length, 
     			default_position, default_length);
 
-    		position   := value_position;
+    		position       := value_position;
+    		value_length   := 0;
     		value_position := tag_position;
-    		value_length := 0;
     		index := 0;
     		closed := true;
 
@@ -1296,9 +1305,7 @@ package body hdo is
 
 		object_position := value_position;
 		if path_length/=0 then
-			-- path_index := path_position;
 			for i in object'range loop -- Avoid synthesizes tools loop-warnings
-				-- parse_domain(object, path_index, domain_position, domain_length);
 				parse_domain(object, path_position, domain_position, domain_length);
 				exit when domain_length=0;
 
@@ -1309,12 +1316,21 @@ package body hdo is
 				locate_value(object, object_position, domain_position, domain_length, tag_position, tag_length, value_position, value_length);
 				if value_length=0 then 
 
-					assert ((log_flags/log_resolve) mod 2=0)                                                       --|note
-						report indent("invalid path : " & field("domain", object, domain_position, domain_length)) --|note
-						severity note;                                                                             --|note
-					assert ((log_flags/log_resolve) mod 2=0)                                    --|note
-						report indent(field("default", object,default_position,default_length)) --|note
-						severity note;                                                          --|note
+					assert ((log_flags/log_resolve) mod 2=0)                                                           --|note
+						report indent("invalid path     : " & field("domain", object, domain_position, domain_length)) --|note
+						severity note;                                                                                 --|note
+					assert ((log_flags/log_resolve) mod 2=0)                                      --|note
+						report indent(field("default", object, default_position, default_length)) --|note
+						severity note;                                                            --|note
+					assert ((log_flags/log_resolve) mod 2=0)                                      --|note
+						report indent("object_position  : " & positive'image(object_position))    --|note
+						severity note;                                                            --|note
+					assert ((log_flags/log_resolve) mod 2=0)                                      --|note
+						report indent("default_position : " & positive'image(default_position))   --|note
+						severity note;                                                            --|note
+					assert ((log_flags/log_resolve) mod 2=0)                                      --|note
+						report indent("default_length   : " & positive'image(default_length))   --|note
+						severity note;                                                            --|note
 
 					value_position  := default_position;
 					value_length    := default_length;
@@ -1322,12 +1338,12 @@ package body hdo is
 					exit;
 				end if;
 
-				assert ((log_flags/log_resolve) mod 2=0)                               --|note
-					report indent(field("path", object,domain_position,domain_length)) --|note
-					severity note;                                                     --|note
-				assert ((log_flags/log_resolve) mod 2=0)                               --|note
-					report indent(field("value",object, value_position, value_length)) --|note
-					severity note;                                                     --|note
+				assert ((log_flags/log_resolve) mod 2=0)                                --|note
+					report indent(field("path", object,domain_position, domain_length)) --|note
+					severity note;                                                      --|note
+				assert ((log_flags/log_resolve) mod 2=0)                                --|note
+					report indent(field("value",object, value_position, value_length))  --|note
+					severity note;                                                      --|note
 
 				object_position := value_position;
 				-- resolve(object(value_position to value_position+value_length-1), value_position, value_length);
@@ -1337,7 +1353,7 @@ package body hdo is
 		end if;
 
 		assert ((log_flags/log_resolve) mod 2=0)                                      --|note
-			report indent(field("tag", object, domain_position, domain_length))       --|note
+			report indent(field("domain", object, domain_position, domain_length))    --|note
 			severity note;                                                            --|note
 		assert ((log_flags/log_resolve) mod 2=0)                                      --|note
 			report indent(field("dafault", object, default_position, default_length)) --|note
