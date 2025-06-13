@@ -165,7 +165,7 @@ begin
 			variable subkey        : string(1 to 256);
 			variable value         : string(1 to 256);
 			variable value_length  : natural;
-			variable n      : natural;
+			variable n             : natural;
 		begin
 			n := 0;
 			loop 
@@ -186,6 +186,7 @@ begin
 			exit when key_length=0;
 			report '"' & key(1 to key_length) & '"';
 			if key(1 to key_length)="device" then
+				sweep(hdo(test)**("."&key(1 to key_length)));
 			elsif key(1 to key_length)="configurations" then
 			end if;
 			n := n + 1;
