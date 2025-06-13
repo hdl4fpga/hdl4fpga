@@ -26,10 +26,12 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-use work.hdo.all;
+library hdl4fpga;
+use hdl4fpga.hdo.all;
+-- use work.hdo.all;
 
 architecture hdo_tb of testbench is
-    constant inputs    : natural := 2;
+	constant inputs    : natural := 2;
 	constant max_delay : natural := 2**14;
 	constant vt_step   : real := 1.0/2.0**16; -- Volts
 	constant test : string := compact("{" &
@@ -91,26 +93,26 @@ architecture hdo_tb of testbench is
 				"bDescriptorType    :0x03," &
 				"bstring            :HDL4FPGA}]}}");
 
-    function to_string (
-        constant value : std_logic_vector)
-        return string is
-        variable retval : string(1 to value'length);
-        variable n : natural;
-    begin
-        n := retval'left;
-        for i in value'range loop
-            if value(i)='1' then
-                retval(n) := '1';
-            else
-                retval(n) := '0';
-            end if;
-            n := n + 1;
-        end loop;
-        return retval;
-    end;
+	function to_string (
+		constant value : std_logic_vector)
+		return string is
+		variable retval : string(1 to value'length);
+		variable n : natural;
+	begin
+		n := retval'left;
+		for i in value'range loop
+			if value(i)='1' then
+				retval(n) := '1';
+			else
+				retval(n) := '0';
+			end if;
+			n := n + 1;
+		end loop;
+		return retval;
+	end;
 
 begin
-    process 
+	process 
 		-- constant obj : string := compact(hdo(test))**".config.interfaces[0].endpoints[0].bEndpointAddress";
 		-- constant obj : string := compact(hdo(test))**".configurations[0].interfaces[0].endpoints[0].bEndpointAddress";
 		-- constant obj : string := compact(hdo(test))**".configurations[0].interfaces[0].endpoints[1]";
@@ -154,38 +156,40 @@ begin
 		end;
 			
 		variable key_length : natural;
-		variable val_length : natural;
-		variable key : string(1 to 256);
-		variable val : string(1 to 256);
-		variable i : natural;
-		variable j : natural;
-    begin
-		i := 0;
-			-- get_value(key, key_length, tag("hhhhh : "& hdo(test)&"["&natural'image(3)&"]"));
-			get_value(key, key_length, tag("hhhhh : "& hdo(test)&"[3][2]=hola"));
-			-- get_value(key, key_length, tag("hhhhh : "& hdo(test)));
-		-- loop
-			-- get_value(key, key_length, tag("="));
-			-- get_value(key, key_length, tag(hdo(test)&"["&natural'image(1)&"].ppp=  "));
-			-- exit when key_length=0;
-			-- if false and key(1 to key_length)="device" then
-				-- report LF & key(1 to key_length);
-				-- j := 0;
-				-- loop 
-					-- get_value(key, key_length, hdo(ubskeys)**(".device["&natural'image(j)&"]="));
-					-- exit when key_length=0;
-					-- get_value(val, val_length, hdo(test)**(".device"&"."&key(1 to key_length)&"="));
-					-- exit when val_length=0;
-					-- report LF & key(1 to key_length) & ":" & val(1 to val_length);
-					-- j := j + 1;
-				-- end loop;
-			-- end if;
-			-- i := i + 1;
-		-- end loop;
-		-- report LF & xxx;
-        -- report LF & '"' & string'(hdo(obj)**"[1].text1=ffff.") & '"';
-        -- report LF & '"' & work.hdo.tag(hdo(obj)&"[1][0]") & '"';
-        -- report LF & '"' & obj & '"';
-        wait;
-    end process;
+		variable key        : string(1 to 256);
+
+		procedure sweep (
+			constant object : in string;
+			constant keys   : in string) is
+			variable subkey_length : natural;
+			variable subkey        : string(1 to 256);
+			variable value         : string(1 to 256);
+			variable value_length  : natural;
+			variable n      : natural;
+		begin
+			n := 0;
+			loop 
+				get_value(subkey, subkey_length, hdo(keys)**("["&natural'image(n)&"]"));
+				exit when subkey_length=0;
+				get_value(value, value_length, hdo(object)**("."&subkey(1 to subkey_length)));
+				exit when value_length=0;
+				report subkey(1 to subkey_length) & " : " & '"' & value(1 to value_length) & '"';
+				n := n + 1;
+			end loop;
+		end;
+
+		variable n : natural;
+	begin
+		n := 0;
+		loop
+			get_value(key, key_length, tag(hdo(test)&"["&natural'image(n)&"]"));
+			exit when key_length=0;
+			report '"' & key(1 to key_length) & '"';
+			if key(1 to key_length)="device" then
+			elsif key(1 to key_length)="configurations" then
+			end if;
+			n := n + 1;
+		end loop;
+		wait;
+	end process;
 end;

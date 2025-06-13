@@ -1065,6 +1065,13 @@ package body hdo is
     					if compare_string(object(domain_position to domain_position+domain_length-1), object(tag_position to tag_position+tag_length-1)) then
     						value_position := tag_position;
     						value_length   := position-value_position;
+							exit;
+						else
+						tag_position   := position;
+						tag_length     := 0;
+						value_position := position;
+						value_length   := 0;
+
     					end if;
 					else
 						tag_position   := position;
