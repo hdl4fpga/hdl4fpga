@@ -116,7 +116,7 @@ architecture hdo_tb of testbench is
 begin
 
 	process 
-		constant ubskeys : string := "{"                                                                           &
+		constant ubskeys : string := compact("{"                                                                           &
 			"device:["                                                                                             &
 				"bLength,         bDescriptorType,    bcdUSB,        bDeviceClass, bDeviceSubClass,"               &
 				"bDeviceProtocol, bMaxPacketSize0,    idVendor,      idProduct,    bcdDevice,"                     &
@@ -136,20 +136,12 @@ begin
 			"endpoints:["                                                                                          &
 				"endpoint],"                                                                                       &
 			"endpoint:["                                                                                           &
-				"bLength,         bDescriptorType,    bEndpointAddress,  bmAttibutes, wMaxPacketSize, bInterval]}";
+				"bLength,         bDescriptorType,    bEndpointAddress,  bmAttibutes, wMaxPacketSize, bInterval]," &
+			"strings:["                                                                                            &
+				"bLength,         bDescriptorType,    wLANID,  unicodes],"                                         &
+			"unicodes:["                                                                                           &
+				"bLength,         bDescriptorType,    bstring]}");
 
-		function check (
-			constant obj : string)
-			return boolean is
-		begin
-			if obj="" then
-				return false;
-			else
-				report LF & obj;
-				return true;
-			end if;
-		end;
-			
 		procedure get_value (
 			variable value  : out string;
 			variable length : out natural;
@@ -162,34 +154,28 @@ begin
 			end if;
 		end;
 			
-		variable key_length : natural;
-		variable key        : string(1 to 2048);
-		variable value_length : natural;
-		variable value        : string(1 to 2048);
-
 		procedure sweep (
 			constant object : in string;
 			constant keys   : in string) is
-			variable subkey_length : natural;
-			variable subkey        : string(1 to 1024);
+			variable key_length    : natural;
+			variable key           : string(1 to 1024);
 			variable value_length  : natural;
 			variable value         : string(1 to 1024);
 			variable n             : natural;
 		begin
 			n := 0;
 			loop 
-				-- report '"' & keys & '"';
-				-- report '"' & object & '"';
-				-- return;
-				get_value(subkey, subkey_length, hdo(keys)**("["&natural'image(n)&"]"));
-				exit when subkey_length=0;
-				get_value(value, value_length, hdo(object)**("."&subkey(1 to subkey_length)));
+				get_value(key, key_length, hdo(keys)**("["&natural'image(n)&"]"));
+				exit when key_length=0;
+				get_value(value, value_length, hdo(object)**("."&key(1 to key_length)));
 				exit when value_length=0;
-				report subkey(1 to subkey_length) & " : " & '"' & value(1 to value_length) & '"';
+				report key(1 to key_length) & " : " & '"' & value(1 to value_length) & '"';
 				n := n + 1;
 			end loop;
 		end;
 
+		variable value_length : natural;
+		variable value        : string(1 to 2048);
 		variable n : natural;
 		variable i : natural;
 		variable j : natural;
@@ -198,31 +184,44 @@ begin
 	begin
 		n := 0;
 		loop
-			get_value(key, key_length, tag(hdo(test)&"["&natural'image(n)&"]"));
-			exit when key_length=0;
-			report '"' & key(1 to key_length) & '"';
-			if key(1 to key_length)="device" then
-				sweep(hdo(test)**("."&key(1 to key_length)), hdo(ubskeys)**("."&key(1 to key_length)));
-			elsif key(1 to key_length)="configurations" then
+			get_value(value, value_length, tag(hdo(test)&"["&natural'image(n)&"]"));
+			exit when value_length=0;
+			report '"' & value(1 to value_length) & '"';
+			if value(1 to value_length)="device" then
+				sweep(hdo(test)**("."&value(1 to value_length)), hdo(ubskeys)**(".device"));
+			elsif value(1 to value_length)="configurations" then
+				i := 0;
 				loop
-					get_value(key, key_length, hdo(test)**(".configurations"&"["&natural'image(i)&"]"&".configuration"));
-					exit when key_length=0;
-					report '"' & "configuration" & '"';
-					sweep(key(1 to key_length), hdo(ubskeys)**(".configuration"));
+					get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"]"&".configuration"));
+					exit when value_length=0;
+					sweep(value(1 to value_length), hdo(ubskeys)**(".configuration"));
+					j := 0;
 					loop
-						get_value(key, key_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].interface"));
-						exit when key_length=0;
-						report '"' & "interface" & '"';
-						sweep(key(1 to key_length), hdo(ubskeys)**".interface");
+						get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].interface"));
+						exit when value_length=0;
+						sweep(value(1 to value_length), hdo(ubskeys)**".interface");
+						k := 0;
 						loop
-							get_value(key, key_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].endpoints"&"["&natural'image(k)&"]"));
-							exit when key_length=0;
-							report '"' & "endpoint" & '"';
-							sweep(key(1 to key_length), hdo(ubskeys)**".endpoint");
+							get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].endpoints"&"["&natural'image(k)&"]"));
+							exit when value_length=0;
+							sweep(value(1 to value_length), hdo(ubskeys)**".endpoint");
 							k := k + 1;
 						end loop;
 						j := j + 1;
 					end loop;
+					i := i + 1;
+				end loop;
+			elsif value(1 to value_length)="strings" then
+				i := 0;
+				loop
+					get_value(value, value_length, tag(hdo(test)&(".strings"&"["&natural'image(i)&"]")));
+					exit when value_length=0;
+					if value(1 to value_length)="unicodes" then
+						report "[ase";
+						-- loop
+						-- end loop;
+					end if;
+					report value(1 to value_length);
 					i := i + 1;
 				end loop;
 			end if;
