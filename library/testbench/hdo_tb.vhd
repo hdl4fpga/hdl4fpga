@@ -28,6 +28,7 @@ use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
+use hdl4fpga.base.all;
 -- use work.hdo.all;
 
 architecture hdo_tb of testbench is
@@ -94,7 +95,7 @@ architecture hdo_tb of testbench is
 			"unicodes:[{"                           &
 				"bLength            :0x12," & 
 				"bDescriptorType    :0x03," &
-				"bstring            :HDL4FPGA}]]}");
+				"bstring            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}");
 
 	function to_string (
 		constant value : std_logic_vector)
@@ -174,14 +175,19 @@ begin
 				report "key : " & '"' & value(1 to value_length) & '"';
 				get_value(value, value_length, hdo(object)**("."&value(1 to value_length)));
 				exit when value_length=0;
-				data(data_position to data_position+data_length-1) := reverse(hdo.to_stdlogicvector(value(1 to 4*(value_length-2))));
 				report "value : " & '"' & value(1 to value_length) & '"';
+				data_length := (value_length-2)*4;
+				data(data_position to data_position+data_length-1) := reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length)));
+				report "data : " & '"' & hdl4fpga.base.to_string(data(data_position to data_position+data_length-1)) & '"';
 				n := n + 1;
 			end loop;
 		end;
 
-		variable value_length : natural;
-		variable value        : string(1 to 2048);
+		variable value_length  : natural;
+		variable value         : string(1 to 2048);
+		variable data          : std_logic_vector(0 to value'length*4);
+		variable data_length   : natural;
+		variable data_position : natural;
 		variable n : natural;
 		variable i : natural;
 		variable j : natural;
@@ -194,23 +200,25 @@ begin
 			exit when value_length=0;
 			report '"' & value(1 to value_length) & '"';
 			if value(1 to value_length)="device" then
-				sweep(hdo(test)**("."&value(1 to value_length)), hdo(ubskeys)**(".device"));
+				data_length  := 0;
+				data_position := 0;
+				sweep(hdo(test)**("."&value(1 to value_length)), hdo(ubskeys)**(".device"), data, data_position, data_length);
 			elsif value(1 to value_length)="configurations" then
 				i := 0;
 				for m in test'range loop 
 					get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"]"&".configuration"));
 					exit when value_length=0;
-					sweep(value(1 to value_length), hdo(ubskeys)**(".configuration"));
+					sweep(value(1 to value_length), hdo(ubskeys)**(".configuration"), data, data_position, data_length);
 					j := 0;
 					for m in test'range loop 
 						get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].interface"));
 						exit when value_length=0;
-						sweep(value(1 to value_length), hdo(ubskeys)**".interface");
+						sweep(value(1 to value_length), hdo(ubskeys)**".interface", data, data_position, data_length);
 						k := 0;
 						for m in test'range loop 
 							get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].endpoints"&"["&natural'image(k)&"]"));
 							exit when value_length=0;
-							sweep(value(1 to value_length), hdo(ubskeys)**".endpoint");
+							sweep(value(1 to value_length), hdo(ubskeys)**".endpoint", data, data_position, data_length);
 							k := k + 1;
 						end loop;
 						j := j + 1;
@@ -224,7 +232,7 @@ begin
 					exit when value_length=0;
 					report value(1 to value_length);
 					if value(1 to value_length)="string" then
-						sweep(hdo(test)**("."&"strings.string"), hdo(ubskeys)**(".string"));
+						sweep(hdo(test)**("."&"strings.string"), hdo(ubskeys)**(".string"), data, data_position, data_length);
 					elsif value(1 to value_length)="wLANGID" then
 						j := 0;
 						for m in test'range loop 
@@ -238,7 +246,7 @@ begin
 						for m in test'range loop 
 							get_value(value, value_length, hdo(test)**(".strings.unicodes"&"["&natural'image(j)&"]"));
 							exit when value_length=0;
-							sweep(value(1 to value_length), hdo(ubskeys)**".unicode");
+							sweep(value(1 to value_length), hdo(ubskeys)**".unicode", data, data_position, data_length);
 							j := j + 1;
 						end loop;
 					end if;

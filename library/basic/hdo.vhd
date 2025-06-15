@@ -236,7 +236,7 @@ package body hdo is
 		when 'A'|'B'|'C'|'D'|'E'|'F' =>
 			return character'pos(char)-character'pos('A')+10;
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
-			return character'pos(char)-character'pos('A')+10;
+			return character'pos(char)-character'pos('a')+10;
 		when others =>
 			assert false 
 				report "wrong digit " & character'image(char)
@@ -1067,11 +1067,10 @@ package body hdo is
     						value_length   := position-value_position;
 							exit;
 						else
-						tag_position   := position;
-						tag_length     := 0;
-						value_position := position;
-						value_length   := 0;
-
+							tag_position   := position;
+							tag_length     := 0;
+							value_position := position;
+							value_length   := 0;
     					end if;
 					else
 						tag_position   := position;
