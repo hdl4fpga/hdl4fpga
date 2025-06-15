@@ -85,15 +85,16 @@ architecture hdo_tb of testbench is
 					"bmAttibutes      :0x02,"       &
 					"wMaxPacketSize   :0x0040,"     &
 					"Interval         :0x00}]}]}]," &
-		"strings:{"                       &
-			"bLength             :0x04," &
-			"bDescriptorType     :0x03," &
-			"wLANGID:["                  &
-				"0x0409],"               &
-			"unicodes:[{"                &
+		"strings:["                                 &
+			"string:{"                              &
+				"bLength             :0x04,"        &
+				"bDescriptorType     :0x03},"       &
+			"wLANGID:["                             &
+				"0x0409],"                          &
+			"unicodes:[{"                           &
 				"bLength            :0x12," & 
 				"bDescriptorType    :0x03," &
-				"bstring            :HDL4FPGA}]}}");
+				"bstring            :HDL4FPGA}]]}");
 
 	function to_string (
 		constant value : std_logic_vector)
@@ -116,31 +117,33 @@ architecture hdo_tb of testbench is
 begin
 
 	process 
-		constant ubskeys : string := compact("{"                                                                           &
-			"device:["                                                                                             &
-				"bLength,         bDescriptorType,    bcdUSB,        bDeviceClass, bDeviceSubClass,"               &
-				"bDeviceProtocol, bMaxPacketSize0,    idVendor,      idProduct,    bcdDevice,"                     &
-				"iManufacturer,   iProduct,           iSerialNumber, bNumConfigurations],"                         &
-			"configurations:["                                                                                     &
-				"configuration, interfaces],"                                                                      &
-			"configuration:["                                                                                      &
-				"bLength,         bDescriptorType,    wTotalLength,  bNumInterfaces, bConfigurationValue,"         &
-				"iConfiguration,  bmAttribute,        MaxPower],"                                                  &
-			"configurations:["                                                                                     &
-				"configuration,   interfaces],"                                                                    &
-			"interfaces:["                                                                                         &
-				"interface, endpoints],"                                                                           &
-			"interface:["                                                                                          &
-				"bLength,         bDescriptorType,    bInterfaceNumber,  bAlternateSetting, bNumEndpoints,"        &
-				"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface],"                             &
-			"endpoints:["                                                                                          &
-				"endpoint],"                                                                                       &
-			"endpoint:["                                                                                           &
-				"bLength,         bDescriptorType,    bEndpointAddress,  bmAttibutes, wMaxPacketSize, bInterval]," &
-			"strings:["                                                                                            &
-				"bLength,         bDescriptorType,    wLANID,  unicodes],"                                         &
-			"unicodes:["                                                                                           &
-				"bLength,         bDescriptorType,    bstring]}");
+		constant ubskeys : string := compact("{"                                                       &
+			"device:["                                                                                 &
+				"bLength, bDescriptorType, bcdUSB, bDeviceClass, bDeviceSubClass,"                     &
+				"bDeviceProtocol, bMaxPacketSize0, idVendor, idProduct, bcdDevice,"                    &
+				"iManufacturer, iProduct,iSerialNumber, bNumConfigurations],"                          &
+			"configurations:["                                                                         &
+				"configuration, interfaces],"                                                          &
+			"configuration:["                                                                          &
+				"bLength, bDescriptorType, wTotalLength, bNumInterfaces, bConfigurationValue,"         &
+				"iConfiguration, bmAttribute, MaxPower],"                                              &
+			"configurations:["                                                                         &
+				"configuration, interfaces],"                                                          &
+			"interfaces:["                                                                             &
+				"interface, endpoints],"                                                               &
+			"interface:["                                                                              &
+				"bLength, bDescriptorType, bInterfaceNumber, bAlternateSetting, bNumEndpoints,"        &
+				"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface],"                 &
+			"endpoints:["                                                                              &
+				"endpoint],"                                                                           &
+			"endpoint:["                                                                               &
+				"bLength, bDescriptorType, bEndpointAddress, bmAttibutes, wMaxPacketSize, bInterval]," &
+			"string:["                                                                                 &
+				"bLength, bDescriptorType],"                                                           &
+			"strings:["                                                                                &
+				"string, wLANGID, unicodes],"                                                          &
+			"unicode:["                                                                                &
+				"bLength, bDescriptorType, bstring]}");
 
 		procedure get_value (
 			variable value  : out string;
@@ -214,16 +217,31 @@ begin
 			elsif value(1 to value_length)="strings" then
 				i := 0;
 				loop
-					get_value(value, value_length, tag(hdo(test)&(".strings"&"["&natural'image(i)&"]")));
+					get_value(value, value_length, hdo(ubskeys)**(".strings"&"["&natural'image(i)&"]"));
 					exit when value_length=0;
-					if value(1 to value_length)="unicodes" then
-						report "[ase";
-						-- loop
-						-- end loop;
-					end if;
 					report value(1 to value_length);
+					if value(1 to value_length)="string" then
+						sweep(hdo(test)**("."&"strings.string"), hdo(ubskeys)**(".string"));
+					elsif value(1 to value_length)="wLANGID" then
+						j := 0;
+						loop
+							get_value(value, value_length, hdo(test)**(".strings.wLANGID"&"["&natural'image(j)&"]"));
+							exit when value_length=0;
+							report value(1 to value_length);
+							j := j + 1;
+						end loop;
+					elsif value(1 to value_length)="unicodes" then
+						j := 0;
+						loop
+							get_value(value, value_length, hdo(test)**(".strings.unicodes"&"["&natural'image(j)&"]"));
+							exit when value_length=0;
+							sweep(value(1 to value_length), hdo(ubskeys)**".unicode");
+							j := j + 1;
+						end loop;
+					end if;
 					i := i + 1;
 				end loop;
+				exit;
 			end if;
 			n := n + 1;
 		end loop;
