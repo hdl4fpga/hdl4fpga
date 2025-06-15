@@ -159,20 +159,23 @@ begin
 			
 		procedure sweep (
 			constant object : in string;
-			constant keys   : in string) is
-			variable key_length    : natural;
-			variable key           : string(1 to 1024);
+			constant keys   : in string;
+			variable data   : inout std_logic_vector;
+			variable data_position : inout natural;
+			variable data_length   : inout natural) is
 			variable value_length  : natural;
 			variable value         : string(1 to 1024);
 			variable n             : natural;
 		begin
 			n := 0;
 			loop 
-				get_value(key, key_length, hdo(keys)**("["&natural'image(n)&"]"));
-				exit when key_length=0;
-				get_value(value, value_length, hdo(object)**("."&key(1 to key_length)));
+				get_value(value, value_length, hdo(keys)**("["&natural'image(n)&"]"));
 				exit when value_length=0;
-				report key(1 to key_length) & " : " & '"' & value(1 to value_length) & '"';
+				report "key : " & '"' & value(1 to value_length) & '"';
+				get_value(value, value_length, hdo(object)**("."&value(1 to value_length)));
+				exit when value_length=0;
+				hdo.to_stdlogicvector(value(1 to 4*(value_length-2)));
+				report "value : " & '"' & value(1 to value_length) & '"';
 				n := n + 1;
 			end loop;
 		end;
@@ -186,7 +189,7 @@ begin
 
 	begin
 		n := 0;
-		loop
+		for m in test'range loop 
 			get_value(value, value_length, tag(hdo(test)&"["&natural'image(n)&"]"));
 			exit when value_length=0;
 			report '"' & value(1 to value_length) & '"';
@@ -194,17 +197,17 @@ begin
 				sweep(hdo(test)**("."&value(1 to value_length)), hdo(ubskeys)**(".device"));
 			elsif value(1 to value_length)="configurations" then
 				i := 0;
-				loop
+				for m in test'range loop 
 					get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"]"&".configuration"));
 					exit when value_length=0;
 					sweep(value(1 to value_length), hdo(ubskeys)**(".configuration"));
 					j := 0;
-					loop
+					for m in test'range loop 
 						get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].interface"));
 						exit when value_length=0;
 						sweep(value(1 to value_length), hdo(ubskeys)**".interface");
 						k := 0;
-						loop
+						for m in test'range loop 
 							get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].endpoints"&"["&natural'image(k)&"]"));
 							exit when value_length=0;
 							sweep(value(1 to value_length), hdo(ubskeys)**".endpoint");
@@ -216,7 +219,7 @@ begin
 				end loop;
 			elsif value(1 to value_length)="strings" then
 				i := 0;
-				loop
+				for m in test'range loop 
 					get_value(value, value_length, hdo(ubskeys)**(".strings"&"["&natural'image(i)&"]"));
 					exit when value_length=0;
 					report value(1 to value_length);
@@ -224,7 +227,7 @@ begin
 						sweep(hdo(test)**("."&"strings.string"), hdo(ubskeys)**(".string"));
 					elsif value(1 to value_length)="wLANGID" then
 						j := 0;
-						loop
+						for m in test'range loop 
 							get_value(value, value_length, hdo(test)**(".strings.wLANGID"&"["&natural'image(j)&"]"));
 							exit when value_length=0;
 							report value(1 to value_length);
@@ -232,7 +235,7 @@ begin
 						end loop;
 					elsif value(1 to value_length)="unicodes" then
 						j := 0;
-						loop
+						for m in test'range loop 
 							get_value(value, value_length, hdo(test)**(".strings.unicodes"&"["&natural'image(j)&"]"));
 							exit when value_length=0;
 							sweep(value(1 to value_length), hdo(ubskeys)**".unicode");
