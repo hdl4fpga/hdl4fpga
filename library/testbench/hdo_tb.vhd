@@ -174,7 +174,7 @@ begin
 				report "key : " & '"' & value(1 to value_length) & '"';
 				get_value(value, value_length, hdo(object)**("."&value(1 to value_length)));
 				exit when value_length=0;
-				hdo.to_stdlogicvector(value(1 to 4*(value_length-2)));
+				data(data_position to data_position+data_length-1) := reverse(hdo.to_stdlogicvector(value(1 to 4*(value_length-2))));
 				report "value : " & '"' & value(1 to value_length) & '"';
 				n := n + 1;
 			end loop;
