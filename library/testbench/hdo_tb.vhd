@@ -161,7 +161,7 @@ begin
 		procedure sweep (
 			constant object : in string;
 			constant keys   : in string;
-			variable data   : inout std_logic_vector;
+			variable data   : inout string;
 			variable data_position : inout natural;
 			variable data_length   : inout natural) is
 			variable value_length  : natural;
@@ -176,16 +176,17 @@ begin
 				get_value(value, value_length, hdo(object)**("."&value(1 to value_length)));
 				exit when value_length=0;
 				report "value : " & '"' & value(1 to value_length) & '"';
-				data_length := (value_length-2)*4;
-				data(data_position to data_position+data_length-1) := reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length)));
-				report "data : " & '"' & hdl4fpga.base.to_string(data(data_position to data_position+data_length-1)) & '"';
+				data_length := value_length-2;
+				data(data_position to data_position+data_length-1) := hdl4fpga.base.to_string(reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length))));
+				-- data(data_position to data_position+data_length-1) := reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length)));
+				report "data : " & '"' & data(data_position to data_position+data_length-1) & '"';
 				n := n + 1;
 			end loop;
 		end;
 
 		variable value_length  : natural;
 		variable value         : string(1 to 2048);
-		variable data          : std_logic_vector(0 to value'length*4);
+		variable data          : string(value'range);
 		variable data_length   : natural;
 		variable data_position : natural;
 		variable n : natural;
@@ -201,7 +202,7 @@ begin
 			report '"' & value(1 to value_length) & '"';
 			if value(1 to value_length)="device" then
 				data_length  := 0;
-				data_position := 0;
+				data_position := 1;
 				sweep(hdo(test)**("."&value(1 to value_length)), hdo(ubskeys)**(".device"), data, data_position, data_length);
 			elsif value(1 to value_length)="configurations" then
 				i := 0;
