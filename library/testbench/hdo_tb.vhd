@@ -85,7 +85,7 @@ architecture hdo_tb of testbench is
 					"bEndpointAddress :0x81,"       &
 					"bmAttibutes      :0x02,"       &
 					"wMaxPacketSize   :0x0040,"     &
-					"Interval         :0x00}]}]}]," &
+					"bInterval        :0x00}]}]}]," &
 		"strings:["                                 &
 			"string:{"                              &
 				"bLength             :0x04,"        &
@@ -177,9 +177,9 @@ begin
 				exit when value_length=0;
 				report "value : " & '"' & value(1 to value_length) & '"';
 				data_length := value_length-2;
-				data(data_position to data_position+data_length-1) := hdl4fpga.base.to_string(reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length))));
-				-- data(data_position to data_position+data_length-1) := reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length)));
+				data(data_position to data_position+data_length-1) := hdl4fpga.base.to_string(reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length))),16);
 				report "data : " & '"' & data(data_position to data_position+data_length-1) & '"';
+				data_position := data_position+data_length;
 				n := n + 1;
 			end loop;
 		end;
@@ -204,7 +204,10 @@ begin
 				data_length  := 0;
 				data_position := 1;
 				sweep(hdo(test)**("."&value(1 to value_length)), hdo(ubskeys)**(".device"), data, data_position, data_length);
+				report "***** " & "'" & data(1 to data_position-1) & "'";
 			elsif value(1 to value_length)="configurations" then
+				data_length  := 0;
+				data_position := 1;
 				i := 0;
 				for m in test'range loop 
 					get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"]"&".configuration"));
@@ -226,7 +229,10 @@ begin
 					end loop;
 					i := i + 1;
 				end loop;
+				report "***** " & "'" & data(1 to data_position-1) & "'";
 			elsif value(1 to value_length)="strings" then
+				data_length  := 0;
+				data_position := 1;
 				i := 0;
 				for m in test'range loop 
 					get_value(value, value_length, hdo(ubskeys)**(".strings"&"["&natural'image(i)&"]"));
@@ -253,6 +259,7 @@ begin
 					end if;
 					i := i + 1;
 				end loop;
+				report "***** " & "'" & data(1 to data_position-1) & "'";
 				exit;
 			end if;
 			n := n + 1;
