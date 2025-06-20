@@ -172,13 +172,13 @@ begin
 			loop 
 				get_value(value, value_length, hdo(keys)**("["&natural'image(n)&"]"));
 				exit when value_length=0;
-				report "key : " & '"' & value(1 to value_length) & '"';
+				-- report "key : " & '"' & value(1 to value_length) & '"';
 				get_value(value, value_length, hdo(object)**("."&value(1 to value_length)));
 				exit when value_length=0;
-				report "value : " & '"' & value(1 to value_length) & '"';
+				-- report "value : " & '"' & value(1 to value_length) & '"';
 				data_length := value_length-2;
 				data(data_position to data_position+data_length-1) := hdl4fpga.base.to_string(reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length))),16);
-				report "data : " & '"' & data(data_position to data_position+data_length-1) & '"';
+				-- report "data : " & '"' & data(data_position to data_position+data_length-1) & '"';
 				data_position := data_position+data_length;
 				n := n + 1;
 			end loop;
@@ -199,7 +199,7 @@ begin
 		for m in test'range loop 
 			get_value(value, value_length, tag(hdo(test)&"["&natural'image(n)&"]"));
 			exit when value_length=0;
-			report '"' & value(1 to value_length) & '"';
+			-- report '"' & value(1 to value_length) & '"';
 			if value(1 to value_length)="device" then
 				data_length  := 0;
 				data_position := 1;
@@ -237,7 +237,7 @@ begin
 				for m in test'range loop 
 					get_value(value, value_length, hdo(ubskeys)**(".strings"&"["&natural'image(i)&"]"));
 					exit when value_length=0;
-					report value(1 to value_length);
+					-- report value(1 to value_length);
 					if value(1 to value_length)="string" then
 						sweep(hdo(test)**("."&"strings.string"), hdo(ubskeys)**(".string"), data, data_position, data_length);
 					elsif value(1 to value_length)="wLANGID" then
@@ -246,6 +246,9 @@ begin
 							get_value(value, value_length, hdo(test)**(".strings.wLANGID"&"["&natural'image(j)&"]"));
 							exit when value_length=0;
 							report value(1 to value_length);
+							data_length := value_length-2;
+							data(data_position to data_position+data_length-1) := hdl4fpga.base.to_string(reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length))),16);
+							data_position := data_position+data_length;
 							j := j + 1;
 						end loop;
 					elsif value(1 to value_length)="unicodes" then
