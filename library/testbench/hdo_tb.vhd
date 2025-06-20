@@ -29,6 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
+use hdl4fpga.usbpkg.all;
 -- use work.hdo.all;
 
 architecture hdo_tb of testbench is
@@ -116,6 +117,11 @@ architecture hdo_tb of testbench is
 	end;
 
 begin
+	process
+	begin
+		report xxx(test);
+		wait;
+	end process;
 
 	process 
 		constant ubskeys : string := compact("{"                                                       &
@@ -195,6 +201,7 @@ begin
 		variable k : natural;
 
 	begin
+		wait;
 		n := 0;
 		for m in test'range loop 
 			get_value(value, value_length, tag(hdo(test)&"["&natural'image(n)&"]"));

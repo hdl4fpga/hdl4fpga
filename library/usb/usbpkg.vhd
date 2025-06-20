@@ -85,6 +85,11 @@ package usbpkg is
 		constant max_length   : natural := 1024;
 		constant max_segments : natural := 64)
 		return std_logic_vector;
+
+	function xxx (
+		constant test : string)
+		return string;
+
 end;
 
 package body usbpkg is
@@ -332,6 +337,157 @@ package body usbpkg is
 				"length:"    & natural'image(n)                   & "," &
 				"table:["    & table(1 to table_pos-1) & "]"      &
 			"}";
+	end;
+
+	function xxx (
+		constant test : string)
+		return string is 
+		constant ubskeys : string := compact("{"                                                       &
+			"device:["                                                                                 &
+				"bLength, bDescriptorType, bcdUSB, bDeviceClass, bDeviceSubClass,"                     &
+				"bDeviceProtocol, bMaxPacketSize0, idVendor, idProduct, bcdDevice,"                    &
+				"iManufacturer, iProduct,iSerialNumber, bNumConfigurations],"                          &
+			"configurations:["                                                                         &
+				"configuration, interfaces],"                                                          &
+			"configuration:["                                                                          &
+				"bLength, bDescriptorType, wTotalLength, bNumInterfaces, bConfigurationValue,"         &
+				"iConfiguration, bmAttribute, MaxPower],"                                              &
+			"configurations:["                                                                         &
+				"configuration, interfaces],"                                                          &
+			"interfaces:["                                                                             &
+				"interface, endpoints],"                                                               &
+			"interface:["                                                                              &
+				"bLength, bDescriptorType, bInterfaceNumber, bAlternateSetting, bNumEndpoints,"        &
+				"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface],"                 &
+			"endpoints:["                                                                              &
+				"endpoint],"                                                                           &
+			"endpoint:["                                                                               &
+				"bLength, bDescriptorType, bEndpointAddress, bmAttibutes, wMaxPacketSize, bInterval]," &
+			"string:["                                                                                 &
+				"bLength, bDescriptorType],"                                                           &
+			"strings:["                                                                                &
+				"string, wLANGID, unicodes],"                                                          &
+			"unicode:["                                                                                &
+				"bLength, bDescriptorType, bstring]}");
+
+		procedure get_value (
+			variable value  : out string;
+			variable length : out natural;
+			constant obj    : in  string) is
+			constant escobj : string := escaped(obj);
+		begin
+			length := escobj'length;
+			if escobj'length > 0 then
+				value(1 to escobj'length) := escobj;
+			end if;
+		end;
+			
+		procedure sweep (
+			constant object : in string;
+			constant keys   : in string;
+			variable data   : inout string;
+			variable data_position : inout natural;
+			variable data_length   : inout natural) is
+			variable value_length  : natural;
+			variable value         : string(1 to 1024);
+			variable n             : natural;
+		begin
+			n := 0;
+			loop 
+				get_value(value, value_length, hdo(keys)**("["&natural'image(n)&"]"));
+				exit when value_length=0;
+				get_value(value, value_length, hdo(object)**("."&value(1 to value_length)));
+				exit when value_length=0;
+				data_length := value_length-2;
+				data(data_position to data_position+data_length-1) := hdl4fpga.base.to_string(reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length))),16);
+				data_position := data_position+data_length;
+				n := n + 1;
+			end loop;
+		end;
+
+		variable value_length  : natural;
+		variable value         : string(1 to 2048);
+		variable data          : string(value'range);
+		variable data_length   : natural;
+		variable data_position : natural;
+		variable n : natural;
+		variable i : natural;
+		variable j : natural;
+		variable k : natural;
+
+	begin
+		n := 0;
+		for m in test'range loop 
+			get_value(value, value_length, tag(hdo(test)&"["&natural'image(n)&"]"));
+			exit when value_length=0;
+			if value(1 to value_length)="device" then
+				data_length  := 0;
+				data_position := 1;
+				sweep(hdo(test)**("."&value(1 to value_length)), hdo(ubskeys)**(".device"), data, data_position, data_length);
+				report "***** " & "'" & data(1 to data_position-1) & "'";
+			elsif value(1 to value_length)="configurations" then
+				data_length  := 0;
+				data_position := 1;
+				i := 0;
+				for m in test'range loop 
+					get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"]"&".configuration"));
+					exit when value_length=0;
+					sweep(value(1 to value_length), hdo(ubskeys)**(".configuration"), data, data_position, data_length);
+					j := 0;
+					for m in test'range loop 
+						get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].interface"));
+						exit when value_length=0;
+						sweep(value(1 to value_length), hdo(ubskeys)**".interface", data, data_position, data_length);
+						k := 0;
+						for m in test'range loop 
+							get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"].interfaces"&"["&natural'image(j)&"].endpoints"&"["&natural'image(k)&"]"));
+							exit when value_length=0;
+							sweep(value(1 to value_length), hdo(ubskeys)**".endpoint", data, data_position, data_length);
+							k := k + 1;
+						end loop;
+						j := j + 1;
+					end loop;
+					i := i + 1;
+				end loop;
+				report "***** " & "'" & data(1 to data_position-1) & "'";
+			elsif value(1 to value_length)="strings" then
+				data_length  := 0;
+				data_position := 1;
+				i := 0;
+				for m in test'range loop 
+					get_value(value, value_length, hdo(ubskeys)**(".strings"&"["&natural'image(i)&"]"));
+					exit when value_length=0;
+					-- report value(1 to value_length);
+					if value(1 to value_length)="string" then
+						sweep(hdo(test)**("."&"strings.string"), hdo(ubskeys)**(".string"), data, data_position, data_length);
+					elsif value(1 to value_length)="wLANGID" then
+						j := 0;
+						for m in test'range loop 
+							get_value(value, value_length, hdo(test)**(".strings.wLANGID"&"["&natural'image(j)&"]"));
+							exit when value_length=0;
+							report value(1 to value_length);
+							data_length := value_length-2;
+							data(data_position to data_position+data_length-1) := hdl4fpga.base.to_string(reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length))),16);
+							data_position := data_position+data_length;
+							j := j + 1;
+						end loop;
+					elsif value(1 to value_length)="unicodes" then
+						j := 0;
+						for m in test'range loop 
+							get_value(value, value_length, hdo(test)**(".strings.unicodes"&"["&natural'image(j)&"]"));
+							exit when value_length=0;
+							sweep(value(1 to value_length), hdo(ubskeys)**".unicode", data, data_position, data_length);
+							j := j + 1;
+						end loop;
+					end if;
+					i := i + 1;
+				end loop;
+				report "***** " & "'" & data(1 to data_position-1) & "'";
+				exit;
+			end if;
+			n := n + 1;
+		end loop;
+		return "";
 	end;
 
 	-- function to_hdo (
