@@ -249,9 +249,9 @@ package body hdo is
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
 			return character'pos(char)-character'pos('a')+10;
 		when others =>
-			assert false 
-				report "wrong digit " & character'image(char)
-				severity failure;
+			assert false                                      --|note
+				report "wrong digit " & character'image(char) --|note
+				severity note;                                --|note
 			return -1;
 		end case;
 	end;
@@ -261,6 +261,7 @@ package body hdo is
 		constant base  : natural) 
 		return integer is
 		variable sign   : integer;
+		variable digit  : natural;
 		variable retval : integer;
 	begin
 		retval := 0;
@@ -268,20 +269,19 @@ package body hdo is
 		for i in value'range loop
 			if value(i)/='_' then
 				retval := base*retval;
-				if character'pos(value(i)) >= character'pos('0') and (character'pos(value(i))-character'pos('0')) <= (base-1) mod 10 then
-					retval := (character'pos(value(i))-character'pos('0')) + retval;
-				elsif character'pos(value(i)) >= character'pos('a') and (character'pos(value(i))-character'pos('a')) < (base-10) then
-					retval := (character'pos(value(i))-character'pos('a')) + 10 + retval;
-				elsif character'pos(value(i)) >= character'pos('A') and (character'pos(value(i))-character'pos('A')) < (base-10) then
-					retval := (character'pos(value(i))-character'pos('A')) + 10 + retval;
-				elsif i=value'left then
-					if value(i)='-' then
-						sign := -1;
-					else
-						assert false
-							report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value
-							severity failure;
+				digit  := to_integer(value(i));
+				if digit < 0 then 
+					if i=value'left then
+						if value(i)='-' then
+							sign := -1;
+						else
+							assert false
+								report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value
+								severity failure;
+						end if;
 					end if;
+				elsif digit < base then
+					retval := retval + digit;
 				else
 					assert false
 						report "Wrong number " & character'image(value(i)) & " " & natural'image(base) 

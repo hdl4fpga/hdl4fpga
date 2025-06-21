@@ -186,19 +186,15 @@ package body usbpkg is
 			constant offsets : natural_vector;
 			constant offset_num_bits : natural;
 			constant lengths : natural_vector;
-			constant length_num_bits : natural;
-			constant dirs    : std_logic_vector;
-			constant dir_num_bits : natural)
+			constant length_num_bits : natural)
 			return std_logic_vector is
-			variable content : unsigned(0 to (dir_num_bits+offset_num_bits+length_num_bits)*offsets'length-1);
+			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length-1);
 		begin
 			assert offsets'length=lengths'length
 				report "segment_table() : offsets'length => (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
 				severity failure;
 
 			for i in offsets'range loop
-				content(0 to dir_num_bits-1) := unsigned(dirs(i to i+dir_num_bits-1));
-				content := content rol dir_num_bits;
 				content(0 to offset_num_bits-1) := to_unsigned(offsets(i), offset_num_bits);
 				content := content rol offset_num_bits;
 				content(0 to length_num_bits-1) := to_unsigned(lengths(i)-1, length_num_bits);
@@ -209,16 +205,12 @@ package body usbpkg is
 
 		variable lengths : natural_vector(0 to max_segments-1);
 		variable offsets : natural_vector(0 to max_segments-1);
-		variable dirs : std_logic_vector(0 to max_segments-1);
 		variable length_num_bits : natural;
 		variable offset_num_bits : natural;
-		constant dir_num_bits    : natural := 1;
 		variable valid   : boolean;
 		variable n       : natural;
 		variable address : natural;
 		variable num_bits : natural;
-		variable dir_left     : natural;
-		variable dir_right    : natural;
 		variable offset_left  : natural;
 		variable offset_right : natural;
 		variable length_left  : natural;
@@ -228,7 +220,6 @@ package body usbpkg is
 			n := i;
 			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
 			get_value(lengths(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][1]=")));
-			get_value(dirs(i),    valid, escaped(hdo(description)**("["&natural'image(i)&"][2]=")));
 			exit when not valid;
 		end loop;
 		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1))-1);
@@ -239,29 +230,23 @@ package body usbpkg is
 			severity note;
 
 		address := unsigned_num_bits(n-1);
-		num_bits := dir_num_bits+offset_num_bits+length_num_bits;
-		dir_left     := 0;
-		dir_right    := dir_num_bits-1;
-		offset_left  := dir_right+1;
+		num_bits := offset_num_bits+length_num_bits;
+		offset_left  := 0;
 		offset_right := offset_left+offset_num_bits-1;
 		length_left  := offset_right+1;
 		length_right := length_left+length_num_bits-1;
 		return
 			"{" &
-				"content:"   & hdl4fpga.base.to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits, dirs(0 to n-1), dir_num_bits)) & "," &
+				"content:"   & hdl4fpga.base.to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
 				"address:"   & natural'image(address)      & "," &
 				"data:"      & natural'image(num_bits)     & "," &
-				"dir:{"      &
-					"left:"  & natural'image(dir_left)     & "," &
-					"right:" & natural'image(dir_right)    & "," &
-					"},"     &
 				"offset:{"   &
 					"left:"  & natural'image(offset_left)  & "," &
-					"right:" & natural'image(offset_right) & "," &
+					"right:" & natural'image(offset_right) &
 					"},"     &
 				"length:{"   &
 					"left:"  & natural'image(length_left)  & "," &
-					"right:" & natural'image(length_right) & ","  &
+					"right:" & natural'image(length_right) &
 					"}}";
 	end;
 
@@ -326,8 +311,8 @@ package body usbpkg is
 			table(table_pos) := '[';
 			table_pos := table_pos + 1;
 			copy(table, table_pos, table_pos, natural'image(pos)&",");
-			copy(table, table_pos, table_pos, natural'image(scc-pos)&",");
-			copy(table, table_pos, table_pos, std_logic'image(content(pos))&"],");
+			copy(table, table_pos, table_pos, natural'image(scc-pos)&"],");
+			-- copy(table, table_pos, table_pos, std_logic'image(content(pos))&"],");
 			pos := scc;
 			n := n + 1;
 		end loop;
@@ -406,8 +391,8 @@ package body usbpkg is
 		end;
 
 		variable value_length  : natural;
-		variable value         : string(1 to 2048);
-		variable data          : string(value'range);
+		variable value         : string(test'range);
+		variable data          : string(test'range);
 		variable data_length   : natural;
 		variable data_position : natural;
 		variable n : natural;
@@ -415,19 +400,22 @@ package body usbpkg is
 		variable j : natural;
 		variable k : natural;
 
+		constant zzz : string :="},{content:0x";
 	begin
 		n := 0;
+
+		data_length   := 0;
+		data_position := 1;
 		for m in test'range loop 
 			get_value(value, value_length, tag(hdo(test)&"["&natural'image(n)&"]"));
 			exit when value_length=0;
+				data_length := zzz'length;
+				data(data_position to data_position+data_length-1) := zzz;
+				data_position := data_position + data_length;
 			if value(1 to value_length)="device" then
-				data_length  := 0;
-				data_position := 1;
 				sweep(hdo(test)**("."&value(1 to value_length)), hdo(ubskeys)**(".device"), data, data_position, data_length);
-				report "***** " & "'" & data(1 to data_position-1) & "'";
+				-- report "***** " & "'" & data(1 to data_position-1) & "'";
 			elsif value(1 to value_length)="configurations" then
-				data_length  := 0;
-				data_position := 1;
 				i := 0;
 				for m in test'range loop 
 					get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(i)&"]"&".configuration"));
@@ -449,10 +437,9 @@ package body usbpkg is
 					end loop;
 					i := i + 1;
 				end loop;
-				report "***** " & "'" & data(1 to data_position-1) & "'";
+				
+				-- report "***** " & "'" & data(1 to data_position-1) & "'";
 			elsif value(1 to value_length)="strings" then
-				data_length  := 0;
-				data_position := 1;
 				i := 0;
 				for m in test'range loop 
 					get_value(value, value_length, hdo(ubskeys)**(".strings"&"["&natural'image(i)&"]"));
@@ -465,7 +452,6 @@ package body usbpkg is
 						for m in test'range loop 
 							get_value(value, value_length, hdo(test)**(".strings.wLANGID"&"["&natural'image(j)&"]"));
 							exit when value_length=0;
-							report value(1 to value_length);
 							data_length := value_length-2;
 							data(data_position to data_position+data_length-1) := hdl4fpga.base.to_string(reverse(hdl4fpga.hdo.to_stdlogicvector(value(1 to value_length))),16);
 							data_position := data_position+data_length;
@@ -482,11 +468,12 @@ package body usbpkg is
 					end if;
 					i := i + 1;
 				end loop;
-				report "***** " & "'" & data(1 to data_position-1) & "'";
+				-- report "***** " & "'" & data(1 to data_position-1) & "'";
 				exit;
 			end if;
 			n := n + 1;
 		end loop;
+		return '[' & data(3 to data_position-1)&"}]";
 		return "";
 	end;
 
