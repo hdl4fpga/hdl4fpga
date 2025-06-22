@@ -29,10 +29,7 @@ use hdl4fpga.usbpkg.all;
 
 entity usbdevrqst is
 	 generic (
-		device_dscptr   : std_logic_vector;
-		config_dscptr   : std_logic_vector;
-		interface_dscptr: std_logic_vector;
-		endpoint_dscptr : std_logic_vector;
+		descriptor : string);
 		string_dscptr   : std_logic_vector);
 	port (
 		tp        : out std_logic_vector(1 to 32) := (others => '0');
@@ -258,94 +255,75 @@ begin
 		end if;
 	end process;
 
-	getdescriptor_p : process (getdescriptor_rdy, clk)
-		type states is (s_idle, s_data);
-		variable state : states;
-		constant descriptor_data : std_logic_vector := (
-			device_dscptr    &
-			config_dscptr    &
-			interface_dscptr &
-			endpoint_dscptr  &
-			string_dscptr);
-
-		constant descriptor_lengths : natural_vector := (
-			device_dscptr'length,
-			config_dscptr'length,
-			interface_dscptr'length,
-			endpoint_dscptr'length,
-			string_dscptr'length);
-		variable descriptor_length : unsigned(0 to unsigned_num_bits(max(summation(descriptor_lengths(0 to 4-1))-1, string_dscptr'length)));
-		variable descriptor_addr   : natural range 0 to summation(descriptor_lengths)-1;
-		alias txdis is descriptor_length(0);
-
+	despcriptor_b : block
+		constant descriptor_map     : string := segment_map(xxx(descriptor));
+		constant descriptor_content : std_logic_vector := to_stdlogicvector(descriptor_map**".content");
+		variable descriptors_length : string := decriptor_table**".length";
+		variable descriptors_base   : string := decriptor_table**".base";
+		variable descriptor_addr    : unsigned(decriptors_base**".left" to decriptors_base**".right");
+		alias descriptor_base   is descriptor_xxx(descriptor_base'range);
+		alias descriptor_length is descriptor_xxx(descriptor_length'range);
 		alias descriptor : std_logic_vector(8-1 downto 0) is value(16-1 downto 8);
 		alias index      : std_logic_vector(8-1 downto 0) is value( 8-1 downto 0);
-		constant langid_length : natural := to_integer(unsigned(reverse(string_dscptr(0 to 8-1))))*8;
 	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (getdescriptor_rdy xor getdescriptor_req)='1' then
-					case state is
-					when s_idle => 
-						case descriptor(3-1 downto 0) is
-						when b"011" => -- string descriptor
-							case index(2-1 downto 0) is
-							when b"00" =>
-								descriptor_addr   := summation(descriptor_lengths(0 to 4-1));
-								descriptor_length := to_unsigned(langid_length, descriptor_length'length);
-							when b"01" =>
-								descriptor_addr   := summation(descriptor_lengths(0 to 4-1))+langid_length;
-								descriptor_length := to_unsigned(string_dscptr'length-langid_length, descriptor_length'length);
-							when others =>
-								descriptor_addr   := summation(descriptor_lengths(0 to 4-1));
-								descriptor_length := to_unsigned(0, descriptor_length'length);
-							end case;
-							state := s_data;
-						when others =>
-    						descriptor_addr := 0;
-    						for i in descriptor_lengths'left to descriptor_lengths'right-1 loop
-    							if i < 2 then
-    								if (i+1)=unsigned(descriptor) then
-    									state := s_data;
-    									exit;
-    								end if;
-    							elsif (i+2)=unsigned(descriptor) then
-    								state := s_data;
-    								exit;
+
+    	data_e : entity hdl4fpga.rom
+    	generic map (
+    		bitrom =>)
+    	port map (
+    		addr => descriptor_addr,  
+    		data => descriptor_xxx);
+
+    	data_e : entity hdl4fpga.rom
+    	generic map (
+    		bitrom =>)
+    	port map (
+    		addr => std_logic_vector'(descriptor_addr),  
+    		data => descriptor_data);
+
+    	getdescriptor_p : process (getdescriptor_rdy, clk)
+    		type states is (s_idle, s_data);
+    		variable state : states;
+
+			variable descriptor_cntr : unsigned(decriptors_length**".left" to decriptors_length**".right");
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+    				if (getdescriptor_rdy xor getdescriptor_req)='1' then
+    					case state is
+    					when s_idle => 
+    						if shift_right(descriptor_cntr, 3) > length  then
+    							descriptor_cntr := shift_left(resize(length, descriptor_cntr'length),3);
+							else
+    							descriptor_cntr := descriptor_length;
+    						end if;
+    						descriptor_cntr := descriptor_cntr-1;
+    						descriptor_addr <= descriptor_base;
+    					when s_data =>
+    						if descriptor_cntr(0)='0' then
+    							if txbs='0' then
+    								descriptor_cntr := descriptor_cntr - 1;
+    								descriptor_addr <= descriptor_addr + 1;
     							end if;
-								descriptor_addr := descriptor_addr + descriptor_lengths(i);
-    						end loop;
-    						descriptor_length := to_unsigned(summation(descriptor_lengths(0 to 4-1)), descriptor_length'length);
-    						descriptor_length := descriptor_length - descriptor_addr;
-						end case;
-   						if resize(shift_right(descriptor_length, 3), length'length) > length  then
-   							descriptor_length := shift_left(resize(length, descriptor_length'length),3);
-   						end if;
-						descriptor_length := descriptor_length-1;
-					when s_data =>
-						if descriptor_length(0)='0' then
-							if txbs='0' then
-								descriptor_addr   := descriptor_addr   + 1;
-								descriptor_length := descriptor_length - 1;
-							end if;
-						elsif (in_rdy xor in_req)='1' then
-							state := s_idle;
-						elsif (ack_rdy xor ack_req)='1' then
-							getdescriptor_rdy <= getdescriptor_req;
-							state := s_idle;
-						end if;
-						in_rdy  <= in_req;
-						ack_rdy <= ack_req;
-					end case;
-				else
-					descriptor_length := (others=> '1');
-					state := s_idle;
-				end if;
-			end if;
-		end if;
-		descriptor_txen <= not txdis;
-		descriptor_txd  <= descriptor_data(descriptor_addr);
-	end process;
+    						elsif (in_rdy xor in_req)='1' then
+    							state := s_idle;
+    						elsif (ack_rdy xor ack_req)='1' then
+    							getdescriptor_rdy <= getdescriptor_req;
+    							state := s_idle;
+    						end if;
+    						in_rdy  <= in_req;
+    						ack_rdy <= ack_req;
+    					end case;
+    				else
+    					descriptor_cntr := (others=> '1');
+    					state := s_idle;
+    				end if;
+					descriptor_txen <= not descriptor_cntr(descriptor_cntr'left);
+    			end if;
+    		end if;
+    	end process;
+		descriptor_txd <= descriptor_data(descriptor_addr);
+	end block;
 
 	setconfiguration_p : process (setconfiguration_rdy, clk)
 	begin

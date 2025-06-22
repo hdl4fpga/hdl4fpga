@@ -120,6 +120,7 @@ begin
 	process
 	begin
 		report segment_table(segment_map(xxx(test))**".table");
+		-- report segment_map(xxx(test));
 		wait;
 	end process;
 

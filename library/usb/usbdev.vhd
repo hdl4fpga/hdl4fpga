@@ -33,60 +33,68 @@ entity usbdev is
 		oversampling  : natural := 0;
 		watermark     : natural := 0;
 		bit_stuffing  : natural := 6;
-		device_dscptr : std_logic_vector := (
-			reverse(x"12")    & -- bLength
-			reverse(device) & -- bDescriptorType
-			reverse(x"0110")  & -- bcdUSB
-			reverse(x"00")    & -- bDeviceClass
-			reverse(x"00")    & -- bDeviceSubClass
-			reverse(x"00")    & -- bDeviceProtocol
-			reverse(x"40")    & -- bMaxPacketSize0
-			reverse(x"1234")  & -- idVendor
-			reverse(x"abcd")  & -- idProduct
-			reverse(x"0100")  & -- bcdDevice
-			reverse(x"01")    & -- iManufacturer
-			reverse(x"00")    & -- iProduct
-			reverse(x"00")    & -- iSerialNumber
-			reverse(x"01"));    -- bNumConfigurations
-		config_dscptr : std_logic_vector := (
-			reverse(x"09")    & -- bLength
-			reverse(config) & -- bDescriptorType
-			reverse(x"0020")  & -- wTotalLength
-			reverse(x"01")    & -- bNumInterfaces
-			reverse(x"01")    & -- bConfigurationValue
-			reverse(x"00")    & -- iConfiguration
-			reverse(x"c0")    & -- bmAttribute
-			reverse(x"32"));    -- MaxPower
-		string_dscptr : std_logic_vector := (
-			reverse(x"04")    & 
-			reverse(hdl4fpga.usbpkg.str) & -- bDescriptorType
-			reverse(x"0409")  &
-			reverse(x"12")    & 
-			reverse(hdl4fpga.usbpkg.str) & -- bDescriptorType
-			reverse(to_utf16("HDL4FPGA"),16));
-		interface_dscptr : std_logic_vector := (
-			reverse(x"09")    & -- bLength
-			reverse(interface) & -- bDescriptorType
-			reverse(x"00")    & -- bInterfaceNumber
-			reverse(x"00")    & -- bAlternateSetting
-			reverse(x"02")    & -- bNumEndpoints
-			reverse(x"00")    & -- bInterfaceClass
-			reverse(x"00")    & -- bInterfaceSubClass
-			reverse(x"00")    & -- bIntefaceProtocol
-			reverse(x"00"));    -- iInterface
-		endpoint_dscptr : std_logic_vector := (
-			reverse(x"07")    & -- bLength
-			reverse(endpoint) & -- bDescriptorType
-			reverse(x"01")    & -- bEndpointAddress
-			reverse(x"02")    & -- bmAttibutes
-			reverse(x"0040")  & -- wMaxPacketSize
-			reverse(x"00")    & -- bInterval
-			reverse(x"07")    & -- bLength
-			reverse(endpoint) & -- bDescriptorType
-			reverse(x"81")    & -- bEndpointAddress
-			reverse(x"02")    & -- bmAttibutes
-			reverse(x"0040")  & -- wMaxPacketSize
-			reverse(x"00")));   -- Interval
+		descriptor    : string  := compact("{"          &
+    		"device:{"                                  &
+    			"bLength             :0x12,"            &
+    			"bDescriptorType     :0x01,"            &
+    			"bcdUSB              :0x0110,"          &
+    			"bDeviceClass        :0x00,"            &
+    			"bDeviceSubClass     :0x00,"            &
+    			"bDeviceProtocol     :0x00,"            &
+    			"bMaxPacketSize0     :0x40,"            &
+    			"idVendor            :0x1234,"          &
+    			"idProduct           :0xabcd,"          &
+    			"bcdDevice           :0x0100,"          &
+    			"iManufacturer       :0x01,"            &
+    			"iProduct            :0x00,"            &
+    			"iSerialNumber       :0x00,"            &
+    			"bNumConfigurations  :0x01},"           &
+    		"configurations:[{"                         &
+    			"configuration:{"                       &
+    			"bLength             :0x09,"            &
+    			"bDescriptorType     :0x02,"            &
+    			"wTotalLength        :0x0020,"          &
+    			"bNumInterfaces      :0x01,"            &
+    			"bConfigurationValue :0x01,"            &
+    			"iConfiguration      :0x00,"            &
+    			"bmAttribute         :0xc0,"            &
+    			"MaxPower            :0x32},"           &
+    			"interfaces:[{"                         &
+    				"interface:{"                       &
+    				"bLength            :0x09,"         &
+    				"bDescriptorType    :0x04,"         &
+    				"bInterfaceNumber   :0x00,"         &
+    				"bAlternateSetting  :0x00,"         &
+    				"bNumEndpoints      :0x02,"         &
+    				"bInterfaceClass    :0x00,"         &
+    				"bInterfaceSubClass :0x00,"         &
+    				"bIntefaceProtocol  :0x00,"         &
+    				"iInterface         :0x00},"        &
+    				"endpoints:[{"                      &
+    					"bLength          :0x07,"       &
+    					"bDescriptorType  :0x05,"       &
+    					"bEndpointAddress :0x01,"       &
+    					"bmAttibutes      :0x02,"       &
+    					"wMaxPacketSize   :0x0040,"     &
+    					"bInterval        :0x00},"      &
+    					"{"                             &
+    					"bLength          :0x07,"       &
+    					"bDescriptorType  :0x05,"       &
+    					"bEndpointAddress :0x81,"       &
+    					"bmAttibutes      :0x02,"       &
+    					"wMaxPacketSize   :0x0040,"     &
+    					"bInterval        :0x00}]}]}]," &
+    		"strings:["                                 &
+    			"string:{"                              &
+    				"bLength             :0x04,"        &
+    				"bDescriptorType     :0x03},"       &
+    			"wLANGID:["                             &
+    				"0x0409],"                          &
+    			"unicodes:[{"                           &
+    				"bLength            :0x12," & 
+    				"bDescriptorType    :0x03," &
+    				"bstring            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}");
+
 	port (
 		tp   : out std_logic_vector(1 to 32);
 
@@ -327,11 +335,7 @@ begin
 
 	usbrqst_e : entity hdl4fpga.usbdevrqst
 	generic map (
-		device_dscptr    => device_dscptr,
-		config_dscptr    => config_dscptr,  
-		interface_dscptr => interface_dscptr,
-		endpoint_dscptr  => endpoint_dscptr,
-		string_dscptr    => string_dscptr)
+		descriptor => descriptor)
 	port map (
 		clk       => clk,
 		cken      => cken,
