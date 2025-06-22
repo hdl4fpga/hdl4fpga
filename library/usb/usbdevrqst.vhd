@@ -24,13 +24,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.usbpkg.all;
 
 entity usbdevrqst is
 	 generic (
 		descriptor : string);
-		string_dscptr   : std_logic_vector);
 	port (
 		tp        : out std_logic_vector(1 to 32) := (others => '0');
 		clk       : in  std_logic;
@@ -257,35 +257,39 @@ begin
 
 	despcriptor_b : block
 		constant descriptor_map     : string := segment_map(xxx(descriptor));
-		constant descriptor_content : std_logic_vector := to_stdlogicvector(descriptor_map**".content");
-		variable descriptors_length : string := decriptor_table**".length";
-		variable descriptors_base   : string := decriptor_table**".base";
-		variable descriptor_addr    : unsigned(decriptors_base**".left" to decriptors_base**".right");
-		alias descriptor_base   is descriptor_xxx(descriptor_base'range);
-		alias descriptor_length is descriptor_xxx(descriptor_length'range);
-		alias descriptor : std_logic_vector(8-1 downto 0) is value(16-1 downto 8);
-		alias index      : std_logic_vector(8-1 downto 0) is value( 8-1 downto 0);
+		constant descriptor_content : std_logic_vector := to_stdlogicvector(hdo(descriptor_map)**".content");
+		constant descriptors_table  : string := descriptor_map**".table";
+		constant descriptors_length : string := descriptors_table**".length";
+		constant descriptors_base   : string := descriptors_table**".base";
+		signal  descriptor_addr     : std_logic_vector(descriptors_base**".left" to descriptors_base**".right");
+		signal descriptor_xxx : std_logic_vector(0 to 32);
+		signal descriptor_data : std_logic_vector(0 to 32);
+		alias descriptor_base   is descriptor_xxx(descriptors_base'range);
+		alias descriptor_length is descriptor_xxx(descriptors_length'range);
+		alias xdescriptor : std_logic_vector(8-1 downto 0) is value(16-1 downto 8);
+		alias xindex      : std_logic_vector(8-1 downto 0) is value( 8-1 downto 0);
+
 	begin
 
-    	data_e : entity hdl4fpga.rom
+    	data1_e : entity hdl4fpga.rom
     	generic map (
-    		bitrom =>)
+    		bitrom =>descriptor_content)
     	port map (
-    		addr => descriptor_addr,  
+    		addr => descriptor_addr,
     		data => descriptor_xxx);
 
     	data_e : entity hdl4fpga.rom
     	generic map (
-    		bitrom =>)
+    		bitrom => descriptor_content)
     	port map (
-    		addr => std_logic_vector'(descriptor_addr),  
+    		addr => descriptor_addr,  
     		data => descriptor_data);
 
     	getdescriptor_p : process (getdescriptor_rdy, clk)
     		type states is (s_idle, s_data);
     		variable state : states;
 
-			variable descriptor_cntr : unsigned(decriptors_length**".left" to decriptors_length**".right");
+			variable descriptor_cntr : unsigned(descriptors_length**".left" to descriptors_length**".right");
     	begin
     		if rising_edge(clk) then
     			if cken='1' then
@@ -295,7 +299,7 @@ begin
     						if shift_right(descriptor_cntr, 3) > length  then
     							descriptor_cntr := shift_left(resize(length, descriptor_cntr'length),3);
 							else
-    							descriptor_cntr := descriptor_length;
+    							descriptor_cntr := unsigned(descriptor_length);
     						end if;
     						descriptor_cntr := descriptor_cntr-1;
     						descriptor_addr <= descriptor_base;
@@ -303,7 +307,7 @@ begin
     						if descriptor_cntr(0)='0' then
     							if txbs='0' then
     								descriptor_cntr := descriptor_cntr - 1;
-    								descriptor_addr <= descriptor_addr + 1;
+    								descriptor_addr <= std_logic_vector(unsigned(descriptor_addr) + 1); --ghdl
     							end if;
     						elsif (in_rdy xor in_req)='1' then
     							state := s_idle;
@@ -322,7 +326,7 @@ begin
     			end if;
     		end if;
     	end process;
-		descriptor_txd <= descriptor_data(descriptor_addr);
+		descriptor_txd <= descriptor_data(0);
 	end block;
 
 	setconfiguration_p : process (setconfiguration_rdy, clk)
