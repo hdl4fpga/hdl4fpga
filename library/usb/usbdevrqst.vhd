@@ -261,11 +261,13 @@ begin
 		constant descriptors_table  : string := descriptor_map**".table";
 		constant descriptors_length : string := descriptors_table**".length";
 		constant descriptors_base   : string := descriptors_table**".base";
-		signal  descriptor_addr     : std_logic_vector(descriptors_base**".left" to descriptors_base**".right");
-		signal descriptor_xxx : std_logic_vector(0 to 32);
-		signal descriptor_data : std_logic_vector(0 to 32);
-		alias descriptor_base   is descriptor_xxx(descriptors_base'range);
-		alias descriptor_length is descriptor_xxx(descriptors_length'range);
+		signal descriptor_maddr     : std_logic_vector(0 to descriptors_table**".address"-1);
+		signal descriptor_mdata     : std_logic_vector(descriptors_length**".left" to descriptors_base**".right");
+		signal descriptor_addr      : std_logic_vector(descriptors_base**".left" to descriptors_base**".right");
+		signal descriptor_data      : std_logic_vector(0 to 0);
+
+		alias descriptor_base   is descriptor_mdata(descriptors_base**".left"   to descriptors_base**".right");
+		alias descriptor_length is descriptor_mdata(descriptors_length**".left" to descriptors_length**".right");
 		alias xdescriptor : std_logic_vector(8-1 downto 0) is value(16-1 downto 8);
 		alias xindex      : std_logic_vector(8-1 downto 0) is value( 8-1 downto 0);
 
@@ -275,8 +277,8 @@ begin
     	generic map (
     		bitrom =>descriptor_content)
     	port map (
-    		addr => descriptor_addr,
-    		data => descriptor_xxx);
+    		addr => descriptor_maddr,
+    		data => descriptor_mdata);
 
     	data_e : entity hdl4fpga.rom
     	generic map (
