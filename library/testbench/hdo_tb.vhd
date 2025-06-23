@@ -119,6 +119,7 @@ architecture hdo_tb of testbench is
 begin
 	process
 	begin
+		report segment_map(xxx(test));
 		report segment_table(segment_map(xxx(test))**".table");
 		-- report segment_map(xxx(test));
 		wait;

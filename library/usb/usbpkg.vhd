@@ -337,8 +337,6 @@ package body usbpkg is
 			"configuration:["                                                                          &
 				"bLength, bDescriptorType, wTotalLength, bNumInterfaces, bConfigurationValue,"         &
 				"iConfiguration, bmAttribute, MaxPower],"                                              &
-			"configurations:["                                                                         &
-				"configuration, interfaces],"                                                          &
 			"interfaces:["                                                                             &
 				"interface, endpoints],"                                                               &
 			"interface:["                                                                              &
@@ -399,6 +397,89 @@ package body usbpkg is
 		variable i : natural;
 		variable j : natural;
 		variable k : natural;
+
+		procedure get_device(
+			variable value  : inout string;
+			variable offset : inout length;
+			variable length : inout length;
+			constant object : in string) is
+			constant keys : string := 
+				"device:["                                                               &
+					"bLength, bDescriptorType, bcdUSB, bDeviceClass, bDeviceSubClass,"   &
+					"bDeviceProtocol, bMaxPacketSize0, idVendor, idProduct, bcdDevice,"  &
+					"iManufacturer, iProduct,iSerialNumber, bNumConfigurations]";
+		begin
+			sweep(hdo(object)**".device", keys, value, offset, length);
+		end;
+
+		procedure push (
+			variable value   : inout natural;
+			variable pointer : inout natural;
+			variable stack   : inout natural_vector) is
+		begin
+			stack[pointer] := value;
+			pointer := pointer + 1;
+			value   := 0;
+		end;
+
+		procedure pop (
+			variable value   : inout natural;
+			variable pointer : inout natural;
+			variable stack   : inout natural_vector) is
+		begin
+			pointer := pointer - 1;
+			value := stack[pointer];
+		end;
+
+		procedure get_configurations(
+			variable value  : inout string;
+			variable offset : inout length;
+			variable length : inout length;
+			constant object : in string) is
+			constant keys : string := 
+				"configurations:["                                                                  &
+					"configuration, interfaces],"                                                   &
+				"configuration:["                                                                   &
+					"bLength, bDescriptorType, wTotalLength, bNumInterfaces, bConfigurationValue,"  &
+					"iConfiguration, bmAttribute, MaxPower],"                                       &
+				"interfaces:["                                                                      &
+					"interface, endpoints],"                                                        &
+				"interface:["                                                                       &
+					"bLength, bDescriptorType, bInterfaceNumber, bAlternateSetting, bNumEndpoints," &
+					"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface],"          &
+				"endpoints:["                                                                       &
+					"endpoint],"                                                                    &
+				"endpoint:["                                                                        &
+					"bLength, bDescriptorType, bEndpointAddress, bmAttibutes, wMaxPacketSize, bInterval]";
+
+			variable stack   : natural_vector(0 to 4);
+			variable pointer : natural := 0;
+			variable index   : natural;
+
+		begin
+			index := 0;
+			for m in test'range loop 
+				get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(index)&"]"&".configuration"));
+				exit when value_length=0;
+				sweep(value(1 to value_length), hdo(ubskeys)**(".configuration"), data, data_position, data_length);
+
+				j := 0;
+				for m in test'range loop 
+					get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(index)&"].interfaces"&"["&natural'image(j)&"].interface"));
+					exit when value_length=0;
+					sweep(value(1 to value_length), hdo(ubskeys)**".interface", data, data_position, data_length);
+					k := 0;
+					for m in test'range loop 
+						get_value(value, value_length, hdo(test)**(".configurations"&"["&natural'image(index)&"].interfaces"&"["&natural'image(j)&"].endpoints"&"["&natural'image(k)&"]"));
+						exit when value_length=0;
+						sweep(value(1 to value_length), hdo(ubskeys)**".endpoint", data, data_position, data_length);
+						k := k + 1;
+					end loop;
+					j := j + 1;
+				end loop;
+				index := index + 1;
+			end loop;
+ 		end;
 
 		constant zzz : string :="},{content:0x";
 	begin
