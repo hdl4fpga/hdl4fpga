@@ -118,6 +118,165 @@ architecture hdo_tb of testbench is
 
 begin
 	process
+
+		procedure get_value (
+			variable offset   : inout positive;
+			variable length   : inout natural;
+			constant object   : in    string;
+			constant position : in    natural) is
+			variable tag_offset : positive;
+			variable tag_length : natural;
+		begin
+			resolve(object &'['& natural'image(position) &']', offset, length, tag_offset, tag_length);
+		end;
+			
+		procedure get_value (
+			variable offset : inout positive;
+			variable length : inout natural;
+			constant object : in    string;
+			constant key    : in    string) is
+			variable tag_offset : positive;
+			variable tag_length : natural;
+		begin
+			resolve(object & '.' & key, offset, length, tag_offset, tag_length);
+		end;
+			
+		procedure sweep (
+			variable data          : inout string;
+			variable data_position : inout natural;
+			variable data_length   : inout natural;
+			constant object        : in string;
+			constant keys          : in string) is
+			variable key_length    : natural;
+			variable key_offset    : positive;
+			variable value_length  : natural;
+			variable value_offset  : positive;
+			variable position      : natural;
+		begin
+			position := 0;
+			for i in keys'range loop 
+				get_value(key_offset, key_length, keys, position);
+				exit when key_length=0;
+				get_value(value_offset, value_length, object, keys(key_offset to key_offset+key_length-1));
+				exit when value_length=0;
+
+				data_length := value_length-2;
+				data(data_position to data_position+data_length-1) := to_string(reverse(to_stdlogicvector(object(value_offset to value_offset+value_length))), 16);
+				data_position := data_position+data_length;
+				position := position + 1;
+			end loop;
+		end;
+
+		procedure get_device(
+			variable data   : inout string;
+			variable offset : inout positive;
+			variable length : inout natural;
+			constant object : in string) is
+			constant keys : string := 
+				"device:["                                                               &
+					"bLength, bDescriptorType, bcdUSB, bDeviceClass, bDeviceSubClass,"   &
+					"bDeviceProtocol, bMaxPacketSize0, idVendor, idProduct, bcdDevice,"  &
+					"iManufacturer, iProduct,iSerialNumber, bNumConfigurations]";
+		begin
+			sweep(data, offset, length, hdo(object)**".device", keys);
+		end;
+
+		procedure push (
+			variable value   : inout natural;
+			variable pointer : inout natural;
+			variable stack   : inout natural_vector) is
+		begin
+			stack(pointer) := value;
+			pointer := pointer + 1;
+			value   := 0;
+		end;
+
+		procedure pop (
+			variable value   : inout natural;
+			variable pointer : inout natural;
+			variable stack   : inout natural_vector) is
+		begin
+			pointer := pointer - 1;
+			value := stack(pointer);
+		end;
+
+		procedure get_configurations(
+			variable value  : inout string;
+			variable offset : inout positive;
+			variable length : inout natural;
+			constant object : in    string) is
+
+			procedure get_configuration(
+				variable data   : inout string;
+				variable offset : inout positive;
+				variable length : inout natural;
+				constant object : in    string) is
+				constant keys : string := 
+					"configuration:["                                                                   &
+						"bLength, bDescriptorType, wTotalLength, bNumInterfaces, bConfigurationValue,"  &
+						"iConfiguration, bmAttribute, MaxPower]";
+			begin
+				sweep(data, offset, length, hdo(object)**".configuration", keys);
+			end;
+
+			procedure get_interfaces (
+				variable data   : inout string;
+				variable offset : inout positive;
+				variable length : inout natural;
+				constant object : in    string) is
+
+				procedure get_interface(
+					variable data   : inout string;
+					variable offset : inout positive;
+					variable length : inout natural;
+					constant object : in    string) is
+					constant keys : string := 
+						"interface:["                                                                       &
+							"bLength, bDescriptorType, bInterfaceNumber, bAlternateSetting, bNumEndpoints," &
+							"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface]";
+				begin
+					sweep(data, offset, length, hdo(object)**".interface", keys);
+				end;
+
+				procedure get_endpoint(
+					variable data   : inout string;
+					variable offset : inout positive;
+					variable length : inout natural;
+					constant object : in    string) is
+					constant keys : string := 
+						"endpoint:["                                                                        &
+							"bLength, bDescriptorType, bEndpointAddress, bmAttibutes, wMaxPacketSize, bInterval]";
+				begin
+					sweep(data, offset, length, hdo(object)**".endpoint", keys);
+				end;
+
+				variable index : natural;
+
+			begin
+				get_interface(value, offset, length, object);
+				if length=0 then
+					return;
+				end if;
+				length  := 0;
+				index := 0;
+				for i in object'range loop
+					get_endpoint(value, offset, length, hdo(object)**('[' & natural'image(index) & ']'));
+					exit when length=0;
+					index := index + 1;
+				end loop;
+			end;
+			variable index : natural;
+		begin
+			index := 0;
+			for m in test'range loop 
+				get_configuration(value, offset, length, object);
+				exit when length=0;
+				offset := offset + length;
+				get_interfaces(value, offset, length, object);
+				index := index + 1;
+			end loop;
+ 		end;
+
 	begin
 		report segment_map(xxx(test));
 		report segment_table(segment_map(xxx(test))**".table");

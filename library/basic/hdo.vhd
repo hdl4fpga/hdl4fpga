@@ -31,11 +31,11 @@ package hdo is
 		return string;
 
 	procedure resolve (
-		constant object       : in    string;
+		constant object         : in    string;
 		variable value_position : inout positive;
-		variable value_length : inout natural;
+		variable value_length   : inout natural;
 		variable tag_position   : inout positive;
-		variable tag_length   : inout natural);
+		variable tag_length     : inout natural);
 
 	function resolve (
 		constant object : string)
