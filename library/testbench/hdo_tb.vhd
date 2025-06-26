@@ -27,10 +27,10 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library hdl4fpga;
-use hdl4fpga.hdo.all;
+-- use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
-use hdl4fpga.usbpkg.all;
--- use work.hdo.all;
+-- use hdl4fpga.usbpkg.all;
+use work.hdo.all;
 
 architecture hdo_tb of testbench is
 	constant inputs    : natural := 2;
@@ -127,6 +127,7 @@ begin
 			variable tag_offset : positive;
 			variable tag_length : natural;
 		begin
+			report object &'['& natural'image(position) &']';
 			resolve(object &'['& natural'image(position) &']', offset, length, tag_offset, tag_length);
 		end;
 			
@@ -156,8 +157,10 @@ begin
 			position := 0;
 			for i in keys'range loop 
 				get_value(key_offset, key_length, keys, position);
+				report keys(key_offset to key_offset+key_length-1);
 				exit when key_length=0;
 				get_value(value_offset, value_length, object, keys(key_offset to key_offset+key_length-1));
+				report "Pase";
 				exit when value_length=0;
 
 				data_length := value_length-2;
@@ -178,7 +181,7 @@ begin
 					"bDeviceProtocol, bMaxPacketSize0, idVendor, idProduct, bcdDevice,"  &
 					"iManufacturer, iProduct,iSerialNumber, bNumConfigurations]";
 		begin
-			sweep(data, offset, length, hdo(object)**".device", keys);
+			sweep(data, offset, length, object, keys);
 		end;
 
 		procedure push (
@@ -207,7 +210,7 @@ begin
 			constant object : in    string) is
 
 			procedure get_configuration(
-				variable data   : inout string;
+				variable value  : inout string;
 				variable offset : inout positive;
 				variable length : inout natural;
 				constant object : in    string) is
@@ -216,17 +219,17 @@ begin
 						"bLength, bDescriptorType, wTotalLength, bNumInterfaces, bConfigurationValue,"  &
 						"iConfiguration, bmAttribute, MaxPower]";
 			begin
-				sweep(data, offset, length, hdo(object)**".configuration", keys);
+				sweep(value, offset, length, hdo(object)**".configuration", keys);
 			end;
 
 			procedure get_interfaces (
-				variable data   : inout string;
+				variable value  : inout string;
 				variable offset : inout positive;
 				variable length : inout natural;
 				constant object : in    string) is
 
 				procedure get_interface(
-					variable data   : inout string;
+					variable value  : inout string;
 					variable offset : inout positive;
 					variable length : inout natural;
 					constant object : in    string) is
@@ -235,11 +238,11 @@ begin
 							"bLength, bDescriptorType, bInterfaceNumber, bAlternateSetting, bNumEndpoints," &
 							"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface]";
 				begin
-					sweep(data, offset, length, hdo(object)**".interface", keys);
+					sweep(value, offset, length, hdo(object)**".interface", keys);
 				end;
 
 				procedure get_endpoint(
-					variable data   : inout string;
+					variable value  : inout string;
 					variable offset : inout positive;
 					variable length : inout natural;
 					constant object : in    string) is
@@ -247,7 +250,7 @@ begin
 						"endpoint:["                                                                        &
 							"bLength, bDescriptorType, bEndpointAddress, bmAttibutes, wMaxPacketSize, bInterval]";
 				begin
-					sweep(data, offset, length, hdo(object)**".endpoint", keys);
+					sweep(value, offset, length, hdo(object)**".endpoint", keys);
 				end;
 
 				variable index : natural;
@@ -277,9 +280,15 @@ begin
 			end loop;
  		end;
 
+		variable value  : string(1 to 1024);
+		variable offset : natural;
+		variable length : natural;
 	begin
-		report segment_map(xxx(test));
-		report segment_table(segment_map(xxx(test))**".table");
+		offset := 1;
+		get_device(value, offset, length, test**".device");
+		report value(1 to offset+length-1);
+		-- report segment_map(xxx(test));
+		-- report segment_table(segment_map(xxx(test))**".table");
 		-- report segment_map(xxx(test));
 		wait;
 	end process;
