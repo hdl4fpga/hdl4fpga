@@ -304,8 +304,8 @@ begin
 		variable offset : natural;
 		variable length : natural;
 	begin
-		offset := 1;
-		-- get_device(value, offset, length, test);
+		offset := value'left;
+		get_device(value, offset, length, test);
 		get_configurations(value, offset, length, test);
 		report value(1 to offset+length-1);
 		-- report segment_map(xxx(test));
