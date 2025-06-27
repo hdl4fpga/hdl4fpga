@@ -10,7 +10,7 @@ GHDLFLAGS= --std=02 -P./hdl4fpga -P./ecp5u --workdir=./work --work=work
 all: testbench
 
 # Elaboration target
-testbench: /usr/lib/ghdl/ieee/v93/std_logic_1164.o /usr/lib/ghdl/ieee/v93/std_logic_1164-body.o /usr/lib/ghdl/ieee/v93/numeric_std.o /usr/lib/ghdl/ieee/v93/numeric_std-body.o ./work/testbench.o /usr/lib/ghdl/std/v93/textio.o /usr/lib/ghdl/std/v93/textio-body.o /usr/lib/ghdl/ieee/v93/math_real.o /usr/lib/ghdl/ieee/v93/math_real-body.o ./hdl4fpga/hdo.o ./work/hdo_tb.o
+testbench: /usr/lib/ghdl/ieee/v93/std_logic_1164.o /usr/lib/ghdl/ieee/v93/std_logic_1164-body.o /usr/lib/ghdl/ieee/v93/numeric_std.o /usr/lib/ghdl/ieee/v93/numeric_std-body.o ./work/testbench.o /usr/lib/ghdl/std/v93/textio.o /usr/lib/ghdl/std/v93/textio-body.o /usr/lib/ghdl/ieee/v93/math_real.o /usr/lib/ghdl/ieee/v93/math_real-body.o ./hdl4fpga/hdo.o ./hdl4fpga/base.o ./work/hdo-dbg.o ./work/hdo_tb.o
 	$(GHDL) -e $(GHDLFLAGS) $@
 
 # Run target
@@ -46,6 +46,10 @@ run: testbench
 	exit 1
 ./hdl4fpga/hdo.o: ../basic/hdo.vhd
 	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=./hdl4fpga/ $<
+./hdl4fpga/base.o: ../basic/base.vhd
+	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=./hdl4fpga/ $<
+./work/hdo-dbg.o: ../basic/hdo-dbg.vhd
+	$(GHDL) -a $(GHDLFLAGS) $<
 ./work/hdo_tb.o: ../testbench/hdo_tb.vhd
 	$(GHDL) -a $(GHDLFLAGS) $<
 
@@ -60,4 +64,6 @@ run: testbench
 /usr/lib/ghdl/ieee/v93/math_real.o: 
 /usr/lib/ghdl/ieee/v93/math_real-body.o:  /usr/lib/ghdl/ieee/v93/math_real.o
 ./hdl4fpga/hdo.o:  /usr/lib/ghdl/std/v93/textio.o /usr/lib/ghdl/ieee/v93/std_logic_1164.o /usr/lib/ghdl/ieee/v93/numeric_std.o
-./work/hdo_tb.o:  /usr/lib/ghdl/std/v93/textio.o /usr/lib/ghdl/ieee/v93/std_logic_1164.o /usr/lib/ghdl/ieee/v93/numeric_std.o /usr/lib/ghdl/ieee/v93/math_real.o ./hdl4fpga/hdo.o ./work/testbench.o
+./hdl4fpga/base.o:  /usr/lib/ghdl/ieee/v93/std_logic_1164.o /usr/lib/ghdl/ieee/v93/numeric_std.o /usr/lib/ghdl/ieee/v93/math_real.o ./hdl4fpga/hdo.o
+./work/hdo-dbg.o:  /usr/lib/ghdl/std/v93/textio.o /usr/lib/ghdl/ieee/v93/std_logic_1164.o /usr/lib/ghdl/ieee/v93/numeric_std.o
+./work/hdo_tb.o:  /usr/lib/ghdl/std/v93/textio.o /usr/lib/ghdl/ieee/v93/std_logic_1164.o /usr/lib/ghdl/ieee/v93/numeric_std.o /usr/lib/ghdl/ieee/v93/math_real.o ./hdl4fpga/base.o ./work/hdo-dbg.o ./work/testbench.o

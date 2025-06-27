@@ -96,6 +96,12 @@ package hdo is
 		constant path   : string)
 		return hdo;
 
+	impure --|note 
+	function "**" (
+		constant object   : hdo;
+		constant position : natural)
+		return hdo;
+
 	function to_integer (
 		constant value : string)
 		return integer;
@@ -180,7 +186,7 @@ package body hdo is
 	constant log_parsetagvaluepathdefault : natural := 2**8;
 	constant log_locatevalue  : natural := 2**6;
 	constant log_resolve      : natural := 2**7;
-	constant log_flags        : natural := 511-log_parsestring;
+	constant log_flags        : natural := 0; --511-log_parsestring;
 
 	function unsigned_num_bits (
 		arg: natural)
@@ -1403,9 +1409,9 @@ package body hdo is
 		constant object : string)
 		return string is
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		if value_length/=0 then
@@ -1548,6 +1554,15 @@ package body hdo is
 		return hdo is
 	begin
 		return resolve(string(object) & path);
+	end;
+
+	impure --|note 
+	function "**" (
+		constant object   : hdo;
+		constant position : natural)
+		return hdo is
+	begin
+		return resolve(string(object) & '[' & natural'image(position) & ']');
 	end;
 
 	impure --|note 
