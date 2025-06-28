@@ -161,7 +161,7 @@ begin
 			variable data          : inout string;
 			variable data_position : inout natural;
 			variable data_length   : inout natural;
-			constant object        : in string) is
+			constant object        : in    string) is
 			variable value_length  : natural;
 			variable value         : string(data'range);
 			variable position      : natural;
@@ -170,8 +170,7 @@ begin
 			if object'length=0 then
 				return;
 			end if;
-			position    := 0;
-			data_length := 0;
+			position := 0;
 			for i in object'range loop 
 				get_value(value, value_length, object, position);
 				exit when value_length=0;
@@ -212,6 +211,8 @@ begin
 				data_position := data_position+data_length;
 				position := position + 1;
 			end loop;
+			data_position := data_position + data_length;
+			data_length := 0;
 		end;
 
 		procedure get_device(
@@ -291,7 +292,7 @@ begin
 						if length=0 then
 							return;
 						end if;
-						get_endpoints(value, offset, length,hdo(object)**".endpoints");
+						get_endpoints(value, offset, length, hdo(object)**".endpoints");
     				end;
 
     				variable index : natural;
@@ -396,9 +397,10 @@ begin
 		variable length : natural;
 	begin
 		offset := value'left;
-		-- get_device(value, offset, length, test);
-		-- get_configurations(value, offset, length, test);
+		get_device(value, offset, length, test);
+		get_configurations(value, offset, length, test);
 		get_strings(value, offset, length, test);
+		report natural'image(length);
 		report value(1 to offset+length-1);
 		-- report segment_map(xxx(test));
 		-- report segment_table(segment_map(xxx(test))**".table");
