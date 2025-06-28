@@ -158,61 +158,61 @@ begin
 		end;
 			
 		procedure sweep (
-			variable data          : inout string;
-			variable data_position : inout natural;
-			variable data_length   : inout natural;
-			constant object        : in    string) is
-			variable value_length  : natural;
-			variable value         : string(data'range);
-			variable position      : natural;
+			variable data         : inout string;
+			constant data_base    : in    natural;
+			variable data_length  : inout natural;
+			constant object       : in    string) is
+			variable value_length : natural;
+			variable value        : string(data'range);
+			variable index        : natural;
+			variable position     : positive;
 		begin
 			data_length := 0;
 			if object'length=0 then
 				return;
 			end if;
-			position := 0;
+			index := 0;
 			for i in object'range loop 
-				get_value(value, value_length, object, position);
+				get_value(value, value_length, object, index);
 				exit when value_length=0;
 
-				data_length := value_length-2;
-				data(data_position to data_position+data_length-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
-				data_position := data_position+data_length;
-				position := position + 1;
+				position := data_base+data_length;
+				data(position to position+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
+				data_length := data_length + value_length-2;
+				index := index + 1;
 			end loop;
 		end;
 
 		procedure sweep (
-			variable data          : inout string;
-			variable data_position : inout natural;
-			variable data_length   : inout natural;
-			constant object        : in string;
-			constant keys          : in string) is
-			variable key_length    : natural;
-			variable key           : string(keys'range);
-			variable value_length  : natural;
-			variable value         : string(data'range);
-			variable position      : natural;
+			variable data         : inout string;
+			constant data_base    : in    natural;
+			variable data_length  : inout natural;
+			constant object       : in string;
+			constant keys         : in string) is
+			variable key_length   : natural;
+			variable key          : string(keys'range);
+			variable value_length : natural;
+			variable value        : string(data'range);
+			variable index        : natural;
+			variable position     : positive;
+
 		begin
 			data_length := 0;
 			if object'length=0 then
 				return;
 			end if;
-			position    := 0;
-			data_length := 0;
+			index := 0;
 			for i in keys'range loop 
-				get_value(key, key_length, keys, position);
+				get_value(key, key_length, keys, index);
 				exit when key_length=0;
 				get_value(value, value_length, object, '.' & key(key'left to key'left+key_length-1));
 				exit when value_length=0;
 
-				data_length := value_length-2;
-				data(data_position to data_position+data_length-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
-				data_position := data_position+data_length;
-				position := position + 1;
+				position := data_base+data_length;
+				data(position to position+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
+				data_length := data_length + value_length-2;
+				index := index + 1;
 			end loop;
-			data_position := data_position + data_length;
-			data_length := 0;
 		end;
 
 		procedure get_device(
@@ -238,46 +238,56 @@ begin
 
 			procedure get_configuration(
 				variable value  : inout string;
-				variable offset : inout positive;
+    			constant offset : in    positive;
 				variable length : inout natural;
 				constant object : in    string) is
 
     			procedure get_interfaces (
     				variable value  : inout string;
-    				variable offset : inout positive;
+    				constant offset : in    positive;
     				variable length : inout natural;
     				constant object : in    string) is
 
     				procedure get_interface(
     					variable value  : inout string;
-    					variable offset : inout positive;
+    					constant offset : in    positive;
     					variable length : inout natural;
     					constant object : in    string) is
 
 						procedure get_endpoints(
 							variable value  : inout string;
-							variable offset : inout positive;
+    						constant offset : in    positive;
 							variable length : inout natural;
 							constant object : in    string) is
 
     						procedure get_endpoint(
     							variable value  : inout string;
-    							variable offset : inout positive;
+    							constant offset : in    positive;
     							variable length : inout natural;
     							constant object : in    string) is
     							constant keys : string := 
     								"endpoint:["                                                                        &
     									"bLength, bDescriptorType, bEndpointAddress, bmAttibutes, wMaxPacketSize, bInterval]";
     						begin
+								length := 0;
+								if object'length=0 then
+									return;
+								end if;
     							sweep(value, offset, length, object, keys);
     						end;
 
+							variable value_length : natural;
 							variable index : natural;
 						begin
+							length := 0;
+							if object'length=0 then
+								return;
+							end if;
 							index := 0;
 							for i in object'range loop 
-								get_endpoint(value, offset, length, hdo(object)**index);
-								exit when length=0;
+								get_endpoint(value, offset+length, value_length, hdo(object)**index);
+								length := length + value_length;
+								exit when value_length=0;
 								index := index + 1;
 							end loop;
 						end;
@@ -287,54 +297,81 @@ begin
     							"bLength, bDescriptorType, bInterfaceNumber, bAlternateSetting, bNumEndpoints," &
     							"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface]";
 
+						variable value_length : natural;
     				begin
-						sweep(value, offset, length,  hdo(object)**".interface", keys);
-						if length=0 then
+						length := 0;
+						if object'length=0 then
 							return;
 						end if;
-						get_endpoints(value, offset, length, hdo(object)**".endpoints");
+						sweep(value, offset+length, value_length, hdo(object)**".interface", keys);
+						length := length + value_length;
+						if value_length=0 then
+							return;
+						end if;
+						get_endpoints(value, offset+length, value_length, hdo(object)**".endpoints");
+						length := length + value_length;
     				end;
 
     				variable index : natural;
+					variable value_length : natural;
 
     			begin
-					index  := 0;
+					length := 0;
+					if object'length=0 then
+						return;
+					end if;
+					index := 0;
 					for i in test'range loop 
-						get_interface(value, offset, length, object**index);
-						exit when length=0;
+						get_interface(value, offset+length, value_length, object**index);
+						length := length + value_length;
+						exit when value_length=0;
 						index := index + 1;
 					end loop;
     			end;
+
 				constant keys : string := 
 					"configuration:["                                                                   &
 						"bLength, bDescriptorType, wTotalLength, bNumInterfaces, bConfigurationValue,"  &
 						"iConfiguration, bmAttribute, MaxPower]";
+				variable value_length : natural;
 			begin
-				sweep(value, offset, length, hdo(object)**".configuration", keys);
-				get_interfaces(value, offset, length, hdo(object)**".interfaces");
+				length := 0;
+				if object'length=0 then
+					return;
+				end if;
+				sweep(value, offset+length, value_length, hdo(object)**".configuration", keys);
+				length := length + value_length;
+				get_interfaces(value, offset+length, value_length, hdo(object)**".interfaces");
+				length := length + value_length;
 			end;
 
-			variable index : natural;
 			constant configurations : string := object**".configurations";
+
+			variable index : natural;
+			variable value_length : natural;
 		begin
 			length := 0;
+			if object'length=0 then
+				return;
+			end if;
 			index  := 0;
 			for i in test'range loop 
-				get_configuration(value, offset, length, configurations**index);
-				exit when length=0;
+				get_configuration(value, offset+length, value_length, configurations**index);
+				exit when value_length=0;
+				length := length + value_length;
 				index := index + 1;
 			end loop;
  		end;
 
 		procedure get_strings(
 			variable value  : inout string;
-			variable offset : inout positive;
+			constant offset : in    positive;
 			variable length : inout natural;
 			constant object : in    string) is
 
 			procedure get_string (
-				variable value   : inout string;
-				variable offset : inout positive;
+				variable value  : inout string;
+				constant offset : in    positive;
 				variable length : inout natural;
 				constant object : in    string) is
 				constant keys : string := 
@@ -347,7 +384,7 @@ begin
 
 			procedure get_landids(
 				variable value   : inout string;
-				variable offset : inout positive;
+				constant offset : in    positive;
 				variable length : inout natural;
 				constant object : in    string) is
 			begin
@@ -356,13 +393,13 @@ begin
 
 			procedure get_unicodes(
 				variable value   : inout string;
-				variable offset : inout positive;
+				constant offset : in    positive;
 				variable length : inout natural;
 				constant object : in    string) is
 
 				procedure get_unicode(
 					variable value   : inout string;
-					variable offset : inout positive;
+					constant offset : in    positive;
 					variable length : inout natural;
 					constant object : in    string) is
 					constant keys : string := 
@@ -376,11 +413,17 @@ begin
 				constant unicodes : string := object**".unicodes";
 
 				variable index : natural;
+				variable value_length : natural;
 			begin
+				length := 0;
+				if object'length=0 then
+					return;
+				end if;
 				for i in object'range loop
-					get_unicode(value, offset, length, unicodes**index);
-					exit when length=0;
-					index := index + 1;
+					get_unicode(value, offset+length, value_length, unicodes**index);
+					exit when value_length=0;
+					length := length + value_length;
+					index  := index + 1;
 				end loop;
 			end;
 
@@ -396,9 +439,9 @@ begin
 		variable length : natural;
 	begin
 		offset := value'left;
-		get_device(value, offset, length, test);
+		-- get_device(value, offset, length, test);
 		get_configurations(value, offset, length, test);
-		get_strings(value, offset, length, test);
+		-- get_strings(value, offset, length, test);
 		report natural'image(length);
 		report value(1 to offset+length-1);
 		-- report segment_map(xxx(test));
