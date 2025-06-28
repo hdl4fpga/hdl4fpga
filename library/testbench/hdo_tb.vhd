@@ -312,7 +312,6 @@ begin
 			begin
 				sweep(value, offset, length, hdo(object)**".configuration", keys);
 				get_interfaces(value, offset, length, hdo(object)**".interfaces");
-				report " xxxxx " & natural'image(length);
 			end;
 
 			variable index : natural;
@@ -323,7 +322,6 @@ begin
 			for i in test'range loop 
 				get_configuration(value, offset, length, configurations**index);
 				exit when length=0;
-						report "============";
 				index := index + 1;
 			end loop;
  		end;
@@ -333,6 +331,7 @@ begin
 			variable offset : inout positive;
 			variable length : inout natural;
 			constant object : in    string) is
+
 			procedure get_string (
 				variable value   : inout string;
 				variable offset : inout positive;
