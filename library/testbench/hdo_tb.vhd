@@ -131,13 +131,13 @@ begin
 		end;
 
 		procedure get_value (
-			variable value    : inout string;
-			constant offset   : in    natural;
-			variable length   : inout natural;
-			constant object   : in    string) is
-			variable value_offset     : positive;
-			variable tag_offset : positive;
-			variable tag_length : natural;
+			variable value        : inout string;
+			constant offset       : in    natural;
+			variable length       : inout natural;
+			constant object       : in    string) is
+			variable value_offset : positive;
+			variable tag_offset   : positive;
+			variable tag_length   : natural;
 		begin
 			resolve(object, value_offset, length, tag_offset, tag_length);
 			if length/=0 then
