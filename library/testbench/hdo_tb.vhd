@@ -437,10 +437,20 @@ begin
 							"bLength," & 
 							"bDescriptorType," &
 							"bstring]";
+					variable value_length : natural;
 				begin
-					sweep(value, offset, length, object, keys);
+					length := 0;
+					append(value, value_length, offset+length, "{content:0x");
+					length := length + value_length;
+					sweep(value, offset+length, value_length, object, keys);
+					length := length + value_length;
+					if value_length=0 then
+						length := 0;
+						return;
+					end if;
 				end;
 				constant unicodes : string := object**".unicodes";
+				constant lanids   : string := object**".wLANGID";
 
 				variable index : natural;
 				variable value_length : natural;
@@ -453,27 +463,36 @@ begin
 					get_unicode(value, offset+length, value_length, unicodes**index);
 					exit when value_length=0;
 					length := length + value_length;
+					append(value, value_length, offset+length, ",id:"&lanids**index);
+					length := length + value_length;
+					append(value, value_length, offset+length, "}");
+					length := length + value_length;
+					append(value, value_length, offset+length, ",");
+					length := length + value_length;
 					index  := index + 1;
 				end loop;
+				length := length - 1;
 			end;
 
 			constant strings : string := object**".strings";
 			variable value_length : natural;
 		begin
 			length := 0;
-			append(value, value_length, offset, ",content:0x");
+			append(value, value_length, offset+length, ",content:0x");
 			length := length + value_length;
 			get_string(value, offset+length, value_length, strings);
 			length := length + value_length;
 			get_landids(value, offset+length, value_length, strings);
 			length := length + value_length;
-			get_unicodes(value, offset+length, value_length, strings);
-			length := length + value_length;
 			append(value, value_length, offset+length, ",id:0x0301");
 			length := length + value_length;
 			value(offset) := '{';
-			append(value, value_length, offset+length, "}");
+			append(value, value_length, offset+length, "},");
 			length := length + value_length;
+
+			get_unicodes(value, offset+length, value_length, strings);
+			length := length + value_length;
+
 		end;
 
 		variable value  : string(1 to 1024);
@@ -503,8 +522,8 @@ begin
 		append(value, length, offset, "]");
 		offset := offset + length;
 
-		-- report value(1 to offset-1);
-		report segment_map(value(1 to offset-1));
+		report value(1 to offset-1);
+		-- report segment_map(value(1 to offset-1));
 		-- report segment_table(segment_map(xxx(test))**".table");
 		-- report segment_map(xxx(test));
 		wait;
