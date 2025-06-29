@@ -29,7 +29,7 @@ use ieee.math_real.all;
 library hdl4fpga;
 -- use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
--- use hdl4fpga.usbpkg.all;
+use hdl4fpga.usbpkg.all;
 use work.hdo.all;
 
 architecture hdo_tb of testbench is
@@ -227,18 +227,28 @@ begin
 		end;
 
 		procedure get_device(
-			variable data   : inout string;
+			variable value   : inout string;
 			variable offset : inout positive;
 			variable length : inout natural;
 			constant object : in string) is
 			constant keys : string := 
-				"device:["                                                               &
-					"bLength, bDescriptorType, bcdUSB, bDeviceClass, bDeviceSubClass,"   &
-					"bDeviceProtocol, bMaxPacketSize0, idVendor, idProduct, bcdDevice,"  &
-					"iManufacturer, iProduct,iSerialNumber, bNumConfigurations]";
+				"device:["                                                           &
+					"bLength,bDescriptorType,bcdUSB,bDeviceClass,bDeviceSubClass,"   &
+					"bDeviceProtocol,bMaxPacketSize0,idVendor,idProduct, bcdDevice," &
+					"iManufacturer,iProduct,iSerialNumber,bNumConfigurations]";
 			constant device : string := object**".device";
+			variable value_length : natural;
 		begin
-			sweep(data, offset, length, device, keys);
+			length := 0;
+			append(value, value_length, offset, ",content:0x");
+			length := length + value_length;
+			sweep(value, offset+length, value_length, device, keys);
+			length := length + value_length;
+			append(value, value_length, offset+length, ",id:0x0100");
+			length := length + value_length;
+			value(offset) := '{';
+			append(value, value_length, offset+length, "}");
+			length := length + value_length;
 		end;
 
 		procedure get_configurations(
@@ -374,11 +384,11 @@ begin
 				get_configuration(value, offset+length, value_length, configurations**index);
 				exit when value_length=0;
 				length := length + value_length;
+				append(value, value_length, offset+length, ",id:0x0200");
+				length := length + value_length;
 				index  := index  + 1;
 			end loop;
 			value(offset) := '{';
-			append(value, value_length, offset+length, ",id:0x0200");
-			length := length + value_length;
 			append(value, value_length, offset+length, "}");
 			length := length + value_length;
  		end;
@@ -448,23 +458,53 @@ begin
 			end;
 
 			constant strings : string := object**".strings";
+			variable value_length : natural;
 		begin
-			get_string(value, offset, length, strings);
-			get_landids(value, offset, length, strings);
-			get_unicodes(value, offset, length, strings);
+			length := 0;
+			append(value, value_length, offset, ",content:0x");
+			length := length + value_length;
+			get_string(value, offset+length, value_length, strings);
+			length := length + value_length;
+			get_landids(value, offset+length, value_length, strings);
+			length := length + value_length;
+			get_unicodes(value, offset+length, value_length, strings);
+			length := length + value_length;
+			append(value, value_length, offset+length, ",id:0x0301");
+			length := length + value_length;
+			value(offset) := '{';
+			append(value, value_length, offset+length, "}");
+			length := length + value_length;
 		end;
 
 		variable value  : string(1 to 1024);
 		variable offset : natural;
 		variable length : natural;
 	begin
+		length := 0;
 		offset := value'left;
-		-- get_device(value, offset, length, test);
+		append(value, length, offset, "[");
+		offset := offset + length;
+
+		get_device(value, offset, length, test);
+		offset := offset + length;
+
+		append(value, length, offset, ",");
+		offset := offset + length;
+
 		get_configurations(value, offset, length, test);
-		-- get_strings(value, offset, length, test);
-		report natural'image(length);
-		report value(1 to offset+length-1);
-		-- report segment_map(xxx(test));
+		offset := offset + length;
+
+		append(value, length, offset, ",");
+		offset := offset + length;
+
+		get_strings(value, offset, length, test);
+		offset := offset + length;
+
+		append(value, length, offset, "]");
+		offset := offset + length;
+
+		-- report value(1 to offset-1);
+		report segment_map(value(1 to offset-1));
 		-- report segment_table(segment_map(xxx(test))**".table");
 		-- report segment_map(xxx(test));
 		wait;

@@ -95,8 +95,14 @@ package base is
 		return string;
 
 	function to_string (
-		constant arg : unsigned;
+		constant arg  : unsigned;
 		constant base : natural := 2)
+		return string;
+
+	function to_string (
+		constant arg  : natural;
+		constant width   : natural := 0;
+		constant padding : boolean := false)
 		return string;
 
 	function to_naturalvector (
@@ -713,6 +719,30 @@ package body base is
 		return string is
 	begin
 		return to_string(std_logic_vector(arg), base);
+	end;
+
+	function to_string(
+		constant arg     : natural;
+		constant width   : natural := 0;
+		constant padding : boolean := false)
+		return string is
+		constant xxx : string := natural'image(arg);
+	begin
+		if width > xxx'length then
+			if padding then
+				return (1 to width-xxx'length => '0') & xxx;
+			else
+				return (1 to width-xxx'length => ' ') & xxx;
+			end if;
+		elsif width=0 then
+			return xxx;
+		elsif width=xxx'length then
+			return xxx;
+		else
+			assert false
+				report "to_string() : width(" & natural'image(width) & ") less than value'length(" & natural'image(xxx'length) & ")"
+				severity FAILURE;
+		end if;
 	end;
 
 	function to_naturalvector (

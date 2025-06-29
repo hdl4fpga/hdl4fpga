@@ -303,6 +303,7 @@ package body usbpkg is
 		table_pos := table'left;
 		n := 0;
 		for i in 0 to description'right-description'left loop
+			report hdo(description)**("["& natural'image(i) &"].content=");
 			append(content, scc, pos, hdo(description)**("["& natural'image(i) &"].content="));
 			if scc=pos then
 				table_pos := table_pos - 1;

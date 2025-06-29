@@ -255,9 +255,9 @@ package body hdo is
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
 			return character'pos(char)-character'pos('a')+10;
 		when others =>
-			assert false                                      --|note
-				report "wrong digit " & character'image(char) --|note
-				severity note;                                --|note
+			assert false                                  
+				report "wrong digit " & character'image(char)
+				severity failure;                            
 			return -1;
 		end case;
 	end;
