@@ -469,7 +469,7 @@ begin
 					length := length + value_length;
 					append(value, value_length, offset+length, ",");
 					length := length + value_length;
-					index  := index + 1;
+					index  := index  + 1;
 				end loop;
 				length := length - 1;
 			end;
@@ -522,8 +522,8 @@ begin
 		append(value, length, offset, "]");
 		offset := offset + length;
 
-		report value(1 to offset-1);
-		-- report segment_map(value(1 to offset-1));
+		-- report value(1 to offset-1);
+		report segment_map(value(1 to offset-1));
 		-- report segment_table(segment_map(xxx(test))**".table");
 		-- report segment_map(xxx(test));
 		wait;
