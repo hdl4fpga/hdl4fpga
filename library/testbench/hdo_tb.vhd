@@ -119,6 +119,17 @@ architecture hdo_tb of testbench is
 begin
 	process
 
+		procedure append(
+			variable dst    : inout string;
+			variable length : out   natural;
+			constant offset : in    natural;
+			constant src    : in    string) is
+		begin
+			dst(offset to offset+src'length-1) := src;
+			length := src'length;
+
+		end;
+
 		procedure get_value (
 			variable value    : inout string;
 			variable length   : inout natural;
@@ -159,7 +170,7 @@ begin
 			
 		procedure sweep (
 			variable data         : inout string;
-			constant data_base    : in    natural;
+			constant data_offset  : in    natural;
 			variable data_length  : inout natural;
 			constant object       : in    string) is
 			variable value_length : natural;
@@ -176,7 +187,7 @@ begin
 				get_value(value, value_length, object, index);
 				exit when value_length=0;
 
-				position := data_base+data_length;
+				position := data_offset+data_length;
 				data(position to position+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
 				data_length := data_length + value_length-2;
 				index := index + 1;
@@ -185,7 +196,7 @@ begin
 
 		procedure sweep (
 			variable data         : inout string;
-			constant data_base    : in    natural;
+			constant data_offset  : in    natural;
 			variable data_length  : inout natural;
 			constant object       : in string;
 			constant keys         : in string) is
@@ -208,7 +219,7 @@ begin
 				get_value(value, value_length, object, '.' & key(key'left to key'left+key_length-1));
 				exit when value_length=0;
 
-				position := data_base+data_length;
+				position := data_offset+data_length;
 				data(position to position+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
 				data_length := data_length + value_length-2;
 				index := index + 1;
@@ -344,6 +355,7 @@ begin
 				get_interfaces(value, offset+length, value_length, hdo(object)**".interfaces");
 				length := length + value_length;
 			end;
+			constant data : string := ",data:0x";
 
 			constant configurations : string := object**".configurations";
 
@@ -356,11 +368,16 @@ begin
 			end if;
 			index  := 0;
 			for i in test'range loop 
+				append(value, value_length, offset, ",content:0x");
+				length := length + value_length;
 				get_configuration(value, offset+length, value_length, configurations**index);
 				exit when value_length=0;
 				length := length + value_length;
 				index := index + 1;
 			end loop;
+			value(offset) := '{';
+			append(value, value_length, offset+length, "}");
+			length := length + value_length;
  		end;
 
 		procedure get_strings(
