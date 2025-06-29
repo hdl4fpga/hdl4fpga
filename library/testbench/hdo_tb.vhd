@@ -146,11 +146,11 @@ begin
 		end;
 			
 		procedure get_value (
-			variable value    : inout string;
-			constant offset   : in    natural;
-			variable length   : inout natural;
-			constant object   : in    string;
-			constant position : in    natural) is
+			variable value      : inout string;
+			constant offset     : in    natural;
+			variable length     : inout natural;
+			constant object     : in    string;
+			constant position   : in    natural) is
 			constant key        : string := '[' & natural'image(position) & ']';
 			constant expression : string := object & key;
 		begin
@@ -176,7 +176,7 @@ begin
 			variable value_length : natural;
 			variable value        : string(data'range);
 			variable index        : natural;
-			variable position     : positive;
+			variable offset       : positive;
 		begin
 			data_length := 0;
 			if object'length=0 then
@@ -187,8 +187,8 @@ begin
 				get_value(value, value'left, value_length, object, index);
 				exit when value_length=0;
 
-				position := data_offset+data_length;
-				data(position to position+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
+				offset := data_offset+data_length;
+				data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
 				data_length := data_length + value_length-2;
 				index := index + 1;
 			end loop;
@@ -205,7 +205,7 @@ begin
 			variable value_length : natural;
 			variable value        : string(data'range);
 			variable index        : natural;
-			variable position     : positive;
+			variable offset       : positive;
 
 		begin
 			data_length := 0;
@@ -219,8 +219,8 @@ begin
 				get_value(value, value'left, value_length, object, '.' & key(key'left to key'left+key_length-1));
 				exit when value_length=0;
 
-				position := data_offset+data_length;
-				data(position to position+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
+				offset := data_offset+data_length;
+				data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
 				data_length := data_length + value_length-2;
 				index := index + 1;
 			end loop;
@@ -367,7 +367,7 @@ begin
 			if object'length=0 then
 				return;
 			end if;
-			index  := 0;
+			index := 0;
 			for i in test'range loop 
 				append(value, value_length, offset, ",content:0x");
 				length := length + value_length;
