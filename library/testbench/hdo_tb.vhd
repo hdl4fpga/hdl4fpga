@@ -132,40 +132,40 @@ begin
 
 		procedure get_value (
 			variable value    : inout string;
+			constant offset   : in    natural;
 			variable length   : inout natural;
 			constant object   : in    string) is
-			variable offset     : positive;
+			variable value_offset     : positive;
 			variable tag_offset : positive;
 			variable tag_length : natural;
 		begin
-			resolve(object, offset, length, tag_offset, tag_length);
+			resolve(object, value_offset, length, tag_offset, tag_length);
 			if length/=0 then
-				value(value'left to value'left+length-1) := object(offset to offset+length-1);
+				value(offset to offset+length-1) := object(value_offset to value_offset+length-1);
 			end if;
 		end;
 			
 		procedure get_value (
 			variable value    : inout string;
+			constant offset   : in    natural;
 			variable length   : inout natural;
 			constant object   : in    string;
 			constant position : in    natural) is
 			constant key        : string := '[' & natural'image(position) & ']';
 			constant expression : string := object & key;
 		begin
-			get_value(value, length, expression);
+			get_value(value, offset, length, expression);
 		end;
 			
 		procedure get_value (
 			variable value    : inout string;
+			constant offset   : in    natural;
 			variable length   : inout natural;
 			constant object   : in    string;
 			constant key      : in    string) is
 			constant expression : string := object & key;
-			variable offset     : positive;
-			variable tag_offset : positive;
-			variable tag_length : natural;
 		begin
-			get_value(value, length, expression);
+			get_value(value, offset, length, expression);
 		end;
 			
 		procedure sweep (
@@ -184,7 +184,7 @@ begin
 			end if;
 			index := 0;
 			for i in object'range loop 
-				get_value(value, value_length, object, index);
+				get_value(value, value'left, value_length, object, index);
 				exit when value_length=0;
 
 				position := data_offset+data_length;
@@ -214,9 +214,9 @@ begin
 			end if;
 			index := 0;
 			for i in keys'range loop 
-				get_value(key, key_length, keys, index);
+				get_value(key, key'left, key_length, keys, index);
 				exit when key_length=0;
-				get_value(value, value_length, object, '.' & key(key'left to key'left+key_length-1));
+				get_value(value, value'left, value_length, object, '.' & key(key'left to key'left+key_length-1));
 				exit when value_length=0;
 
 				position := data_offset+data_length;
@@ -341,9 +341,9 @@ begin
     			end;
 
 				constant keys : string := 
-					"configuration:["                                                                   &
-						"bLength, bDescriptorType, wTotalLength, bNumInterfaces, bConfigurationValue,"  &
-						"iConfiguration, bmAttribute, MaxPower]";
+					"configuration:["                                                               &
+						"bLength,bDescriptorType,wTotalLength,bNumInterfaces,bConfigurationValue,"  &
+						"iConfiguration,bmAttribute,MaxPower]";
 				variable value_length : natural;
 			begin
 				length := 0;
@@ -361,6 +361,7 @@ begin
 
 			variable index : natural;
 			variable value_length : natural;
+
 		begin
 			length := 0;
 			if object'length=0 then
@@ -373,9 +374,11 @@ begin
 				get_configuration(value, offset+length, value_length, configurations**index);
 				exit when value_length=0;
 				length := length + value_length;
-				index := index + 1;
+				index  := index  + 1;
 			end loop;
 			value(offset) := '{';
+			append(value, value_length, offset+length, ",id:0x0200");
+			length := length + value_length;
 			append(value, value_length, offset+length, "}");
 			length := length + value_length;
  		end;
