@@ -118,6 +118,17 @@ for file in \
 	fi
 done
 
+# -frelaxed ghdl complains for no reason bug
+for file in \
+"../usb/usbpkg.vhd" \
+; do 
+	if ghdl -a --std=02 -frelaxed --workdir=hdl4fpga --work=hdl4fpga $file ; then
+		echo $file
+	else
+		exit
+	fi
+done
+
 for file in \
 "../usb/usbpkg.vhd" \
 "../usb/usbphy_rx.vhd" \
