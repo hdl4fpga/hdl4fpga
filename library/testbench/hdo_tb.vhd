@@ -484,7 +484,7 @@ begin
 			length := length + value_length;
 			get_landids(value, offset+length, value_length, strings);
 			length := length + value_length;
-			append(value, value_length, offset+length, ",id:0x0301");
+			append(value, value_length, offset+length, ",id:0x0300");
 			length := length + value_length;
 			value(offset) := '{';
 			append(value, value_length, offset+length, "},");
