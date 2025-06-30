@@ -524,6 +524,7 @@ begin
 
 		-- report value(1 to offset-1);
 		report segment_map(value(1 to offset-1));
+		report segment_table(segment_map(value(1 to offset-1))**".table");
 		-- report segment_table(segment_map(xxx(test))**".table");
 		-- report segment_map(xxx(test));
 		wait;
