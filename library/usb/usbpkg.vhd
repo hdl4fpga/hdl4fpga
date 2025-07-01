@@ -145,14 +145,15 @@ package body usbpkg is
 		constant max_length   : natural := 1024;
 		constant max_segments : natural := 64)
 		return std_logic_vector is
-		variable value : natural;
-		variable valid : boolean;
-		variable n : natural;
-		variable length  : natural;
-		variable offsets : natural_vector(0 to max_segments-1);
-		variable retval  : std_logic_vector(0 to max_length-1);
+		variable value    : natural;
+		variable valid    : boolean;
+		variable n        : natural;
+		variable length   : natural;
+		variable offsets  : natural_vector(0 to max_segments-1);
+		variable retval   : std_logic_vector(0 to max_length-1);
 		variable num_bits : natural;
 	begin
+		n := 0;
 		for i in 0 to max_segments-1 loop
 			n := i;
 			if i > 0 then
