@@ -207,15 +207,16 @@ package body usbpkg is
 		variable offsets : natural_vector(0 to max_segments-1);
 		variable length_num_bits : natural;
 		variable offset_num_bits : natural;
-		variable valid   : boolean;
-		variable n       : natural;
-		variable address : natural;
-		variable num_bits : natural;
+		variable valid        : boolean;
+		variable address      : natural;
+		variable num_bits     : natural;
 		variable offset_left  : natural;
 		variable offset_right : natural;
 		variable length_left  : natural;
 		variable length_right : natural;
+		variable n            : natural;
 	begin
+		n := 0;
 		for i in 0 to max_segments-1 loop
 			n := i;
 			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));

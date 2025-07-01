@@ -131,12 +131,7 @@ begin
 			length := 0;
 			resolve(object, value_offset, length, tag_offset, tag_length);
 			if length/=0 then
-				-- report "==========";
-				-- report to_string(length);
-				-- report to_string(value_offset);
-				-- report '"'  & object(value_offset to value_offset+length-1) &'"';
 				value(offset to offset+length-1) := object(value_offset to value_offset+length-1);
-				-- report "++++++++++";
 			end if;
 		end;
 			
@@ -160,36 +155,44 @@ begin
 			constant key      : in    string) is
 			constant expression : string := object & key;
 		begin
-			-- report expression;
 			get_value(value, offset, length, expression);
 		end;
 			
-		constant mem_description : string := description(test);
-		variable value : string(1 to 1024);
-		variable offset : natural;
-		variable length : natural;
+		constant description_bin : string := description(test);
+		constant mem_map         : string := segment_map(description_bin);
+		constant mem_table       : string := segment_table(mem_map**".table");
+		constant num_of_sgmts    : natural := mem_map**".length";
+
+		variable valuew : std_logic_vector(0 to 16*num_of_sgmts-1);
+		variable indexw : std_logic_vector(0 to 16*num_of_sgmts-1);
+		variable value  : string(test'range);
 		variable wvalue_length : natural;
 		variable wvalue : string(1 to 16);
 		variable windex_length : natural;
 		variable windex : string(1 to 16);
 		variable index  : natural;
-	begin
-		report mem_description;
-		index := 0;
-		for i in mem_description'range loop
-		get_value(value, value'left, length, mem_description, index);
-		exit when length=0;
-		index := index + 1;
-		get_value(wvalue, wvalue'left, wvalue_length, value(value'left to value'left+length-1), ".wValue");
-		next when wvalue_length=0;
-		report "wValue "  &wvalue(1 to wvalue_length);
-		get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
-		next when windex_length=0;
-		report "wIndex "  & windex(1 to windex_length);
-		end loop;
+		variable length : natural;
 
-		-- report segment_map(description(test));
-		-- report segment_table(segment_map(description(test))**".table");
+	begin
+		valuew := (others => '-');
+		indexw := (others => '-');
+		index := 0;
+		for i in 0 to num_of_sgmts-1 loop
+			get_value(value, value'left, length, description_bin, index);
+			exit when length=0;
+			index := index + 1;
+			get_value(wvalue, wvalue'left, wvalue_length, value(value'left to value'left+length-1), ".wValue");
+			next when wvalue_length=0;
+			valuew(i*16 to (i+1)*16-1) := to_stdlogicvector(wvalue(1 to wvalue_length));
+			report "wValue "  & wvalue(1 to wvalue_length);
+			get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
+			next when windex_length=0;
+			report "wIndex "  & windex(1 to windex_length);
+			indexw(i*16 to (i+1)*16-1) := to_stdlogicvector(windex(1 to windex_length));
+		end loop;
+		report to_string(valuew,16);
+		report to_string(indexw,16);
+
 		wait;
 	end process;
 
