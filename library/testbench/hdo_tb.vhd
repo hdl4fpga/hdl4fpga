@@ -165,6 +165,7 @@ begin
 
 		variable valuew : std_logic_vector(0 to 16*num_of_sgmts-1);
 		variable indexw : std_logic_vector(0 to 16*num_of_sgmts-1);
+		variable maskw  : std_logic_vector(0 to  1*num_of_sgmts-1);
 		variable value  : string(test'range);
 		variable wvalue_length : natural;
 		variable wvalue : string(1 to 16);
@@ -176,6 +177,7 @@ begin
 	begin
 		valuew := (others => '-');
 		indexw := (others => '-');
+		maskw  := (others => '0');
 		index := 0;
 		for i in 0 to num_of_sgmts-1 loop
 			get_value(value, value'left, length, description_bin, index);
@@ -187,11 +189,13 @@ begin
 			report "wValue "  & wvalue(1 to wvalue_length);
 			get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
 			next when windex_length=0;
+			mask(i) := '1';
 			report "wIndex "  & windex(1 to windex_length);
 			indexw(i*16 to (i+1)*16-1) := to_stdlogicvector(windex(1 to windex_length));
 		end loop;
 		report to_string(valuew,16);
 		report to_string(indexw,16);
+		report to_string(mask,2);
 
 		wait;
 	end process;
