@@ -119,8 +119,75 @@ architecture hdo_tb of testbench is
 
 begin
 	process
+		procedure get_value (
+			variable value        : inout string;
+			constant offset       : in    natural;
+			variable length       : inout natural;
+			constant object       : in    string) is
+			variable value_offset : positive;
+			variable tag_offset   : positive;
+			variable tag_length   : natural;
+		begin
+			length := 0;
+			resolve(object, value_offset, length, tag_offset, tag_length);
+			if length/=0 then
+				-- report "==========";
+				-- report to_string(length);
+				-- report to_string(value_offset);
+				-- report '"'  & object(value_offset to value_offset+length-1) &'"';
+				value(offset to offset+length-1) := object(value_offset to value_offset+length-1);
+				-- report "++++++++++";
+			end if;
+		end;
+			
+		procedure get_value (
+			variable value      : inout string;
+			constant offset     : in    natural;
+			variable length     : inout natural;
+			constant object     : in    string;
+			constant position   : in    natural) is
+			constant key        : string := '[' & natural'image(position) & ']';
+			constant expression : string := object & key;
+		begin
+			get_value(value, offset, length, expression);
+		end;
+			
+		procedure get_value (
+			variable value    : inout string;
+			constant offset   : in    natural;
+			variable length   : inout natural;
+			constant object   : in    string;
+			constant key      : in    string) is
+			constant expression : string := object & key;
+		begin
+			-- report expression;
+			get_value(value, offset, length, expression);
+		end;
+			
+		constant mem_description : string := description(test);
+		variable value : string(1 to 1024);
+		variable offset : natural;
+		variable length : natural;
+		variable wvalue_length : natural;
+		variable wvalue : string(1 to 16);
+		variable windex_length : natural;
+		variable windex : string(1 to 16);
+		variable index  : natural;
 	begin
-		report description(test);
+		report mem_description;
+		index := 0;
+		for i in mem_description'range loop
+		get_value(value, value'left, length, mem_description, index);
+		exit when length=0;
+		index := index + 1;
+		get_value(wvalue, wvalue'left, wvalue_length, value(value'left to value'left+length-1), ".wValue");
+		next when wvalue_length=0;
+		report "wValue "  &wvalue(1 to wvalue_length);
+		get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
+		next when windex_length=0;
+		report "wIndex "  & windex(1 to windex_length);
+		end loop;
+
 		-- report segment_map(description(test));
 		-- report segment_table(segment_map(description(test))**".table");
 		wait;

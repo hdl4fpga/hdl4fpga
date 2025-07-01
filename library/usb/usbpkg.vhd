@@ -587,7 +587,7 @@ package body usbpkg is
 			end if;
 			index := 0;
 			for i in object'range loop 
-				append(value, value_length, offset, ",content:0x");
+				append(value, value_length, offset+length, ",content:0x");
 				length := length + value_length;
 				get_configuration(value, offset+length, value_length, configurations**index);
 				exit when value_length=0;
@@ -734,22 +734,5 @@ package body usbpkg is
 		return value(value'left to offset-1);
 
 	end;
-
-
-	-- function to_hdo (
-		-- constant val : natural_vector;
-		-- constant max_length : natural := 1024)
-		-- return string is
--- 
-		-- variable obj : string(1 to max_length);
-		-- variable pos : natural;
-	-- begin
-		-- pos := obj'left;
-		-- for i in 0 to val'length-1 loop
-			-- copy(obj, pos, val(i));
-		-- end loop;
-		-- pos := pos - 1;
-		-- return "["&obj(1 to pos-1)&"]";
-	-- end;
 
 end;
