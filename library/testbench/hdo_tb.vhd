@@ -175,8 +175,8 @@ begin
 		variable length : natural;
 
 	begin
-		valuew := (others => '-');
-		indexw := (others => '-');
+		valuew := (others => '0');
+		indexw := (others => '0');
 		maskw  := (others => '0');
 		index := 0;
 		for i in 0 to num_of_sgmts-1 loop
@@ -189,13 +189,13 @@ begin
 			report "wValue "  & wvalue(1 to wvalue_length);
 			get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
 			next when windex_length=0;
-			mask(i) := '1';
+			maskw(i) := '1';
 			report "wIndex "  & windex(1 to windex_length);
 			indexw(i*16 to (i+1)*16-1) := to_stdlogicvector(windex(1 to windex_length));
 		end loop;
 		report to_string(valuew,16);
 		report to_string(indexw,16);
-		report to_string(mask,2);
+		report to_string(maskw,2);
 
 		wait;
 	end process;
