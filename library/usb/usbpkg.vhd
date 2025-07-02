@@ -90,6 +90,9 @@ package usbpkg is
 		constant object : in string)
 		return string;
 
+	function xxx (
+		constant description_bin : string)
+		return string;
 end;
 
 package body usbpkg is
@@ -326,6 +329,44 @@ package body usbpkg is
 			"}";
 	end;
 
+	procedure get_value (
+		variable value        : inout string;
+		constant offset       : in    natural;
+		variable length       : inout natural;
+		constant object       : in    string) is
+		variable value_offset : positive;
+		variable tag_offset   : positive;
+		variable tag_length   : natural;
+	begin
+		resolve(object, value_offset, length, tag_offset, tag_length);
+		if length/=0 then
+			value(offset to offset+length-1) := object(value_offset to value_offset+length-1);
+		end if;
+	end;
+		
+	procedure get_value (
+		variable value      : inout string;
+		constant offset     : in    natural;
+		variable length     : inout natural;
+		constant object     : in    string;
+		constant position   : in    natural) is
+		constant key        : string := '[' & natural'image(position) & ']';
+		constant expression : string := object & key;
+	begin
+		get_value(value, offset, length, expression);
+	end;
+		
+	procedure get_value (
+		variable value    : inout string;
+		constant offset   : in    natural;
+		variable length   : inout natural;
+		constant object   : in    string;
+		constant key      : in    string) is
+		constant expression : string := object & key;
+	begin
+		get_value(value, offset, length, expression);
+	end;
+			
 	function description (
 		constant object : in string) 
 		return string is
@@ -340,44 +381,6 @@ package body usbpkg is
 			length := src'length;
 		end;
 
-		procedure get_value (
-			variable value        : inout string;
-			constant offset       : in    natural;
-			variable length       : inout natural;
-			constant object       : in    string) is
-			variable value_offset : positive;
-			variable tag_offset   : positive;
-			variable tag_length   : natural;
-		begin
-			resolve(object, value_offset, length, tag_offset, tag_length);
-			if length/=0 then
-				value(offset to offset+length-1) := object(value_offset to value_offset+length-1);
-			end if;
-		end;
-			
-		procedure get_value (
-			variable value      : inout string;
-			constant offset     : in    natural;
-			variable length     : inout natural;
-			constant object     : in    string;
-			constant position   : in    natural) is
-			constant key        : string := '[' & natural'image(position) & ']';
-			constant expression : string := object & key;
-		begin
-			get_value(value, offset, length, expression);
-		end;
-			
-		procedure get_value (
-			variable value    : inout string;
-			constant offset   : in    natural;
-			variable length   : inout natural;
-			constant object   : in    string;
-			constant key      : in    string) is
-			constant expression : string := object & key;
-		begin
-			get_value(value, offset, length, expression);
-		end;
-			
 		procedure sweep (
 			variable data         : inout string;
 			constant data_offset  : in    natural;
@@ -737,4 +740,45 @@ package body usbpkg is
 
 	end;
 
+	function xxx (
+		constant description_bin : string)
+		return string is
+		constant mem_map         : string := segment_map(description_bin);
+		constant mem_table       : string := segment_table(mem_map**".table");
+		constant num_of_sgmts    : natural := mem_map**".length";
+
+		variable valuew : std_logic_vector(0 to 16*num_of_sgmts-1);
+		variable indexw : std_logic_vector(0 to 16*num_of_sgmts-1);
+		variable maskw  : std_logic_vector(0 to  1*num_of_sgmts-1);
+		variable value  : string(description_bin'range);
+		variable wvalue_length : natural;
+		variable wvalue : string(1 to 16);
+		variable windex_length : natural;
+		variable windex : string(1 to 16);
+		variable index  : natural;
+		variable length : natural;
+
+	begin
+		valuew := (others => '0');
+		indexw := (others => '0');
+		maskw  := (others => '0');
+		index := 0;
+		for i in 0 to num_of_sgmts-1 loop
+			get_value(value, value'left, length, description_bin, index);
+			exit when length=0;
+			index := index + 1;
+			get_value(wvalue, wvalue'left, wvalue_length, value(value'left to value'left+length-1), ".wValue");
+			next when wvalue_length=0;
+			valuew(i*16 to (i+1)*16-1) := to_stdlogicvector(wvalue(1 to wvalue_length));
+			get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
+			next when windex_length=0;
+			maskw(i) := '1';
+			indexw(i*16 to (i+1)*16-1) := to_stdlogicvector(windex(1 to windex_length));
+		end loop;
+		return '{' 
+			& "wValue:0x" & to_string(valuew, 16) & ',' 
+			& "wIndex:0x" & to_string(valuew, 16) & ','
+			& "mask:0b"   & to_string(maskw,2)  
+			& '}';
+	end;
 end;

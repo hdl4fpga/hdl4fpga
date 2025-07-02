@@ -159,44 +159,10 @@ begin
 		end;
 			
 		constant description_bin : string := description(test);
-		constant mem_map         : string := segment_map(description_bin);
-		constant mem_table       : string := segment_table(mem_map**".table");
-		constant num_of_sgmts    : natural := mem_map**".length";
-
-		variable valuew : std_logic_vector(0 to 16*num_of_sgmts-1);
-		variable indexw : std_logic_vector(0 to 16*num_of_sgmts-1);
-		variable maskw  : std_logic_vector(0 to  1*num_of_sgmts-1);
-		variable value  : string(test'range);
-		variable wvalue_length : natural;
-		variable wvalue : string(1 to 16);
-		variable windex_length : natural;
-		variable windex : string(1 to 16);
-		variable index  : natural;
-		variable length : natural;
-
 	begin
-		valuew := (others => '0');
-		indexw := (others => '0');
-		maskw  := (others => '0');
-		index := 0;
-		for i in 0 to num_of_sgmts-1 loop
-			get_value(value, value'left, length, description_bin, index);
-			exit when length=0;
-			index := index + 1;
-			get_value(wvalue, wvalue'left, wvalue_length, value(value'left to value'left+length-1), ".wValue");
-			next when wvalue_length=0;
-			valuew(i*16 to (i+1)*16-1) := to_stdlogicvector(wvalue(1 to wvalue_length));
-			report "wValue "  & wvalue(1 to wvalue_length);
-			get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
-			next when windex_length=0;
-			maskw(i) := '1';
-			report "wIndex "  & windex(1 to windex_length);
-			indexw(i*16 to (i+1)*16-1) := to_stdlogicvector(windex(1 to windex_length));
-		end loop;
-		report to_string(valuew,16);
-		report to_string(indexw,16);
-		report to_string(maskw,2);
-
+		report string'(xxx(description_bin)**".wValue");
+		report string'(xxx(description_bin)**".wIndex");
+		report string'(xxx(description_bin)**".mask");
 		wait;
 	end process;
 
