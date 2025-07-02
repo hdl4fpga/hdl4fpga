@@ -120,10 +120,11 @@ architecture hdo_tb of testbench is
 begin
 	process
 		constant description_bin : string := description(test);
+		constant mask : std_logic_vector := xxx(description_bin)**".mask";
 	begin
 		report string'(xxx(description_bin)**".wValue");
 		report string'(xxx(description_bin)**".wIndex");
-		report string'(xxx(description_bin)**".mask");
+		report to_string(mask'length);
 		wait;
 	end process;
 
