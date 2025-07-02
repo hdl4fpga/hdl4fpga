@@ -97,6 +97,7 @@ architecture hdo_tb of testbench is
 				"bLength            :0x12," & 
 				"bDescriptorType    :0x03," &
 				"bstring            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}");
+
 		constant description_bin : string := description(test);
 		constant yyy        : string := xxx(description_bin);
 		constant wValue_tab : std_logic_vector := yyy**".wValue";
