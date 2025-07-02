@@ -245,7 +245,7 @@ package body usbpkg is
 				"content:"   & hdl4fpga.base.to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
 				"address:"   & natural'image(address)      & "," &
 				"data:"      & natural'image(num_bits)     & "," &
-				"base:{"   &
+				"offset:{"   &
 					"left:"  & natural'image(offset_left)  & "," &
 					"right:" & natural'image(offset_right) &
 					"},"     &

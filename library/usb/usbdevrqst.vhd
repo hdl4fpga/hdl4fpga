@@ -260,7 +260,7 @@ begin
 		constant descriptor_content : std_logic_vector := to_stdlogicvector(hdo(descriptor_map)**".content");
 		constant descriptors_table  : string := descriptor_map**".table";
 		constant descriptors_length : string := descriptors_table**".length";
-		constant descriptors_base   : string := descriptors_table**".base";
+		constant descriptors_base   : string := descriptors_table**".offset";
 
 		signal descriptor_maddr     : std_logic_vector(0 to descriptors_table**".address"-1);
 		signal descriptor_mdata     : std_logic_vector(descriptors_length**".left" to descriptors_base**".right");
