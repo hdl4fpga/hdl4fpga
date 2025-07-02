@@ -100,12 +100,35 @@ architecture hdo_tb of testbench is
 begin
 	process
 		constant description_bin : string := description(test);
-		constant wValue : std_logic_vector := xxx(description_bin)**".wValue";
-		constant wIndex : std_logic_vector := xxx(description_bin)**".wIndex";
-		constant mask : std_logic_vector := xxx(description_bin)**".mask";
+		constant yyy        : string := xxx(description_bin);
+		constant wValue_tab : std_logic_vector := yyy**".wValue";
+		constant wIndex_tab : std_logic_vector := yyy**".wIndex";
+		constant mask_tab   : std_logic_vector := yyy**".mask";
+		variable wValue : std_logic_vector(0 to 16-1) := x"0300";
+		variable wIndex : std_logic_vector(0 to 16-1) := x"1111";
+		constant wMask  : std_logic_vector(0 to 16-1) := x"0300";
 	begin
-		report to_string(wValue,2);
-		report to_string(mask'length);
+		for i in mask_tab'range loop
+			report to_string(wValue_tab(i*16 to (i+1)*16-1),16);
+			if ((wValue_tab(i*16 to (i+1)*16-1) xor wValue) and wMask)=(0 to 16-1 => '0') then
+				if mask_tab(i)='1' then
+					report to_string(wIndex_tab(i*16 to (i+1)*16-1),16);
+					if (wIndex_tab(i*16 to (i+1)*16-1))/=(0 to 16-1 => '0') then
+						report to_string(std_logic_vector(to_unsigned(i, unsigned_num_bits(mask_tab'length-1))));
+						exit;
+					else
+						report to_string(std_logic_vector(to_unsigned(i, unsigned_num_bits(mask_tab'length-1))));
+						exit;
+					end if;
+				else
+					report "pase";
+					report to_string(std_logic_vector(to_unsigned(i, unsigned_num_bits(mask_tab'length-1))));
+					exit;
+				end if;
+			end if;
+		end loop;
+		report to_string(wValue_tab,2);
+		report to_string(mask_tab'length);
 		wait;
 	end process;
 
