@@ -119,45 +119,6 @@ architecture hdo_tb of testbench is
 
 begin
 	process
-		procedure get_value (
-			variable value        : inout string;
-			constant offset       : in    natural;
-			variable length       : inout natural;
-			constant object       : in    string) is
-			variable value_offset : positive;
-			variable tag_offset   : positive;
-			variable tag_length   : natural;
-		begin
-			length := 0;
-			resolve(object, value_offset, length, tag_offset, tag_length);
-			if length/=0 then
-				value(offset to offset+length-1) := object(value_offset to value_offset+length-1);
-			end if;
-		end;
-			
-		procedure get_value (
-			variable value      : inout string;
-			constant offset     : in    natural;
-			variable length     : inout natural;
-			constant object     : in    string;
-			constant position   : in    natural) is
-			constant key        : string := '[' & natural'image(position) & ']';
-			constant expression : string := object & key;
-		begin
-			get_value(value, offset, length, expression);
-		end;
-			
-		procedure get_value (
-			variable value    : inout string;
-			constant offset   : in    natural;
-			variable length   : inout natural;
-			constant object   : in    string;
-			constant key      : in    string) is
-			constant expression : string := object & key;
-		begin
-			get_value(value, offset, length, expression);
-		end;
-			
 		constant description_bin : string := description(test);
 	begin
 		report string'(xxx(description_bin)**".wValue");

@@ -777,7 +777,7 @@ package body usbpkg is
 		end loop;
 		return '{' 
 			& "wValue:0x" & to_string(valuew, 16) & ',' 
-			& "wIndex:0x" & to_string(valuew, 16) & ','
+			& "wIndex:0x" & to_string(indexw, 16) & ','
 			& "mask:0b"   & to_string(maskw,2)  
 			& '}';
 	end;
