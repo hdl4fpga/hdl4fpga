@@ -97,33 +97,14 @@ architecture hdo_tb of testbench is
 				"bLength            :0x12," & 
 				"bDescriptorType    :0x03," &
 				"bstring            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}");
-
-	function to_string (
-		constant value : std_logic_vector)
-		return string is
-		variable retval : string(1 to value'length);
-		variable n : natural;
-	begin
-		n := retval'left;
-		for i in value'range loop
-			if value(i)='1' then
-				retval(n) := '1';
-			else
-				retval(n) := '0';
-			end if;
-			n := n + 1;
-		end loop;
-		return retval;
-	end;
-
-
 begin
 	process
 		constant description_bin : string := description(test);
+		constant wValue : std_logic_vector := xxx(description_bin)**".wValue";
+		constant wIndex : std_logic_vector := xxx(description_bin)**".wIndex";
 		constant mask : std_logic_vector := xxx(description_bin)**".mask";
 	begin
-		report string'(xxx(description_bin)**".wValue");
-		report string'(xxx(description_bin)**".wIndex");
+		report to_string(wValue,2);
 		report to_string(mask'length);
 		wait;
 	end process;
