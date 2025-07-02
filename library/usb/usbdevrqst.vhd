@@ -256,7 +256,7 @@ begin
 	end process;
 
 	despcriptor_b : block
-		constant descriptor_map     : string := segment_map(description(descriptor));
+		constant descriptor_map     : string := section_map(description(descriptor));
 		constant descriptor_content : std_logic_vector := to_stdlogicvector(hdo(descriptor_map)**".content");
 		constant descriptors_table  : string := descriptor_map**".table";
 		constant descriptors_length : string := descriptors_table**".length";

@@ -70,20 +70,20 @@ package usbpkg is
 	constant interface : std_logic_vector := x"04";
 	constant endpoint  : std_logic_vector := x"05";
 	
-	function segment_map (
+	function section_map (
 		constant description : string;
 		constant max_length  : natural := 1024)
 		return string;
 
-	function segment_table (
+	function section_table (
 		constant description  : string;
-		constant max_segments : natural := 64)
+		constant max_sections : natural := 64)
 		return string;
 
 	function decoder (
 		constant object       : string;
 		constant max_length   : natural := 1024;
-		constant max_segments : natural := 64)
+		constant max_sections : natural := 64)
 		return std_logic_vector;
 
 	function description (
@@ -146,18 +146,18 @@ package body usbpkg is
 	function decoder (
 		constant object       : string;
 		constant max_length   : natural := 1024;
-		constant max_segments : natural := 64)
+		constant max_sections : natural := 64)
 		return std_logic_vector is
 		variable value    : natural;
 		variable valid    : boolean;
 		variable n        : natural;
 		variable length   : natural;
-		variable offsets  : natural_vector(0 to max_segments-1);
+		variable offsets  : natural_vector(0 to max_sections-1);
 		variable retval   : std_logic_vector(0 to max_length-1);
 		variable num_bits : natural;
 	begin
 		n := 0;
-		for i in 0 to max_segments-1 loop
+		for i in 0 to max_sections-1 loop
 			n := i;
 			if i > 0 then
 				offsets(i) := offsets(i-1) + length;
@@ -181,9 +181,9 @@ package body usbpkg is
 		return retval(0 to 2**num_bits*n-1);
 	end;
 
-	function segment_table (
+	function section_table (
 		constant description  : string;
-		constant max_segments : natural := 64)
+		constant max_sections : natural := 64)
 		return string is
 
 		function table_content (
@@ -195,7 +195,7 @@ package body usbpkg is
 			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length-1);
 		begin
 			assert offsets'length=lengths'length
-				report "segment_table() : offsets'length => (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
+				report "section_table() : offsets'length => (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
 				severity failure;
 
 			for i in offsets'range loop
@@ -207,8 +207,8 @@ package body usbpkg is
 			return std_logic_vector(content);
 		end;
 
-		variable lengths : natural_vector(0 to max_segments-1);
-		variable offsets : natural_vector(0 to max_segments-1);
+		variable lengths : natural_vector(0 to max_sections-1);
+		variable offsets : natural_vector(0 to max_sections-1);
 		variable length_num_bits : natural;
 		variable offset_num_bits : natural;
 		variable valid        : boolean;
@@ -221,7 +221,7 @@ package body usbpkg is
 		variable n            : natural;
 	begin
 		n := 0;
-		for i in 0 to max_segments-1 loop
+		for i in 0 to max_sections-1 loop
 			n := i;
 			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
 			get_value(lengths(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][1]=")));
@@ -231,7 +231,7 @@ package body usbpkg is
 		offset_num_bits := unsigned_num_bits(offsets(n-1)+lengths(n-1)-1);
 
 		assert true 
-			report "segment_table() : length_num_bits -> " & natural'image(length_num_bits)
+			report "section_table() : length_num_bits -> " & natural'image(length_num_bits)
 			severity note;
 
 		address := unsigned_num_bits(n-1);
@@ -255,7 +255,7 @@ package body usbpkg is
 					"}}";
 	end;
 
-	function segment_map (
+	function section_map (
 		constant description : string;
 		constant max_length  : natural := 1024)
 		return string is
@@ -743,8 +743,8 @@ package body usbpkg is
 	function xxx (
 		constant description_bin : string)
 		return string is
-		constant mem_map         : string := segment_map(description_bin);
-		constant mem_table       : string := segment_table(mem_map**".table");
+		constant mem_map         : string := section_map(description_bin);
+		constant mem_table       : string := section_table(mem_map**".table");
 		constant num_of_sgmts    : natural := mem_map**".length";
 
 		variable valuew : std_logic_vector(0 to 16*num_of_sgmts-1);
