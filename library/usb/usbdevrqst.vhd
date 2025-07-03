@@ -266,54 +266,48 @@ begin
 		constant descriptors_length   : string           := sections**".length";
 		constant descriptors_offset   : string           := sections**".offset";
 
-		signal descriptor_maddr       : std_logic_vector(0 to layout_table**".address"-1);
-		signal descriptor_mdata       : std_logic_vector(descriptors_length**".left" to descriptors_offset**".right");
+		signal layout_table_addr      : std_logic_vector(0 to layout_table**".address"-1);
+		signal layout_table_data      : std_logic_vector(descriptors_length**".left" to descriptors_offset**".right");
 		signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
 		signal descriptor_data        : std_logic_vector(0 to 0);
 
-		alias descriptor_offset is descriptor_mdata(descriptors_offset**".left"   to descriptors_offset**".right");
-		alias descriptor_length is descriptor_mdata(descriptors_length**".left" to descriptors_length**".right");
+		alias descriptor_offset is layout_table_data(descriptors_offset**".left" to descriptors_offset**".right");
+		alias descriptor_length is layout_table_data(descriptors_length**".left" to descriptors_length**".right");
 
 	begin
 
-		-- xx : block
-			-- constant content    : string := description_section(descriptor);
-			-- constant decode_tab : string := description_decode(content);
-			-- constant wValue_tab : std_logic_vector := decode_tab**".wValue";
-			-- constant wIndex_tab : std_logic_vector := decode_tab**".wIndex";
-			-- constant mask_tab   : std_logic_vector := decode_tab**".mask";
-	-- 
-			-- signal wValue : std_logic_vector(0 to 16-1) := x"0300";
-			-- signal wIndex : std_logic_vector(0 to 16-1) := x"0409";
-			-- signal sel    : std_logic_vector(0 to unsigned_num_bits(mask_tab'length-1)-1);
--- 
-		-- begin
-		-- process(wvalue, wIndex)
-			-- constant wMask : std_logic_vector(0 to 16-1) := x"0300";
-		-- begin
-			-- sel <= (others => '-');
-			-- for i in mask_tab'range loop
-				-- if ((wValue_tab(i*16 to (i+1)*16-1) xor wValue) and wMask)=(0 to 16-1 => '0') then
-					-- if mask_tab(i)='1' then
-						-- if ((wIndex_tab(i*16 to (i+1)*16-1)) xor wIndex)=(0 to 16-1 => '0') then
-							-- sel <= std_logic_vector(to_unsigned(i, sel'length));
-							-- exit;
-						-- end if;
-					-- else
-						-- sel <= std_logic_vector(to_unsigned(i, sel'length));
-						-- exit;
-					-- end if;
-				-- end if;
-			-- end loop;
-		-- end process;
-		-- end block;
+		decode_b : block
+			constant decode_tab : string := description_decode(sections);
+			constant wValue_tab : std_logic_vector := decode_tab**".wValue";
+			constant wIndex_tab : std_logic_vector := decode_tab**".wIndex";
+			constant mask_tab   : std_logic_vector := decode_tab**".mask";
+		begin
+    		process(value, Index)
+    			constant wMask : std_logic_vector(0 to 16-1) := x"0300";
+    		begin
+    			layout_table_addr <= (others => '-');
+    			for i in mask_tab'range loop
+    				if ((wValue_tab(i*16 to (i+1)*16-1) xor value) and wMask)=(0 to 16-1 => '0') then
+    					if mask_tab(i)='1' then
+    						if ((wIndex_tab(i*16 to (i+1)*16-1)) xor index)=(0 to 16-1 => '0') then
+    							layout_table_addr <= std_logic_vector(to_unsigned(i, layout_table_addr'length));
+    							exit;
+    						end if;
+    					else
+    						layout_table_addr <= std_logic_vector(to_unsigned(i, layout_table_addr'length));
+    						exit;
+    					end if;
+    				end if;
+    			end loop;
+    		end process;
+		end block;
 
 		meta_e : entity hdl4fpga.rom
 		generic map (
 			bitrom => layout_table_content)
 		port map (
-			addr => descriptor_maddr,
-			data => descriptor_mdata);
+			addr => layout_table_addr,
+			data => layout_table_data);
 
 		data_e : entity hdl4fpga.rom
 		generic map (
