@@ -70,7 +70,7 @@ package usbpkg is
 	constant interface : std_logic_vector := x"04";
 	constant endpoint  : std_logic_vector := x"05";
 	
-	function section_map (
+	function section_layout (
 		constant description : string;
 		constant max_length  : natural := 1024)
 		return string;
@@ -86,11 +86,11 @@ package usbpkg is
 		constant max_sections : natural := 64)
 		return std_logic_vector;
 
-	function description (
+	function description_section (
 		constant object : in string)
 		return string;
 
-	function xxx (
+	function description_decode (
 		constant description_bin : string)
 		return string;
 end;
@@ -255,7 +255,7 @@ package body usbpkg is
 					"}}";
 	end;
 
-	function section_map (
+	function section_layout (
 		constant description : string;
 		constant max_length  : natural := 1024)
 		return string is
@@ -367,7 +367,7 @@ package body usbpkg is
 		get_value(value, offset, length, expression);
 	end;
 			
-	function description (
+	function description_section (
 		constant object : in string) 
 		return string is
 
@@ -740,12 +740,12 @@ package body usbpkg is
 
 	end;
 
-	function xxx (
+	function description_decode (
 		constant description_bin : string)
 		return string is
-		constant mem_map         : string := section_map(description_bin);
-		constant mem_table       : string := section_table(mem_map**".table");
-		constant num_of_sgmts    : natural := mem_map**".length";
+		constant mem_map      : string := section_layout(description_bin);
+		constant mem_table    : string := section_table(mem_map**".table");
+		constant num_of_sgmts : natural := mem_map**".length";
 
 		variable valuew : std_logic_vector(0 to 16*num_of_sgmts-1);
 		variable indexw : std_logic_vector(0 to 16*num_of_sgmts-1);

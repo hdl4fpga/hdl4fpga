@@ -128,24 +128,24 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rqst_req xor rqst_rdy)='1' then
-    				case state is
-    				when s_idle =>
-    					if (rqst_rdy xor rqst_req)='1' then
-    						rqstdata_req <= not rqstdata_rdy;
-    						state := s_data;
-    					end if;
-    				when s_data =>
-    					if rxpidv='0' then
-    						if (rqstdata_req xor rqstdata_rdy)='0' then
+					case state is
+					when s_idle =>
+						if (rqst_rdy xor rqst_req)='1' then
+							rqstdata_req <= not rqstdata_rdy;
+							state := s_data;
+						end if;
+					when s_data =>
+						if rxpidv='0' then
+							if (rqstdata_req xor rqstdata_rdy)='0' then
 								reply_req <= not reply_rdy;
 								state := s_reply;
 							end if;
-    					end if;
-    				when s_reply =>
+						end if;
+					when s_reply =>
 						if (reply_rdy xor reply_req)='0' then
 							rqst_rdy <= rqst_req;
 						end if;
-    				end case;
+					end case;
 				else
 					state := s_idle;
 				end if;
@@ -187,17 +187,17 @@ begin
 						end if;
 					end if;
 				elsif (phyerr or crcerr)='0' then
-    				shr := data;
-    				requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
-    				shr := shr rol requesttype'length;
-    				request <= reverse(std_logic_vector(shr(0 to request'length-1)));
-    				shr := shr rol request'length;
-    				value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
-    				shr := shr rol value'length;
-    				index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
-    				shr := shr rol index'length;
-    				length  <= unsigned(reverse(std_logic_vector(shr(0 to length'length-1))));
-    				shr := shr rol length'length;
+					shr := data;
+					requesttype <= reverse(std_logic_vector(shr(0 to requesttype'length-1)));
+					shr := shr rol requesttype'length;
+					request <= reverse(std_logic_vector(shr(0 to request'length-1)));
+					shr := shr rol request'length;
+					value   <= reverse(std_logic_vector(shr(0 to value'length-1)));
+					shr := shr rol value'length;
+					index   <= reverse(std_logic_vector(shr(0 to index'length-1)));
+					shr := shr rol index'length;
+					length  <= unsigned(reverse(std_logic_vector(shr(0 to length'length-1))));
+					shr := shr rol length'length;
 				end if;
 			end if;
 		end if;
@@ -210,32 +210,32 @@ begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if (rqst_req xor rqst_rdy)='1' then
-    				case state is
-    				when s_idle =>
-    					if (reply_rdy xor reply_req)='1' then
-    						for i in request_ids'range loop
-    							if request(4-1 downto 0)=request_ids(i) then
-    								rqst_reqs(i) <= not rqst_rdys(i);
-    								state := s_rqst;
-    								exit;
-    							end if;
-    							if i=request_ids'right then
-    								reply_rdy <= reply_req;
-    							end if;
-    							assert i/=request_ids'right report requests'image(i) severity error;
-    						end loop;
-    					end if;
-    				when s_rqst =>
-    					for i in request_ids'range loop
-    						if (rqst_rdys(i) xor rqst_reqs(i))='1' then
-    							exit;
-    						end if;
-    						if i=request_ids'right then
-    							reply_rdy <= reply_req;
-    							state := s_idle;
-    						end if;
-    					end loop;
-    				end case;
+					case state is
+					when s_idle =>
+						if (reply_rdy xor reply_req)='1' then
+							for i in request_ids'range loop
+								if request(4-1 downto 0)=request_ids(i) then
+									rqst_reqs(i) <= not rqst_rdys(i);
+									state := s_rqst;
+									exit;
+								end if;
+								if i=request_ids'right then
+									reply_rdy <= reply_req;
+								end if;
+								assert i/=request_ids'right report requests'image(i) severity error;
+							end loop;
+						end if;
+					when s_rqst =>
+						for i in request_ids'range loop
+							if (rqst_rdys(i) xor rqst_reqs(i))='1' then
+								exit;
+							end if;
+							if i=request_ids'right then
+								reply_rdy <= reply_req;
+								state := s_idle;
+							end if;
+						end loop;
+					end case;
 				else
 					state := s_idle;
 				end if;
@@ -256,80 +256,113 @@ begin
 	end process;
 
 	despcriptor_b : block
-		constant descriptor_map     : string := section_map(description(descriptor));
-		constant descriptor_content : std_logic_vector := to_stdlogicvector(hdo(descriptor_map)**".content");
-		constant descriptors_table  : string := descriptor_map**".table";
-		constant descriptors_length : string := descriptors_table**".length";
-		constant descriptors_base   : string := descriptors_table**".offset";
+		constant sections             : string           := description_section(descriptor);
+		constant section_content      : std_logic_vector := to_stdlogicvector(hdo(sections)**".content");
 
-		signal descriptor_maddr     : std_logic_vector(0 to descriptors_table**".address"-1);
-		signal descriptor_mdata     : std_logic_vector(descriptors_length**".left" to descriptors_base**".right");
-		signal descriptor_addr      : std_logic_vector(descriptors_base**".left" to descriptors_base**".right");
-		signal descriptor_data      : std_logic_vector(0 to 0);
+		constant layout               : string           := section_layout(sections);
+		constant layout_table         : string           := layout**".table";
+		constant layout_table_content : std_logic_vector := layout_table**".content";
 
-		alias descriptor_base   is descriptor_mdata(descriptors_base**".left"   to descriptors_base**".right");
+		constant descriptors_length   : string           := sections**".length";
+		constant descriptors_offset   : string           := sections**".offset";
+
+		signal descriptor_maddr       : std_logic_vector(0 to layout_table**".address"-1);
+		signal descriptor_mdata       : std_logic_vector(descriptors_length**".left" to descriptors_offset**".right");
+		signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
+		signal descriptor_data        : std_logic_vector(0 to 0);
+
+		alias descriptor_offset is descriptor_mdata(descriptors_offset**".left"   to descriptors_offset**".right");
 		alias descriptor_length is descriptor_mdata(descriptors_length**".left" to descriptors_length**".right");
-
-		alias xdescriptor : std_logic_vector(8-1 downto 0) is value(16-1 downto 8);
-		alias xindex      : std_logic_vector(8-1 downto 0) is value( 8-1 downto 0);
 
 	begin
 
-    	meta_e : entity hdl4fpga.rom
-    	generic map (
-    		bitrom =>descriptor_content)
-    	port map (
-    		addr => descriptor_maddr,
-    		data => descriptor_mdata);
+		-- xx : block
+			-- constant content    : string := description_section(descriptor);
+			-- constant decode_tab : string := description_decode(content);
+			-- constant wValue_tab : std_logic_vector := decode_tab**".wValue";
+			-- constant wIndex_tab : std_logic_vector := decode_tab**".wIndex";
+			-- constant mask_tab   : std_logic_vector := decode_tab**".mask";
+	-- 
+			-- signal wValue : std_logic_vector(0 to 16-1) := x"0300";
+			-- signal wIndex : std_logic_vector(0 to 16-1) := x"0409";
+			-- signal sel    : std_logic_vector(0 to unsigned_num_bits(mask_tab'length-1)-1);
+-- 
+		-- begin
+		-- process(wvalue, wIndex)
+			-- constant wMask : std_logic_vector(0 to 16-1) := x"0300";
+		-- begin
+			-- sel <= (others => '-');
+			-- for i in mask_tab'range loop
+				-- if ((wValue_tab(i*16 to (i+1)*16-1) xor wValue) and wMask)=(0 to 16-1 => '0') then
+					-- if mask_tab(i)='1' then
+						-- if ((wIndex_tab(i*16 to (i+1)*16-1)) xor wIndex)=(0 to 16-1 => '0') then
+							-- sel <= std_logic_vector(to_unsigned(i, sel'length));
+							-- exit;
+						-- end if;
+					-- else
+						-- sel <= std_logic_vector(to_unsigned(i, sel'length));
+						-- exit;
+					-- end if;
+				-- end if;
+			-- end loop;
+		-- end process;
+		-- end block;
 
-    	data_e : entity hdl4fpga.rom
-    	generic map (
-    		bitrom => descriptor_content)
-    	port map (
-    		addr => descriptor_addr,  
-    		data => descriptor_data);
+		meta_e : entity hdl4fpga.rom
+		generic map (
+			bitrom => layout_table_content)
+		port map (
+			addr => descriptor_maddr,
+			data => descriptor_mdata);
 
-    	getdescriptor_p : process (getdescriptor_rdy, clk)
-    		type states is (s_idle, s_data);
-    		variable state : states;
+		data_e : entity hdl4fpga.rom
+		generic map (
+			bitrom => section_content)
+		port map (
+			addr => descriptor_addr,  
+			data => descriptor_data);
+
+		getdescriptor_p : process (getdescriptor_rdy, clk)
+			type states is (s_idle, s_data);
+			variable state : states;
 
 			variable descriptor_cntr : unsigned(descriptors_length**".left" to descriptors_length**".right");
-    	begin
-    		if rising_edge(clk) then
-    			if cken='1' then
-    				if (getdescriptor_rdy xor getdescriptor_req)='1' then
-    					case state is
-    					when s_idle => 
-    						if shift_right(descriptor_cntr, 3) > length  then
-    							descriptor_cntr := shift_left(resize(length, descriptor_cntr'length),3);
+		begin
+			if rising_edge(clk) then
+				if cken='1' then
+					if (getdescriptor_rdy xor getdescriptor_req)='1' then
+						case state is
+						when s_idle => 
+							if shift_right(descriptor_cntr, 3) > length  then
+								descriptor_cntr := shift_left(resize(length, descriptor_cntr'length),3);
 							else
-    							descriptor_cntr := unsigned(descriptor_length);
-    						end if;
-    						descriptor_cntr := descriptor_cntr-1;
-    						descriptor_addr <= descriptor_base;
-    					when s_data =>
-    						if descriptor_cntr(0)='0' then
-    							if txbs='0' then
-    								descriptor_cntr := descriptor_cntr - 1;
-    								descriptor_addr <= std_logic_vector(unsigned(descriptor_addr) + 1); --ghdl
-    							end if;
-    						elsif (in_rdy xor in_req)='1' then
-    							state := s_idle;
-    						elsif (ack_rdy xor ack_req)='1' then
-    							getdescriptor_rdy <= getdescriptor_req;
-    							state := s_idle;
-    						end if;
-    						in_rdy  <= in_req;
-    						ack_rdy <= ack_req;
-    					end case;
-    				else
-    					descriptor_cntr := (others=> '1');
-    					state := s_idle;
-    				end if;
+								descriptor_cntr := unsigned(descriptor_length);
+							end if;
+							descriptor_cntr := descriptor_cntr-1;
+							descriptor_addr <= descriptor_offset;
+						when s_data =>
+							if descriptor_cntr(0)='0' then
+								if txbs='0' then
+									descriptor_cntr := descriptor_cntr - 1;
+									descriptor_addr <= std_logic_vector(unsigned(descriptor_addr) + 1); --ghdl
+								end if;
+							elsif (in_rdy xor in_req)='1' then
+								state := s_idle;
+							elsif (ack_rdy xor ack_req)='1' then
+								getdescriptor_rdy <= getdescriptor_req;
+								state := s_idle;
+							end if;
+							in_rdy  <= in_req;
+							ack_rdy <= ack_req;
+						end case;
+					else
+						descriptor_cntr := (others=> '1');
+						state := s_idle;
+					end if;
 					descriptor_txen <= not descriptor_cntr(descriptor_cntr'left);
-    			end if;
-    		end if;
-    	end process;
+				end if;
+			end if;
+		end process;
 		descriptor_txd <= descriptor_data(0);
 	end block;
 

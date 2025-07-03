@@ -33,10 +33,7 @@ use hdl4fpga.usbpkg.all;
 use work.hdo.all;
 
 architecture hdo_tb of testbench is
-	constant inputs    : natural := 2;
-	constant max_delay : natural := 2**14;
-	constant vt_step   : real := 1.0/2.0**16; -- Volts
-	constant test : string := compact      ("{"     &
+	constant descriptor : string := compact("{"     &
 		"device:{"                                  &
 			"bLength             :0x12,"            &
 			"bDescriptorType     :0x01,"            &
@@ -98,38 +95,22 @@ architecture hdo_tb of testbench is
 				"bDescriptorType    :0x03," &
 				"bstring            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}");
 
-		constant description_bin : string := description(test);
-		constant yyy        : string := xxx(description_bin);
-		constant wValue_tab : std_logic_vector := yyy**".wValue";
-		constant wIndex_tab : std_logic_vector := yyy**".wIndex";
-		constant mask_tab   : std_logic_vector := yyy**".mask";
-		signal wValue : std_logic_vector(0 to 16-1) := x"0300";
-		signal wIndex : std_logic_vector(0 to 16-1) := x"0409";
-		signal sel    : std_logic_vector(0 to unsigned_num_bits(mask_tab'length-1)-1);
-begin
-	process(wvalue, wIndex)
-		constant wMask  : std_logic_vector(0 to 16-1) := x"0300";
-	begin
-		sel <= (others => '-');
-		for i in mask_tab'range loop
-			if ((wValue_tab(i*16 to (i+1)*16-1) xor wValue) and wMask)=(0 to 16-1 => '0') then
-				if mask_tab(i)='1' then
-					if ((wIndex_tab(i*16 to (i+1)*16-1)) xor wIndex)=(0 to 16-1 => '0') then
-						sel <= std_logic_vector(to_unsigned(i, sel'length));
-						exit;
-					end if;
-				else
-					sel <= std_logic_vector(to_unsigned(i, sel'length));
-					exit;
-				end if;
-			end if;
-		end loop;
-		-- wait;
-	end process;
+	constant sections    : string := description_section(descriptor);
+	constant layout      : string := section_layout(sections);
+	constant table       : string := section_table(layout**".table");
+	constant decode_tab  : string := description_decode(sections);
+	constant wValue_tab  : std_logic_vector := decode_tab**".wValue";
+	constant wIndex_tab  : std_logic_vector := decode_tab**".wIndex";
+	constant mask_tab    : std_logic_vector := decode_tab**".mask";
 
-	process(sel)
+begin
+
+	process
 	begin
-		report to_string(sel,2);
+		report "sections : " & sections;
+		report "layout : "  & layout;
+		report "table : " & table;
+		wait;
 	end process;
 
 end;
