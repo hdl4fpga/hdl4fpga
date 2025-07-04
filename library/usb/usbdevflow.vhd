@@ -276,7 +276,7 @@ begin
 			rd_clk  => clk,
 			rd_addr => alt_rdaddr,
 			rd_data => alt_rddata);
-		-- buffer_txd <= alt_rddata(0);
+		buffer_txd <= alt_rddata(0);
 
     	txbuffer_p : process (acktx_rdy, clk)
     		variable mem  : std_logic_vector(0 to 64*8-1);
@@ -305,7 +305,7 @@ begin
     					end if;
     				end if;
     				alt_rdaddr <= std_logic_vector(pout(mem_range));
-    				buffer_txd <= mem(to_integer(pout(mem_range)));
+    				-- buffer_txd <= mem(to_integer(pout(mem_range)));
 
     				if pout(byte_range)=pin(byte_range) then
     					buffer_txen <= '0';

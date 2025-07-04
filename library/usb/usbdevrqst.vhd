@@ -283,7 +283,7 @@ begin
 			constant wIndex_tab : std_logic_vector := decode_tab**".wIndex";
 			constant mask_tab   : std_logic_vector := decode_tab**".mask";
 		begin
-    		process(value, Index)
+    		process(value, index)
     			constant wMask : std_logic_vector(0 to 16-1) := x"0300";
     		begin
     			layout_table_addr <= (others => '-');
