@@ -33,7 +33,7 @@ use hdl4fpga.usbpkg.all;
 use work.hdo.all;
 
 architecture hdo_tb of testbench is
-	constant descriptor : string := compact("{"     &
+	constant descriptor : string := "{"     &
 		"device:{"                                  &
 			"bLength             :0x12,"            &
 			"bDescriptorType     :0x01,"            &
@@ -93,23 +93,31 @@ architecture hdo_tb of testbench is
 			"unicodes:[{"                           &
 				"bLength            :0x12," & 
 				"bDescriptorType    :0x03," &
-				"bstring            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}");
+				"bstring            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}";
 
-	constant sections    : string := description_section(descriptor);
-	constant layout      : string := section_layout(sections);
-	constant table       : string := section_table(layout**".table");
-	constant decode_tab  : string := description_decode(sections);
-	constant wValue_tab  : std_logic_vector := decode_tab**".wValue";
-	constant wIndex_tab  : std_logic_vector := decode_tab**".wIndex";
-	constant mask_tab    : std_logic_vector := decode_tab**".mask";
+		constant sections             : string           := description_section(descriptor);
+		constant layout               : string           := section_layout(sections);
+		constant section_content      : std_logic_vector := layout**".content";
+
+		constant layout_table         : string           := section_table(layout**".table");
+		constant layout_table_content : std_logic_vector := layout_table**".content";
+-- 
+		-- constant descriptors_length   : string           := sections**".length";
+		-- constant descriptors_offset   : string           := sections**".offset";
+-- 
+		-- signal layout_table_addr      : std_logic_vector(0 to layout_table**".address"-1);
+		-- signal layout_table_data      : std_logic_vector(descriptors_length**".left" to descriptors_offset**".right");
+		-- signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
+		-- signal descriptor_data        : std_logic_vector(0 to 0);
+		-- alias descriptor_offset is layout_table_data(descriptors_offset**".left" to descriptors_offset**".right");
+		-- alias descriptor_length is layout_table_data(descriptors_length**".left" to descriptors_length**".right");
 
 begin
 
 	process
+
 	begin
-		report "sections : " & sections;
-		report "layout : "  & layout;
-		report "table : " & table;
+		report layout_table;
 		wait;
 	end process;
 

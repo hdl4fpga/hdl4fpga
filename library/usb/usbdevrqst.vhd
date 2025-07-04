@@ -257,9 +257,8 @@ begin
 
 	despcriptor_b : block
 		constant sections             : string           := description_section(descriptor);
-		constant section_content      : std_logic_vector := to_stdlogicvector(hdo(sections)**".content");
-
 		constant layout               : string           := section_layout(sections);
+		constant section_content      : std_logic_vector := layout**".content";
 		constant layout_table         : string           := layout**".table";
 		constant layout_table_content : std_logic_vector := layout_table**".content";
 
