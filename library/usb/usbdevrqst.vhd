@@ -256,17 +256,19 @@ begin
 	end process;
 
 	despcriptor_b : block
+		
 		constant sections             : string           := description_section(descriptor);
 		constant layout               : string           := section_layout(sections);
 		constant section_content      : std_logic_vector := layout**".content";
-		constant layout_table         : string           := layout**".table";
+
+		constant layout_table         : string           := section_table(layout**".table");
 		constant layout_table_content : std_logic_vector := layout_table**".content";
 
-		constant descriptors_length   : string           := sections**".length";
-		constant descriptors_offset   : string           := sections**".offset";
+		constant descriptors_length   : string           := layout_table**".length";
+		constant descriptors_offset   : string           := layout_table**".offset";
 
 		signal layout_table_addr      : std_logic_vector(0 to layout_table**".address"-1);
-		signal layout_table_data      : std_logic_vector(descriptors_length**".left" to descriptors_offset**".right");
+		signal layout_table_data      : std_logic_vector(descriptors_offset**".left" to descriptors_length**".right");
 		signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
 		signal descriptor_data        : std_logic_vector(0 to 0);
 
@@ -319,7 +321,8 @@ begin
 			type states is (s_idle, s_data);
 			variable state : states;
 
-			variable descriptor_cntr : unsigned(descriptors_length**".left" to descriptors_length**".right");
+			-- variable descriptor_cntr : unsigned(descriptors_length**".left" to descriptors_length**".right");
+			variable descriptor_cntr : unsigned(0 to descriptor_length'length);
 		begin
 			if rising_edge(clk) then
 				if cken='1' then
@@ -329,7 +332,7 @@ begin
 							if shift_right(descriptor_cntr, 3) > length  then
 								descriptor_cntr := shift_left(resize(length, descriptor_cntr'length),3);
 							else
-								descriptor_cntr := unsigned(descriptor_length);
+								descriptor_cntr := resize(unsigned(descriptor_length), descriptor_cntr'length);
 							end if;
 							descriptor_cntr := descriptor_cntr-1;
 							descriptor_addr <= descriptor_offset;

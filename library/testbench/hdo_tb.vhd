@@ -101,15 +101,15 @@ architecture hdo_tb of testbench is
 
 		constant layout_table         : string           := section_table(layout**".table");
 		constant layout_table_content : std_logic_vector := layout_table**".content";
--- 
-		-- constant descriptors_length   : string           := sections**".length";
-		-- constant descriptors_offset   : string           := sections**".offset";
--- 
-		-- signal layout_table_addr      : std_logic_vector(0 to layout_table**".address"-1);
-		-- signal layout_table_data      : std_logic_vector(descriptors_length**".left" to descriptors_offset**".right");
-		-- signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
-		-- signal descriptor_data        : std_logic_vector(0 to 0);
-		-- alias descriptor_offset is layout_table_data(descriptors_offset**".left" to descriptors_offset**".right");
+
+		constant descriptors_length   : string           := layout_table**".length";
+		constant descriptors_offset   : string           := layout_table**".offset";
+
+		signal layout_table_addr      : std_logic_vector(0 to layout_table**".address"-1);
+		signal layout_table_data      : std_logic_vector(descriptors_offset**".left" to descriptors_length**".right");
+		signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
+		signal descriptor_data        : std_logic_vector(0 to 0);
+		alias descriptor_offset is layout_table_data(descriptors_offset**".left" to descriptors_offset**".right");
 		-- alias descriptor_length is layout_table_data(descriptors_length**".left" to descriptors_length**".right");
 
 begin
@@ -118,6 +118,10 @@ begin
 
 	begin
 		report layout_table;
+		report descriptors_offset**".left";
+		report descriptors_offset**".right";
+		report to_string(layout_table_data'left);
+		report to_string(layout_table_data'right);
 		wait;
 	end process;
 
