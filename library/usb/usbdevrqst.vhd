@@ -255,7 +255,7 @@ begin
 		end if;
 	end process;
 
-	despcriptor_b : block
+	descriptor_b : block
 		
 		constant sections             : string           := description_section(descriptor);
 		constant layout               : string           := section_layout(sections);
@@ -321,7 +321,6 @@ begin
 			type states is (s_idle, s_data);
 			variable state : states;
 
-			-- variable descriptor_cntr : unsigned(descriptors_length**".left" to descriptors_length**".right");
 			variable descriptor_cntr : unsigned(0 to descriptor_length'length);
 		begin
 			if rising_edge(clk) then
