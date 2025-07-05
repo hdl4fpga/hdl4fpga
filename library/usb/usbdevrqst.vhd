@@ -268,12 +268,12 @@ begin
 		constant descriptors_offset   : string           := layout_table**".offset";
 
 		signal layout_table_addr      : std_logic_vector(0 to layout_table**".address"-1);
-		signal layout_table_data      : std_logic_vector(descriptors_offset**".left" to descriptors_length**".right");
-		signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
+		signal layout_table_data      : std_logic_vector(natural'(descriptors_offset**".left") to natural'(descriptors_length**".right"));
+		signal descriptor_addr        : std_logic_vector(natural'(descriptors_offset**".left") to natural'(descriptors_offset**".right"));
 		signal descriptor_data        : std_logic_vector(0 to 0);
 
-		alias descriptor_offset is layout_table_data(descriptors_offset**".left" to descriptors_offset**".right");
-		alias descriptor_length is layout_table_data(descriptors_length**".left" to descriptors_length**".right");
+		alias descriptor_offset is layout_table_data(natural'(descriptors_offset**".left") to natural'(descriptors_offset**".right"));
+		alias descriptor_length is layout_table_data(natural'(descriptors_length**".left") to natural'(descriptors_length**".right"));
 
 	begin
 
