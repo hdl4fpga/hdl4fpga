@@ -335,6 +335,7 @@ begin
 							end if;
 							descriptor_cntr := descriptor_cntr-1;
 							descriptor_addr <= descriptor_offset;
+							state := s_data;
 						when s_data =>
 							if descriptor_cntr(0)='0' then
 								if txbs='0' then

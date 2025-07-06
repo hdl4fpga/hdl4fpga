@@ -183,7 +183,7 @@ begin
 			sio_clk  <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
 
-		hdlc_e : entity hdl4fpga.hdlc_link
+		hdlc_e : entity hdl4fpga.link_hdlc
 		generic map (
 			uart_freq => uart_freq,
 			baudrate  => baudrate,
