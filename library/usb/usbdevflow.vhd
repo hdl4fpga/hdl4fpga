@@ -279,10 +279,8 @@ begin
 		buffer_txd <= alt_rddata(0);
 
     	txbuffer_p : process (acktx_rdy, clk)
-    		variable mem  : std_logic_vector(0 to 64*8-1);
-    		subtype  mem_range  is natural range 1 to unsigned_num_bits(mem'length-1);
-    		subtype  byte_range is natural range 0 to unsigned_num_bits(mem'length-1)-3;
-    		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
+    		subtype  byte_range is natural range 0 to alt_wraddr'right-3;
+    		variable pin  : unsigned(0 to alt_wraddr'right);
     		variable pout : unsigned(pin'range);
     		variable we   : std_logic;
     		variable din  : std_logic;
@@ -304,8 +302,7 @@ begin
     						pout := pout + 1;
     					end if;
     				end if;
-    				alt_rdaddr <= std_logic_vector(pout(mem_range));
-    				-- buffer_txd <= mem(to_integer(pout(mem_range)));
+    				alt_rdaddr <= std_logic_vector(pout(alt_wraddr'range));
 
     				if pout(byte_range)=pin(byte_range) then
     					buffer_txen <= '0';
@@ -324,10 +321,9 @@ begin
     					din := dev_txd;
     				end if;
     				alt_wrena  <= we;
-    				alt_wraddr <= std_logic_vector(pin(mem_range));
+    				alt_wraddr <= std_logic_vector(pin(alt_wraddr'range));
     				alt_wrdata(0) <= din;
     				if we='1' then
-    					mem(to_integer(pin(mem_range))) := din;
     					pin := pin + 1;
     				end if;
 
@@ -408,15 +404,13 @@ begin
 		buffer_rxd <= alt_rddata(0);
 
     	rxbuffer_p : process (rqst_req, clk)
-    		variable mem  : std_logic_vector(0 to 64*2**3-1);
-    		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
-    		subtype  byte_range is natural range 1 to unsigned_num_bits(mem'length-1)-3;
-    		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1)) := (others => '0');
-    		variable pout : unsigned(pin'range) := (others => '0');
+    		subtype  byte_range is natural range 0 to alt_wraddr'right-3;
+    		variable pin   : unsigned(0 to alt_wraddr'right) := (others => '0');
+    		variable pout  : unsigned(pin'range) := (others => '0');
     		variable pout0 : unsigned(pin'range) := (others => '0');
-    		variable prty : unsigned(pout'range) := (others => '0');
-    		variable we   : std_logic;
-    		variable din  : std_logic;
+    		variable prty  : unsigned(pout'range) := (others => '0');
+    		variable we    : std_logic;
+    		variable din   : std_logic;
     	begin
     		if rising_edge(clk) then
     			if cken='1' then
@@ -435,8 +429,6 @@ begin
 
     				if pout/=prty then
     					if buffer_rxbs='0' then
-    						-- buffer_rxd <= mem(to_integer(pout(mem_range)));
-    						-- alt_rdaddr <= std_logic_vector(pout(mem_range));
 							pout0 := pout;
     						pout  := pout + 1;
     						buffer_rxdv <= '1';
@@ -444,13 +436,12 @@ begin
     				else
     					buffer_rxdv <= '0';
     				end if;
-    				alt_rdaddr <= std_logic_vector(pout0(mem_range));
+    				alt_rdaddr <= std_logic_vector(pout0(alt_wraddr'range));
 
     				alt_wrena  <= we;
-    				alt_wraddr <= std_logic_vector(pin(mem_range));
+    				alt_wraddr <= std_logic_vector(pin(alt_wraddr'range));
     				alt_wrdata(0) <= din;
     				if we='1' then
-    					mem(to_integer(pin(mem_range))) := din;
     					pin := pin + 1;
     				end if;
 
