@@ -328,12 +328,10 @@ begin
 					if (getdescriptor_rdy xor getdescriptor_req)='1' then
 						case state is
 						when s_idle => 
-							if shift_right(descriptor_cntr, 3) > length  then
+							descriptor_cntr := resize(unsigned(descriptor_length)+1, descriptor_cntr'length);
+							if resize(shift_right(descriptor_cntr, 3), length'length) > length  then
 								descriptor_cntr := shift_left(resize(length, descriptor_cntr'length),3);
-							else
-								descriptor_cntr := resize(unsigned(descriptor_length), descriptor_cntr'length);
 							end if;
-							descriptor_cntr := descriptor_cntr-1;
 							descriptor_addr <= descriptor_offset;
 							state := s_data;
 						when s_data =>

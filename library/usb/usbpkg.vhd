@@ -297,10 +297,10 @@ package body usbpkg is
 			end if;
 		end;
 
-		variable content : std_logic_vector(0 to description'length*4-1);
-		variable pos  : natural;
-		variable scc  : natural;
-		variable table : string(1 to max_length);
+		variable content   : std_logic_vector(0 to description'length*4-1);
+		variable pos       : natural;
+		variable scc       : natural;
+		variable table     : string(1 to max_length);
 		variable table_pos : positive;
 		variable n : natural;
 	begin
@@ -316,7 +316,7 @@ package body usbpkg is
 			table(table_pos) := '[';
 			table_pos := table_pos + 1;
 			copy(table, table_pos, table_pos, natural'image(pos)&",");
-			copy(table, table_pos, table_pos, natural'image(scc-pos)&"],");
+			copy(table, table_pos, table_pos, natural'image(scc-pos-1)&"],");
 			-- copy(table, table_pos, table_pos, std_logic'image(content(pos))&"],");
 			pos := scc;
 			n := n + 1;

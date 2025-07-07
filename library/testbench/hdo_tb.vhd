@@ -109,7 +109,7 @@ architecture hdo_tb of testbench is
 		signal layout_table_data      : std_logic_vector(descriptors_offset**".left" to descriptors_length**".right");
 		signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
 		signal descriptor_data        : std_logic_vector(0 to 0);
-		alias descriptor_offset is layout_table_data(descriptors_offset**".left" to descriptors_offset**".right");
+		-- alias descriptor_offset is layout_table_data(descriptors_offset**".left" to descriptors_offset**".right");
 		-- alias descriptor_length is layout_table_data(descriptors_length**".left" to descriptors_length**".right");
 
 begin
@@ -117,11 +117,11 @@ begin
 	process
 
 	begin
-		report layout_table;
-		report descriptors_offset**".left";
-		report descriptors_offset**".right";
-		report to_string(layout_table_data'left);
-		report to_string(layout_table_data'right);
+		report layout;
+		-- report descriptors_offset**".left";
+		-- report descriptors_offset**".right";
+		-- report to_string(layout_table_data'left);
+		-- report to_string(layout_table_data'right);
 		wait;
 	end process;
 
