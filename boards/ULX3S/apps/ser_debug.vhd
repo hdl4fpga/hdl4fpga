@@ -37,6 +37,7 @@ architecture ser_debug of ulx3s is
 
 	constant usb_oversampling : natural := 3;
 	constant io_link : io_comms := io_usb;
+	constant usb_device : boolean := true;
 
 	constant video_mode   : video_modes := mode600p24bpp;
 	constant video_params : video_record := videoparam(
@@ -121,7 +122,7 @@ begin
 		rxbs <= txbs;
 		txd  <= rxd;
 
-		usbdev_g : if false generate
+		usbdev_g : if usb_device generate
 			usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 			usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 			usbdev_e : entity hdl4fpga.usbdev
@@ -142,7 +143,7 @@ begin
 				rxd  => rxd);
 		end generate;
 			
-		usbhost_g : if true generate
+		usbhost_g : if not usb_device generate
 			signal init_req : std_logic := '0';
 			signal init_rdy : std_logic := '0';
 		begin
@@ -373,8 +374,6 @@ begin
 		dvid_crgb       => dvid_crgb);
 
 	ddr_g : for i in gpdi_d'range generate
-		signal q : std_logic;
-	begin
 		oddr_i : oddrx1f
 		port map(
 			sclk => video_shift_clk,

@@ -70,21 +70,29 @@ package usbpkg is
 	constant interface : std_logic_vector := x"04";
 	constant endpoint  : std_logic_vector := x"05";
 	
-	function segment_map (
+	function section_layout (
 		constant description : string;
 		constant max_length  : natural := 1024)
 		return string;
 
-	function segment_table (
+	function section_table (
 		constant description  : string;
-		constant max_segments : natural := 64)
+		constant max_sections : natural := 64)
 		return string;
 
 	function decoder (
 		constant object       : string;
 		constant max_length   : natural := 1024;
-		constant max_segments : natural := 64)
+		constant max_sections : natural := 64)
 		return std_logic_vector;
+
+	function description_section (
+		constant object : in string)
+		return string;
+
+	function description_decode (
+		constant description_bin : string)
+		return string;
 end;
 
 package body usbpkg is
@@ -138,17 +146,18 @@ package body usbpkg is
 	function decoder (
 		constant object       : string;
 		constant max_length   : natural := 1024;
-		constant max_segments : natural := 64)
+		constant max_sections : natural := 64)
 		return std_logic_vector is
-		variable value : natural;
-		variable valid : boolean;
-		variable n : natural;
-		variable length  : natural;
-		variable offsets : natural_vector(0 to max_segments-1);
-		variable retval  : std_logic_vector(0 to max_length-1);
+		variable value    : natural;
+		variable valid    : boolean;
+		variable n        : natural;
+		variable length   : natural;
+		variable offsets  : natural_vector(0 to max_sections-1);
+		variable retval   : std_logic_vector(0 to max_length-1);
 		variable num_bits : natural;
 	begin
-		for i in 0 to max_segments-1 loop
+		n := 0;
+		for i in 0 to max_sections-1 loop
 			n := i;
 			if i > 0 then
 				offsets(i) := offsets(i-1) + length;
@@ -172,28 +181,24 @@ package body usbpkg is
 		return retval(0 to 2**num_bits*n-1);
 	end;
 
-	function segment_table (
+	function section_table (
 		constant description  : string;
-		constant max_segments : natural := 64)
+		constant max_sections : natural := 64)
 		return string is
 
 		function table_content (
 			constant offsets : natural_vector;
 			constant offset_num_bits : natural;
 			constant lengths : natural_vector;
-			constant length_num_bits : natural;
-			constant dirs    : std_logic_vector;
-			constant dir_num_bits : natural)
+			constant length_num_bits : natural)
 			return std_logic_vector is
-			variable content : unsigned(0 to (dir_num_bits+offset_num_bits+length_num_bits)*offsets'length-1);
+			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length-1);
 		begin
 			assert offsets'length=lengths'length
-				report "segment_table() : offsets'length => (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
+				report "section_table() : offsets'length => (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
 				severity failure;
 
 			for i in offsets'range loop
-				content(0 to dir_num_bits-1) := unsigned(dirs(i to i+dir_num_bits-1));
-				content := content rol dir_num_bits;
 				content(0 to offset_num_bits-1) := to_unsigned(offsets(i), offset_num_bits);
 				content := content rol offset_num_bits;
 				content(0 to length_num_bits-1) := to_unsigned(lengths(i)-1, length_num_bits);
@@ -202,65 +207,55 @@ package body usbpkg is
 			return std_logic_vector(content);
 		end;
 
-		variable lengths : natural_vector(0 to max_segments-1);
-		variable offsets : natural_vector(0 to max_segments-1);
-		variable dirs : std_logic_vector(0 to max_segments-1);
+		variable lengths : natural_vector(0 to max_sections-1);
+		variable offsets : natural_vector(0 to max_sections-1);
 		variable length_num_bits : natural;
 		variable offset_num_bits : natural;
-		constant dir_num_bits    : natural := 1;
-		variable valid   : boolean;
-		variable n       : natural;
-		variable address : natural;
-		variable num_bits : natural;
-		variable dir_left     : natural;
-		variable dir_right    : natural;
+		variable valid        : boolean;
+		variable address      : natural;
+		variable num_bits     : natural;
 		variable offset_left  : natural;
 		variable offset_right : natural;
 		variable length_left  : natural;
 		variable length_right : natural;
+		variable n            : natural;
 	begin
-		for i in 0 to max_segments-1 loop
+		n := 0;
+		for i in 0 to max_sections-1 loop
 			n := i;
 			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
 			get_value(lengths(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][1]=")));
-			get_value(dirs(i),    valid, escaped(hdo(description)**("["&natural'image(i)&"][2]=")));
 			exit when not valid;
 		end loop;
 		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1))-1);
 		offset_num_bits := unsigned_num_bits(offsets(n-1)+lengths(n-1)-1);
 
 		assert true 
-			report "segment_table() : length_num_bits -> " & natural'image(length_num_bits)
+			report "section_table() : length_num_bits -> " & natural'image(length_num_bits)
 			severity note;
 
 		address := unsigned_num_bits(n-1);
-		num_bits := dir_num_bits+offset_num_bits+length_num_bits;
-		dir_left     := 0;
-		dir_right    := dir_num_bits-1;
-		offset_left  := dir_right+1;
+		num_bits := offset_num_bits+length_num_bits;
+		offset_left  := 0;
 		offset_right := offset_left+offset_num_bits-1;
 		length_left  := offset_right+1;
 		length_right := length_left+length_num_bits-1;
 		return
 			"{" &
-				"content:"   & hdl4fpga.base.to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits, dirs(0 to n-1), dir_num_bits)) & "," &
+				"content:"   & hdl4fpga.base.to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
 				"address:"   & natural'image(address)      & "," &
 				"data:"      & natural'image(num_bits)     & "," &
-				"dir:{"      &
-					"left:"  & natural'image(dir_left)     & "," &
-					"right:" & natural'image(dir_right)    & "," &
-					"},"     &
 				"offset:{"   &
 					"left:"  & natural'image(offset_left)  & "," &
-					"right:" & natural'image(offset_right) & "," &
+					"right:" & natural'image(offset_right) &
 					"},"     &
 				"length:{"   &
 					"left:"  & natural'image(length_left)  & "," &
-					"right:" & natural'image(length_right) & ","  &
+					"right:" & natural'image(length_right) &
 					"}}";
 	end;
 
-	function segment_map (
+	function section_layout (
 		constant description : string;
 		constant max_length  : natural := 1024)
 		return string is
@@ -302,10 +297,10 @@ package body usbpkg is
 			end if;
 		end;
 
-		variable content : std_logic_vector(0 to description'length*4-1);
-		variable pos  : natural;
-		variable scc  : natural;
-		variable table : string(1 to max_length);
+		variable content   : std_logic_vector(0 to description'length*4-1);
+		variable pos       : natural;
+		variable scc       : natural;
+		variable table     : string(1 to max_length);
 		variable table_pos : positive;
 		variable n : natural;
 	begin
@@ -321,8 +316,8 @@ package body usbpkg is
 			table(table_pos) := '[';
 			table_pos := table_pos + 1;
 			copy(table, table_pos, table_pos, natural'image(pos)&",");
-			copy(table, table_pos, table_pos, natural'image(scc-pos)&",");
-			copy(table, table_pos, table_pos, std_logic'image(content(pos))&"],");
+			copy(table, table_pos, table_pos, natural'image(scc-pos-1)&"],");
+			-- copy(table, table_pos, table_pos, std_logic'image(content(pos))&"],");
 			pos := scc;
 			n := n + 1;
 		end loop;
@@ -334,20 +329,462 @@ package body usbpkg is
 			"}";
 	end;
 
-	-- function to_hdo (
-		-- constant val : natural_vector;
-		-- constant max_length : natural := 1024)
-		-- return string is
--- 
-		-- variable obj : string(1 to max_length);
-		-- variable pos : natural;
-	-- begin
-		-- pos := obj'left;
-		-- for i in 0 to val'length-1 loop
-			-- copy(obj, pos, val(i));
-		-- end loop;
-		-- pos := pos - 1;
-		-- return "["&obj(1 to pos-1)&"]";
-	-- end;
+	procedure get_value (
+		variable value        : inout string;
+		constant offset       : in    natural;
+		variable length       : inout natural;
+		constant object       : in    string) is
+		variable value_offset : positive;
+		variable tag_offset   : positive;
+		variable tag_length   : natural;
+	begin
+		resolve(object, value_offset, length, tag_offset, tag_length);
+		if length/=0 then
+			value(offset to offset+length-1) := object(value_offset to value_offset+length-1);
+		end if;
+	end;
+		
+	procedure get_value (
+		variable value      : inout string;
+		constant offset     : in    natural;
+		variable length     : inout natural;
+		constant object     : in    string;
+		constant position   : in    natural) is
+		constant key        : string := '[' & natural'image(position) & ']';
+		constant expression : string := object & key;
+	begin
+		get_value(value, offset, length, expression);
+	end;
+		
+	procedure get_value (
+		variable value    : inout string;
+		constant offset   : in    natural;
+		variable length   : inout natural;
+		constant object   : in    string;
+		constant key      : in    string) is
+		constant expression : string := object & key;
+	begin
+		get_value(value, offset, length, expression);
+	end;
+			
+	function description_section (
+		constant object : in string) 
+		return string is
 
+		procedure append(
+			variable dst    : inout string;
+			variable length : out   natural;
+			constant offset : in    natural;
+			constant src    : in    string) is
+		begin
+			dst(offset to offset+src'length-1) := src;
+			length := src'length;
+		end;
+
+		procedure sweep (
+			variable data         : inout string;
+			constant data_offset  : in    natural;
+			variable data_length  : inout natural;
+			constant object       : in    string) is
+			variable value_length : natural;
+			variable value        : string(data'range);
+			variable index        : natural;
+			variable offset       : positive;
+		begin
+			data_length := 0;
+			if object'length=0 then
+				return;
+			end if;
+			index := 0;
+			for i in object'range loop 
+				get_value(value, value'left, value_length, object, index);
+				exit when value_length=0;
+
+				offset := data_offset+data_length;
+				data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
+				data_length := data_length + value_length-2;
+				index := index + 1;
+			end loop;
+		end;
+
+		procedure sweep (
+			variable data         : inout string;
+			constant data_offset  : in    natural;
+			variable data_length  : inout natural;
+			constant object       : in string;
+			constant keys         : in string) is
+			variable key_length   : natural;
+			variable key          : string(keys'range);
+			variable value_length : natural;
+			variable value        : string(data'range);
+			variable index        : natural;
+			variable offset       : positive;
+
+		begin
+			data_length := 0;
+			if object'length=0 then
+				return;
+			end if;
+			index := 0;
+			for i in keys'range loop 
+				get_value(key, key'left, key_length, keys, index);
+				exit when key_length=0;
+				get_value(value, value'left, value_length, object, '.' & key(key'left to key'left+key_length-1));
+				exit when value_length=0;
+
+				offset := data_offset+data_length;
+				if key(key'left to key'left+key_length-1)="bString" then
+    				-- to_utf16("HDL4FPGA")),16)
+					data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1)),16), 16);
+				else
+					data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
+				end if;
+
+				data_length := data_length + value_length-2;
+				index := index + 1;
+			end loop;
+		end;
+
+		procedure get_device(
+			variable value  : inout string;
+			variable offset : inout positive;
+			variable length : inout natural;
+			constant object : in    string) is
+			constant keys   : string := 
+				"device:["                                                           &
+					"bLength,bDescriptorType,bcdUSB,bDeviceClass,bDeviceSubClass,"   &
+					"bDeviceProtocol,bMaxPacketSize0,idVendor,idProduct, bcdDevice," &
+					"iManufacturer,iProduct,iSerialNumber,bNumConfigurations]";
+			constant device : string := object**".device";
+			variable value_length : natural;
+		begin
+			length := 0;
+			append(value, value_length, offset, ",content:0x");
+			length := length + value_length;
+			sweep(value, offset+length, value_length, device, keys);
+			length := length + value_length;
+			append(value, value_length, offset+length, ",wValue:0x0100");
+			length := length + value_length;
+			value(offset) := '{';
+			append(value, value_length, offset+length, "}");
+			length := length + value_length;
+		end;
+
+		procedure get_configurations(
+			variable value  : inout string;
+			variable offset : inout positive;
+			variable length : inout natural;
+			constant object : in    string) is
+
+			procedure get_configuration(
+				variable value  : inout string;
+    			constant offset : in    positive;
+				variable length : inout natural;
+				constant object : in    string) is
+
+    			procedure get_interfaces (
+    				variable value  : inout string;
+    				constant offset : in    positive;
+    				variable length : inout natural;
+    				constant object : in    string) is
+
+    				procedure get_interface(
+    					variable value  : inout string;
+    					constant offset : in    positive;
+    					variable length : inout natural;
+    					constant object : in    string) is
+
+						procedure get_endpoints(
+							variable value  : inout string;
+    						constant offset : in    positive;
+							variable length : inout natural;
+							constant object : in    string) is
+
+    						procedure get_endpoint(
+    							variable value  : inout string;
+    							constant offset : in    positive;
+    							variable length : inout natural;
+    							constant object : in    string) is
+    							constant keys : string := 
+    								"endpoint:["                                                                        &
+    									"bLength, bDescriptorType, bEndpointAddress, bmAttibutes, wMaxPacketSize, bInterval]";
+    						begin
+								length := 0;
+								if object'length=0 then
+									return;
+								end if;
+    							sweep(value, offset, length, object, keys);
+    						end;
+
+							variable value_length : natural;
+							variable index : natural;
+						begin
+							length := 0;
+							if object'length=0 then
+								return;
+							end if;
+							index := 0;
+							for i in object'range loop 
+								get_endpoint(value, offset+length, value_length, hdo(object)**index);
+								length := length + value_length;
+								exit when value_length=0;
+								index := index + 1;
+							end loop;
+						end;
+
+    					constant keys : string := 
+    						"interface:["                                                                       &
+    							"bLength, bDescriptorType, bInterfaceNumber, bAlternateSetting, bNumEndpoints," &
+    							"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface]";
+
+						variable value_length : natural;
+    				begin
+						length := 0;
+						if object'length=0 then
+							return;
+						end if;
+						sweep(value, offset+length, value_length, hdo(object)**".interface", keys);
+						length := length + value_length;
+						if value_length=0 then
+							return;
+						end if;
+						get_endpoints(value, offset+length, value_length, hdo(object)**".endpoints");
+						length := length + value_length;
+    				end;
+
+    				variable index : natural;
+					variable value_length : natural;
+
+    			begin
+					length := 0;
+					if object'length=0 then
+						return;
+					end if;
+					index := 0;
+					for i in object'range loop 
+						get_interface(value, offset+length, value_length, object**index);
+						length := length + value_length;
+						exit when value_length=0;
+						index := index + 1;
+					end loop;
+    			end;
+
+				constant keys : string := 
+					"configuration:["                                                               &
+						"bLength,bDescriptorType,wTotalLength,bNumInterfaces,bConfigurationValue,"  &
+						"iConfiguration,bmAttribute,MaxPower]";
+				variable value_length : natural;
+			begin
+				length := 0;
+				if object'length=0 then
+					return;
+				end if;
+				sweep(value, offset+length, value_length, hdo(object)**".configuration", keys);
+				length := length + value_length;
+				get_interfaces(value, offset+length, value_length, hdo(object)**".interfaces");
+				length := length + value_length;
+			end;
+			constant data : string := ",data:0x";
+
+			constant configurations : string := object**".configurations";
+
+			variable index : natural;
+			variable value_length : natural;
+
+		begin
+			length := 0;
+			if object'length=0 then
+				return;
+			end if;
+			index := 0;
+			for i in object'range loop 
+				append(value, value_length, offset+length, ",content:0x");
+				length := length + value_length;
+				get_configuration(value, offset+length, value_length, configurations**index);
+				exit when value_length=0;
+				length := length + value_length;
+				append(value, value_length, offset+length, ",wValue:0x0200");
+				length := length + value_length;
+				index  := index  + 1;
+			end loop;
+			value(offset) := '{';
+			append(value, value_length, offset+length, "}");
+			length := length + value_length;
+ 		end;
+
+		procedure get_strings(
+			variable value  : inout string;
+			constant offset : in    positive;
+			variable length : inout natural;
+			constant object : in    string) is
+
+			procedure get_string (
+				variable value  : inout string;
+				constant offset : in    positive;
+				variable length : inout natural;
+				constant object : in    string) is
+				constant keys : string := 
+					"string:["              &
+						"bLength,"          &
+						"bDescriptorType]";
+			begin
+				sweep(value, offset, length, hdo(object)**".string", keys);
+			end;
+
+			procedure get_landids(
+				variable value   : inout string;
+				constant offset : in    positive;
+				variable length : inout natural;
+				constant object : in    string) is
+			begin
+				sweep(value, offset, length, hdo(object)**".wLANGID");
+			end;
+
+			procedure get_unicodes(
+				variable value   : inout string;
+				constant offset : in    positive;
+				variable length : inout natural;
+				constant object : in    string) is
+
+				procedure get_unicode(
+					variable value   : inout string;
+					constant offset : in    positive;
+					variable length : inout natural;
+					constant object : in    string) is
+					constant keys : string := 
+						"unicodes:["                           &
+							"bLength," & 
+							"bDescriptorType," &
+							"bString]";
+					variable value_length : natural;
+				begin
+					length := 0;
+					append(value, value_length, offset+length, "{content:0x");
+					length := length + value_length;
+					sweep(value, offset+length, value_length, object, keys);
+					length := length + value_length;
+					if value_length=0 then
+						length := 0;
+						return;
+					end if;
+				end;
+				constant unicodes : string := object**".unicodes";
+				constant lanids   : string := object**".wLANGID";
+
+				variable index : natural;
+				variable value_length : natural;
+			begin
+				length := 0;
+				if object'length=0 then
+					return;
+				end if;
+				for i in object'range loop
+					get_unicode(value, offset+length, value_length, unicodes**index);
+					exit when value_length=0;
+					length := length + value_length;
+					append(value, value_length, offset+length, ",wValue:0x0300,wIndex:"&lanids**index);
+					length := length + value_length;
+					append(value, value_length, offset+length, "}");
+					length := length + value_length;
+					append(value, value_length, offset+length, ",");
+					length := length + value_length;
+					index  := index  + 1;
+				end loop;
+				length := length - 1;
+			end;
+
+			constant strings : string := object**".strings";
+			variable value_length : natural;
+		begin
+			length := 0;
+			append(value, value_length, offset+length, ",content:0x");
+			length := length + value_length;
+			get_string(value, offset+length, value_length, strings);
+			length := length + value_length;
+			get_landids(value, offset+length, value_length, strings);
+			length := length + value_length;
+			append(value, value_length, offset+length, ",wValue:0x0300,wIndex:0x0000");
+			length := length + value_length;
+			value(offset) := '{';
+			append(value, value_length, offset+length, "},");
+			length := length + value_length;
+
+			get_unicodes(value, offset+length, value_length, strings);
+			length := length + value_length;
+
+		end;
+
+		variable value  : string(object'range);
+		variable offset : natural;
+		variable length : natural;
+
+	begin
+		length := 0;
+		offset := value'left;
+		append(value, length, offset, "[");
+		offset := offset + length;
+
+		get_device(value, offset, length, object);
+		offset := offset + length;
+
+		append(value, length, offset, ",");
+		offset := offset + length;
+
+		get_configurations(value, offset, length, object);
+		offset := offset + length;
+
+		append(value, length, offset, ",");
+		offset := offset + length;
+
+		get_strings(value, offset, length, object);
+		offset := offset + length;
+
+		append(value, length, offset, "]");
+		offset := offset + length;
+
+		return value(value'left to offset-1);
+
+	end;
+
+	function description_decode (
+		constant description_bin : string)
+		return string is
+		constant mem_map      : string := section_layout(description_bin);
+		constant mem_table    : string := section_table(mem_map**".table");
+		constant num_of_sgmts : natural := mem_map**".length";
+
+		variable valuew : std_logic_vector(0 to 16*num_of_sgmts-1);
+		variable indexw : std_logic_vector(0 to 16*num_of_sgmts-1);
+		variable maskw  : std_logic_vector(0 to  1*num_of_sgmts-1);
+		variable value  : string(description_bin'range);
+		variable wvalue_length : natural;
+		variable wvalue : string(1 to 16);
+		variable windex_length : natural;
+		variable windex : string(1 to 16);
+		variable index  : natural;
+		variable length : natural;
+
+	begin
+		valuew := (others => '0');
+		indexw := (others => '0');
+		maskw  := (others => '0');
+		index := 0;
+		for i in 0 to num_of_sgmts-1 loop
+			get_value(value, value'left, length, description_bin, index);
+			exit when length=0;
+			index := index + 1;
+			get_value(wvalue, wvalue'left, wvalue_length, value(value'left to value'left+length-1), ".wValue");
+			next when wvalue_length=0;
+			valuew(i*16 to (i+1)*16-1) := to_stdlogicvector(wvalue(1 to wvalue_length));
+			get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
+			next when windex_length=0;
+			maskw(i) := '1';
+			indexw(i*16 to (i+1)*16-1) := to_stdlogicvector(windex(1 to windex_length));
+		end loop;
+		return '{' 
+			& "wValue:0x" & to_string(valuew, 16) & ',' 
+			& "wIndex:0x" & to_string(indexw, 16) & ','
+			& "mask:0b"   & to_string(maskw,2)  
+			& '}';
+	end;
 end;

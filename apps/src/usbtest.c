@@ -130,10 +130,11 @@ int main(int argc, char **argv)
 			}
 			format = "0x%x";
 			break;
-		case '?':
-			exit(1);
 		default:
-			abort();
+			for (int i = 0; i < sizeof(cmmd)/sizeof(cmmd[0]); i++) {
+				printf ("%s\n", cmmd[i]);
+			}
+			exit(1);
 		}
 	}
 

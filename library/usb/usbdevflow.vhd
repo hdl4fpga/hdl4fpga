@@ -21,7 +21,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_bit.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
@@ -259,68 +259,92 @@ begin
 		end if;
 	end process;
 
-	txbuffer_p : process (acktx_rdy, clk)
-		variable mem  : std_logic_vector(0 to 64*8-1);
-		subtype  mem_range  is natural range 1 to unsigned_num_bits(mem'length-1);
-		subtype  byte_range is natural range 0 to unsigned_num_bits(mem'length-1)-3;
-		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
-		variable pout : unsigned(pin'range);
-		variable we   : std_logic;
-		variable din  : std_logic;
+	txbuffer_b : block
+		signal alt_wrena  : std_ulogic;
+		signal alt_wraddr : std_logic_vector(1 to 9);
+		signal alt_wrdata : std_logic_vector(0 to 0);
+		signal alt_rdaddr : std_logic_vector(alt_wraddr'range);
+		signal alt_rddata : std_logic_vector(alt_wrdata'range);
 	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (setup_rdy xor setup_req)='1' then
-					pin  := (others => '0');
-					pout := pin;
-					ackrx_rdy <= ackrx_req;
-				elsif (ackrx_rdy xor ackrx_req)='1' then
-					pin  := (others => '0');
-					pout := (others => '0');
-					ackrx_rdy <= ackrx_req;
-				elsif (in_rdy xor in_req)='1' then
-					pout := (others => '0');
-				elsif pout(byte_range) /= pin(byte_range) then
-					if txbs='0' then
-						pout := pout + 1;
-					end if;
-				end if;
-				buffer_txd <= mem(to_integer(pout(mem_range)));
+		-- Required for Altera Cyclone II MK4 architecture
+		mem_e : entity hdl4fpga.dpram
+		port map (
+			wr_clk  => clk,
+			wr_ena  => alt_wrena,
+			wr_addr => alt_wraddr,
+			wr_data => alt_wrdata,
+			rd_clk  => clk,
+			rd_addr => alt_rdaddr,
+			rd_data => alt_rddata);
+		buffer_txd <= alt_rddata(0);
 
-				if pout(byte_range)=pin(byte_range) then
-					buffer_txen <= '0';
-				else
-					buffer_txen <= '1';
-				end if;
+    	txbuffer_p : process (acktx_rdy, clk)
+    		variable mem  : std_logic_vector(0 to 64*8-1);
+    		subtype  mem_range  is natural range 1 to unsigned_num_bits(mem'length-1);
+    		subtype  byte_range is natural range 0 to unsigned_num_bits(mem'length-1)-3;
+    		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1));
+    		variable pout : unsigned(pin'range);
+    		variable we   : std_logic;
+    		variable din  : std_logic;
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+    				if (setup_rdy xor setup_req)='1' then
+    					pin  := (others => '0');
+    					pout := pin;
+    					ackrx_rdy <= ackrx_req;
+    				elsif (ackrx_rdy xor ackrx_req)='1' then
+    					pin  := (others => '0');
+    					pout := (others => '0');
+    					ackrx_rdy <= ackrx_req;
+    				elsif (in_rdy xor in_req)='1' then
+    					pout := (others => '0');
+    				elsif pout(byte_range) /= pin(byte_range) then
+    					if txbs='0' then
+    						pout := pout + 1;
+    					end if;
+    				end if;
+    				alt_rdaddr <= std_logic_vector(pout(mem_range));
+    				-- buffer_txd <= mem(to_integer(pout(mem_range)));
 
-				if pin(0)='1' then
-					we  := '0';
-					din := '-';
-				elsif (ctlr_rdy xor ctlr_req)='1' then
-					we  := rqst_txen;
-					din := rqst_txd;
-				elsif buffer_txbs='0' then
-					we  := dev_txen;
-					din := dev_txd;
-				end if;
-				if we='1' then
-					mem(to_integer(pin(mem_range))) := din;
-					pin := pin + 1;
-				end if;
+    				if pout(byte_range)=pin(byte_range) then
+    					buffer_txen <= '0';
+    				else
+    					buffer_txen <= '1';
+    				end if;
 
-				buffertxbs_l : if (ctlr_rdy xor ctlr_req)='1' then
-					buffer_txbs <= '1';
-				elsif pin(0)='0' then
-					buffer_txbs <= '0';
-				else
-					buffer_txbs <= '1';
-				end if;
+    				if pin(0)='1' then
+    					we  := '0';
+    					din := '-';
+    				elsif (ctlr_rdy xor ctlr_req)='1' then
+    					we  := rqst_txen;
+    					din := rqst_txd;
+    				elsif buffer_txbs='0' then
+    					we  := dev_txen;
+    					din := dev_txd;
+    				end if;
+    				alt_wrena  <= we;
+    				alt_wraddr <= std_logic_vector(pin(mem_range));
+    				alt_wrdata(0) <= din;
+    				if we='1' then
+    					mem(to_integer(pin(mem_range))) := din;
+    					pin := pin + 1;
+    				end if;
 
-				tp(11) <= buffer_txen;
-				tp(12) <= buffer_txbs;
-			end if;
-		end if;
-	end process;
+    				buffertxbs_l : if (ctlr_rdy xor ctlr_req)='1' then
+    					buffer_txbs <= '1';
+    				elsif pin(0)='0' then
+    					buffer_txbs <= '0';
+    				else
+    					buffer_txbs <= '1';
+    				end if;
+
+    				tp(11) <= buffer_txen;
+    				tp(12) <= buffer_txbs;
+    			end if;
+    		end if;
+    	end process;
+	end block;
 
 	txen <= 
 		buffer_txen when txbuffer else
@@ -344,77 +368,106 @@ begin
 	(rqst_rxdv, rqst_rxbs, rqst_rxd) <= std_logic_vector'(rxdv, rxbs, rxd);
 
 	clpcrc_p : process (rqst_rdy, clk)
-		variable slr_rxd  : unsigned(0 to (16)-1);
-		variable slr_rxdv : unsigned(0 to (16)-1);
+		variable slr_rxd  : unsigned(0 to (16)-1) := (others => '0');
+		variable slr_rxdv : unsigned(0 to (16)-1) := (others => '0');
 	begin
 		if rising_edge(clk) then
 			if cken='1' then
 				if rxbs='0' then
-					clpcrc_rxdv <= to_stdulogic(slr_rxdv(0) and to_bit(rxdv));
-					slr_rxdv(0) := to_bit(rxdv);
+					clpcrc_rxdv <= slr_rxdv(0) and rxdv;
+					slr_rxdv(0) := rxdv;
 					slr_rxdv := slr_rxdv rol 1;
 
-					clpcrc_rxd <= to_stdulogic(slr_rxd(0));
-					slr_rxd(0) := to_bit(rxd);
+					clpcrc_rxd <= slr_rxd(0);
+					slr_rxd(0) := rxd;
 					slr_rxd := slr_rxd rol 1;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	rxbuffer_p : process (rqst_req, clk)
-		variable mem  : std_logic_vector(0 to 64*2**3-1);
-		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
-		subtype  byte_range is natural range 1 to unsigned_num_bits(mem'length-1)-3;
-		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1)) := (others => '0');
-		variable pout : unsigned(pin'range);
-		variable prty : unsigned(pout'range);
-		variable we   : std_logic;
-		variable din  : std_logic;
+	rxbuffer_b : block
+		signal alt_wrena  : std_ulogic;
+		signal alt_wraddr : std_logic_vector(1 to 9);
+		signal alt_wrdata : std_logic_vector(0 to 0);
+		signal alt_rdena  : std_ulogic := '1';
+		signal alt_rdaddr : std_logic_vector(alt_wraddr'range);
+		signal alt_rddata : std_logic_vector(alt_wrdata'range);
 	begin
-		if rising_edge(clk) then
-			if cken='1' then
-				if (setup_rdy xor setup_req)='1' then
-					pout := pin;
-					prty := pin;
-				elsif pout=prty then
-					if (out_rdy xor out_req)='0' then
-						if rxerr='1' then
-							pin := prty;
-						else
-							prty := pin;
-						end if;
-					end if;
-				end if;
+		-- Required for Altera Cyclone II MK4 architecture
+		mem_e : entity hdl4fpga.dpram
+		port map (
+			wr_clk  => clk,
+			wr_ena  => alt_wrena,
+			wr_addr => alt_wraddr,
+			wr_data => alt_wrdata,
+			rd_clk  => clk,
+			rd_ena  => alt_rdena,
+			rd_addr => alt_rdaddr,
+			rd_data => alt_rddata);
+		buffer_rxd <= alt_rddata(0);
 
-				if pout/=prty then
-					if buffer_rxbs='0' then
-						buffer_rxd <= mem(to_integer(pout(mem_range)));
-						pout := pout + 1;
-						buffer_rxdv <= '1';
-					end if;
-				else
-					buffer_rxdv <= '0';
-				end if;
+    	rxbuffer_p : process (rqst_req, clk)
+    		variable mem  : std_logic_vector(0 to 64*2**3-1);
+    		subtype  mem_range is natural range 1 to unsigned_num_bits(mem'length-1);
+    		subtype  byte_range is natural range 1 to unsigned_num_bits(mem'length-1)-3;
+    		variable pin  : unsigned(0 to unsigned_num_bits(mem'length-1)) := (others => '0');
+    		variable pout : unsigned(pin'range) := (others => '0');
+    		variable pout0 : unsigned(pin'range) := (others => '0');
+    		variable prty : unsigned(pout'range) := (others => '0');
+    		variable we   : std_logic;
+    		variable din  : std_logic;
+    	begin
+    		if rising_edge(clk) then
+    			if cken='1' then
+    				if (setup_rdy xor setup_req)='1' then
+    					pout := pin;
+    					prty := pin;
+    				elsif pout=prty then
+    					if (out_rdy xor out_req)='0' then
+    						if rxerr='1' then
+    							pin := prty;
+    						else
+    							prty := pin;
+    						end if;
+    					end if;
+    				end if;
 
-				if we='1' then
-					mem(to_integer(pin(mem_range))) := din;
-					pin := pin + 1;
-				end if;
+    				if pout/=prty then
+    					if buffer_rxbs='0' then
+    						-- buffer_rxd <= mem(to_integer(pout(mem_range)));
+    						-- alt_rdaddr <= std_logic_vector(pout(mem_range));
+							pout0 := pout;
+    						pout  := pout + 1;
+    						buffer_rxdv <= '1';
+    					end if;
+    				else
+    					buffer_rxdv <= '0';
+    				end if;
+    				alt_rdaddr <= std_logic_vector(pout0(mem_range));
 
-				if (out_rdy xor out_req)='1' then
-					if clpcrc_rxdv='0' then
-						we := '0';
-					elsif clpcrc_rxbs='1' then
-						we := '0';
-					else
-						we := '1';
-					end if;
-				end if;
-				din := clpcrc_rxd;
-			end if;
-		end if;
-	end process;
+    				alt_wrena  <= we;
+    				alt_wraddr <= std_logic_vector(pin(mem_range));
+    				alt_wrdata(0) <= din;
+    				if we='1' then
+    					mem(to_integer(pin(mem_range))) := din;
+    					pin := pin + 1;
+    				end if;
+
+    				if (out_rdy xor out_req)='1' then
+    					if clpcrc_rxdv='0' then
+    						we := '0';
+    					elsif clpcrc_rxbs='1' then
+    						we := '0';
+    					else
+    						we := '1';
+    					end if;
+    				end if;
+    				din := clpcrc_rxd;
+    			end if;
+    		end if;
+    	end process;
+	end block;
 
 	dev_rxd <= 
 		buffer_rxd when rxbuffer else
