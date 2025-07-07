@@ -433,7 +433,13 @@ package body usbpkg is
 				exit when value_length=0;
 
 				offset := data_offset+data_length;
-				data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
+				if key(key'left to key'left+key_length-1)="bString" then
+    				-- to_utf16("HDL4FPGA")),16)
+					data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1)),16), 16);
+				else
+					data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
+				end if;
+
 				data_length := data_length + value_length-2;
 				index := index + 1;
 			end loop;
@@ -649,7 +655,7 @@ package body usbpkg is
 						"unicodes:["                           &
 							"bLength," & 
 							"bDescriptorType," &
-							"bstring]";
+							"bString]";
 					variable value_length : natural;
 				begin
 					length := 0;

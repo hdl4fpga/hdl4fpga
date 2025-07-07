@@ -93,7 +93,7 @@ entity usbdev is
     			"unicodes:[{"                           &
     				"bLength            :0x12," & 
     				"bDescriptorType    :0x03," &
-    				"bstring            :0x"&to_string(reverse(reverse(to_utf16("HDL4FPGA")),16),16)&"}]]}"));
+    				"bString            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}"));
 	port (
 		tp   : out std_logic_vector(1 to 32);
 
