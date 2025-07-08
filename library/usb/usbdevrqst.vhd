@@ -353,7 +353,7 @@ begin
 						descriptor_cntr := (others=> '1');
 						state := s_idle;
 					end if;
-					descriptor_txen <= not descriptor_cntr(descriptor_cntr'left);
+					descriptor_txen <= not descriptor_cntr(0);
 				end if;
 			end if;
 		end process;
