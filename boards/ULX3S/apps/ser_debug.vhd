@@ -38,6 +38,7 @@ architecture ser_debug of ulx3s is
 	constant usb_oversampling : natural := 3;
 	constant io_link : io_comms := io_usb;
 	constant usb_device : boolean := true;
+	constant monitor : boolean := true;
 
 	constant video_mode   : video_modes := mode600p24bpp;
 	constant video_params : video_record := videoparam(
@@ -179,7 +180,7 @@ begin
 			led <= tp(9 to 16);
 		end generate;
 			
-		monitor_b : block 
+		monitor_g : if monitor generate 
 			signal tp : std_logic_vector(1 to 32);
 			signal cken : std_logic;
 		begin
@@ -223,7 +224,7 @@ begin
     			ser_frm     <= fltr_en; 
     			ser_irdy    <= not fltr_bs;
     			ser_data(0) <= fltr_d;
-		end block;
+		end generate;
 
 		-- led(4) <= tp(4);
 		-- led(3) <= tp(5);
@@ -357,30 +358,32 @@ begin
 
 	end generate;
 
-	ser_debug_e : entity hdl4fpga.ser_debug
-	generic map (
-		timing_id       => video_params.timing)
-	port map (
-		ser_clk         => ser_clk, 
-		ser_frm         => ser_frm, 
-		ser_irdy        => ser_irdy, 
-		ser_data        => ser_data, 
-		
-		video_clk       => video_clk,
-		video_shift_clk => video_shift_clk,
-		video_hzsync    => video_hzsync,
-		video_vtsync    => video_vtsync,
-		video_pixel     => video_pixel,
-		dvid_crgb       => dvid_crgb);
-
-	ddr_g : for i in gpdi_d'range generate
-		oddr_i : oddrx1f
-		port map(
-			sclk => video_shift_clk,
-			rst  => '0',
-			d0   => dvid_crgb(2*i),
-			d1   => dvid_crgb(2*i+1),
-			q    => gpdi_d(i));
+	video_g : if monitor generate
+		ser_debug_e : entity hdl4fpga.ser_debug
+		generic map (
+			timing_id       => video_params.timing)
+		port map (
+			ser_clk         => ser_clk, 
+			ser_frm         => ser_frm, 
+			ser_irdy        => ser_irdy, 
+			ser_data        => ser_data, 
+			
+			video_clk       => video_clk,
+			video_shift_clk => video_shift_clk,
+			video_hzsync    => video_hzsync,
+			video_vtsync    => video_vtsync,
+			video_pixel     => video_pixel,
+			dvid_crgb       => dvid_crgb);
+	
+		ddr_g : for i in gpdi_d'range generate
+			oddr_i : oddrx1f
+			port map(
+				sclk => video_shift_clk,
+				rst  => '0',
+				d0   => dvid_crgb(2*i),
+				d1   => dvid_crgb(2*i+1),
+				q    => gpdi_d(i));
+		end generate;
 	end generate;
 
 end;
