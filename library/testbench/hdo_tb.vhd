@@ -29,23 +29,11 @@ end;
 
 architecture hdo_tb of testbench is
 
-	constant sdram_chip : string := "{" &
-		"fmly : sdr,"             &
-		"orgz : {"                &
-			"addr:{"              &
-				"ba  :  2,"       &
-				"row : 13,"       &
-				"col :  9},"      &
-			"data:{"              &
-				"dm :  2,"        &
-				"dq : 16}},"      &
-		"tmng : {"                &
-			"tWR   : 25.0e-9,"    &
-			"tRCD  : 15.0e-9,"    &
-			"tRP   : 15.00e-9,"   &
-			"tMRD  : 15.0e-9,"    &
-			"tRFC  : 66.0e-9,"    &
-			"tREFI : 7.8125e-6}}";
+	constant sdram_db : string := "{" &
+		"MT48LC16M16MA2-7E : {fmly : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
+		"MT46V16M16M-6T    : {fmly : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : 7.8125e-6}}}";
+
+	constant sdram_chip : string := sdram_db**".MT48LC16M16MA2-7E";
 
 	constant families_db : string := "{"                                 &
 		"sdr : {"                                                        &
@@ -73,7 +61,8 @@ begin
 
 	process
 	begin
-		report "sdram_addr : " & sdram_addr;
+		report "sdram_addr   : " & sdram_addr;
+		report "family       : " & string'(sdram_chip**".fmly");
 		report "bank   right : " & natural'image(ba'right);
 		report "row    right : " & natural'image(row'right);
 		report "column right : " & natural'image(col'right);
