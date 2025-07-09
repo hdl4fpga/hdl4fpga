@@ -69,8 +69,6 @@ architecture hdo_tb of testbench is
 	signal dq  : std_logic_vector(0 to sdram_chip**".orgz.data.dq"-1);
 	signal dm  : std_logic_vector(0 to sdram_chip**".orgz.data.dm"-1);
 
-	constant twr : real := sdram_chip**".tmng.tWR";
-
 begin
 
 	process
