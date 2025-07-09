@@ -47,6 +47,19 @@ architecture hdo_tb of testbench is
 			"tRFC  : 66.0e-9,"    &
 			"tREFI : 7.8125e-6}}";
 
+	constant families_db : string := "{"                                 &
+		"sdr : {"                                                        &
+			"al   : { '000' : 0 },"                                      &
+			"bl   : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 },"     &
+			"cl   : { '001' : 1, '010' : 2, '011' : 3 },"                &
+		"tmng : { tPreRST : 100.0e-6, cDLL : 200, tCAS : 15.0e-9}}"      &
+			"ddr : {"                                                    &
+			"al   : { '000' : 0},"                                       &
+			"bl   : { '001' : 2, '010' : 4, '011' : 8},"                 &
+			"cl   : { '010' : 4, '110' : 5, '011' : 6},"                 &
+			"cwl  : { '000' : 2},"                                       &
+			"tmng : { tPreRST : 200.0e-6, cDLL : 200, tCAS : 15.0e-9}}}";
+
 	constant sdram_addr : string := sdram_chip**".orgz.addr";
 
 	signal  ba  : std_logic_vector(0 to  sdram_addr**".ba"-1);
@@ -56,6 +69,7 @@ architecture hdo_tb of testbench is
 	signal dq : std_logic_vector(0 to sdram_chip**".orgz.data.dq"-1);
 	signal dm : std_logic_vector(0 to sdram_chip**".orgz.data.dm"-1);
 
+	constant cas_latency : natural := families_db**(sdram_chip**".fmly"&".sdr.cl.101");
 	constant twr : real := sdram_chip**".tmng.tWR";
 begin
 
