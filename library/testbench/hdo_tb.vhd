@@ -62,15 +62,15 @@ architecture hdo_tb of testbench is
 
 	constant sdram_addr : string := sdram_chip**".orgz.addr";
 
-	signal  ba  : std_logic_vector(0 to  sdram_addr**".ba"-1);
-	signal  row : std_logic_vector(0 to  sdram_addr**".row"-1);
-	signal  col : std_logic_vector(0 to  sdram_addr**".col"-1);
+	signal ba  : std_logic_vector(0 to  sdram_addr**".ba"-1);
+	signal row : std_logic_vector(0 to  sdram_addr**".row"-1);
+	signal col : std_logic_vector(0 to  sdram_addr**".col"-1);
 
-	signal dq : std_logic_vector(0 to sdram_chip**".orgz.data.dq"-1);
-	signal dm : std_logic_vector(0 to sdram_chip**".orgz.data.dm"-1);
+	signal dq  : std_logic_vector(0 to sdram_chip**".orgz.data.dq"-1);
+	signal dm  : std_logic_vector(0 to sdram_chip**".orgz.data.dm"-1);
 
-	constant cas_latency : natural := families_db**(sdram_chip**".fmly"&".sdr.cl.101");
 	constant twr : real := sdram_chip**".tmng.tWR";
+
 begin
 
 	process
@@ -81,7 +81,8 @@ begin
 		report "column right : " & natural'image(col'right);
 		report "dq     right : " & natural'image(dq'right);
 		report "dm     right : " & natural'image(dm'right);
-		report "tWR          : " & real'image(twr);
+		report "tWR          : " & real'image(sdram_chip**".tmng.tWR");
+		report "cas lantency : " & natural'image((families_db**(string'(sdram_chip**".fmly")))**".sdr.cl.001");
 		wait;
 	end process;
 
