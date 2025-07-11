@@ -19,109 +19,57 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-use std.textio.all;
+use work.hdo.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
 
-library hdl4fpga;
--- use hdl4fpga.hdo.all;
-use hdl4fpga.base.all;
-use hdl4fpga.usbpkg.all;
-use work.hdo.all;
+--entity testbench is
+--end;
 
 architecture hdo_tb of testbench is
-	constant descriptor : string := "{"     &
-		"device:{"                                  &
-			"bLength             :0x12,"            &
-			"bDescriptorType     :0x01,"            &
-			"bcdUSB              :0x0110,"          &
-			"bDeviceClass        :0x00,"            &
-			"bDeviceSubClass     :0x00,"            &
-			"bDeviceProtocol     :0x00,"            &
-			"bMaxPacketSize0     :0x40,"            &
-			"idVendor            :0x1234,"          &
-			"idProduct           :0xabcd,"          &
-			"bcdDevice           :0x0100,"          &
-			"iManufacturer       :0x01,"            &
-			"iProduct            :0x00,"            &
-			"iSerialNumber       :0x00,"            &
-			"bNumConfigurations  :0x01},"           &
-		"configurations:[{"                         &
-			"configuration:{"                       &
-			"bLength             :0x09,"            &
-			"bDescriptorType     :0x02,"            &
-			"wTotalLength        :0x0020,"          &
-			"bNumInterfaces      :0x01,"            &
-			"bConfigurationValue :0x01,"            &
-			"iConfiguration      :0x00,"            &
-			"bmAttribute         :0xc0,"            &
-			"MaxPower            :0x32},"           &
-			"interfaces:[{"                         &
-				"interface:{"                       &
-				"bLength            :0x09,"         &
-				"bDescriptorType    :0x04,"         &
-				"bInterfaceNumber   :0x00,"         &
-				"bAlternateSetting  :0x00,"         &
-				"bNumEndpoints      :0x02,"         &
-				"bInterfaceClass    :0x00,"         &
-				"bInterfaceSubClass :0x00,"         &
-				"bIntefaceProtocol  :0x00,"         &
-				"iInterface         :0x00},"        &
-				"endpoints:[{"                      &
-					"bLength          :0x07,"       &
-					"bDescriptorType  :0x05,"       &
-					"bEndpointAddress :0x01,"       &
-					"bmAttibutes      :0x02,"       &
-					"wMaxPacketSize   :0x0040,"     &
-					"bInterval        :0x00},"      &
-					"{"                             &
-					"bLength          :0x07,"       &
-					"bDescriptorType  :0x05,"       &
-					"bEndpointAddress :0x81,"       &
-					"bmAttibutes      :0x02,"       &
-					"wMaxPacketSize   :0x0040,"     &
-					"bInterval        :0x00}]}]}]," &
-		"strings:["                                 &
-			"string:{"                              &
-				"bLength             :0x04,"        &
-				"bDescriptorType     :0x03},"       &
-			"wLANGID:["                             &
-				"0x0409],"                          &
-			"unicodes:[{"                           &
-				"bLength            :0x12," & 
-				"bDescriptorType    :0x03," &
-				"bstring            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}";
 
-		constant sections             : string           := description_section(descriptor);
-		constant layout               : string           := section_layout(sections);
-		constant section_content      : std_logic_vector := layout**".content";
+	constant sdram_db : string := "{" &
+		"MT48LC16M16MA2-7E : {fmly : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
+		"MT46V16M16M-6T    : {fmly : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : 7.8125e-6}}}";
 
-		constant layout_table         : string           := section_table(layout**".table");
-		constant layout_table_content : std_logic_vector := layout_table**".content";
+	constant sdram_chip : string := sdram_db**".MT48LC16M16MA2-7E";
 
-		constant descriptors_length   : string           := layout_table**".length";
-		constant descriptors_offset   : string           := layout_table**".offset";
+	constant families_db : string := "{"                                 &
+		"sdr : {"                                                        &
+			"al   : { '000' : 0 },"                                      &
+			"bl   : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 },"     &
+			"cl   : { '001' : 1, '010' : 2, '011' : 3 },"                &
+		"tmng : { tPreRST : 100.0e-6, cDLL : 200, tCAS : 15.0e-9}}"      &
+			"ddr : {"                                                    &
+			"al   : { '000' : 0},"                                       &
+			"bl   : { '001' : 2, '010' : 4, '011' : 8},"                 &
+			"cl   : { '010' : 4, '110' : 5, '011' : 6},"                 &
+			"cwl  : { '000' : 2},"                                       &
+			"tmng : { tPreRST : 200.0e-6, cDLL : 200, tCAS : 15.0e-9}}}";
 
-		signal layout_table_addr      : std_logic_vector(0 to layout_table**".address"-1);
-		signal layout_table_data      : std_logic_vector(descriptors_offset**".left" to descriptors_length**".right");
-		signal descriptor_addr        : std_logic_vector(descriptors_offset**".left" to descriptors_offset**".right");
-		signal descriptor_data        : std_logic_vector(0 to 0);
-		-- alias descriptor_offset is layout_table_data(descriptors_offset**".left" to descriptors_offset**".right");
-		-- alias descriptor_length is layout_table_data(descriptors_length**".left" to descriptors_length**".right");
+	constant sdram_addr : string := sdram_chip**".orgz.addr";
+
+	signal ba  : std_logic_vector(0 to  sdram_addr**".ba"-1);
+	signal row : std_logic_vector(0 to  sdram_addr**".row"-1);
+	signal col : std_logic_vector(0 to  sdram_addr**".col"-1);
+
+	signal dq  : std_logic_vector(0 to sdram_chip**".orgz.data.dq"-1);
+	signal dm  : std_logic_vector(0 to sdram_chip**".orgz.data.dm"-1);
 
 begin
 
 	process
-
 	begin
-		report layout;
-		-- report descriptors_offset**".left";
-		-- report descriptors_offset**".right";
-		-- report to_string(layout_table_data'left);
-		-- report to_string(layout_table_data'right);
+		report "sdram_addr   : " & sdram_addr;
+		report "family       : " & string'(sdram_chip**".fmly");
+		report "bank   right : " & natural'image(ba'right);
+		report "row    right : " & natural'image(row'right);
+		report "column right : " & natural'image(col'right);
+		report "dq     right : " & natural'image(dq'right);
+		report "dm     right : " & natural'image(dm'right);
+		report "tWR          : " & real'image(sdram_chip**".tmng.tWR");
+		report "cas lantency : " & natural'image((families_db**(string'(sdram_chip**".fmly")))**".sdr.cl.001");
 		wait;
 	end process;
 

@@ -101,7 +101,7 @@ begin
 			variable length : inout natural;
 			constant data   : in    string;
 			constant index  : in    natural) is
-			constant e      : string := hdo(data)**("[" & natural'image(index) & "]=[0]");
+			constant e      : string := data**("[" & natural'image(index) & "]=[0]");
 			constant bin    : std_logic_vector := reverse(hdo(e)**"[0]",8);
 		begin
 			if e="[0]" then 

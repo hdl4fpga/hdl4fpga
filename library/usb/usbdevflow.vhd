@@ -174,6 +174,7 @@ begin
 								else
 									ddatao <= ddatao xor tbit;
 								end if;
+								-- This is because GHDL. The worst vhdl compiler ever
 								-- case tkdata(dev_endp'range) is
 								-- when (dev_endp'range => '0') =>
 									-- ddata  <= ddata  xor tbit;
@@ -207,6 +208,7 @@ begin
 						else
 							ddatai <= ddatai xor tbit;
 						end if;
+						-- This is because GHDL. The worst vhdl compiler ever
 						-- case tkdata(dev_endp'range) is
 						-- when (dev_endp'range => '0') =>
 							-- ddata <= ddata xor tbit;
@@ -236,6 +238,7 @@ begin
 						else
 							txpid  <= ddatai;
 						end if;
+						-- This is because GHDL. The worst vhdl compiler ever
 						-- case tkdata(dev_endp'range) is
 						-- when (dev_endp'range => '0') =>
 							-- txpid  <= ddata;

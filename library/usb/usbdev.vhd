@@ -91,8 +91,8 @@ entity usbdev is
     			"wLANGID:["                             &
     				"0x0409],"                          &
     			"unicodes:[{"                           &
-    				"bLength            :0x12," & 
-    				"bDescriptorType    :0x03," &
+    				"bLength            :0x12,"         & 
+    				"bDescriptorType    :0x03,"         &
     				"bString            :0x"&to_string(to_utf16("HDL4FPGA"),16)&"}]]}"));
 	port (
 		tp   : out std_logic_vector(1 to 32);
