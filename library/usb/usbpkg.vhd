@@ -316,7 +316,7 @@ package body usbpkg is
 			table(table_pos) := '[';
 			table_pos := table_pos + 1;
 			copy(table, table_pos, table_pos, natural'image(pos)&",");
-			copy(table, table_pos, table_pos, natural'image(scc-pos-1)&"],");
+			copy(table, table_pos, table_pos, natural'image(scc-pos)&"],");
 			-- copy(table, table_pos, table_pos, std_logic'image(content(pos))&"],");
 			pos := scc;
 			n := n + 1;
