@@ -38,12 +38,12 @@ entity sdram_ctlr is
 	port (
 		ctlr_alat   : out std_logic_vector(2 downto 0);
 		ctlr_blat   : out std_logic_vector(2 downto 0);
-		ctlr_al     : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.al=3."-1 downto 0) := (others => '0');
-		ctlr_bl     : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.bl=3."-1 downto 0);
-		ctlr_cl     : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cl=3."-1 downto 0);
-		ctlr_cwl    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cwl=3."-1 downto 0) := (others => '0');
-		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.rtt=2."-1 downto 0) := (others => '0');
-		ctlr_ods    : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.ods=1."-1 downto 0) := (others => '0');
+		ctlr_al     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.al=3."-1 downto 0) := (others => '0');
+		ctlr_bl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.bl=3."-1 downto 0);
+		ctlr_cl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cl=3."-1 downto 0);
+		ctlr_cwl    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cwl=3."-1 downto 0) := (others => '0');
+		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.rtt=2."-1 downto 0) := (others => '0');
+		ctlr_ods    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.ods=1."-1 downto 0) := (others => '0');
 
 		ctlr_rst    : in  std_logic;
 		ctlr_clk    : in  std_logic;
@@ -98,17 +98,17 @@ entity sdram_ctlr is
 		phy_sto     : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 		phy_dqi     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0));
 
-	constant fmly           : string  := hdo(sdram_data)**".fmly";
-	constant fmly_data      : string  := hdo(families_db)**("."&fmly);
-	constant fmlytmng_data  : string  := hdo(fmly_data)**(".tmng");
+	constant generation     : string  := hdo(sdram_data)**".generation";
+	constant generation_data : string  := hdo(generation_db)**("."&generation);
+	constant fmlytmng_data  : string  := hdo(generation_data)**(".tmng");
 	constant sdramtmng_data : string  := hdo(sdram_data)**".tmng";
 	constant gear           : natural := hdo(phy_data)**".orgz.gear";
 	constant phytmng_data   : string  := hdo(phy_data)**".tmng";
 
-	constant al_tab         : natural_vector := lattab(hdo(fmly_data)**(".al"), 2**ctlr_al'length);
-	constant bl_tab         : natural_vector := lattab(hdo(fmly_data)**(".bl"), 2**ctlr_bl'length);
-	constant cl_tab         : natural_vector := lattab(hdo(fmly_data)**(".cl"), 2**ctlr_cl'length);
-	constant cwl_tab        : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 2**ctlr_cwl'length);
+	constant al_tab         : natural_vector := lattab(hdo(generation_data)**(".al"), 2**ctlr_al'length);
+	constant bl_tab         : natural_vector := lattab(hdo(generation_data)**(".bl"), 2**ctlr_bl'length);
+	constant cl_tab         : natural_vector := lattab(hdo(generation_data)**(".cl"), 2**ctlr_cl'length);
+	constant cwl_tab        : natural_vector := lattab(hdo(generation_data)**(".cwl={}.)"), 2**ctlr_cwl'length);
 end;
 
 architecture mix of sdram_ctlr is
@@ -167,7 +167,7 @@ begin
 
 	sdram_pgm_frm  <= ctlr_frm when phy_inirdy='1' else phy_frm;
 	sdram_pgm_rw   <= ctlr_rw  when phy_inirdy='1' else phy_rw;
-	sdram_cwl      <= ctlr_cwl when fmly="ddr3"    else ctlr_cl when fmly="ddr2" else (others => '0');
+	sdram_cwl      <= ctlr_cwl when generation="ddr3"    else ctlr_cl when generation="ddr2" else (others => '0');
 	sdram_init_req <= ctlr_rst;
 
 	sdram_init_al(ctlr_al'range)   <= ctlr_al;
@@ -181,8 +181,8 @@ begin
 		debug            => debug,
 		sdramtmng_data   => sdramtmng_data,
 		gear             => gear,
-		fmly             => fmly,
-		fmly_data        => fmly_data,
+		generation       => generation,
+		generation_data  => generation_data,
 		ctlr_tcp         => ctlr_tcp)
 	port map (
 		sdram_init_al    => sdram_init_al,
@@ -257,10 +257,10 @@ begin
 
 	sdram_sch_e : entity hdl4fpga.sdram_sch
 	generic map (
-		fmly     => fmly,
-		phy_data => phy_data,
-		cl_tab   => cl_tab,
-		cwl_tab  => cwl_tab)
+		generation => generation,
+		phy_data   => phy_data,
+		cl_tab     => cl_tab,
+		cwl_tab    => cwl_tab)
 	port map (
 		sys_cl    => ctlr_cl,
 		sys_cwl   => sdram_cwl,
@@ -318,7 +318,7 @@ begin
 			return std_logic_vector(val);
 		end;
 
-		constant wwnl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
+		constant wwnl_tab  : natural_vector := sdram_schtab (generation, phytmng_data, "WWNL",  cl_tab, cwl_tab);
 	begin
 		rot_val <= sdram_rotval (
 			line_size => phy_dqo'length,
@@ -357,7 +357,7 @@ begin
 
 	phy_dmo  <= 
 		(fill(not sdram_sch_wwn, phy_dmo'length, full => true) or ctlr_dm) and 
-		 fill(not sdram_sch_dmo, phy_dmo'length, full => true) when fmly="sdr" else
+		 fill(not sdram_sch_dmo, phy_dmo'length, full => true) when generation="sdr" else
 		ctlr_dm;
 	phy_dqt  <= not sdram_sch_dqz;
 	phy_dqso <= sdram_sch_dqs;
