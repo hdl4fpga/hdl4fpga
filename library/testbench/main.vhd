@@ -40,22 +40,22 @@ begin
 	constant phy_data : string := hdo(phy_db)**".ecp5g1";
 	constant phytmng_data : string := hdo(phy_data)**".tmng";
 
-	constant chip_id   : string := "MT41K128M16-125";
-	constant sdram_data : string        := hdo(sdram_db)**("."&chip_id);
-	constant fmly      : string         := hdo(sdram_data)**".fmly";
-	constant fmly_data : string         := hdo(families_db)**("."&fmly);
+	constant chip_id         : string := "MT41K128M16-125";
+	constant sdram_data      : string := hdo(sdram_db)**("."&chip_id);
+	constant generation      : string := hdo(sdram_data)**".generation";
+	constant generation_data : string := hdo(generation_db)**("."&generation);
 
-	constant al_tab    : natural_vector := lattab(hdo(fmly_data)**(".al"), 8);
-	constant bl_tab    : natural_vector := lattab(hdo(fmly_data)**(".bl"), 8);
-	constant cl_tab    : natural_vector := lattab(hdo(fmly_data)**(".cl"), 8);
-	constant wrl_tab   : natural_vector := lattab(hdo(fmly_data)**(".wrl={}.)"), 8);
-	constant cwl_tab   : natural_vector := lattab(hdo(fmly_data)**(".cwl={}.)"), 8);
-	constant wwnl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
-	constant strl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "STRL",  cl_tab, cwl_tab);
+	constant al_tab    : natural_vector := lattab(hdo(generation_data)**(".al"), 8);
+	constant bl_tab    : natural_vector := lattab(hdo(generation_data)**(".bl"), 8);
+	constant cl_tab    : natural_vector := lattab(hdo(generation_data)**(".cl"), 8);
+	constant wrl_tab   : natural_vector := lattab(hdo(generation_data)**(".wrl={}.)"), 8);
+	constant cwl_tab   : natural_vector := lattab(hdo(generation_data)**(".cwl={}.)"), 8);
+	constant wwnl_tab  : natural_vector := sdram_schtab (generation, phytmng_data, "WWNL",  cl_tab, cwl_tab);
+	constant strl_tab  : natural_vector := sdram_schtab (generation, phytmng_data, "STRL",  cl_tab, cwl_tab);
 	constant dozl_tab  : natural_vector := sdram_schtab (strl_tab, -3);
-	constant dqszl_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSZL", cl_tab, cwl_tab);
-	constant dqsol_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSL",  cl_tab, cwl_tab);
-	constant dqzl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "DQZL",  cl_tab, cwl_tab);
+	constant dqszl_tab : natural_vector := sdram_schtab (generation, phytmng_data, "DQSZL", cl_tab, cwl_tab);
+	constant dqsol_tab : natural_vector := sdram_schtab (generation, phytmng_data, "DQSL",  cl_tab, cwl_tab);
+	constant dqzl_tab  : natural_vector := sdram_schtab (generation, phytmng_data, "DQZL",  cl_tab, cwl_tab);
 
 	constant STRL   : natural := hdo(phytmng_data)**".STRL";
 	constant DQSL   : natural := hdo(phytmng_data)**".DQSL";
@@ -69,9 +69,9 @@ begin
 	constant WWNXL  : natural := hdo(phytmng_data)**".WWNXL";
 	constant WIDL   : natural := hdo(phytmng_data)**".WIDL";
 
-	-- constant obj : string := string'(hdo'("none")**".fmly=none.");
-	-- constant obj : string := hdo(families_db)**("."&string'(hdo'("none")**".fmly=none."));-- )); --**".length.al=3.";
-	-- constant obj : string := hdo(string'(hdo(families_db)**("."&string'(hdo'("none")**".fmly=sdr."))))**".length.al=3.";
+	-- constant obj : string := string'(hdo'("none")**".generation=none.");
+	-- constant obj : string := hdo(generation_db)**("."&string'(hdo'("none")**".generation=none."));-- )); --**".length.al=3.";
+	-- constant obj : string := hdo(string'(hdo(generation_db)**("."&string'(hdo'("none")**".generation=sdr."))))**".length.al=3.";
 
 	constant obj : string := hdo'("none")**".length.al=3.";
 	alias tab is wwnl_tab;
@@ -87,7 +87,7 @@ begin
 		-- report "***** " & string'(hdo(obj)**".wrl['8']=hole.");
 		-- report "***** " & escaped(string'(hdo(obj)**".wrl['8']"));
 		-- report "***** " & string'(hdo(obj));
-		-- report "***** " & string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly")));
+		-- report "***** " & string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation")));
 		-- for i in tab'range loop
 			-- report LF &
 			-- natural'image(tab(i)) & ", ";

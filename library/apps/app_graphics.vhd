@@ -71,12 +71,12 @@ entity app_graphics is
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
-		ctlr_al       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.al=3."-1 downto 0) := (others => '0');
-		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.bl=3."-1 downto 0);
-		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cl=3."-1 downto 0);
-		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.cwl=3."-1 downto 0) := (others => '0');
-		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.rtt=2."-1 downto 0) := (others => '0');
-		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(families_db)**("."&string'(hdo(sdram_data)**".fmly"))))**".length.ods=1."-1 downto 0) := (others => '0');
+		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.al=3."-1 downto 0) := (others => '0');
+		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.bl=3."-1 downto 0);
+		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cl=3."-1 downto 0);
+		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cwl=3."-1 downto 0) := (others => '0');
+		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.rtt=2."-1 downto 0) := (others => '0');
+		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.ods=1."-1 downto 0) := (others => '0');
 
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;

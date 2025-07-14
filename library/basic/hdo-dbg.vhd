@@ -273,20 +273,12 @@ package body hdo is
 		retval := 0;
 		sign   := 1;
 		for i in value'range loop
-			if value(i)/='_' then
+			if i=value'left and value(i)='-' then
+				sign := -1;
+			elsif value(i)/='_' then
 				retval := base*retval;
 				digit  := to_integer(value(i));
-				if digit < 0 then 
-					if i=value'left then
-						if value(i)='-' then
-							sign := -1;
-						else
-							assert false
-								report "Wrong number " & character'image(value(i)) & " " & natural'image(base)  & " @ " & value
-								severity failure;
-						end if;
-					end if;
-				elsif digit < base then
+				if digit < base then
 					retval := retval + digit;
 				else
 					assert false

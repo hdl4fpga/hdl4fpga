@@ -31,12 +31,12 @@ use hdl4fpga.sdrampkg.all;
 
 entity sdram_init is
 	generic (
-		debug          : boolean;
-		ctlr_tcp       : real;
-		sdramtmng_data : string;
-		gear           : natural;
-		fmly           : string;
-		fmly_data      : string);
+		debug           : boolean;
+		ctlr_tcp        : real;
+		sdramtmng_data  : string;
+		gear            : natural;
+		generation      : string;
+		generation_data : string);
 	port (
 		sdram_init_bl   : in  std_logic_vector(3-1 downto 0);
 		sdram_init_bt   : in  std_logic := '0';
@@ -80,7 +80,7 @@ entity sdram_init is
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of sdram_init : entity is "compact";
 
-	constant fmlytmng_data : string := hdo(fmly_data)**".tmng";
+	constant fmlytmng_data : string := hdo(generation_data)**".tmng";
 
 	constant PreRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPreRST=0.")/ctlr_tcp));
 	constant RP        : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/ctlr_tcp));
@@ -100,10 +100,10 @@ entity sdram_init is
 		return std_logic_vector is
 		variable retval : std_logic_vector(3-1 downto 0);
 	begin
-		if fmly="ddr2" then
-			retval := hdo(fmly_data)**(".wrl['"&natural'image(wrl)&"']");
-		elsif fmly="ddr3" then
-			retval := hdo(fmly_data)**(".wrl['"&natural'image(wrl)&"']");
+		if generation="ddr2" then
+			retval := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']");
+		elsif generation="ddr3" then
+			retval := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']");
 		else
 			retval := (others => '0');
 		end if;
@@ -313,10 +313,10 @@ begin
 			ddr3_mrdata'length);
 
 		init_data <= 
-			multiplex(sdr_init_data,  step, init_data'length) when fmly="sdr"  else
-			multiplex(ddr_init_data,  step, init_data'length) when fmly="ddr"  else
-			multiplex(ddr2_init_data, step, init_data'length) when fmly="ddr2" else
-			multiplex(ddr3_init_data, step, init_data'length) when fmly="ddr3" else
+			multiplex(sdr_init_data,  step, init_data'length) when generation="sdr"  else
+			multiplex(ddr_init_data,  step, init_data'length) when generation="ddr"  else
+			multiplex(ddr2_init_data, step, init_data'length) when generation="ddr2" else
+			multiplex(ddr3_init_data, step, init_data'length) when generation="ddr3" else
 			(others => '-');
 
 		timer_sel <= init_data((nop'length+mrx'length+5+1) to (nop'length+mrx'length+5+1)+4-1);
@@ -325,7 +325,7 @@ begin
 			variable ena : boolean;
 		begin
 			if rising_edge(sdram_init_clk) then
-				if fmly="ddr3" then
+				if generation="ddr3" then
 					if (to_bit(sdram_init_wlreq) xor to_bit(sdram_init_wlrdy))='0' then
 						if init_wlreq='0' then
 							ena := true;
@@ -351,13 +351,13 @@ begin
     				-- timer_sel <= std_logic_vector(line(0 to 4-1));
     				line := line sll 3;
     				sdram_init_a <= (sdram_init_a'range => '0');
-    				if fmly="sdr" then
+    				if generation="sdr" then
     					sdram_init_a(sdr_mrdata'range)  <= sdr_mrdata;
-    				elsif fmly="ddr" then
+    				elsif generation="ddr" then
     					sdram_init_a(ddr_mrdata'range)  <= ddr_mrdata;
-    				elsif fmly="ddr2" then
+    				elsif generation="ddr2" then
     					sdram_init_a(ddr2_mrdata'range) <= ddr2_mrdata;
-    				elsif fmly="ddr3" then
+    				elsif generation="ddr3" then
     					sdram_init_a(ddr3_mrdata'range) <= ddr3_mrdata;
     				end if;
     			else
@@ -385,7 +385,7 @@ begin
 				if sdram_init_req='0' then
 					if (to_bit(timer_req) xor to_bit(timer_rdy))='0' then
 						if init_rdy='0' then
-							if fmly="ddr3" then
+							if generation="ddr3" then
 								if (to_bit(sdram_init_wlreq) xor to_bit(sdram_init_wlrdy))='0' then
 									if init_wlreq='0' then
 										timer_req <= not to_stdulogic(to_bit(timer_rdy));

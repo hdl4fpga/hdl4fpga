@@ -30,12 +30,12 @@ use ieee.std_logic_1164.all;
 architecture hdo_tb of testbench is
 
 	constant sdram_db : string := "{" &
-		"MT48LC16M16MA2-7E : {fmly : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
-		"MT46V16M16M-6T    : {fmly : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : 7.8125e-6}}}";
+		"MT48LC16M16MA2-7E : {generation : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
+		"MT46V16M16M-6T    : {generation : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : 7.8125e-6}}}";
 
 	constant sdram_chip : string := sdram_db**".MT48LC16M16MA2-7E";
 
-	constant families_db : string := "{"                                 &
+	constant generation_db : string := "{"                               &
 		"sdr : {"                                                        &
 			"al   : { '000' : 0 },"                                      &
 			"bl   : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 },"     &
@@ -62,14 +62,14 @@ begin
 	process
 	begin
 		report "sdram_addr   : " & sdram_addr;
-		report "family       : " & string'(sdram_chip**".fmly");
+		report "family       : " & string'(sdram_chip**".generation");
 		report "bank   right : " & natural'image(ba'right);
 		report "row    right : " & natural'image(row'right);
 		report "column right : " & natural'image(col'right);
 		report "dq     right : " & natural'image(dq'right);
 		report "dm     right : " & natural'image(dm'right);
 		report "tWR          : " & real'image(sdram_chip**".tmng.tWR");
-		report "cas lantency : " & natural'image((families_db**(string'(sdram_chip**".fmly")))**".sdr.cl.001");
+		report "cas lantency : " & natural'image((generation_db**(string'(sdram_chip**".generation")))**".sdr.cl.001");
 		wait;
 	end process;
 

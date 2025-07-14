@@ -30,8 +30,8 @@ use hdl4fpga.sdrampkg.all;
 
 entity sdram_sch is
 	generic (
-		phy_data  : string;
-		fmly : string;
+		phy_data   : string;
+		generation : string;
 
 		delay_size : natural := 64;
 
@@ -150,12 +150,12 @@ architecture def of sdram_sch is
 		return select_lat(lat_val, sel_sch);
 	end;
 
-	constant strl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "STRL",  cl_tab, cwl_tab);
+	constant strl_tab  : natural_vector := sdram_schtab (generation, phytmng_data, "STRL",  cl_tab, cwl_tab);
 	constant dozl_tab  : natural_vector := sdram_schtab (strl_tab, -3);
-	constant dqszl_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSZL", cl_tab, cwl_tab);
-	constant dqsol_tab : natural_vector := sdram_schtab (fmly, phytmng_data, "DQSL",  cl_tab, cwl_tab);
-	constant dqzl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "DQZL",  cl_tab, cwl_tab);
-	constant wwnl_tab  : natural_vector := sdram_schtab (fmly, phytmng_data, "WWNL",  cl_tab, cwl_tab);
+	constant dqszl_tab : natural_vector := sdram_schtab (generation, phytmng_data, "DQSZL", cl_tab, cwl_tab);
+	constant dqsol_tab : natural_vector := sdram_schtab (generation, phytmng_data, "DQSL",  cl_tab, cwl_tab);
+	constant dqzl_tab  : natural_vector := sdram_schtab (generation, phytmng_data, "DQZL",  cl_tab, cwl_tab);
+	constant wwnl_tab  : natural_vector := sdram_schtab (generation, phytmng_data, "WWNL",  cl_tab, cwl_tab);
 	constant odtl_tab  : natural_vector(0 to 2-1) := (others => 0);
 
 	signal wri_sr      : std_logic_vector(0 to delay_size-1);
