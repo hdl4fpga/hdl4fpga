@@ -375,7 +375,7 @@ begin
 		profile      => 2,
 		sdram_tcp    => 2.0*sdram_tcp,
 		phy_data     => phy_data,
-		sdram_data   => hdo(sdram_db)**".MT41K8G125",
+		sdram_data   => hdo(sdram_db)**".MT41K256M16-125",
 		burst_length => 8,
 
 		timing_id    => video_params.timing,
@@ -405,7 +405,7 @@ begin
 
 		ctlr_clk     => sclk,
 		ctlr_rst     => ctlr_rst,
-		ctlr_bl      => "000",
+		ctlr_bl      => "00",
 		ctlr_cl      => sdram_params.cl,
 		ctlr_cwl     => sdram_params.cwl,
 		ctlr_rtt     => "001",

@@ -19,57 +19,20 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-use work.hdo.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
+library hdl4fpga;
+use hdl4fpga.hdo.all;
+use hdl4fpga.sdrampkg.all;
 
---entity testbench is
---end;
 
 architecture hdo_tb of testbench is
-
-	constant sdram_db : string := "{" &
-		"MT48LC16M16MA2-7E : {generation : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
-		"MT46V16M16M-6T    : {generation : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : 7.8125e-6}}}";
-
-	constant sdram_chip : string := sdram_db**".MT48LC16M16MA2-7E";
-
-	constant generation_db : string := "{"                               &
-		"sdr : {"                                                        &
-			"al   : { '000' : 0 },"                                      &
-			"bl   : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 },"     &
-			"cl   : { '001' : 1, '010' : 2, '011' : 3 },"                &
-		"tmng : { tPreRST : 100.0e-6, cDLL : 200, tCAS : 15.0e-9}}"      &
-			"ddr : {"                                                    &
-			"al   : { '000' : 0},"                                       &
-			"bl   : { '001' : 2, '010' : 4, '011' : 8},"                 &
-			"cl   : { '010' : 4, '110' : 5, '011' : 6},"                 &
-			"cwl  : { '000' : 2},"                                       &
-			"tmng : { tPreRST : 200.0e-6, cDLL : 200, tCAS : 15.0e-9}}}";
-
-	constant sdram_addr : string := sdram_chip**".orgz.addr";
-
-	signal ba  : std_logic_vector(0 to  sdram_addr**".ba"-1);
-	signal row : std_logic_vector(0 to  sdram_addr**".row"-1);
-	signal col : std_logic_vector(0 to  sdram_addr**".col"-1);
-
-	signal dq  : std_logic_vector(0 to sdram_chip**".orgz.data.dq"-1);
-	signal dm  : std_logic_vector(0 to sdram_chip**".orgz.data.dm"-1);
 
 begin
 
 	process
 	begin
-		report "sdram_addr   : " & sdram_addr;
-		report "family       : " & string'(sdram_chip**".generation");
-		report "bank   right : " & natural'image(ba'right);
-		report "row    right : " & natural'image(row'right);
-		report "column right : " & natural'image(col'right);
-		report "dq     right : " & natural'image(dq'right);
-		report "dm     right : " & natural'image(dm'right);
-		report "tWR          : " & real'image(sdram_chip**".tmng.tWR");
-		report "cas lantency : " & natural'image((generation_db**(string'(sdram_chip**".generation")))**".sdr.cl.001");
+		report sdram_db**".MT41K256M16-125";
 		wait;
 	end process;
 
