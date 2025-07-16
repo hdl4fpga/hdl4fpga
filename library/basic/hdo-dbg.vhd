@@ -255,7 +255,7 @@ package body hdo is
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
 			return character'pos(char)-character'pos('a')+10;
 		when others =>
-			report "wrong digit " & character'image(char)
+			report "wrong digit " & character'image(char);
 			return -1;
 		end case;
 	end;
@@ -278,7 +278,7 @@ package body hdo is
 				digit  := to_integer(value(i));
 				if digit < 0 then
 					assert false
-						report "Wrong number " & value & " " & natural'image(base) 
+						report "Wrong number " & value & " " & natural'image(base)
 						severity failure; 
 				elsif digit < base then
 					retval := retval + digit;

@@ -698,17 +698,20 @@ package body base is
 		constant arg  : std_logic_vector;
 		constant base : natural := 2)
 		return string is
-		constant log2base  : natural := unsigned_num_bits(base-1);
 		constant table  : string := "0123456789abcdef";
-		variable retval : string(1 to (arg'length+log2base-1)/log2base);
-		alias aux : std_logic_vector(0 to arg'length-1) is arg;
+		variable digit  : unsigned(0 to unsigned_num_bits(base-1)-1);
+		variable aux    : unsigned(0 to arg'length-1);
+		variable retval : string(1 to (arg'length+digit'length-1)/digit'length);
 	begin
+		aux := unsigned(arg);
 		for i in retval'range loop
-			if aux((i-1)*log2base to i*log2base-1)=(0 to log2base-1 => '-') then
+			digit := aux(digit'range);
+			if digit=(0 to digit'length-1 => '-') then
 				retval(i) := '-';
 			else
-				retval(i) := table(to_integer(unsigned(aux((i-1)*log2base to i*log2base-1)))+1);
+				retval(i) := table(to_integer(digit)+1);
 			end if;
+			aux := shift_left(aux, digit'length);
 		end loop;
 		return retval;
 	end;

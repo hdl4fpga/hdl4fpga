@@ -242,7 +242,8 @@ begin
 		generic map (
 			rmii          => true,
 			default_mac   => x"00_40_00_01_02_03",
-			default_ipv4a => aton("10.31.175.150"),
+			-- default_ipv4a => aton("10.31.175.150"),
+			default_ipv4a => aton("192.168.100.210"),
 			n             => 2)
 		port map (
 			si_frm     => si_frm,
@@ -255,7 +256,7 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
-			dhcp_btn   => btn(0),
+			dhcp_btn   => btn(1),
 			hdplx      => hdplx,
 			mii_txc    => rmii_nintclk,
 			mii_txen   => rmii_txen,
@@ -275,7 +276,7 @@ begin
 			d1   => '0',
 			q    => rmii_refclk);
 
-		eth_nreset <= not '0';
+		eth_nreset <= not btn(2);
 		eth_mdio   <= '0';
 		eth_mdc    <= '0';
 
