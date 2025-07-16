@@ -39,7 +39,7 @@ architecture graphics of ulx4m_ls is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_usb;
+	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram200MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	--------------------------------------
@@ -288,7 +288,7 @@ begin
 
 		sdram_tcp    => sdram_tcp,
 		phy_data     => hdo(phy_db)**".ecp5g1",
-		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
+		sdram_data   => hdo(sdram_db)**".IS42S16320D-6",
 
 		timing_id    => video_params.timing,
 		video_gear   => video_gear,
@@ -385,9 +385,6 @@ begin
 		sdram_dm   => sdram_dqm,
 		sdram_dq   => sdram_d);
 
-	-- video --
-	-----------
-
 	video_g : entity hdl4fpga.ecp5_ogbx
    	generic map (
 		mem_mode  => false,
@@ -402,8 +399,8 @@ begin
 		d         => dvid_crgb,
 		q         => gpdi_d);
 
-	-- SDRAM-clk-divided-by-2 monitor
-	tp_p: process (ctlr_clk)
+
+	tp_p: process (ctlr_clk)	-- SDRAM-clk-divided-by-2 monitor
 		variable q0 : std_logic;
 		variable q1 : std_logic;
 	begin

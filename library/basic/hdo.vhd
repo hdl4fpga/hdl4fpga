@@ -243,9 +243,7 @@ package body hdo is
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
 			return character'pos(char)-character'pos('a')+10;
 		when others =>
-			assert false                                  
-				report "wrong digit " & character'image(char)
-				severity failure;                            
+			report "wrong digit " & character'image(char);
 			return -1;
 		end case;
 	end;
@@ -255,7 +253,7 @@ package body hdo is
 		constant base  : natural) 
 		return integer is
 		variable sign   : integer;
-		variable digit  : natural;
+		variable digit  : integer;
 		variable retval : integer;
 	begin
 		retval := 0;
@@ -266,7 +264,11 @@ package body hdo is
 			elsif value(i)/='_' then
 				retval := base*retval;
 				digit  := to_integer(value(i));
-				if digit < base then
+				if digit < 0 then
+					assert false
+						report "Wrong number " & value & " " & natural'image(base) 
+						severity failure; 
+				elsif digit < base then
 					retval := retval + digit;
 				else
 					assert false

@@ -38,12 +38,12 @@ entity sdram_ctlr is
 	port (
 		ctlr_alat   : out std_logic_vector(2 downto 0);
 		ctlr_blat   : out std_logic_vector(2 downto 0);
-		ctlr_al     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.al=3."-1 downto 0) := (others => '0');
-		ctlr_bl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.bl=3."-1 downto 0);
-		ctlr_cl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cl=3."-1 downto 0);
-		ctlr_cwl    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cwl=3."-1 downto 0) := (others => '0');
-		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.rtt=2."-1 downto 0) := (others => '0');
-		ctlr_ods    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.ods=1."-1 downto 0) := (others => '0');
+		ctlr_al     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.al=3"-1 downto 0) := (others => '0');
+		ctlr_bl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.bl=3"-1 downto 0);
+		ctlr_cl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cl=3"-1 downto 0);
+		ctlr_cwl    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cwl=3"-1 downto 0) := (others => '0');
+		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.rtt=2"-1 downto 0) := (others => '0');
+		ctlr_ods    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.ods=1"-1 downto 0) := (others => '0');
 
 		ctlr_rst    : in  std_logic;
 		ctlr_clk    : in  std_logic;

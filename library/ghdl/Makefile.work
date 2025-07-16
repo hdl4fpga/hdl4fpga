@@ -27,12 +27,12 @@ init: force
 	$(GHDL) -a $(GHDLFLAGS) ../testbench/testbench.vhd
 	# /usr/lib/ghdl/std/v93/../../src/std/v93/textio.vhdl
 	# /usr/lib/ghdl/std/v93/../../src/std/v93/textio-body.vhdl
+	$(GHDL) -a $(GHDLFLAGS) ../basic/hdo-dbg.vhd
 	# /usr/lib/ghdl/ieee/v93/../../src/ieee/math_real.vhdl
 	# /usr/lib/ghdl/ieee/v93/../../src/ieee/math_real-body.vhdl
 	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=./hdl4fpga/ ../basic/hdo.vhd
 	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=./hdl4fpga/ ../basic/base.vhd
-	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=./hdl4fpga/ ../usb/usbpkg.vhd
-	$(GHDL) -a $(GHDLFLAGS) ../basic/hdo-dbg.vhd
+	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=./hdl4fpga/ ../sdram/sdrampkg.vhd
 	$(GHDL) -a $(GHDLFLAGS) ../testbench/hdo_tb.vhd
 
 force:
