@@ -19,7 +19,7 @@ Branches
  Development code: Merged to snapshot when working
 
 **snapshot** : https://github.com/hdl4fpga/hdl4fpga
- Unstable working code from the development branch
+ Working code from the development branch
 
 **legacy** : https://github.com/hdl4fpga/hdl4fpga/tree/legacy
  Very mature code
