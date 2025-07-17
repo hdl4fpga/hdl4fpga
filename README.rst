@@ -22,4 +22,4 @@ Branches
  Working code from the development branch
 
 **legacy** : https://github.com/hdl4fpga/hdl4fpga/tree/legacy
- mature code
+ Mature code
