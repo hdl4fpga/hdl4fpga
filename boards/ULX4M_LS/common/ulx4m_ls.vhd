@@ -28,7 +28,7 @@ entity ulx4m_ls is
 	port (
 
 		clk_25mhz       : in  std_logic := 'Z';
-		btn             : in  std_logic_vector(0 to 7-1) := (others => '-');
+		btn             : in  std_logic_vector(1 to 7) := (others => '-');
 		led             : out std_logic_vector(8-1 downto 0) := (others => 'Z');
 
 		sd_clk          : out std_logic := '-';

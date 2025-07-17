@@ -26,8 +26,7 @@ library hdl4fpga;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
 
-package ecp5_profiles is
-
+package profiles is
 
 	type pll_record is record
 		clkos_div  : natural;
@@ -88,49 +87,48 @@ package body ecp5_profiles is
 	end;
 
 	-- SDRAM CLK=clk_ref*clkos_div/clkop_div
-	constant ulxsdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, pll => (clkos_div => 16, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "010", cwl => "---", wrl => "---"),
-		(id => sdram150MHz, pll => (clkos_div => 18, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram166MHz, pll => (clkos_div => 20, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram200MHz, pll => (clkos_div => 16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram225MHz, pll => (clkos_div => 27, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram233MHz, pll => (clkos_div => 28, clkop_div => 3, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram250MHz, pll => (clkos_div => 20, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram262MHz, pll => (clkos_div => 21, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-		(id => sdram275MHz, pll => (clkos_div => 22, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 0), cl => "011", cwl => "---", wrl => "---"),
-
-		(id => sdram325MHz, pll => (clkos_div => 13, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram350MHz, pll => (clkos_div => 14, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram375MHz, pll => (clkos_div => 15, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram400MHz, pll => (clkos_div => 16, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),
-		(id => sdram425MHz, pll => (clkos_div => 17, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
-		(id => sdram450MHz, pll => (clkos_div => 18, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "011"),
-		(id => sdram475MHz, pll => (clkos_div => 19, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"),
-		(id => sdram500MHz, pll => (clkos_div => 20, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => 1, clkos3_div => 1), cl => "011", cwl => "001", wrl => "100"));
+	constant sdram_db : string := "{"
+		"'133' : sdr  : {cl : '010', dcm : {'25' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'150' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'166' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'200' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'225' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'233' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'250' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'262' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'275' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'325' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25' : {clkos_div : 13, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'350' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25' : {clkos_div : 14, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'375' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25' : {clkos_div : 15, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'400' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25' : {clkos_div : 16, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'425' : ddr3 : {cl : '011', cwl : '001', wrl : '011', dcm : {'25' : {clkos_div : 17, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'450' : ddr3 : {cl : '011', cwl : '001', wrl : '011', dcm : {'25' : {clkos_div : 18, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'475' : ddr3 : {cl : '011', cwl : '001', wrl : '100', dcm : {'25' : {clkos_div : 19, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'500' : ddr3 : {cl : '011', cwl : '001', wrl : '100', dcm : {'25' : {clkos_div : 20, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}}";
 
 	-- video_clk       = (clk_ref/clki_div)*clkos_div/clkos2_div 
 	-- video_shift_clk = (clk_ref/clki_div)*clkos_div/clkop_div 
 	-- videoio_clk     = (clk_ref/clki_div)*clkos_div/clkos3_div
 	-- clkos2_div      = clkop_div*video_ratio
-	constant ulxvideo_tab : videoparams_vector := (
-		(id => modedebug,        pll => (clkos_div => 80, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 2, pixel => rgb888, timing => pclk_debug),
 		-- (id => modedebug,        pll => (clkos_div => 25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk_debug),
-		(id => mode480p16bpp,    pll => (clkos_div =>  25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb565, timing => pclk25_00m640x480at60),
-		(id => mode480p24bpp,    pll => (clkos_div =>  25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk25_00m640x480at60),
-		(id => mode600p16bpp,    pll => (clkos_div =>  16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb565, timing => pclk40_00m800x600at60),
-		(id => mode600p24bpp,    pll => (clkos_div =>  16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode768p24bpp,    pll => (clkos_div =>  26, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
-		(id => mode720p16bpp,    pll => (clkos_div =>  30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb565, timing => pclk75_00m1280x720at60),
-		(id => mode720p24bpp,    pll => (clkos_div => 128, clkop_div => 2, clkfb_div => 1, clki_div => 5, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk64_00m1280x720at60),
-		(id => mode900p24bpp,    pll => (clkos_div =>  39, clkop_div => 1, clkfb_div => 1, clki_div => 2, clkos2_div => video_ratio*1, clkos3_div => 12), gear => 7, pixel => rgb888, timing => pclk97_75m1600x900at60),
-		(id => mode1080p16bpp30, pll => (clkos_div =>  30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb565, timing => pclk150_00m1920x1080at60),
-		(id => mode1080p24bpp30, pll => (clkos_div =>  30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
-		(id => mode1080p24bpp,   pll => (clkos_div =>  30, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
+	constant ulxvideo_tab : videoparams_vector := (
+		modedebug,        { dcm : (clkos_div => 80, clkop_div => 1,  clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 2, pixel => rgb888, timing => pclk_debug),
+		mode480p16bpp,    { dcm : (clkos_div =>  25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb565, timing => pclk25_00m640x480at60),
+		mode480p24bpp,    { dcm : (clkos_div =>  25, clkop_div => 5, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*5, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk25_00m640x480at60),
+		mode600p16bpp,    { dcm : (clkos_div =>  16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb565, timing => pclk40_00m800x600at60),
+		mode600p24bpp,    { dcm : (clkos_div =>  16, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
+		mode768p24bpp,    { dcm : (clkos_div =>  26, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 16), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60),
+		mode720p16bpp,    { dcm : (clkos_div =>  30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb565, timing => pclk75_00m1280x720at60),
+		mode720p24bpp,    { dcm : (clkos_div => 128, clkop_div => 2, clkfb_div => 1, clki_div => 5, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk64_00m1280x720at60),
+		mode900p24bpp,    { dcm : (clkos_div =>  39, clkop_div => 1, clkfb_div => 1, clki_div => 2, clkos2_div => video_ratio*1, clkos3_div => 12), gear => 7, pixel => rgb888, timing => pclk97_75m1600x900at60),
+		mode1080p16bpp30, { dcm : (clkos_div =>  30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb565, timing => pclk150_00m1920x1080at60),
+		mode1080p24bpp30, { dcm : (clkos_div =>  30, clkop_div => 2, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*2, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
+		mode1080p24bpp,   { dcm : (clkos_div =>  30, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 19), gear => 7, pixel => rgb888, timing => pclk150_00m1920x1080at60),
+		mode1440p24bpp30, { dcm : (clkos_div => 23, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
 		-- (id => mode1080p24bpp,   pll => (clkos_div => 83, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk138_50m1920x1080at60),
 		-- (id => mode1080p24bpp,   pll => (clkos_div => 80, clkop_div => 1, clkfb_div => 1, clki_div => 3, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk133_32m1920x1080at60),
 		-- (id => mode1080p24bpp,   pll => (clkos_div => 26, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk130_32m1920x1080at60),
 		-- (id => mode1080p24bpp,   pll => (clkos_div => 25, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk125_00m1920x1080at60),
-		(id => mode1440p24bpp30, pll => (clkos_div => 23, clkop_div => 1, clkfb_div => 1, clki_div => 1, clkos2_div => video_ratio*1, clkos3_div => 17), gear => 7, pixel => rgb888, timing => pclk115_71m2560x1440at60));
 
 	constant orangecrabsdram_tab : sdramparams_vector := (
 		(id => sdram300MHz,      pll => (clkos_div => 38, clkop_div => 2, clkfb_div => 1, clki_div => 3, clkos2_div => 1,             clkos3_div => 1), cl => "010", cwl => "000", wrl => "010"),

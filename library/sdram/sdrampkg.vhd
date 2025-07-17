@@ -31,13 +31,14 @@ use hdl4fpga.hdo.all;
 package sdrampkg is
 	constant sdram_db : string := compact("{" &
 		"MT48LC16M16MA2-7E : {generation : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
+		"IS42S16160G-6     : {generation : sdr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 25.0e-9, tRCD : 15.00e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}}," & -- tWR = 14.0e-9+11.0e-9
 		"MT46V16M16M-6T    : {generation : ddr,  orgz : {addr : { ba : 2, row : 13, col :  9}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tMRD : 12.0e-9,  tRFC :  72.0e-9,  tREFI : 7.8125e-6}}," &
 		"MT41K128M16-125   : {generation : ddr3, orgz : {addr : { ba : 3, row : 14, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : 7.8125e-6, tXPR  : 370.00e-9}}," &  -- tMin : tRFC + 10 ns
 		"MT4HTF12864HZ     : {generation : ddr2, orgz : {addr : { ba : 3, row : 14, col :  9}, data : { dm : 8, dq : 64}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : 7.8125e-6, tXPR  : 400.0e-6}}," &
 		"MT41J64M16-15E    : {generation : ddr3, orgz : {addr : { ba : 3, row : 13, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : 7.8125e-6, tXPR  : 120.00e-9)}}," &  -- tMin : tRFC + 10 ns
 		"MT41K256M16-107   : {generation : ddr3, orgz : {addr : { ba : 3, row : 15, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : 7.8125e-6, tXPR  : 270.00e-9)}}," &  -- tMin : tRFC + 10 ns
 		"MT41K256M16-125   : {generation : ddr3, orgz : {addr : { ba : 3, row : 15, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : 7.8125e-6, tXPR  : 360.00e-9)}}," &  -- tMin : tRFC + 10 ns
-		"AS4C512M16D3L-C12 : {generation : ddr3, orgz : {addr : { ba : 3, row : 16, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : 7.8125e-6; tXPR  : 270.00e-9)}}}");  -- tMin : tRFC + 10 ns
+		"AS4C256M16D3LC-12 : {generation : ddr3, orgz : {addr : { ba : 3, row : 15, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : 7.8125e-6; tXPR  : 270.00e-9)}}}");  -- tMin : tRFC + 10 ns
 
 	constant generation_db : string := compact("{" &
 		"sdr : {" &

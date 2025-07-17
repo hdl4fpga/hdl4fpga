@@ -39,7 +39,7 @@ architecture graphics of ulx4m_ls is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_usb;
+	constant io_link      : io_comms     := io_ipoe;
 	constant sdram_speed  : sdram_speeds := sdram200MHz;
 	constant video_mode   : video_modes  := mode600p24bpp;
 	--------------------------------------
@@ -242,7 +242,8 @@ begin
 		generic map (
 			rmii          => true,
 			default_mac   => x"00_40_00_01_02_03",
-			default_ipv4a => aton("10.31.175.150"),
+			-- default_ipv4a => aton("10.31.175.150"),
+			default_ipv4a => aton("192.168.100.210"),
 			n             => 2)
 		port map (
 			si_frm     => si_frm,
@@ -255,7 +256,7 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
-			dhcp_btn   => btn(0),
+			dhcp_btn   => btn(1),
 			hdplx      => hdplx,
 			mii_txc    => rmii_nintclk,
 			mii_txen   => rmii_txen,
@@ -275,7 +276,7 @@ begin
 			d1   => '0',
 			q    => rmii_refclk);
 
-		eth_nreset <= not '0';
+		eth_nreset <= not btn(2);
 		eth_mdio   <= '0';
 		eth_mdc    <= '0';
 
@@ -288,7 +289,7 @@ begin
 
 		sdram_tcp    => sdram_tcp,
 		phy_data     => hdo(phy_db)**".ecp5g1",
-		sdram_data   => hdo(sdram_db)**".MT48LC256MA27E",
+		sdram_data   => hdo(sdram_db)**".IS42S16160G-6",
 
 		timing_id    => video_params.timing,
 		video_gear   => video_gear,
@@ -385,9 +386,6 @@ begin
 		sdram_dm   => sdram_dqm,
 		sdram_dq   => sdram_d);
 
-	-- video --
-	-----------
-
 	video_g : entity hdl4fpga.ecp5_ogbx
    	generic map (
 		mem_mode  => false,
@@ -402,8 +400,8 @@ begin
 		d         => dvid_crgb,
 		q         => gpdi_d);
 
-	-- SDRAM-clk-divided-by-2 monitor
-	tp_p: process (ctlr_clk)
+
+	tp_p: process (ctlr_clk)	-- SDRAM-clk-divided-by-2 monitor
 		variable q0 : std_logic;
 		variable q1 : std_logic;
 	begin
