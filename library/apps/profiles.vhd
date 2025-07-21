@@ -88,23 +88,23 @@ package body ecp5_profiles is
 
 	-- SDRAM CLK=clk_ref*clkos_div/clkop_div
 	constant sdram_db : string := "{"
-		"'133' : sdr  : {cl : '010', dcm : {'25' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'150' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'166' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'200' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'225' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'233' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'250' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'262' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'275' : sdr  : {cl : '011', dcm : {'25' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
-		"'325' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25' : {clkos_div : 13, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
-		"'350' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25' : {clkos_div : 14, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
-		"'375' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25' : {clkos_div : 15, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
-		"'400' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25' : {clkos_div : 16, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
-		"'425' : ddr3 : {cl : '011', cwl : '001', wrl : '011', dcm : {'25' : {clkos_div : 17, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
-		"'450' : ddr3 : {cl : '011', cwl : '001', wrl : '011', dcm : {'25' : {clkos_div : 18, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
-		"'475' : ddr3 : {cl : '011', cwl : '001', wrl : '100', dcm : {'25' : {clkos_div : 19, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
-		"'500' : ddr3 : {cl : '011', cwl : '001', wrl : '100', dcm : {'25' : {clkos_div : 20, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}}";
+		"'133mhz' : sdr  : {cl : '010', dcm : {'25mhz' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'150mhz' : sdr  : {cl : '011', dcm : {'25mhz' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'166mhz' : sdr  : {cl : '011', dcm : {'25mhz' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'200mhz' : sdr  : {cl : '011', dcm : {'25mhz' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'225mhz' : sdr  : {cl : '011', dcm : {'25mhz' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'233mhz' : sdr  : {cl : '011', dcm : {'25mhz' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'250mhz' : sdr  : {cl : '011', dcm : {'25mhz' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'262mhz' : sdr  : {cl : '011', dcm : {'25mhz' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'275mhz' : sdr  : {cl : '011', dcm : {'25mhz' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 0}}}," &
+		"'325mhz' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25mhz' : {clkos_div : 13, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'350mhz' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25mhz' : {clkos_div : 14, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'375mhz' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25mhz' : {clkos_div : 15, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'400mhz' : ddr3 : {cl : '010', cwl : '000', wrl : '010', dcm : {'25mhz' : {clkos_div : 16, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'425mhz' : ddr3 : {cl : '011', cwl : '001', wrl : '011', dcm : {'25mhz' : {clkos_div : 17, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'450mhz' : ddr3 : {cl : '011', cwl : '001', wrl : '011', dcm : {'25mhz' : {clkos_div : 18, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'475mhz' : ddr3 : {cl : '011', cwl : '001', wrl : '100', dcm : {'25mhz' : {clkos_div : 19, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}," &
+		"'500mhz' : ddr3 : {cl : '011', cwl : '001', wrl : '100', dcm : {'25mhz' : {clkos_div : 20, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}}}";
 
 	-- video_clk       = (clk_ref/clki_div)*clkos_div/clkos2_div 
 	-- video_shift_clk = (clk_ref/clki_div)*clkos_div/clkop_div 
