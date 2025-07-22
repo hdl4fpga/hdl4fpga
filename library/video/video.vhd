@@ -135,7 +135,7 @@ architecture mix of video_sync is
 		variable retval : natural_vector(0 to 4-1);
 	begin
 		for i in retval'range loop
-			retval(i) := hdo(data)**i;
+			retval(i) := hdo(data)**(".[" & natural'image(i) & "]");
 			retval(i) := retval(i)-1;
 		end loop;
 		return retval;
