@@ -110,9 +110,9 @@ use hdl4fpga.videopkg.all;
 
 entity video_sync is
 	generic (
-		modeline  : string;
-		width     : natural := 0;
-		height    : natural := 0);
+		timings : string;
+		width   : natural := 0;
+		height  : natural := 0);
 	port (
 		video_clk     : in std_logic;
 		extern_video  : in  std_logic := '0';
@@ -150,7 +150,7 @@ architecture mix of video_sync is
 	signal hz_div  : std_logic_vector(2-1 downto 0);
 	signal vt_div  : std_logic_vector(2-1 downto 0);
 	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
-	signal vt_cntr : std_logic_vector(video_vtcntr'range) := std_logic_vector(to_unsigned(modeline**".vt.end", video_vtcntr'length)); --(others => '1');
+	signal vt_cntr : std_logic_vector(video_vtcntr'range) := std_logic_vector(to_unsigned(timings**".vt.end", video_vtcntr'length)); --(others => '1');
 
 	signal extern_vton : std_logic;
 
@@ -160,7 +160,7 @@ begin
 	hz_next <= hz_edge;
 	hzedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(modeline**".hz"))
+		edges =>  to_edges(timings**".hz"))
 	port map (
 		video_clk  => video_clk,
 		video_ini  => hz_ini,
@@ -191,7 +191,7 @@ begin
 
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(modeline**".vt"))
+		edges =>  to_edges(timings**".vt"))
 	port map (
 		video_clk  => video_clk,
 		video_ini  => vt_ini,

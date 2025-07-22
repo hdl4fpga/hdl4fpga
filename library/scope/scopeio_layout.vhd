@@ -175,6 +175,17 @@ entity scopeio_layout is
 		return retval(0 to index-1);
 	end;
 
+	function to_edges (
+		constant data : natural_vector)
+		return natural_vector is
+		variable retval : natural_vector(data'range);
+	begin
+		for i in retval'range loop
+			retval(i) := data(i)-1;
+		end loop;
+		return retval;
+	end;
+
 	function sgmnt_hzedges
 		return natural_vector is
 	begin

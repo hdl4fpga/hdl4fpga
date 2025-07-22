@@ -24,31 +24,32 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.cgafonts.all;
 use hdl4fpga.videopkg.all;
 
 entity ser_display is
 	generic (
-		font_bitrom : std_logic_vector := psf1cp850x8x16;
-		font_width  : natural := 8;
-		font_height : natural := 16;
+		font_bitrom   : std_logic_vector := psf1cp850x8x16;
+		font_width    : natural := 8;
+		font_height   : natural := 16;
 
-		timing_id   : videotiming_ids;
-		code_spce   : std_logic_vector;
-		code_digits : std_logic_vector;
-		cga_bitrom  : std_logic_vector := (1 to 0 => '-'));
+		video_timings : string;
+		code_spce     : std_logic_vector;
+		code_digits   : std_logic_vector;
+		cga_bitrom    : std_logic_vector := (1 to 0 => '-'));
 	port (
-		phy_clk     : in  std_logic;
-		phy_frm     : in  std_logic;
-		phy_irdy    : in  std_logic := '1';
-		phy_data    : in  std_logic_vector;
+		phy_clk       : in  std_logic;
+		phy_frm       : in  std_logic;
+		phy_irdy      : in  std_logic := '1';
+		phy_data      : in  std_logic_vector;
 
-		video_clk   : in  std_logic;
-		video_dot   : out std_logic;
-		video_on    : buffer std_logic;
-		video_hs    : out std_logic;
-		video_vs    : out std_logic);
+		video_clk     : in  std_logic;
+		video_dot     : out std_logic;
+		video_on      : buffer std_logic;
+		video_hs      : out std_logic;
+		video_vs      : out std_logic);
 end;
 
 architecture def of ser_display is
@@ -58,8 +59,8 @@ architecture def of ser_display is
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
-	constant display_width   : natural := modeline_tab(timing_id)(0)/font_width;
-	constant display_height  : natural := modeline_tab(timing_id)(4)/font_height;
+	constant display_width   : natural := hdo(video_timings)**".hz.active"/font_width;
+	constant display_height  : natural := hdo(video_timings)**".vt.active"/font_height;
 
 	signal video_von         : std_logic;
 	signal video_hon         : std_logic;
@@ -83,7 +84,7 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		timing_id   => timing_id)
+		timings      => video_timings)
 	port map (
 		video_clk    => video_clk,
 		video_hzsync => hzsync,

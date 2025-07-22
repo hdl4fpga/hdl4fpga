@@ -37,7 +37,7 @@ entity scopeio is
 		profile      : natural;
 		sdram_data   : string := "none";
 		phy_data     : string := "none";
-		timing_id    : videotiming_ids;
+		video_timings: string;
 		layout       : string;
 		sdram_tcp    : real;
 		fifo_size    : natural := 8*8192;
@@ -405,7 +405,7 @@ begin
 		scopeio_video_e : entity hdl4fpga.scopeio_video
 		generic map (
 			sample_length  => sample_length,
-			timing_id      => timing_id,
+			timings        => video_timings,
 			inputs         => inputs,
 			waveform       => waveform)
 		port map (

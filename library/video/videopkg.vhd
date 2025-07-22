@@ -20,7 +20,7 @@
 --                                                                                --
 
 package videopkg is
-	constant modeline_db : string := "{"                                                                &
+	constant timings_db : string := "{"                                                                 &
 		"480x272:{"                                                                                     &
 			"@60:{"                                                                                     &
 				"10mhz:{"                                                                               &
