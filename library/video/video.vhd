@@ -104,13 +104,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 
 entity video_sync is
 	generic (
-		timing_id : videotiming_ids;
-		modeline  : natural_vector(0 to 9-1) := (others => 0);
+		modeline  : string;
 		width     : natural := 0;
 		height    : natural := 0);
 	port (
@@ -128,18 +128,18 @@ entity video_sync is
 end;
 
 architecture mix of video_sync is
-	function user_fallback (
-		timing_id : videotiming_ids;
-		modeline  : natural_vector)
-		return natural_vector is
-	begin
-		if timing_id=user_timingid then
-			return modeline;
-		end if;
-		return modeline_tab(timing_id);
-	end;
 
-	constant modeline_data : natural_vector := user_fallback(timing_id, modeline);
+	function to_edges (
+		constant data : string)
+		return natural_vector is
+		variable retval : natural_vector(0 to 4-1);
+	begin
+		for i in retval'range loop
+			retval(i) := hdo(data)**i;
+			retval(i) := retval(i)-1;
+		end loop;
+		return retval;
+	end;
 
 	signal hz_ini  : std_logic;
 	signal vt_ini  : std_logic;
@@ -150,7 +150,7 @@ architecture mix of video_sync is
 	signal hz_div  : std_logic_vector(2-1 downto 0);
 	signal vt_div  : std_logic_vector(2-1 downto 0);
 	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
-	signal vt_cntr : std_logic_vector(video_vtcntr'range) := std_logic_vector(to_unsigned(modeline_data(7-1), video_vtcntr'length)); --(others => '1');
+	signal vt_cntr : std_logic_vector(video_vtcntr'range) := std_logic_vector(to_unsigned(modeline**".vt.end", video_vtcntr'length)); --(others => '1');
 
 	signal extern_vton : std_logic;
 
@@ -160,7 +160,7 @@ begin
 	hz_next <= hz_edge;
 	hzedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(modeline_data(0 to 4-1)))
+		edges =>  to_edges(modeline**".hz"))
 	port map (
 		video_clk  => video_clk,
 		video_ini  => hz_ini,
@@ -191,7 +191,7 @@ begin
 
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(modeline_data(4 to 8-1)))
+		edges =>  to_edges(modeline**".vt"))
 	port map (
 		video_clk  => video_clk,
 		video_ini  => vt_ini,
