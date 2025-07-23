@@ -115,7 +115,7 @@ entity video_sync is
 		height  : natural := 0);
 	port (
 		video_clk     : in std_logic;
-		extern_video  : in  std_logic := '0';
+		extern_video  : in std_logic := '0';
 		extern_hzsync : in std_logic := '-';
 		extern_vtsync : in std_logic := '-';
 		extern_blankn : in std_logic := '-';

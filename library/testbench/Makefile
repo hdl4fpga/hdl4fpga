@@ -11,7 +11,6 @@ LIB_HDL4FPGA = hdl4fpga
 # Define path to each design unit
 ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
 IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
-IEEE__std_logic_textio = $(LIB_IEEE)/std_logic_textio/_primary.dat
 IEEE__numeric_bit = $(LIB_IEEE)/numeric_bit/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
@@ -34,7 +33,6 @@ HDL4FPGA__xc5v_idelay__def = $(LIB_HDL4FPGA)/xc5v_idelay/def.dat
 HDL4FPGA__xc5v_idelay = $(LIB_HDL4FPGA)/xc5v_idelay/_primary.dat
 HDL4FPGA__xc3s_dqsdelay__xilinx = $(LIB_HDL4FPGA)/xc3s_dqsdelay/xilinx.dat
 HDL4FPGA__xc3s_dqsdelay = $(LIB_HDL4FPGA)/xc3s_dqsdelay/_primary.dat
-HDL4FPGA__videopkg__body = $(LIB_HDL4FPGA)/videopkg/body.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
 HDL4FPGA__videobox_layout__def = $(LIB_HDL4FPGA)/videobox_layout/def.dat
 HDL4FPGA__videobox_layout = $(LIB_HDL4FPGA)/videobox_layout/_primary.dat
@@ -232,6 +230,8 @@ HDL4FPGA__mii_1cksm__beh = $(LIB_HDL4FPGA)/mii_1cksm/beh.dat
 HDL4FPGA__mii_1cksm = $(LIB_HDL4FPGA)/mii_1cksm/_primary.dat
 HDL4FPGA__link_mii__graphics = $(LIB_HDL4FPGA)/link_mii/graphics.dat
 HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
+HDL4FPGA__link_hdlc__def = $(LIB_HDL4FPGA)/link_hdlc/def.dat
+HDL4FPGA__link_hdlc = $(LIB_HDL4FPGA)/link_hdlc/_primary.dat
 HDL4FPGA__lifo__def = $(LIB_HDL4FPGA)/lifo/def.dat
 HDL4FPGA__lifo = $(LIB_HDL4FPGA)/lifo/_primary.dat
 HDL4FPGA__latency__def = $(LIB_HDL4FPGA)/latency/def.dat
@@ -266,8 +266,6 @@ HDL4FPGA__hdlcdll_tx__def = $(LIB_HDL4FPGA)/hdlcdll_tx/def.dat
 HDL4FPGA__hdlcdll_tx = $(LIB_HDL4FPGA)/hdlcdll_tx/_primary.dat
 HDL4FPGA__hdlcdll_rx__def = $(LIB_HDL4FPGA)/hdlcdll_rx/def.dat
 HDL4FPGA__hdlcdll_rx = $(LIB_HDL4FPGA)/hdlcdll_rx/_primary.dat
-HDL4FPGA__hdlc_link__def = $(LIB_HDL4FPGA)/hdlc_link/def.dat
-HDL4FPGA__hdlc_link = $(LIB_HDL4FPGA)/hdlc_link/_primary.dat
 HDL4FPGA__graphics__def = $(LIB_HDL4FPGA)/graphics/def.dat
 HDL4FPGA__graphics = $(LIB_HDL4FPGA)/graphics/_primary.dat
 HDL4FPGA__g4_phdata270__inference = $(LIB_HDL4FPGA)/g4_phdata270/inference.dat
@@ -416,7 +414,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__xc5v_idelay) \
     $(HDL4FPGA__xc3s_dqsdelay__xilinx) \
     $(HDL4FPGA__xc3s_dqsdelay) \
-    $(HDL4FPGA__videopkg__body) \
     $(HDL4FPGA__videopkg) \
     $(HDL4FPGA__videobox_layout__def) \
     $(HDL4FPGA__videobox_layout) \
@@ -614,6 +611,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_1cksm) \
     $(HDL4FPGA__link_mii__graphics) \
     $(HDL4FPGA__link_mii) \
+    $(HDL4FPGA__link_hdlc__def) \
+    $(HDL4FPGA__link_hdlc) \
     $(HDL4FPGA__lifo__def) \
     $(HDL4FPGA__lifo) \
     $(HDL4FPGA__latency__def) \
@@ -648,8 +647,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__hdlcdll_tx) \
     $(HDL4FPGA__hdlcdll_rx__def) \
     $(HDL4FPGA__hdlcdll_rx) \
-    $(HDL4FPGA__hdlc_link__def) \
-    $(HDL4FPGA__hdlc_link) \
     $(HDL4FPGA__graphics__def) \
     $(HDL4FPGA__graphics) \
     $(HDL4FPGA__g4_phdata270__inference) \
@@ -801,7 +798,6 @@ $(HDL4FPGA__adjbrst__def) : ../latticesemi/ecp5/adjbrst.vhd \
 $(HDL4FPGA__adjpha) \
 $(HDL4FPGA__adjpha__beh) : ../xilinx/adjpha.vhd \
 		$(HDL4FPGA__base) \
-		$(IEEE__std_logic_textio) \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
@@ -1061,10 +1057,6 @@ $(HDL4FPGA__desser__mux) : ../basic/desser.vhd \
 
 $(HDL4FPGA__devmux) \
 $(HDL4FPGA__devmux__def) : ../basic/devmux.vhd \
-		$(HDL4FPGA__usbpkg) \
-		$(HDL4FPGA__base) \
-		$(HDL4FPGA__hdo) \
-		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../basic/devmux.vhd
@@ -1162,7 +1154,7 @@ $(HDL4FPGA__dpram__def) : ../basic/dpram.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/dpram.vhd
+	$(VCOM) -2002 -work hdl4fpga ../basic/dpram.vhd
 
 $(HDL4FPGA__dvi) \
 $(HDL4FPGA__dvi__def) \
@@ -1197,24 +1189,20 @@ $(HDL4FPGA__ecp5_ogbx__beh) : ../latticesemi/ecp5/ecp5_ogbx.vhd \
 
 $(HDL4FPGA__ecp5_profiles) \
 $(HDL4FPGA__ecp5_profiles__body) : ../apps/ecp5_profiles.vhd \
-		$(HDL4FPGA__app_profiles) \
-		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
-		$(HDL4FPGA__videopkg) \
+		$(IEEE__std_logic_1164) \
 		$(STD__textio) \
-		$(IEEE__std_logic_1164)
+		$(HDL4FPGA__hdo)
 	$(VCOM) -93 -work hdl4fpga ../apps/ecp5_profiles.vhd
 
 $(HDL4FPGA__ecp5_sdrampll) \
 $(HDL4FPGA__ecp5_sdrampll__def) : ../apps/ecp5_sdrampll.vhd \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
-		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ecp5_profiles) \
-		$(HDL4FPGA__app_profiles) \
 		$(HDL4FPGA__base) \
-		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__hdo) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../apps/ecp5_sdrampll.vhd
@@ -1237,7 +1225,6 @@ $(HDL4FPGA__ecp5_sdrdqphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrdqphy.vhd \
 		$(IEEE__numeric_bit) \
 		$(HDL4FPGA__phy_iofifo) \
 		$(HDL4FPGA__ecp5_igbx) \
-		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__adjpha) \
 		$(HDL4FPGA__adjbrst) \
 		$(HDL4FPGA__latency) \
@@ -1269,11 +1256,9 @@ $(HDL4FPGA__ecp5_videopll__def) : ../apps/ecp5_videopll.vhd \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
 		$(HDL4FPGA__ecp5_profiles) \
-		$(HDL4FPGA__app_profiles) \
-		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
-		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__hdo) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../apps/ecp5_videopll.vhd
@@ -1331,23 +1316,6 @@ $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../video/graphics.vhd
-
-$(HDL4FPGA__hdlc_link) \
-$(HDL4FPGA__hdlc_link__def) : ../apps/link_hdlc.vhd \
-		$(HDL4FPGA__sio_dayhdlc) \
-		$(HDL4FPGA__uart_tx) \
-		$(HDL4FPGA__uart_rx) \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
-		$(HDL4FPGA__videopkg) \
-		$(HDL4FPGA__ecp5_profiles) \
-		$(HDL4FPGA__app_profiles) \
-		$(HDL4FPGA__base) \
-		$(IEEE__math_real) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../apps/link_hdlc.vhd
 
 $(HDL4FPGA__hdlcdll_rx) \
 $(HDL4FPGA__hdlcdll_rx__def) : ../hdlc/hdlcdll_rx.vhd \
@@ -1528,12 +1496,30 @@ $(HDL4FPGA__lifo__def) : ../basic/lifo.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../basic/lifo.vhd
 
+$(HDL4FPGA__link_hdlc) \
+$(HDL4FPGA__link_hdlc__def) : ../apps/link_hdlc.vhd \
+		$(HDL4FPGA__sio_dayhdlc) \
+		$(HDL4FPGA__uart_tx) \
+		$(HDL4FPGA__uart_rx) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__app_profiles) \
+		$(HDL4FPGA__base) \
+		$(IEEE__math_real) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../apps/link_hdlc.vhd
+
 $(HDL4FPGA__link_mii) \
 $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_dayudp) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__ecp5_profiles) \
 		$(HDL4FPGA__app_profiles) \
 		$(HDL4FPGA__videopkg) \
@@ -2161,6 +2147,7 @@ $(HDL4FPGA__ser_debug__def) : ../apps/ser_debug.vhd \
 		$(HDL4FPGA__cp850x8x8x128to255) \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(HDL4FPGA__cgafonts) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__ser_display) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
@@ -2183,6 +2170,7 @@ $(HDL4FPGA__ser_display__def) : ../video/ser_display.vhd \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(HDL4FPGA__cgafonts) \
 		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -2239,8 +2227,8 @@ $(HDL4FPGA__sio_dayusb) \
 $(HDL4FPGA__sio_dayusb__beh) : ../sio/sio_dayusb.vhd \
 		$(HDL4FPGA__sio_hdlc) \
 		$(HDL4FPGA__serlzr) \
-		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbdev) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2467,13 +2455,12 @@ $(HDL4FPGA__usbcrc__def) : ../usb/usbcrc.vhd \
 $(HDL4FPGA__usbdev) \
 $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 		$(HDL4FPGA__usbdevrqst) \
-		$(IEEE__numeric_bit) \
 		$(HDL4FPGA__usbdevflow) \
 		$(HDL4FPGA__usbpkt_tx) \
 		$(HDL4FPGA__usbpkt_rx) \
 		$(HDL4FPGA__usbphycrc) \
-		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -2482,20 +2469,21 @@ $(HDL4FPGA__usbdev__def) : ../usb/usbdev.vhd \
 
 $(HDL4FPGA__usbdevflow) \
 $(HDL4FPGA__usbdevflow__def) : ../usb/usbdevflow.vhd \
+		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
-		$(IEEE__numeric_bit) \
+		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../usb/usbdevflow.vhd
 
 $(HDL4FPGA__usbdevrqst) \
 $(HDL4FPGA__usbdevrqst__def) : ../usb/usbdevrqst.vhd \
-		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
@@ -2513,7 +2501,6 @@ $(HDL4FPGA__usbhost) \
 $(HDL4FPGA__usbhost__def) \
 $(HDL4FPGA__usbhostdvr) \
 $(HDL4FPGA__usbhostdvr__def) : ../usb/usbhost.vhd \
-		$(IEEE__numeric_bit) \
 		$(HDL4FPGA__usbhostflow) \
 		$(HDL4FPGA__usbpkt_tx) \
 		$(HDL4FPGA__usbpkt_rx) \
@@ -2531,9 +2518,8 @@ $(HDL4FPGA__usbhostflow) \
 $(HDL4FPGA__usbhostflow__def) : ../usb/usbhostflow.vhd \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__usbpkg) \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
-		$(IEEE__numeric_bit) \
+		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../usb/usbhostflow.vhd
@@ -2541,6 +2527,7 @@ $(HDL4FPGA__usbhostflow__def) : ../usb/usbhostflow.vhd \
 $(HDL4FPGA__usbhostrqst) \
 $(HDL4FPGA__usbhostrqst__def) : ../usb/usbhostrqst.vhd \
 		$(HDL4FPGA__devmux) \
+		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__base) \
 		$(HDL4FPGA__hdo) \
@@ -2631,6 +2618,7 @@ $(HDL4FPGA__videobox__def) \
 $(HDL4FPGA__videobox_layout) \
 $(HDL4FPGA__videobox_layout__def) : ../video/video.vhd \
 		$(HDL4FPGA__rom) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2638,12 +2626,7 @@ $(HDL4FPGA__videobox_layout__def) : ../video/video.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../video/video.vhd
 
-$(HDL4FPGA__videopkg) \
-$(HDL4FPGA__videopkg__body) : ../video/videopkg.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
+$(HDL4FPGA__videopkg) : ../video/videopkg.vhd
 	$(VCOM) -93 -work hdl4fpga ../video/videopkg.vhd
 
 $(HDL4FPGA__xc3s_dqsdelay) \
@@ -2718,7 +2701,6 @@ $(HDL4FPGA__xc_sdrdqphy__xilinx) : ../xilinx/xc_sdrdqphy.vhd \
 		$(HDL4FPGA__adjsto) \
 		$(HDL4FPGA__igbx) \
 		$(HDL4FPGA__xc_dqsdelay) \
-		$(IEEE__std_logic_textio) \
 		$(HDL4FPGA__adjpha) \
 		$(UNISIM__vcomponents) \
 		$(HDL4FPGA__profiles) \
