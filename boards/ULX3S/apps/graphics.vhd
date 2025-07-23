@@ -28,7 +28,6 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.videopkg.all;
 use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 
@@ -39,37 +38,26 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_usb;
-	constant sdram_speed  : sdram_speeds := sdram225MHz; 
-	constant video_gear   : natural      := 2;
-	constant video_mode   : video_modes  := mode600p24bpp;
-	-- constant video_mode   : video_modes  := mode720p24bpp;
-	-- constant video_mode   : video_modes  := mode900p24bpp;
-	-- constant video_mode   : video_modes  := mode1080p24bpp30;
-	-- constant video_mode   : video_modes  := mode1080p24bpp;
-	-- constant video_mode   : video_modes  := mode1440p24bpp30;
+	constant settings : string := "{"              &
+		"io_link: io_usb,"                         &
+		"video:{"                                  &
+			"dcm: '40mhz',"                        &
+			"gear: 2,"                             &
+			"timings: '800x600'\.'@60'\,'40mhz'}," &
+			"pixel:{"                              &
+				"R:8,"                             &
+				"G:8,"                             &
+				"B:8},"                            &
+		"sdram:{"                                  &
+			"dcm: '133mhz',"                       &
+			"cl:  '010'}}";
+
 	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
-	constant video_params  : video_record := videoparam(
-		video_modes'VAL(setif(debug,
-			video_modes'POS(modedebug),
-			-- video_modes'POS(video_mode),
-			video_modes'POS(video_mode))), clk25mhz_freq);
-
-	constant sdram_params : sdramparams_record := sdramparams(
-		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram133MHz),
-			-- sdram_speeds'POS(sdram225MHz),
-			sdram_speeds'POS(sdram_speed))), clk25mhz_freq);
-	
-	constant sdram_tcp : real := 
-		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
-		(real(sdram_params.pll.clkfb_div*sdram_params.pll.clkos_div)*clk25mhz_freq);
-
 	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
 	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
-	constant gear        : natural := hdo(phy_data)**".orgz.gear";
+	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear";
 	constant usb_oversampling : natural := 3;
 
 	signal ctlr_clk      : std_logic;
@@ -83,24 +71,25 @@ architecture graphics of ulx3s is
 	signal ctlrphy_we    : std_logic;
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(sdram_gear*sdram_dqm'length-1 downto 0);
 	signal sdram_dqs     : std_logic_vector(sdram_dqm'length-1 downto 0);
 
 	signal video_clk     : std_logic;
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
-	signal video_pixel   : std_logic_vector(0 to video_params**".pixel=24"-1);
-	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
+	signal video_pixel   : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	signal dvid_crgb     : std_logic_vector(4*settings**".video.gear"-1 downto 0);
 	signal videoio_clk   : std_logic;
 
 	constant mem_size    : natural := 8*(1024*8);
+	signal sio_clk       : std_logic;
 	signal so_frm        : std_logic := '0';
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
@@ -111,24 +100,14 @@ architecture graphics of ulx3s is
 	signal si_end        : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 
-	signal sio_clk       : std_logic;
-
-	constant serdebug    : boolean := false;
-	signal ser_clk       : std_logic;
-	signal ser_frm       : std_logic;
-	signal ser_irdy      : std_logic;
-	signal ser_data      : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
-	-- signal ser_data      : std_logic_vector(0 to 8-1);
-
 begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		io_link      => io_link,
 		clkio_freq   => 12.0e6*real(usb_oversampling),
 		clkref_freq  => clk25mhz_freq,
-		default_gear => video_gear,
-		video_params => video_params)
+		gear         => settings**".video.gear",
+		dcm          => settings**".dcm")
 	port map (
 		clk_rst     => right,
 		clk_ref     => clk_25mhz,
@@ -140,9 +119,9 @@ begin
 
 	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
 	generic map (
-		gear         => gear,
+		gear         => sdram_gear,
 		clkref_freq  => clk25mhz_freq,
-		sdram_params => sdram_params)
+		dcm => settings**".sdram.dcm")
 	port map (
 		clk_ref  => clk_25mhz,
 		ctlr_rst => sdrsys_rst,
@@ -153,19 +132,16 @@ begin
 		if debug then
 			sdram_dqs <= (others => ctlr_clk);
 		else
-			case sdram_speed is
-			when sdram133MHz =>
+			if string'(settings**".sdram.dcm")="133mhz" then
 				sdram_dqs <= (others => ctlr_clk);
-			when others =>
+			else
 				sdram_dqs <= (others => not ctlr_clk);
-			end case;
+			end if;
 		end if;
 	end process;
 
-	hdlc_g : if io_link=io_hdlc generate
-		constant uart_freq : real := 
-			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
-			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
+	hdlc_g : if string'(settings**".io_link")="io_hdlc" generate
+		constant uart_freq : real := 30.0e6;
 		signal uart_clk : std_logic;
 	begin
 
@@ -204,8 +180,7 @@ begin
 		ftdi_txden <= '1';
 	end generate;
 
-	usb_g : if io_link=io_usb generate
-		signal tp : std_logic_vector(1 to 32);
+	usb_g : if string'(settings**".io_link")="io_usb" generate
 		signal usb_cken : std_logic;
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
@@ -222,13 +197,10 @@ begin
 
 		sio_clk  <= videoio_clk;
 
-		led(7) <= tp(4);
-
 		usb_e : entity hdl4fpga.sio_dayusb
 		generic map (
 			usb_oversampling => usb_oversampling)
 		port map (
-			tp        => tp,
 			usb_clk   => videoio_clk,
 			usb_cken  => usb_cken,
 			usb_dp    => usb_fpga_dp,
@@ -245,38 +217,10 @@ begin
 			so_irdy   => so_irdy,
 			so_trdy   => so_trdy,
 			so_data   => so_data);
-
-		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
-		port map (
-			usb_clk  => sio_clk,
-			usb_cken => usb_cken,
-			phy_en   => tp(1),
-			phy_bs   => tp(2),
-			phy_d    => tp(3),
-			fltr_en  => fltr_en,
-			fltr_bs  => fltr_bs,
-			fltr_d   => fltr_d);
-
-		ser_clk     <= videoio_clk;
-		ser_frm     <= fltr_en;
-		ser_irdy    <= not fltr_bs;
-		ser_data(0) <= fltr_d;
-		-- ser_frm     <= tp(1);
-		-- ser_irdy    <= tp(2);
-		-- ser_data(0) <= tp(3);
-		-- ser_frm  <= tp(4);
-		-- ser_irdy <= '1';
-		-- ser_data <= tp(5 to 12);
 	end generate;
 
-	ipoe_g : if io_link=io_ipoe generate
+	ipoe_g : if string'(settings**".io_link")="io_ipoe" generate
 		constant hdplx : std_logic := '1';
-		signal video_pixel   : std_logic_vector(0 to setif(
-		video_params.pixel=rgb565, 16, setif(
-		video_params.pixel=rgb888, 32, 0))-1);
-		-- https://www.waveshare.com/LAN8720-ETH-Board.htm
-		-- Starts up 10Mb half duplex
-
 		signal mii_clk : std_logic;
 		signal tp      : std_logic_vector(1 to 32);
 		signal mii_clk10 : std_logic;
@@ -339,34 +283,6 @@ begin
 			mii_rxd(0)    => rmii_rx0,
 			mii_rxd(1)    => rmii_rx1);
 
-		-- displaytp_e : entity hdl4fpga.display_tp
-		-- generic map (
-			-- timing_id    => video_params.timing,
-			-- video_gear   => 2,
-			-- num_of_cols  => 1,
-			-- field_widths => (0 to 6-1 => 15),
-			-- labels       => 
-				-- "dev_gtn(0)" & NUL &
-				-- "dev_gtn(1)" & NUL &
-				-- "dev_csc"    & NUL &
-				-- "dev_req(0)" & NUL &
-				-- "dev_req(1)" & NUL &
-				-- "miitx_frm"  & NUL &
-				-- "miitx_end"  & NUL &
-				-- "ethtx_frm"  & NUL &
-				-- "ethtx_irdy" & NUL &
-				-- "ethtx_trdy" & NUL &
-				-- "arptx_frm"  & NUL &
-				-- "arptx_irdy" & NUL &
-				-- "arptx_trdy" & NUL)
-		-- port map (
-			-- sweep_clk   => video_clk,
-			-- tp          => tp(1 to 13),
-			-- video_clk   => video_clk,
-			-- video_shift_clk => video_shift_clk,
-			-- dvid_crgb   => dvid_crgb,
-			-- video_pixel => video_pixel);
-
 		sio_clk   <= mii_clk;
 		wifi_en   <= '0';
 		rmii_mdio <= '0';
@@ -379,15 +295,11 @@ begin
 		debug        => debug,
 		profile      => 0,
 
-		sdram_tcp    => sdram_tcp,
+		sdram_tcp    => 1.0/sdram_freq(sdram_dcm(settings**".dcm"), 25.0e6),
 		phy_data     => hdo(phy_db)**".ecp5g1",
 		sdram_data   => hdo(sdram_db)**".MT48LC16M16MA2-7E",
 
-		timing_id    => video_params.timing,
-		video_gear   => video_gear,
-		red_length   => setif(video_params.pixel=rgb565, 5, setif(video_params.pixel=rgb888, 8, 0)),
-		green_length => setif(video_params.pixel=rgb565, 6, setif(video_params.pixel=rgb888, 8, 0)),
-		blue_length  => setif(video_params.pixel=rgb565, 5, setif(video_params.pixel=rgb888, 8, 0)),
+		video_settings => settings**".video",
 		fifo_size    => mem_size)
 
 	port map (
@@ -411,7 +323,7 @@ begin
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "000",
-		ctlr_cl      => sdram_params.cl,
+		ctlr_cl      => settings**".sdram.cl",
 
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke,
@@ -430,8 +342,8 @@ begin
 
 	latsti_e : entity hdl4fpga.latency
 	generic map (
-		n => gear,
-		d => (0 to gear-1 => 0))
+		n => sdram_gear,
+		d => (0 to sdram_gear-1 => 0))
 	port map (
 		clk => ctlr_clk,
 		di  => ctlrphy_sto,
@@ -439,7 +351,7 @@ begin
 
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
-		gear       => gear,
+		gear       => sdram_gear,
 		bank_size  => sdram_ba'length,
 		addr_size  => sdram_a'length,
 		word_size  => sdram_d'length,
@@ -481,8 +393,8 @@ begin
 	-- VGA --
 	---------
 
-	no_serdebug_g : if not serdebug generate
-		hdmibrd_g : if video_gear=2 generate 
+	no_serdebug_g : if false generate
+		hdmibrd_g : if settings**".video.gear"=2 generate 
 			signal crgb : std_logic_vector(dvid_crgb'range);
 		begin
 			reg_e : entity hdl4fpga.latency
@@ -500,7 +412,7 @@ begin
 				lfbt_frst => false,
 				interlace => true,
 				size      => gpdi_d'length,
-				gear      => video_gear)
+				gear      => settings**".video.gear")
 			port map (
 				sclk      => video_shift_clk,
 				eclk      => video_eclk,
@@ -509,7 +421,7 @@ begin
 
 		end generate;
 
-		hdmiext_g : if video_gear=7 or video_gear=4 generate 
+		hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
 			signal crgb : std_logic_vector(dvid_crgb'range);
 		begin
 			reg_e : entity hdl4fpga.latency
@@ -527,51 +439,15 @@ begin
 				lfbt_frst => false,
 				interlace => true,
 				size      => gpdi_d'length,
-				gear      => video_gear)
+				gear      => settings**".video.gear")
 		   	port map (
 				eclk      => video_eclk,
 				sclk      => video_shift_clk,
 				d         => crgb,
-				-- q         => gp(9 to 13-1));
 				q         => gp(13-1 downto 9));
 
 			wifi_en   <= '0';
 		end generate;
-	end generate;
-
-	ser_debug_g : if serdebug generate
-		signal video_hzsync : std_logic;
-		signal video_vtsync : std_logic;
-		signal dvid_crgb    : std_logic_vector(4*2-1 downto 0);
-	begin
-		ser_debug_e : entity hdl4fpga.ser_debug
-		generic map (
-			timing_id       => video_params.timing)
-		port map (
-			ser_clk         => ser_clk, 
-			ser_frm         => ser_frm, 
-			ser_irdy        => ser_irdy, 
-			ser_data        => ser_data, 
-			
-			video_clk       => video_clk,
-			video_shift_clk => video_shift_clk,
-			video_hzsync    => video_hzsync,
-			video_vtsync    => video_vtsync,
-			video_pixel     => video_pixel,
-			dvid_crgb       => dvid_crgb);
-
-		ddr_g : for i in gpdi_d'range generate
-			signal q : std_logic;
-		begin
-			oddr_i : oddrx1f
-			port map(
-				sclk => video_shift_clk,
-				rst  => '0',
-				d0   => dvid_crgb(2*i),
-				d1   => dvid_crgb(2*i+1),
-				q    => gpdi_d(i));
-		end generate;
-
 	end generate;
 
 	-- SDRAM-clk-divided-by-2 monitor
@@ -586,4 +462,5 @@ begin
 			q1 := not q1;
 		end if;
 	end process;
+
 end;

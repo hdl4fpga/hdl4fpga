@@ -41,13 +41,8 @@ entity app_graphics is
 		sdram_data   : string := "";
 		burst_length : natural := 0;
 
-		video_timings: string;
-		dvid_fifo    : boolean := false;
-		video_gear   : natural := 2;
-		red_length   : natural := 8;
-		green_length : natural := 8;
-		blue_length  : natural := 8);
-
+		video_settings: string;
+		dvid_fifo    : boolean := false);
 	port (
 		sin_clk       : in  std_logic;
 		sin_frm       : in  std_logic;
@@ -67,7 +62,7 @@ entity app_graphics is
 		video_vtsync  : buffer std_logic;
 		video_blank   : buffer std_logic;
 		video_pixel   : buffer std_logic_vector;
-		dvid_crgb     : out std_logic_vector(4*video_gear-1 downto 0);
+		dvid_crgb     : out std_logic_vector(4*video_settings**".gear"-1 downto 0);
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
@@ -111,6 +106,11 @@ entity app_graphics is
 		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
 		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
+
+	constant video_gear   : natural := video_settings**".video.gear=2";
+	constant red_length   : natural := video_settings**".video.pixel.R=8";
+	constant green_length : natural := video_settings**".video.pixel.G=8";
+	constant blue_length  : natural := video_settings**".video.pixel.B=8";
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
 	constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
@@ -664,8 +664,8 @@ begin
 		constant sync_lat  : natural := 4;
 		constant dma_lat   : natural := latencies_tab(profile).adapter;
 
-		signal hzcntr      : std_logic_vector(unsigned_num_bits(video_timings**".hz.total"-1)-1 downto 0);
-		signal vtcntr      : std_logic_vector(unsigned_num_bits(video_timings**".vt.total"-1)-1 downto 0);
+		signal hzcntr      : std_logic_vector(unsigned_num_bits(video_settings**".timings.hz.total"-1)-1 downto 0);
+		signal vtcntr      : std_logic_vector(unsigned_num_bits(video_settings**".timings.vt.total"-1)-1 downto 0);
 		signal hzsync      : std_logic;
 		signal vtsync      : std_logic;
 		signal hzon        : std_logic;
@@ -686,7 +686,7 @@ begin
 
 		sync_e : entity hdl4fpga.video_sync
 		generic map (
-			timings      => video_timings)
+			timings      => video_settings**".timings")
 		port map (
 			video_clk    => video_clk,
 			video_hzcntr => hzcntr,
@@ -725,7 +725,7 @@ begin
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
-			video_width => video_timings**".hz.active")
+			video_width => video_settings**".timings**.hz.active")
 		port map (
 			ctlr_inirdy => ctlr_inirdy,
 			ctlr_clk    => ctlr_clk,
