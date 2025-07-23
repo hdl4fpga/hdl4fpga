@@ -41,7 +41,7 @@ entity app_graphics is
 		sdram_data   : string := "";
 		burst_length : natural := 0;
 
-		timing_id    : videotiming_ids;
+		video_timings: string;
 		dvid_fifo    : boolean := false;
 		video_gear   : natural := 2;
 		red_length   : natural := 8;
@@ -664,8 +664,8 @@ begin
 		constant sync_lat  : natural := 4;
 		constant dma_lat   : natural := latencies_tab(profile).adapter;
 
-		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
-		signal vtcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(7)-1)-1 downto 0);
+		signal hzcntr      : std_logic_vector(unsigned_num_bits(video_timings**".hz.total"-1)-1 downto 0);
+		signal vtcntr      : std_logic_vector(unsigned_num_bits(video_timings**".vt.total"-1)-1 downto 0);
 		signal hzsync      : std_logic;
 		signal vtsync      : std_logic;
 		signal hzon        : std_logic;
@@ -686,7 +686,7 @@ begin
 
 		sync_e : entity hdl4fpga.video_sync
 		generic map (
-			timing_id => timing_id)
+			timings      => video_timings)
 		port map (
 			video_clk    => video_clk,
 			video_hzcntr => hzcntr,
@@ -725,7 +725,7 @@ begin
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
-			video_width => modeline_tab(timing_id)(0))
+			video_width => video_timings**".hz.active")
 		port map (
 			ctlr_inirdy => ctlr_inirdy,
 			ctlr_clk    => ctlr_clk,
