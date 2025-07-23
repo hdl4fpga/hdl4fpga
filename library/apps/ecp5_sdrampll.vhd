@@ -64,7 +64,6 @@ architecture def of ecp5_sdrampll is
 	attribute FREQUENCY_PIN_CLKI   : string;
 	attribute FREQUENCY_PIN_CLKOP  : string;
 
-
 	attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(clkos_freq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(setif(sdram_freq < 400.0e6, sdram_freq/1.0e6, 400.0), 10);
 	attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(clkref_freq/1.0e6, 10);

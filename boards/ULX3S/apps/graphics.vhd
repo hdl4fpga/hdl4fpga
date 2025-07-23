@@ -96,9 +96,7 @@ architecture graphics of ulx3s is
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
-	signal video_pixel   : std_logic_vector(0 to setif(
-		video_params.pixel=rgb565, 16, setif(
-		video_params.pixel=rgb888, 24, 0))-1);
+	signal video_pixel   : std_logic_vector(0 to video_params**".pixel=24"-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk   : std_logic;
 
