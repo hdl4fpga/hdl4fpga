@@ -186,7 +186,7 @@ package body hdo is
 	constant log_parsetagvaluepathdefault : natural := 2**8;
 	constant log_locatevalue  : natural := 2**6;
 	constant log_resolve      : natural := 2**7;
-	constant log_flags        : natural := 0; --511-log_parsestring;
+	constant log_flags        : natural := 511; ---log_parsestring;
 
 	function unsigned_num_bits (
 		arg: natural)

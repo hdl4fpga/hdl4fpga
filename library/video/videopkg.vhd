@@ -18,9 +18,11 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  --
 -- SOFTWARE.                                                                      --
 --                                                                                --
+library hdl4fpga;
+use hdl4fpga.hdo.all;
 
 package videopkg is
-	constant timings_db : string := "{"                                                                 &
+	constant timings_db : string := compact("{"                                                                 &
 		"'80x272':{"                                                                                    &
 			"'@60':{"                                                                                   &
 				"'10mhz':{"                                                                             &
@@ -73,7 +75,7 @@ package videopkg is
     				"vt  : { active :  900, sync_s :  901, sync_e :  904, total : 1000, pol : '+'}}}}," &
 		"'1920x1080':{"                                                                                 &
 			"'@60':{"                                                                                   &
-    			"''130mhz':{"                                                                           &
+    			"'130mhz':{"                                                                           &
     				"clk : 130.32e6,"                                                                   &
     				"hz  : { active : 1920, sync_s : 1944, sync_e : 1976, total : 2000},"               &
     				"vt  : { active : 1080, sync_s : 1083, sync_e : 1084, total : 1086}},"              &
@@ -94,5 +96,5 @@ package videopkg is
     			"'116mhz':{"                                                                            &
     				"clk : 115.711e6,"                                                                  &
     				"hz  : { active : 2560, sync_s : 2568, sync_e : 2600, total : 2640, pol : '+'},"    &
-    				"vt  : { active : 1440, sync_s : 1447, sync_e : 1455, total : 1461, pol : '-'}}}}}";
+    				"vt  : { active : 1440, sync_s : 1447, sync_e : 1455, total : 1461, pol : '-'}}}}}");
 end;

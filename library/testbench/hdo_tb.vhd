@@ -24,15 +24,33 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
+use hdl4fpga.videopkg.all;
 
 
 architecture hdo_tb of testbench is
 
+	constant settings : string := "{"              &
+		"io_link: io_usb,"                         &
+		"video:{"                                  &
+			"dcm: '40mhz',"                        &
+			"gear: 2,"                             &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+			"pixel:{"                              &
+				"R:8,"                             &
+				"G:8,"                             &
+				"B:8},"                            &
+		"sdram:{"                                  &
+			"dcm: '133mhz',"                       &
+			"cl:  '010'}}}";
+
 begin
+
+
 
 	process
 	begin
-		report sdram_db**".MT41K256M16-125";
+		report settings**".video.timings";
+		report video_dcm**".video.timings";
 		wait;
 	end process;
 
