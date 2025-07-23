@@ -21,12 +21,10 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
-use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 
 library ecp5u;
@@ -34,9 +32,9 @@ use ecp5u.components.all;
 
 entity ecp5_sdrampll is
 	generic (
-		gear         : natural;
+		gear : natural;
 		clkref_freq  : real;
-		sdram_params : sdramparams_record);
+		dcm  : string);
 	port (
 		clk_ref      : in  std_logic;
 		ctlr_rst     : out std_logic;
@@ -50,17 +48,22 @@ end;
 
 architecture def of ecp5_sdrampll is
 
+    constant clki_div   : natural := dcm**".clki_div";
+    constant clkfb_div  : natural := dcm**".clkfb_div";
+    constant clkop_div  : natural := dcm**".clkop_div";
+    constant clkos_div  : natural := dcm**".clkos_div";
+    constant clkos2_div : natural := dcm**".clkos2_div";
+    constant clkos3_div : natural := dcm**".clkos3_div";
+
+	constant clkos_freq : real := real(clkfb_div)*clkref_freq/real(clki_div);
+	constant sdram_freq : real := hdl4fpga.ecp5_profiles.sdram_freq(dcm,clkref_freq); -- GHDL annoyance
+
 	attribute FREQUENCY_PIN_CLKOS  : string;
 	attribute FREQUENCY_PIN_CLKOS2 : string;
 	attribute FREQUENCY_PIN_CLKOS3 : string;
 	attribute FREQUENCY_PIN_CLKI   : string;
 	attribute FREQUENCY_PIN_CLKOP  : string;
 
-	constant clkos_freq  : real :=
-		real(sdram_params.pll.clkfb_div)*clkref_freq/
-		real(sdram_params.pll.clki_div);
-
-	constant sdram_freq  : real := hdl4fpga.ecp5_profiles.sdram_freq(sdram_params,clkref_freq); -- GHDL annoyance
 
 	attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(clkos_freq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(setif(sdram_freq < 400.0e6, sdram_freq/1.0e6, 400.0), 10);
@@ -87,7 +90,7 @@ begin
 		DPHASE_SOURCE    => "DISABLED",
 		PLL_LOCK_MODE    =>  0,
 		FEEDBK_PATH      => "CLKOS",
-		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => sdram_params.pll.clkos_div-1,
+		CLKOS_ENABLE     => "ENABLED",  CLKOS_FPHASE   => 0, CLKOS_CPHASE  => clkos_div-1,
 		CLKOS2_ENABLE    => "DISABLED", CLKOS2_FPHASE  => 0, CLKOS2_CPHASE => 0,
 		CLKOS3_ENABLE    => "DISABLED", CLKOS3_FPHASE  => 0, CLKOS3_CPHASE => 0,
 		CLKOP_ENABLE     => "ENABLED",  CLKOP_FPHASE   => 0, CLKOP_CPHASE  => 0,
@@ -98,10 +101,10 @@ begin
 		OUTDIVIDER_MUXB  => "DIVB",
 		OUTDIVIDER_MUXA  => "DIVA",
 
-		CLKOS_DIV        => sdram_params.pll.clkos_div,
-		CLKOP_DIV        => sdram_params.pll.clkop_div,
-		CLKFB_DIV        => sdram_params.pll.clkfb_div,
-		CLKI_DIV         => sdram_params.pll.clki_div)
+		CLKOS_DIV        => clkos_div,
+		CLKOP_DIV        => clkop_div,
+		CLKFB_DIV        => clkfb_div,
+		CLKI_DIV         => clki_div)
 	port map (
 		rst       => '0',
 		clki      => clk_ref,

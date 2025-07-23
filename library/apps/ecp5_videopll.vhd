@@ -32,10 +32,10 @@ use ecp5u.components.all;
 
 entity ecp5_videopll is
 	generic (
-		clkio_freq   : real := 36.0e6;
-		clkref_freq  : real;
-		gear         : natural;
-		video_dcm    : string);
+		clkio_freq  : real := 36.0e6;
+		clkref_freq : real;
+		gear        : natural;
+		dcm         : string);
 	port (
 		clk_rst      : in std_logic := '0';
 		clk_ref      : in std_logic;
@@ -49,12 +49,12 @@ entity ecp5_videopll is
 end;
 
 architecture def of ecp5_videopll is
-    constant clki_div   : natural := video_dcm**".clki_div";
-    constant clkfb_div  : natural := video_dcm**".clkfb_div";
-    constant clkop_div  : natural := video_dcm**".clkop_div";
-    constant clkos_div  : natural := video_dcm**".clkos_div";
-    constant clkos2_div : natural := video_dcm**".clkos2_div";
-    constant clkos3_div : natural := video_dcm**(".clkos3_div="&natural'image(natural((real(clkfb_div*clkos_div)*clkref_freq)/(real(clki_div)*clkio_freq))));
+    constant clki_div   : natural := dcm**".clki_div";
+    constant clkfb_div  : natural := dcm**".clkfb_div";
+    constant clkop_div  : natural := dcm**".clkop_div";
+    constant clkos_div  : natural := dcm**".clkos_div";
+    constant clkos2_div : natural := dcm**".clkos2_div";
+    constant clkos3_div : natural := dcm**(".clkos3_div="&natural'image(natural((real(clkfb_div*clkos_div)*clkref_freq)/(real(clki_div)*clkio_freq))));
 
 	attribute FREQUENCY_PIN_CLKOS  : string;
 	attribute FREQUENCY_PIN_CLKOS2 : string;
