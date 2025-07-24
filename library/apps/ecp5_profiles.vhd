@@ -75,7 +75,7 @@ package body ecp5_profiles is
 				"'116mhz' : { clkos_div :  12, clkop_div : 1, clki_div : 1 }}}");
 
 		constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
-		constant dcm         : string  := dcm_db**('.'&video_id&"={}");
+		constant dcm         : string  := dcm_db**(video_id&"={}");
 		constant clkos2_div  : natural := video_ratio*dcm**".clkop_div=1";
 		variable vco         : real;
 

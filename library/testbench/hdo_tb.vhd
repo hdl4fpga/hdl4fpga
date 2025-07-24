@@ -25,6 +25,7 @@ library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
+use hdl4fpga.ecp5_profiles.all;
 
 
 architecture hdo_tb of testbench is
@@ -50,7 +51,7 @@ begin
 	process
 	begin
 		report settings**".video.timings";
-		report video_dcm**".video.timings";
+		report video_dcm(".'25mhz'.'40mhz'");
 		wait;
 	end process;
 
