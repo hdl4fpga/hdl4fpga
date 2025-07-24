@@ -110,9 +110,7 @@ use hdl4fpga.videopkg.all;
 
 entity video_sync is
 	generic (
-		timings : string;
-		width   : natural := 0;
-		height  : natural := 0);
+		timings : string);
 	port (
 		video_clk     : in std_logic;
 		extern_video  : in std_logic := '0';
@@ -135,7 +133,7 @@ architecture mix of video_sync is
 		variable retval : natural_vector(0 to 4-1);
 	begin
 		for i in retval'range loop
-			retval(i) := hdo(data)**(".[" & natural'image(i) & "]");
+			retval(i) := hdo(data)**("[" & natural'image(i) & "]");
 			retval(i) := retval(i)-1;
 		end loop;
 		return retval;
@@ -150,7 +148,7 @@ architecture mix of video_sync is
 	signal hz_div  : std_logic_vector(2-1 downto 0);
 	signal vt_div  : std_logic_vector(2-1 downto 0);
 	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
-	signal vt_cntr : std_logic_vector(video_vtcntr'range) := std_logic_vector(to_unsigned(timings**".vt.end", video_vtcntr'length)); --(others => '1');
+	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '1');
 
 	signal extern_vton : std_logic;
 

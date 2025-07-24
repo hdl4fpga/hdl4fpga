@@ -167,9 +167,7 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		timings       => timings,
-		width         => main_width,
-		height        => main_height)
+		timings       => timings)
 	port map (
 		video_clk     => video_clk,
 		extern_video  => extern_video,

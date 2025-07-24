@@ -721,7 +721,7 @@ begin
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
-			video_width => video_settings**".timings**.hz.active")
+			video_width => video_settings**".timings.hz.active")
 		port map (
 			ctlr_inirdy => ctlr_inirdy,
 			ctlr_clk    => ctlr_clk,
