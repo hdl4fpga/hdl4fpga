@@ -30,23 +30,20 @@ use hdl4fpga.ecp5_profiles.all;
 
 architecture hdo_tb of testbench is
 
-	constant settings : string := "{"              &
-		"io_link: io_usb,"                         &
-		"video:{"                                  &
-			"dcm:"     & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'")) & ',' &
-			"gear: 2,"                             &
+	constant settings : string := "{" &
+		"io_link: io_usb,"            &
+		"video:{"                     &
+			"dcm:"     & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6))  & ',' &
+			"gear: 2,"                &
 			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
-			"pixel:{"                              &
-				"R:8,"                             &
-				"G:8,"                             &
-				"B:8},"                            &
-		"sdram:{"                                  &
-			"dcm: '133mhz',"                       &
+			"pixel:{"                 &
+				"R:8,"                &
+				"G:8,"                &
+				"B:8},"               &
+		"sdram:{"                     &
+			"dcm:" & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'")) & ',' &
 			"cl:  '010'}}}";
-
 begin
-
-
 
 	process
 	begin

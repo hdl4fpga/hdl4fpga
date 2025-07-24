@@ -24,7 +24,8 @@ use hdl4fpga.hdo.all;
 
 package ecp5_profiles is
 	function video_dcm (
-		constant video_id : string)
+		constant video_id     : string;
+		constant videoio_freq : real := 0.0)
 		return string;
 
 	function sdram_dcm (
@@ -32,27 +33,30 @@ package ecp5_profiles is
 		return string;
 
 	function sdram_freq(
-		constant dcm  : string;
-		constant freq : real)
+		constant dcm  : string)
 		return real;
 end;
+
+library ieee;
+use ieee.math_real.all;
 
 package body ecp5_profiles is
 
 	function sdram_freq(
-		constant dcm  : string;
-		constant freq : real)
+		constant dcm  : string)
 		return real is
+		constant freq_in   : real    := dcm**".freq_in=1";
 		constant clkos_div : natural := dcm**".clkos_div=0";
 		constant clkfb_div : natural := dcm**".clkfb_div=0";
 		constant clki_div  : natural := dcm**".clki_div=1";
 		constant clkop_div : natural := dcm**".clkop_div=1";
 	begin
-		return real(clkos_div*clkfb_div)*freq/real(clki_div*clkop_div);
+		return real(clkos_div*clkfb_div)*freq_in/real(clki_div*clkop_div);
 	end;
 
 	function video_dcm (
-		constant video_id : string)
+		constant video_id     : string;
+		constant videoio_freq : real := 0.0)
 		return string is
 
 		-- video_clk       = (clk_ref/clki_div)*clkos_div/clkos2_div 
@@ -61,37 +65,41 @@ package body ecp5_profiles is
 
 		constant dcm_db : string := compact("{"                                 &
 			"'25mhz':{"                                                         &
-				" '25mhz' : { clkos_div :  25, clkop_div : 5, clki_div : 1 },"  &
-				" '40mhz' : { clkos_div :  16, clkop_div : 2, clki_div : 1 },"  &
-				" '64mhz' : { clkos_div : 128, clkop_div : 2, clki_div : 5 },"  &
-				" '65mhz' : { clkos_div :  26, clkop_div : 2, clki_div : 1 },"  &
-				" '75mhz' : { clkos_div :  30, clkop_div : 2, clki_div : 1 },"  &
-				" '98mhz' : { clkos_div :  39, clkop_div : 1, clki_div : 2 },"  &
-				"'150mhz' : { clkos_div :  30, clkop_div : 1, clki_div : 1 },"  &
-				"'116mhz' : { clkos_div :  23, clkop_div : 1, clki_div : 1 }}," &
+				" '25mhz' : { clkos_div :  25, clkop_div : 5, clki_div : 1, freq_in : 25.0e6},"  &
+				" '40mhz' : { clkos_div :  16, clkop_div : 2, clki_div : 1, freq_in : 25.0e6},"  &
+				" '64mhz' : { clkos_div : 128, clkop_div : 2, clki_div : 5, freq_in : 25.0e6},"  &
+				" '65mhz' : { clkos_div :  26, clkop_div : 2, clki_div : 1, freq_in : 25.0e6},"  &
+				" '75mhz' : { clkos_div :  30, clkop_div : 2, clki_div : 1, freq_in : 25.0e6},"  &
+				" '98mhz' : { clkos_div :  39, clkop_div : 1, clki_div : 2, freq_in : 25.0e6},"  &
+				"'150mhz' : { clkos_div :  30, clkop_div : 1, clki_div : 1, freq_in : 25.0e6},"  &
+				"'116mhz' : { clkos_div :  23, clkop_div : 1, clki_div : 1, freq_in : 25.0e6}}," &
 			"'48mhz':{"                                                         &
-				" '40mhz' : { clkos_div :  25, clkop_div : 2, clki_div : 3 },"  &
-				" '75mhz' : { clkos_div :  47, clkop_div : 2, clki_div : 3 },"  &
-				"'116mhz' : { clkos_div :  12, clkop_div : 1, clki_div : 1 }}}");
+				" '40mhz' : { clkos_div :  25, clkop_div : 2, clki_div : 3, freq_in : 48.0e6},"  &
+				" '75mhz' : { clkos_div :  47, clkop_div : 2, clki_div : 3, freq_in : 48.0e6},"  &
+				"'116mhz' : { clkos_div :  12, clkop_div : 1, clki_div : 1, freq_in : 48.0e6}}}");
 
 		constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 		constant dcm         : string  := dcm_db**(video_id&"={}");
 		constant clkos2_div  : natural := video_ratio*dcm**".clkop_div=1";
-		variable vco         : real;
+		variable clkos3      : real;
 
 	begin
-		report "video_dcm() : video_id " & video_id & " not valid";
-		-- return "";
 		if dcm /= "{}" then
-			vco := 25.0e6;
-			vco := vco*dcm**".clkos_div"/dcm**".clki_div";
+			if videoio_freq /=0.0 then
+				clkos3 := dcm**".freq_in";
+				clkos3 := clkos3*dcm**".clkos_div";
+				clkos3 := round(clkos3/(videoio_freq));
+			else
+				clkos3 := 1.0;
+			end if;
 			return "{" &
-				"clkos_div:"  & string'(dcm**".clkos_div") & "," & 
-				"clkop_div:"  & string'(dcm**".clkop_div") & "," & 
-				"clkos2_div:" & natural'image(clkos2_div) & "," & 
-				"clkos3_div:" & "1," &
-				"clki_div:"   & string'(dcm**".clki_div") & "," & 
-				"clkfb_div:1}";
+				"clkos_div:"  & string'(dcm**".clkos_div")     & "," & 
+				"clkop_div:"  & string'(dcm**".clkop_div")     & "," & 
+				"clkos2_div:" & natural'image(clkos2_div)      & "," & 
+				"clkos3_div:" & natural'image(natural(clkos3)) & "," &
+				"clki_div:"   & string'(dcm**".clki_div")      & "," & 
+				"clkfb_div:"  & "1"                            & "," & 
+				"freq_in:"    & string'(dcm**".freq_in")       & "}";
 		end if;
 		assert false 
 			report "video_dcm() : video_id " & video_id & " not valid"
@@ -105,36 +113,33 @@ package body ecp5_profiles is
 		-- SDRAM CLK=clk_ref*clkos_div/clkop_div
     	constant dcm_db : string := compact("{" &
     		"'25mhz':{"                                                                                                     &
-    			"'133MHz' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'150MHz' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'166MHz' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'200MHz' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'225MHz' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'233MHz' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'250MHz' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'262MHz' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'275MHz' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'325MHz' : {clkos_div : 13, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'350MHz' : {clkos_div : 14, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'375MHz' : {clkos_div : 15, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'400MHz' : {clkos_div : 16, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'425MHz' : {clkos_div : 17, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'450MHz' : {clkos_div : 18, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'475MHz' : {clkos_div : 19, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'500MHz' : {clkos_div : 20, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1}}," &
+    			"'133mhz' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'150mhz' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'166mhz' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'200mhz' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'225mhz' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'233mhz' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'250mhz' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'262mhz' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'275mhz' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'325mhz' : {clkos_div : 13, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'350mhz' : {clkos_div : 14, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'375mhz' : {clkos_div : 15, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'400mhz' : {clkos_div : 16, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'425mhz' : {clkos_div : 17, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'450mhz' : {clkos_div : 18, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'475mhz' : {clkos_div : 19, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'500mhz' : {clkos_div : 20, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6}}," &
     		"'48mhz':{"                                                                                                     &
-    			"'300mhz' : {clkos_div : 38, clkop_div : 2, clkfb_div : 1, clki_div : 3, clkos2_div : 1, clkos3_div : 1},"  &
-    			"'400mhz' : {clkos_div : 25, clkop_div : 1, clkfb_div : 1, clki_div : 3, clkos2_div : 1, clkos3_div : 1}}}");
+    			"'300mhz' : {clkos_div : 38, clkop_div : 2, clkfb_div : 1, clki_div : 3, clkos2_div : 1, clkos3_div : 1, freq_in : 48.0e6},"  &
+    			"'400mhz' : {clkos_div : 25, clkop_div : 1, clkfb_div : 1, clki_div : 3, clkos2_div : 1, clkos3_div : 1, freq_in : 48.0e6}}}");
 
-		constant dcm : string := dcm_db**('.'&sdram_id&"={}");
+		constant dcm : string := dcm_db**(sdram_id&"={}");
 	begin
-		if dcm/="{}" then
-			return dcm;
-		end if;
-		assert false 
+		assert dcm/="{}"
 			report "sdram_dcm() : sdram speed_id " & sdram_id & " not valid"
 			severity failure;
-		return "{}";
+		return dcm;
 	end;
 
 end package body;

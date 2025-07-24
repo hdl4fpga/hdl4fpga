@@ -38,20 +38,22 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant settings : string := "{"              &
-		"io_link: io_usb,"                         &
-		"video:{"                                  &
-			"dcm: '40mhz',"                        &
-			"gear: 2,"                             &
-			"timings: '800x600'\.'@60'\,'40mhz'}," &
-			"pixel:{"                              &
-				"R:8,"                             &
-				"G:8,"                             &
-				"B:8},"                            &
-		"sdram:{"                                  &
-			"dcm: '133mhz',"                       &
-			"cl:  '010'}}";
+	constant settings : string := "{"   &
+		"io_link: io_usb,"              &
+		"video:{"                       &
+			"dcm:"     & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6))  & ',' &
+			"videoio_freq:" & "36.0e6," &
+			"gear:"    & "2,"           &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")      & ',' &
+			"pixel:{"                   &
+				"R:8,"                  &
+				"G:8,"                  &
+				"B:8}},"                &
+		"sdram:{"                       &
+			"dcm:"     & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))         & ',' &
+			"cl:"      & "'010'}}";
 
+	constant io_link      : string := settings**".io_link";
 	constant baudrate     : natural      := 3000000;
 	--------------------------------------
 
@@ -104,10 +106,7 @@ begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		clkio_freq   => 12.0e6*real(usb_oversampling),
-		clkref_freq  => clk25mhz_freq,
-		gear         => settings**".video.gear",
-		dcm          => settings**".dcm")
+		settings     => settings**".video")
 	port map (
 		clk_rst     => right,
 		clk_ref     => clk_25mhz,
@@ -119,9 +118,9 @@ begin
 
 	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
 	generic map (
-		gear         => sdram_gear,
-		clkref_freq  => clk25mhz_freq,
-		dcm => settings**".sdram.dcm")
+		settings => "{" & 
+			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
+			"gear:" & string'(hdo(phy_data)**".orgz.gear") & '}')
 	port map (
 		clk_ref  => clk_25mhz,
 		ctlr_rst => sdrsys_rst,
@@ -140,7 +139,7 @@ begin
 		end if;
 	end process;
 
-	hdlc_g : if string'(settings**".io_link")="io_hdlc" generate
+	hdlc_g : if io_link="io_hdlc" generate
 		constant uart_freq : real := 30.0e6;
 		signal uart_clk : std_logic;
 	begin
@@ -180,7 +179,7 @@ begin
 		ftdi_txden <= '1';
 	end generate;
 
-	usb_g : if string'(settings**".io_link")="io_usb" generate
+	usb_g : if io_link="io_usb" generate
 		signal usb_cken : std_logic;
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
@@ -219,7 +218,7 @@ begin
 			so_data   => so_data);
 	end generate;
 
-	ipoe_g : if string'(settings**".io_link")="io_ipoe" generate
+	ipoe_g : if io_link="io_ipoe" generate
 		constant hdplx : std_logic := '1';
 		signal mii_clk : std_logic;
 		signal tp      : std_logic_vector(1 to 32);
@@ -295,7 +294,7 @@ begin
 		debug        => debug,
 		profile      => 0,
 
-		sdram_tcp    => 1.0/sdram_freq(sdram_dcm(settings**".dcm"), 25.0e6),
+		sdram_tcp    => 1.0/sdram_freq(settings**".dcm"),
 		phy_data     => hdo(phy_db)**".ecp5g1",
 		sdram_data   => hdo(sdram_db)**".MT48LC16M16MA2-7E",
 
@@ -340,127 +339,127 @@ begin
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
 
-	latsti_e : entity hdl4fpga.latency
-	generic map (
-		n => sdram_gear,
-		d => (0 to sdram_gear-1 => 0))
-	port map (
-		clk => ctlr_clk,
-		di  => ctlrphy_sto,
-		do  => sdrphy_sti);
+	-- latsti_e : entity hdl4fpga.latency
+	-- generic map (
+	-- 	n => sdram_gear,
+	-- 	d => (0 to sdram_gear-1 => 0))
+	-- port map (
+	-- 	clk => ctlr_clk,
+	-- 	di  => ctlrphy_sto,
+	-- 	do  => sdrphy_sti);
 
-	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
-	generic map (
-		gear       => sdram_gear,
-		bank_size  => sdram_ba'length,
-		addr_size  => sdram_a'length,
-		word_size  => sdram_d'length,
-		byte_size  => byte_size,
-		wr_fifo    => false,
-		rd_fifo    => false,
-		bypass     => false)
-	port map (
-		sclk       => ctlr_clk,
-		rst        => sdrsys_rst,
+	-- sdrphy_e : entity hdl4fpga.ecp5_sdrphy
+	-- generic map (
+	-- 	gear       => sdram_gear,
+	-- 	bank_size  => sdram_ba'length,
+	-- 	addr_size  => sdram_a'length,
+	-- 	word_size  => sdram_d'length,
+	-- 	byte_size  => byte_size,
+	-- 	wr_fifo    => false,
+	-- 	rd_fifo    => false,
+	-- 	bypass     => false)
+	-- port map (
+	-- 	sclk       => ctlr_clk,
+	-- 	rst        => sdrsys_rst,
 
-		sys_cs(0)  => ctlrphy_cs,
-		sys_cke(0) => ctlrphy_cke,
-		sys_ras(0) => ctlrphy_ras,
-		sys_cas(0) => ctlrphy_cas,
-		sys_we(0)  => ctlrphy_we,
-		sys_b      => ctlrphy_b,
-		sys_a      => ctlrphy_a,
-		sys_dmi    => ctlrphy_dmo,
-		sys_dqi    => ctlrphy_dqo,
-		sys_dqt    => ctlrphy_dqt,
-		sys_dqo    => ctlrphy_dqi,
-		sys_sto    => ctlrphy_sti,
-		sys_sti    => sdrphy_sti,
+	-- 	sys_cs(0)  => ctlrphy_cs,
+	-- 	sys_cke(0) => ctlrphy_cke,
+	-- 	sys_ras(0) => ctlrphy_ras,
+	-- 	sys_cas(0) => ctlrphy_cas,
+	-- 	sys_we(0)  => ctlrphy_we,
+	-- 	sys_b      => ctlrphy_b,
+	-- 	sys_a      => ctlrphy_a,
+	-- 	sys_dmi    => ctlrphy_dmo,
+	-- 	sys_dqi    => ctlrphy_dqo,
+	-- 	sys_dqt    => ctlrphy_dqt,
+	-- 	sys_dqo    => ctlrphy_dqi,
+	-- 	sys_sto    => ctlrphy_sti,
+	-- 	sys_sti    => sdrphy_sti,
 
-		sdram_clk  => sdram_clk,
-		sdram_cke  => sdram_cke,
-		sdram_cs   => sdram_csn,
-		sdram_ras  => sdram_rasn,
-		sdram_cas  => sdram_casn,
-		sdram_we   => sdram_wen,
-		sdram_b    => sdram_ba,
-		sdram_a    => sdram_a,
-		sdram_dqs  => sdram_dqs,
+	-- 	sdram_clk  => sdram_clk,
+	-- 	sdram_cke  => sdram_cke,
+	-- 	sdram_cs   => sdram_csn,
+	-- 	sdram_ras  => sdram_rasn,
+	-- 	sdram_cas  => sdram_casn,
+	-- 	sdram_we   => sdram_wen,
+	-- 	sdram_b    => sdram_ba,
+	-- 	sdram_a    => sdram_a,
+	-- 	sdram_dqs  => sdram_dqs,
 
-		sdram_dm   => sdram_dqm,
-		sdram_dq   => sdram_d);
+	-- 	sdram_dm   => sdram_dqm,
+	-- 	sdram_dq   => sdram_d);
 
-	-- VGA --
-	---------
+	-- -- VGA --
+	-- ---------
 
-	no_serdebug_g : if false generate
-		hdmibrd_g : if settings**".video.gear"=2 generate 
-			signal crgb : std_logic_vector(dvid_crgb'range);
-		begin
-			reg_e : entity hdl4fpga.latency
-			generic map (
-				n => dvid_crgb'length,
-				d => (dvid_crgb'range => 1))
-			port map (
-				clk => video_shift_clk,
-				di  => dvid_crgb,
-				do  => crgb);
+	-- no_serdebug_g : if false generate
+	-- 	hdmibrd_g : if settings**".video.gear"=2 generate 
+	-- 		signal crgb : std_logic_vector(dvid_crgb'range);
+	-- 	begin
+	-- 		reg_e : entity hdl4fpga.latency
+	-- 		generic map (
+	-- 			n => dvid_crgb'length,
+	-- 			d => (dvid_crgb'range => 1))
+	-- 		port map (
+	-- 			clk => video_shift_clk,
+	-- 			di  => dvid_crgb,
+	-- 			do  => crgb);
 	
-			gbx_g : entity hdl4fpga.ecp5_ogbx
-			generic map (
-				mem_mode  => false,
-				lfbt_frst => false,
-				interlace => true,
-				size      => gpdi_d'length,
-				gear      => settings**".video.gear")
-			port map (
-				sclk      => video_shift_clk,
-				eclk      => video_eclk,
-				d         => crgb,
-				q         => gpdi_d);
+	-- 		gbx_g : entity hdl4fpga.ecp5_ogbx
+	-- 		generic map (
+	-- 			mem_mode  => false,
+	-- 			lfbt_frst => false,
+	-- 			interlace => true,
+	-- 			size      => gpdi_d'length,
+	-- 			gear      => settings**".video.gear")
+	-- 		port map (
+	-- 			sclk      => video_shift_clk,
+	-- 			eclk      => video_eclk,
+	-- 			d         => crgb,
+	-- 			q         => gpdi_d);
 
-		end generate;
+	-- 	end generate;
 
-		hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
-			signal crgb : std_logic_vector(dvid_crgb'range);
-		begin
-			reg_e : entity hdl4fpga.latency
-			generic map (
-				n => dvid_crgb'length,
-				d => (dvid_crgb'range => 1))
-			port map (
-				clk => video_shift_clk,
-				di  => dvid_crgb,
-				do  => crgb);
+	-- 	hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
+	-- 		signal crgb : std_logic_vector(dvid_crgb'range);
+	-- 	begin
+	-- 		reg_e : entity hdl4fpga.latency
+	-- 		generic map (
+	-- 			n => dvid_crgb'length,
+	-- 			d => (dvid_crgb'range => 1))
+	-- 		port map (
+	-- 			clk => video_shift_clk,
+	-- 			di  => dvid_crgb,
+	-- 			do  => crgb);
 
-			hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
-		   	generic map (
-				mem_mode  => false,
-				lfbt_frst => false,
-				interlace => true,
-				size      => gpdi_d'length,
-				gear      => settings**".video.gear")
-		   	port map (
-				eclk      => video_eclk,
-				sclk      => video_shift_clk,
-				d         => crgb,
-				q         => gp(13-1 downto 9));
+	-- 		hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
+	-- 	   	generic map (
+	-- 			mem_mode  => false,
+	-- 			lfbt_frst => false,
+	-- 			interlace => true,
+	-- 			size      => gpdi_d'length,
+	-- 			gear      => settings**".video.gear")
+	-- 	   	port map (
+	-- 			eclk      => video_eclk,
+	-- 			sclk      => video_shift_clk,
+	-- 			d         => crgb,
+	-- 			q         => gp(13-1 downto 9));
 
-			wifi_en   <= '0';
-		end generate;
-	end generate;
+	-- 		wifi_en   <= '0';
+	-- 	end generate;
+	-- end generate;
 
-	-- SDRAM-clk-divided-by-2 monitor
-	tp_p : process (ctlr_clk)
-		variable q0 : std_logic;
-		variable q1 : std_logic;
-	begin
-		if rising_edge(ctlr_clk) then
-			gp(27) <= q0;
-			gn(27) <= q1;
-			q0 := not q0;
-			q1 := not q1;
-		end if;
-	end process;
+	-- -- SDRAM-clk-divided-by-2 monitor
+	-- tp_p : process (ctlr_clk)
+	-- 	variable q0 : std_logic;
+	-- 	variable q1 : std_logic;
+	-- begin
+	-- 	if rising_edge(ctlr_clk) then
+	-- 		gp(27) <= q0;
+	-- 		gn(27) <= q1;
+	-- 		q0 := not q0;
+	-- 		q1 := not q1;
+	-- 	end if;
+	-- end process;
 
 end;

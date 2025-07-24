@@ -32,10 +32,7 @@ use ecp5u.components.all;
 
 entity ecp5_videopll is
 	generic (
-		clkio_freq  : real := 36.0e6;
-		clkref_freq : real;
-		gear        : natural;
-		dcm         : string);
+		settings     : string);
 	port (
 		clk_rst      : in std_logic := '0';
 		clk_ref      : in std_logic;
@@ -46,32 +43,35 @@ entity ecp5_videopll is
 		video_phyrst : buffer std_logic;
 		video_lck    : buffer std_logic);
 
+    constant gear       : natural := settings**".gear";
+	constant clkio_freq : real    := settings**".videoio_freq";
+    constant freq_in    : real    := settings**".dcm.freq_in";
+    constant clki_div   : natural := settings**".dcm.clki_div";
+    constant clkfb_div  : natural := settings**".dcm.clkfb_div";
+    constant clkop_div  : natural := settings**".dcm.clkop_div";
+    constant clkos_div  : natural := settings**".dcm.clkos_div";
+    constant clkos2_div : natural := settings**".dcm.clkos2_div";
+    constant clkos3_div : natural := settings**".dcm.clkos3_div";
+
 end;
 
 architecture def of ecp5_videopll is
-    constant clki_div   : natural := dcm**".clki_div";
-    constant clkfb_div  : natural := dcm**".clkfb_div";
-    constant clkop_div  : natural := dcm**".clkop_div";
-    constant clkos_div  : natural := dcm**".clkos_div";
-    constant clkos2_div : natural := dcm**".clkos2_div";
-    constant clkos3_div : natural := dcm**(".clkos3_div="&natural'image(natural((real(clkfb_div*clkos_div)*clkref_freq)/(real(clki_div)*clkio_freq))));
-
 	attribute FREQUENCY_PIN_CLKOS  : string;
 	attribute FREQUENCY_PIN_CLKOS2 : string;
 	attribute FREQUENCY_PIN_CLKOS3 : string;
 	attribute FREQUENCY_PIN_CLKI   : string;
 	attribute FREQUENCY_PIN_CLKOP  : string;
 
-	constant video_freq            : real := (real(clkfb_div*clkos_div)*clkref_freq)/(real(clki_div* clkos2_div));
-	constant video_clkop_freq      : real := real(clkfb_div*clkos_div)*clkref_freq/real(clki_div* clkop_div);
+	constant video_freq            : real := (real(clkfb_div*clkos_div)*freq_in)/(real(clki_div* clkos2_div));
+	constant video_clkop_freq      : real := real(clkfb_div*clkos_div)*freq_in/real(clki_div* clkop_div);
 	constant video_clkop_clampfreq : real := setif(video_clkop_freq > 400.0e6, 400.0e6, video_clkop_freq);
-	constant videoio_freq          : real := (real(clkfb_div*clkos_div)*clkref_freq)/(real(clki_div*clkos3_div));
-	constant clkos_freq            : real := real(clkfb_div)*clkref_freq/real(clki_div);
+	constant videoio_freq          : real := (real(clkfb_div*clkos_div)*freq_in)/(real(clki_div*clkos3_div));
+	constant clkos_freq            : real := real(clkfb_div)*freq_in/real(clki_div);
 
 	attribute FREQUENCY_PIN_CLKOP  of pll_i : label is ftoa(video_clkop_clampfreq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOS2 of pll_i : label is ftoa(           video_freq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOS3 of pll_i : label is ftoa(         videoio_freq/1.0e6, 10);
-	attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(          clkref_freq/1.0e6, 10);
+	attribute FREQUENCY_PIN_CLKI   of pll_i : label is ftoa(              freq_in/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOS  of pll_i : label is ftoa(           clkos_freq/1.0e6, 10);
 
     attribute ICP_CURRENT  : string; 

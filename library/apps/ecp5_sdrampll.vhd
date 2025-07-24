@@ -32,9 +32,7 @@ use ecp5u.components.all;
 
 entity ecp5_sdrampll is
 	generic (
-		gear : natural;
-		clkref_freq  : real;
-		dcm  : string);
+		settings     : string);
 	port (
 		clk_ref      : in  std_logic;
 		ctlr_rst     : out std_logic;
@@ -44,19 +42,22 @@ entity ecp5_sdrampll is
 		phy_mspause  : out std_logic;
 		phy_ddrdel   : out std_logic;
 		sdrampll_lck : buffer std_logic);
+
+    constant gear       : natural := settings**".gear";
+    constant freq_in    : real    := settings**".dcm.freq_in";
+    constant clki_div   : natural := settings**".dcm.clki_div";
+    constant clkfb_div  : natural := settings**".dcm.clkfb_div";
+    constant clkop_div  : natural := settings**".dcm.clkop_div";
+    constant clkos_div  : natural := settings**".dcm.clkos_div";
+    constant clkos2_div : natural := settings**".dcm.clkos2_div";
+    constant clkos3_div : natural := settings**".dcm.clkos3_div";
+
 end;
 
 architecture def of ecp5_sdrampll is
 
-    constant clki_div   : natural := dcm**".clki_div";
-    constant clkfb_div  : natural := dcm**".clkfb_div";
-    constant clkop_div  : natural := dcm**".clkop_div";
-    constant clkos_div  : natural := dcm**".clkos_div";
-    constant clkos2_div : natural := dcm**".clkos2_div";
-    constant clkos3_div : natural := dcm**".clkos3_div";
-
-	constant clkos_freq : real := real(clkfb_div)*clkref_freq/real(clki_div);
-	constant sdram_freq : real := hdl4fpga.ecp5_profiles.sdram_freq(dcm,clkref_freq); -- GHDL annoyance
+	constant clkos_freq : real := real(clkfb_div)*freq_in/real(clki_div);
+	constant sdram_freq : real := hdl4fpga.ecp5_profiles.sdram_freq(settings**".dcm"); -- GHDL annoyance
 
 	attribute FREQUENCY_PIN_CLKOS  : string;
 	attribute FREQUENCY_PIN_CLKOS2 : string;
@@ -66,7 +67,7 @@ architecture def of ecp5_sdrampll is
 
 	attribute FREQUENCY_PIN_CLKOS of pll_i : label is ftoa(clkos_freq/1.0e6, 10);
 	attribute FREQUENCY_PIN_CLKOP of pll_i : label is ftoa(setif(sdram_freq < 400.0e6, sdram_freq/1.0e6, 400.0), 10);
-	attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(clkref_freq/1.0e6, 10);
+	attribute FREQUENCY_PIN_CLKI  of pll_i : label is ftoa(freq_in/1.0e6, 10);
 
 	signal clkfb       : std_logic;
 	signal clkop       : std_logic;
@@ -157,10 +158,8 @@ begin
 		signal update   : std_logic;
 		signal ready    : std_logic;
 		alias ddr_rst is phy_rst;
-		-- signal eclko    : std_logic;
-		-- signal cdivx    : std_logic;
-		alias eclko is eclk;
-		alias cdivx is sclk;
+		alias eclko is eclk;   -- signal eclko    : std_logic;
+		alias cdivx is sclk;   -- signal cdivx    : std_logic;
 
 		attribute FREQUENCY_PIN_ECLKO : string;
 		attribute FREQUENCY_PIN_ECLKO of  eclksyncb_i : label is ftoa(sdram_freq/1.0e6, 10);
@@ -207,11 +206,8 @@ begin
 		port map (
 			rst     => ddr_rst,
 			alignwd => '0',
-			clki    => eclko,
-			cdivx   => cdivx);
-		-- eclk <= eclko;
-		-- sclk <= transport cdivx after natural(1.0e12*(1.0/4.0)/sdram_freq)*1 ps;
-
+			clki    => eclko,	-- eclk <= eclko;
+			cdivx   => cdivx);	-- sclk <= transport cdivx after natural(1.0e12*(1.0/4.0)/sdram_freq)*1 ps;
 
 		ddrdll_i : ddrdlla
 		port map (
