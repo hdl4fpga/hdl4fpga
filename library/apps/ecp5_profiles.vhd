@@ -80,6 +80,8 @@ package body ecp5_profiles is
 		variable vco         : real;
 
 	begin
+		report "video_dcm() : video_id " & video_id & " not valid";
+		-- return "";
 		if dcm /= "{}" then
 			vco := 25.0e6;
 			vco := vco*dcm**".clkos_div"/dcm**".clki_div";

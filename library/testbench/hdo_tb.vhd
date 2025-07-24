@@ -33,7 +33,7 @@ architecture hdo_tb of testbench is
 	constant settings : string := "{"              &
 		"io_link: io_usb,"                         &
 		"video:{"                                  &
-			"dcm: '40mhz',"                        &
+			"dcm:"     & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'")) & ',' &
 			"gear: 2,"                             &
 			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
 			"pixel:{"                              &
@@ -50,8 +50,7 @@ begin
 
 	process
 	begin
-		report settings**".video.timings";
-		report video_dcm(".'25mhz'.'40mhz'");
+		report compact(settings);
 		wait;
 	end process;
 
