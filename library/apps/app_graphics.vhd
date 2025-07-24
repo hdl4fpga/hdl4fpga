@@ -62,7 +62,7 @@ entity app_graphics is
 		video_vtsync  : buffer std_logic;
 		video_blank   : buffer std_logic;
 		video_pixel   : buffer std_logic_vector;
-		dvid_crgb     : out std_logic_vector(4*video_settings**".gear"-1 downto 0);
+		dvid_crgb     : out std_logic_vector(4*video_settings**".gear=1"-1 downto 0);
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
