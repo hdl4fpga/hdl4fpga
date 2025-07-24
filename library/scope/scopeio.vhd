@@ -35,7 +35,7 @@ entity scopeio is
 	generic (
 		debug        : boolean := false;
 		profile      : natural;
-		sdram_data   : string := "none";
+		chip_data   : string := "none";
 		phy_data     : string := "none";
 		video_timings: string;
 		layout       : string;
@@ -66,12 +66,12 @@ entity scopeio is
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
-		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation=sdr"))))**".length.al=3"-1 downto 0) := (others => '0');
-		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation=sdr"))))**".length.bl=3"-1 downto 0) := (others => '0');
-		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation=sdr"))))**".length.cl=3"-1 downto 0) := (others => '0');
-		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation=sdr"))))**".length.cwl=3"-1 downto 0) := (others => '0');
-		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation=sdr"))))**".length.rtt=2"-1 downto 0) := (others => '0');
-		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation=sdr"))))**".length.ods=1"-1 downto 0) := (others => '0');
+		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation=sdr"))))**".length.al=3"-1 downto 0) := (others => '0');
+		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation=sdr"))))**".length.bl=3"-1 downto 0) := (others => '0');
+		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation=sdr"))))**".length.cl=3"-1 downto 0) := (others => '0');
+		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation=sdr"))))**".length.cwl=3"-1 downto 0) := (others => '0');
+		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation=sdr"))))**".length.rtt=2"-1 downto 0) := (others => '0');
+		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation=sdr"))))**".length.ods=1"-1 downto 0) := (others => '0');
 
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
@@ -92,18 +92,18 @@ entity scopeio is
 		ctlrphy_cas   : buffer std_logic;
 		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
-		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.ba=1"-1 downto 0);
-		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row=1"-1 downto 0);
+		ctlrphy_b     : out std_logic_vector(hdo(chip_data)**".orgz.addr.ba=1"-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(hdo(chip_data)**".orgz.addr.row=1"-1 downto 0);
 		ctlrphy_dqst  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
 		ctlrphy_dqso  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dm=1"-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dm=1"-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dm=1"-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dm=1"-1 downto 0);
 		ctlrphy_dqt   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dq=1"-1 downto 0) := (others => '-');
-		ctlrphy_dqo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dq=1"-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dq=1"-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dq=1"-1 downto 0);
 		ctlrphy_dqv   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
 		ctlrphy_sto   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dm=1"-1 downto 0) := (others => '-');
+		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dm=1"-1 downto 0) := (others => '-');
 		video_clk     : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
 		video_pixel   : buffer std_logic_vector;
@@ -483,11 +483,11 @@ begin
 		end block;
 	end generate;
 
-	capture_g : if sdram_data/="none" and phy_data/="none" generate
+	capture_g : if chip_data/="none" and phy_data/="none" generate
 		constant byte_size    : natural := ctlrphy_dqo'length/ctlrphy_dmo'length;
 
 		constant gear         : natural := hdo(phy_data)**".orgz.gear=1.";
-		constant coln_size    : natural := hdo(sdram_data)**".orgz.addr.col=1.";
+		constant coln_size    : natural := hdo(chip_data)**".orgz.addr.col=1.";
 		constant coln_bits    : natural := coln_size-(unsigned_num_bits(gear)-1);
 
 		signal ctlr_frm       : std_logic;
@@ -1155,7 +1155,7 @@ begin
 			sdrctlr_e : entity hdl4fpga.sdram_ctlr
 			generic map (
 				ctlr_tcp     => sdram_tcp,
-				sdram_data   => sdram_data,
+				chip_data    => chip_data,
 				phy_data     => phy_data)
 			port map (
 				ctlr_alat    => ctlr_alat,

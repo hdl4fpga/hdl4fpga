@@ -33,17 +33,17 @@ entity sdram_ctlr is
 	generic (
 		debug       : boolean := false;
 		ctlr_tcp    : real;
-		sdram_data  : string;
+		chip_data   : string;
 		phy_data    : string);
 	port (
 		ctlr_alat   : out std_logic_vector(2 downto 0);
 		ctlr_blat   : out std_logic_vector(2 downto 0);
-		ctlr_al     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.al=3"-1 downto 0) := (others => '0');
-		ctlr_bl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.bl=3"-1 downto 0);
-		ctlr_cl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cl=3"-1 downto 0);
-		ctlr_cwl    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cwl=3"-1 downto 0) := (others => '0');
-		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.rtt=2"-1 downto 0) := (others => '0');
-		ctlr_ods    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.ods=1"-1 downto 0) := (others => '0');
+		ctlr_al     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.al=3"-1 downto 0) := (others => '0');
+		ctlr_bl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.bl=3"-1 downto 0);
+		ctlr_cl     : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.cl=3"-1 downto 0);
+		ctlr_cwl    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.cwl=3"-1 downto 0) := (others => '0');
+		ctlr_rtt    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.rtt=2"-1 downto 0) := (others => '0');
+		ctlr_ods    : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.ods=1"-1 downto 0) := (others => '0');
 
 		ctlr_rst    : in  std_logic;
 		ctlr_clk    : in  std_logic;
@@ -55,15 +55,15 @@ entity sdram_ctlr is
 		ctlr_fch    : out std_logic;
 		ctlr_cmd    : out std_logic_vector(0 to 2);
 		ctlr_rw     : in  std_logic;
-		ctlr_b      : in  std_logic_vector(hdo(sdram_data)**".orgz.addr.ba"-1 downto 0);
-		ctlr_a      : in  std_logic_vector(hdo(sdram_data)**".orgz.addr.row"-1  downto 0);
+		ctlr_b      : in  std_logic_vector(hdo(chip_data)**".orgz.addr.ba"-1 downto 0);
+		ctlr_a      : in  std_logic_vector(hdo(chip_data)**".orgz.addr.row"-1  downto 0);
 		ctlr_di_dv  : in  std_logic;
 		ctlr_di_req : out std_logic;
-		ctlr_do_dv  : out std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0);
+		ctlr_do_dv  : out std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dm"-1 downto 0);
 		ctlr_act    : out std_logic;
-		ctlr_dm     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0) := (others => '0');
-		ctlr_di     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0);
-		ctlr_do     : out std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0);
+		ctlr_dm     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dm"-1 downto 0) := (others => '0');
+		ctlr_di     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dq"-1 downto 0);
+		ctlr_do     : out std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dq"-1 downto 0);
 
 		ctlr_refreq : out std_logic;
 		phy_frm     : in  std_logic := '0';
@@ -80,28 +80,28 @@ entity sdram_ctlr is
 		phy_ras     : out std_logic;
 		phy_cas     : out std_logic;
 		phy_we      : out std_logic;
-		phy_b       : out std_logic_vector(hdo(sdram_data)**".orgz.addr.ba"-1 downto 0);
-		phy_a       : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row"-1 downto 0);
+		phy_b       : out std_logic_vector(hdo(chip_data)**".orgz.addr.ba"-1 downto 0);
+		phy_a       : out std_logic_vector(hdo(chip_data)**".orgz.addr.row"-1 downto 0);
 		phy_odt     : out std_logic;
 
-		phy_dmi     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0);
-		phy_dmo     : out std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0);
+		phy_dmi     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dm"-1 downto 0);
+		phy_dmo     : out std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dm"-1 downto 0);
 
 		phy_dqso    : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 		phy_dqst    : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 
 		phy_dqt     : buffer std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
 		phy_dqv     : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
-		phy_dqo     : out std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0);
+		phy_dqo     : out std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dq"-1 downto 0);
 
-		phy_sti     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dm"-1 downto 0);
+		phy_sti     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dm"-1 downto 0);
 		phy_sto     : out std_logic_vector(hdo(phy_data)**".orgz.gear"-1 downto 0);
-		phy_dqi     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(sdram_data)**".orgz.data.dq"-1 downto 0));
+		phy_dqi     : in  std_logic_vector(hdo(phy_data)**".orgz.gear"*hdo(chip_data)**".orgz.data.dq"-1 downto 0));
 
-	constant generation     : string  := hdo(sdram_data)**".generation";
+	constant generation     : string  := hdo(chip_data)**".generation";
 	constant generation_data : string  := hdo(generation_db)**("."&generation);
 	constant fmlytmng_data  : string  := hdo(generation_data)**(".tmng");
-	constant sdramtmng_data : string  := hdo(sdram_data)**".tmng";
+	constant sdramtmng_data : string  := hdo(chip_data)**".tmng";
 	constant gear           : natural := hdo(phy_data)**".orgz.gear";
 	constant phytmng_data   : string  := hdo(phy_data)**".tmng";
 
