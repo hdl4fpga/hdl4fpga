@@ -74,9 +74,9 @@ architecture graphics of ulx3s is
 	signal ctlrphy_b     : std_logic_vector(sdram_ba'length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(sdram_a'length-1 downto 0);
 	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*sdram_dqm'length-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*sdram_d'length-1 downto 0);
 	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*sdram_dqm'length-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*sdram_d'length-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
 	signal sdrphy_sti    : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(sdram_gear*sdram_dqm'length-1 downto 0);
@@ -294,7 +294,7 @@ begin
 		debug        => debug,
 		profile      => 0,
 
-		sdram_tcp    => 1.0/sdram_freq(settings**".dcm"),
+		sdram_tcp    => 1.0/sdram_freq(settings**".sdram.dcm"),
 		phy_data     => hdo(phy_db)**".ecp5g1",
 		sdram_data   => hdo(sdram_db)**".MT48LC16M16MA2-7E",
 

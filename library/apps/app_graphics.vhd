@@ -66,12 +66,12 @@ entity app_graphics is
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
-		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.al=3."-1 downto 0) := (others => '0');
-		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.bl=3."-1 downto 0);
-		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cl=3."-1 downto 0);
-		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cwl=3."-1 downto 0) := (others => '0');
-		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.rtt=2."-1 downto 0) := (others => '0');
-		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.ods=1."-1 downto 0) := (others => '0');
+		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.al=3"-1 downto 0) := (others => '0');
+		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.bl=3"-1 downto 0);
+		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cl=3"-1 downto 0);
+		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cwl=3"-1 downto 0) := (others => '0');
+		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.rtt=2"-1 downto 0) := (others => '0');
+		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.ods=1"-1 downto 0) := (others => '0');
 
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
@@ -92,18 +92,18 @@ entity app_graphics is
 		ctlrphy_cas   : buffer std_logic;
 		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
-		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.ba=1."-1 downto 0);
-		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row=1."-1 downto 0);
-		ctlrphy_dqst  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dqso  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0);
-		ctlrphy_dqt   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0) := (others => '-');
-		ctlrphy_dqo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0);
-		ctlrphy_dqv   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
+		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.ba=1"-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row=1"-1 downto 0);
+		ctlrphy_dqst  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dm=1"-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dm=1"-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dq=1"-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dq=1"-1 downto 0);
+		ctlrphy_dqv   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(sdram_data)**".orgz.data.dm=1"-1 downto 0) := (others => '-');
 		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
 
@@ -113,8 +113,8 @@ entity app_graphics is
 	constant blue_length  : natural := video_settings**".video.pixel.B=8";
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
-	constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1.";
+	constant gear          : natural := hdo(phy_data)**".orgz.gear=1";
+	constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1";
 
 end;
 
@@ -129,10 +129,6 @@ architecture mix of app_graphics is
 
 	type latencies_vector is array (natural range <>) of latencies;
 	constant latencies_tab : latencies_vector := (
---		0 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX3S BOARD
---		1 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
---		2 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX4M BOARD
---		3 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0)); -- NUHS3ADSP BOARD 166 MHz
 		0 => (ddro => 2, dmaio => 3, sodata => 1, adapter => 1),  -- ULX3S BOARD
 		1 => (ddro => 3, dmaio => 2, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
 		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
@@ -829,11 +825,6 @@ begin
 	(dmacfgvideo_rdy, dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
 	(dmavideo_rdy,    dmaio_rdy)    <= to_stdlogicvector(to_bitvector(dev_rdy));
 
-	-- dev_req    <= (0 => '0', 1 => dmaio_req);
-	-- dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
-	-- dev_addr   <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
-	-- dev_we     <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
-
 	dmactlr_b : block
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;
 		signal   dev_do_dv  : std_logic_vector(dev_gnt'range);
@@ -866,7 +857,6 @@ begin
 
 			ctlr_inirdy  => ctlr_inirdy,
 			ctlr_refreq  => burst_ref,
-			-- ctlr_refreq  => ctlr_refreq,
 
 			ctlr_frm     => ctlr_frm,
 			ctlr_trdy    => ctlr_trdy,
