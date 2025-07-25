@@ -37,8 +37,7 @@ entity scopeio is
 		profile      : natural;
 		chip_data   : string := "none";
 		phy_data     : string := "none";
-		video_timings: string;
-		layout       : string;
+		settings       : string;
 		sdram_tcp    : real;
 		fifo_size    : natural := 8*8192;
 		video_gear   : natural := 2;
@@ -137,8 +136,8 @@ entity scopeio is
 		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
-	constant inputs   : natural := hdo(layout)**".inputs";
-	constant waveform : string  := hdo(layout)**".waveform=none.";
+	constant inputs   : natural := hdo(settings)**".inputs";
+	constant waveform : string  := hdo(settings)**".waveform=none.";
 	constant sample_length : natural := input_data'length/inputs;
 	constant chanid_bits   : natural := unsigned_num_bits(inputs-1);
 
@@ -405,7 +404,7 @@ begin
 		scopeio_video_e : entity hdl4fpga.scopeio_video
 		generic map (
 			sample_length  => sample_length,
-			timings        => video_timings,
+			timings        => hdo(settings)**".video_timings",
 			inputs         => inputs,
 			waveform       => waveform)
 		port map (

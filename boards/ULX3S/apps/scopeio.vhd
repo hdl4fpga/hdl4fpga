@@ -61,8 +61,6 @@ architecture scopeio of ulx3s is
 
 	constant usb_oversampling : natural := 3;
 
-	constant video_params : video_record := videoparam(video_mode, clk25mhz_freq);
-
 	constant video_gear  : natural := 2;
 	signal video_clk     : std_logic;
 	signal video_eclk    : std_logic;
@@ -139,91 +137,59 @@ architecture scopeio of ulx3s is
 			natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
 		"length : 16].");
 
-	constant layout      : string := compact(
-			"{                             " &   
-			"    inputs          : " & natural'image(inputs) & ',' &
-			"    waveform        : { " &
-			"       num_of_segments :   3,     " &
-			"       display : {                " &
-			"           width  : 1280,         " &
-			"           height : 720},         " &
-			"       grid : {                   " &
-			"           width  : " & natural'image(32*32+1) & ',' &
-			"           height : " & natural'image( 6*32+1) & ',' &
-			"           color  : 0xff_ff_00_ff," &
-			"           background-color : 0xff_00_00_00}," &
-			"       axis : {                   " &
-			"           horizontal : {         " &
-			"               unit   : 31.25e-6, " &
-			"               scales : " & time_factors &"," &
-			"               color  : 0xff_00_00_00," &
-			"               background-color : 0xff_00_ff_ff}," &
-			"           vertical : {           " &
-			"               unit   : 50.00e-3, " &
-			"               width  : " & natural'image(6*8) & ','  &
-			"               color  : 0xff_00_00_00," &
-			"               background-color : 0xff_00_ff_ff}}," &
-			"       textbox : {                " &
-			"           width      : " & natural'image(6*32) & ','&
-			"           color      : 0xff_ff_00_ff," &
-			"           background-color : 0xff_00_00_00}," &
-			"       main : {                   " &
-			"           top        : 27,       " & 
-			"           bottom     :  0,       " & 
-			"           left       :  5,       " & 
-			"           right      :  0,       " & 
-			"           vertical   : 27,       " & 
-			"           horizontal :  1,       " &
-			"           background-color : 0xff_00_00_00}," &
-			"       segment : {                " &
-			"           top        : 1,        " &
-			"           left       : 1,        " &
-			"           right      : 1,        " &
-			"           bottom     : 1,        " &
-			"           vertical   : 1,        " &
-			"           horizontal : 1,        " &
-			"           background-color : 0xff_ff_ff_ff}," &
-			"    vt : [                      " &
-			"     { text  : GN14,            " &
-			"       step  : " & real'image(vt_step) & "," &
-			"       color : 0xff_00_ff_ff},  " & -- vt(0)
-			"     { text  : GP14,            " &
-			"       step  : " & real'image(vt_step) & "," &
-			"       color : 0xff_ff_ff_ff},  " & -- vt(1)
-			"     { text  : GN15,            " &
-			"       step  : " & real'image(vt_step) & "," &
-			"       color : 0xff_00_ff_ff},  " & -- vt(2)
-			"     { text  : GP15,            " &
-			"       step  : " & real'image(vt_step) & "," &
-			"       color : 0xff_ff_ff_ff},  " & -- vt(3)
-			"     { text  : GN16,            " &
-			"       step  : " & real'image(vt_step) & "," &
-			"       color : 0xff_00_ff_ff},  " & -- vt(4)
-			"     { text  : GP16,            " &
-			"       step  : " & real'image(vt_step) & "," &
-			"       color : 0xff_ff_ff_ff},  " & -- vt(5)
-			"     { text  : GN17,            " &
-			"       step  : " & real'image(vt_step) & "," &
-			"       color : 0xff_00_ff_ff},  " & -- vt(6)
-			"     { text  : GP17,            " &
-			"       step  : " & real'image(vt_step) & "," &
-			"       color : 0xff_ff_ff_ff}]}}");   -- vt(7)
+	constant settings : string := compact("{" &   
+			"inputs:" & natural'image(inputs) & ',' &
+			"video_timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+			"waveform:{"     &
+				"num_of_segments: 3," &
+				"grid:{" &
+					"width:"  & natural'image(32*32+1) & ',' &
+					"height:" & natural'image( 6*32+1) & ',' &
+					"color:"  & "0xff_ff_00_ff"        & "," &
+					"background-color: 0xff_00_00_00}," &
+				"axis:{" &
+					"horizontal:{" &
+						"unit:"             & "31.25e-6," &
+						"scales:"           & time_factors &"," &
+						"color:"            & "0xff_00_00_00," &
+						"background-color:" & "0xff_00_ff_ff}," &
+					"vertical:{" &
+						"unit:"  & "50.00e-3"         & ','  &
+						"width:" & natural'image(6*8) & ','  &
+						"color:" & "0xff_00_00_00"    & ',' &
+						"background-color : 0xff_00_ff_ff}}," &
+				"textbox:{" &
+					"width:" & natural'image(6*32) & ','&
+					"color: 0xff_ff_00_ff," &
+					"background-color : 0xff_00_00_00}," &
+				"main:{" &
+					"top:27, left:5, right:0, bottom:0, vertical:27, horizontal:1, background-color: 0xff_00_00_00}," &
+				"segment:{" &
+					"top: 1, left:1, right:1, bottom:1, vertical: 1, horizontal:1, background-color: 0xff_ff_ff_ff}," &
+			"vt:[" &
+				"{text: GN14, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(0)
+				"{text: GP14, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(1)
+				"{text: GN15, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(2)
+				"{text: GP15, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(3)
+				"{text: GN16, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(4)
+				"{text: GP16, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(5)
+				"{text: GN17, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(6)
+				"{text: GP17, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff}]}," & -- vt(7)
+			"sdram:{" &
+				"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E=none") & ',' &
+				"phy_data:"  & string'(hdo(phy_db)**".ecp5g1=none") & "}}");
 
-	-- constant sdram_data   : string  := "none";
-	-- constant phy_data     : string  := "none";
-	constant sdram_data  : string  := hdo(sdram_db)**".MT48LC16M16MA2-7E";
-	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
+	constant chip_data   : string  := settings**".sdram.chip_data";
+	constant phy_data    : string  := settings**".sdram.phy_data";
 	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant bank_length : natural := setif(sdram_data/="none", sdram_ba'length,  1);
-	constant addr_length : natural := setif(sdram_data/="none", sdram_a'length,   1);
-	constant data_mask   : natural := setif(sdram_data/="none", sdram_dqm'length, 1);
-	constant data_length : natural := setif(sdram_data/="none", sdram_d'length,   1);
+	constant bank_length : natural := setif(chip_data/="none", sdram_ba'length,  1);
+	constant addr_length : natural := setif(chip_data/="none", sdram_a'length,   1);
+	constant data_mask   : natural := setif(chip_data/="none", sdram_dqm'length, 1);
+	constant data_length : natural := setif(chip_data/="none", sdram_d'length,   1);
 
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
 
-	constant sdram_params : sdramparams_record := sdramparams(sdram200MHz, clk25mhz_freq);
-	
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic;
 	signal ctlrphy_cs    : std_logic;
@@ -245,12 +211,9 @@ begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		io_link      => io_link,
-		clkio_freq   => 12.0e6*real(usb_oversampling),
-		clkref_freq  => clk25mhz_freq,
-		default_gear => video_gear,
-		video_params => video_params)
+		settings     => settings**".video")
 	port map (
+		clk_rst     => right,
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
@@ -395,7 +358,7 @@ begin
 	stactlr_e : entity hdl4fpga.scopeio_stactlr
 	generic map (
 		debug => debug,
-		layout => layout)
+		settings => settings)
 	port map (
 		left    => left,
 		up      => up,
@@ -549,10 +512,9 @@ begin
 		debug       => debug,
 		profile     => 0,
 		sdram_tcp   => 1.0/sdram_freq,
-		sdram_data  => sdram_data,
+		chip_data   => chip_data,
 		phy_data    => phy_data,
-		timing_id   => video_params.timing,
-		layout      => layout)
+		settings    => settings)
 	port map (
 		tp => tp,
 		sio_clk     => sio_clk,
@@ -571,7 +533,7 @@ begin
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => sdrsys_rst,
 		ctlr_bl      => "000",
-		ctlr_cl      => sdram_params.cl,
+		ctlr_cl      => settings**".sdram.cl",
 
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke,
@@ -603,7 +565,7 @@ begin
 		di  => ctlrphy_sto,
 		do  => sdrphy_sti);
 
-	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+	sdramphy_g : if chip_data/="none" and phy_data/="none" generate
 		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 		generic map (
 			gear       => gear,
@@ -646,7 +608,7 @@ begin
 			sdram_dq   => sdram_d);
 	end generate;
 
-	nosdram_g : if sdram_data="none" or phy_data="none" generate
+	nosdram_g : if chip_data="none" or phy_data="none" generate
 		sdram_clk  <= 'Z';
 		sdram_cke  <= 'Z';
 		sdram_csn  <= '1';

@@ -31,7 +31,7 @@ use hdl4fpga.hdo.all;
 entity scopeio_stactlr is
 	generic (
 		debug  : boolean := false;
-		layout : string);
+		settings : string);
 	port (
 		tp      : out std_logic_Vector(1 to 32);
 		left    : in  std_logic;
@@ -114,7 +114,7 @@ begin
 	event <= encoder(debnc);
 	btnctlr_e : entity hdl4fpga.scopeio_btnctlr
 	generic map (
-		layout => layout)
+		settings => settings)
 	port map (
 		tp      => tp,
 		event_vld => event_vld,
