@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="ser_debug">
+<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="graphics">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -295,7 +295,7 @@
         </Source>
     </Implementation>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.display_tp" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.phy_rl" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>
@@ -515,9 +515,6 @@
         <Source name="../apps/graphics.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work"/>
         </Source>
-        <Source name="../../../library/basic/sync_transfer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/dmacntr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -536,16 +533,10 @@
         <Source name="../../../library/sdram/sdram_ctlr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdram/sdram_db.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/sdram_init.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sdram/sdram_mpu.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sdram/sdram_param.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sdram/sdram_pgm.vhd" type="VHDL" type_short="VHDL">
@@ -617,9 +608,6 @@
         <Source name="../../../library/apps/link_mii.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/apps/display_tp.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/basic/barrel.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -656,16 +644,13 @@
         <Source name="../../../library/usb/usbpkt_tx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/video/ser_display.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sio/sio_dayusb.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/apps/ser_debug.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/basic/hdo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/usb/usbfltr_sof.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/sdram/sdrampkg.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="apps.lpf" type="Logic Preference" type_short="LPF">

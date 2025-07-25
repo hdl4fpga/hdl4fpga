@@ -81,25 +81,23 @@ package body ecp5_profiles is
 		constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 		constant dcm         : string  := dcm_db**(video_id&"={}");
 		constant clkos2_div  : natural := video_ratio*dcm**".clkop_div=1";
-		variable clkos3      : real;
+		variable clkos3_div  : natural;
 
 	begin
 		if dcm /= "{}" then
 			if videoio_freq /=0.0 then
-				clkos3 := dcm**".freq_in";
-				clkos3 := clkos3*dcm**".clkos_div";
-				clkos3 := round(clkos3/(videoio_freq));
+				clkos3_div := natural(round((real'(dcm**".freq_in")*real'(dcm**".clkos_div"))/(videoio_freq)));
 			else
-				clkos3 := 1.0;
+				clkos3_div := 1;
 			end if;
 			return "{" &
-				"clkos_div:"  & string'(dcm**".clkos_div")     & "," & 
-				"clkop_div:"  & string'(dcm**".clkop_div")     & "," & 
-				"clkos2_div:" & natural'image(clkos2_div)      & "," & 
-				"clkos3_div:" & natural'image(natural(clkos3)) & "," &
-				"clki_div:"   & string'(dcm**".clki_div")      & "," & 
-				"clkfb_div:"  & "1"                            & "," & 
-				"freq_in:"    & string'(dcm**".freq_in")       & "}";
+				"clkos_div:"  & string'(dcm**".clkos_div") & "," & 
+				"clkop_div:"  & string'(dcm**".clkop_div") & "," & 
+				"clkos2_div:" & natural'image(clkos2_div)  & "," & 
+				"clkos3_div:" & natural'image(clkos3_div)  & "," &
+				"clki_div:"   & string'(dcm**".clki_div")  & "," & 
+				"clkfb_div:"  & "1"                        & "," & 
+				"freq_in:"    & string'(dcm**".freq_in")   & "}";
 		end if;
 		assert false 
 			report "video_dcm() : video_id " & video_id & " not valid"
