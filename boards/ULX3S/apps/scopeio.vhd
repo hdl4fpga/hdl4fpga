@@ -138,30 +138,35 @@ architecture scopeio of ulx3s is
 		"length : 16].");
 
 	constant settings : string := compact("{" &   
-			"inputs:" & natural'image(inputs) & ',' &
-			"video_timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+			"video:{"                                                                                          &
+				"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'64mhz'", 36.0e6)) & ','  &
+				"videoio_freq:" & "36.0e6,"                                                                    &
+				"gear:"         & "2,"                                                                         &
+				"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'1280x720'.'@60'.'64mhz'")     & ',' &
+				"pixel:{R:8,G:8,B:8}},"                                                                        &
+			"inputs:"        & natural'image(inputs)   & ',' &
 			"waveform:{"     &
 				"num_of_segments: 3," &
 				"grid:{" &
 					"width:"  & natural'image(32*32+1) & ',' &
 					"height:" & natural'image( 6*32+1) & ',' &
-					"color:"  & "0xff_ff_00_ff"        & "," &
-					"background-color: 0xff_00_00_00}," &
+					"color:"  & "0xff_ff_00_ff"        & ',' &
+					"background-color: 0xff_00_00_00}" & ',' &
 				"axis:{" &
-					"horizontal:{" &
-						"unit:"             & "31.25e-6," &
-						"scales:"           & time_factors &"," &
-						"color:"            & "0xff_00_00_00," &
-						"background-color:" & "0xff_00_ff_ff}," &
+					"horizontal:{"                                   &
+						"unit:"             & "31.25e-6"       & ',' &
+						"scales:"           & time_factors     & ',' &
+						"color:"            & "0xff_00_00_00"  & ',' &
+						"background-color:" & "0xff_00_ff_ff}" & ',' &
 					"vertical:{" &
-						"unit:"  & "50.00e-3"         & ','  &
-						"width:" & natural'image(6*8) & ','  &
+						"unit:"  & "50.00e-3"         & ',' &
+						"width:" & natural'image(6*8) & ',' &
 						"color:" & "0xff_00_00_00"    & ',' &
 						"background-color : 0xff_00_ff_ff}}," &
-				"textbox:{" &
-					"width:" & natural'image(6*32) & ','&
-					"color: 0xff_ff_00_ff," &
-					"background-color : 0xff_00_00_00}," &
+				"textbox:{"  &
+					"width:" & natural'image(6*32) & ',' &
+					"color:" & "0xff_ff_00_ff"     & ',' &
+					"background-color:" & "0xff_00_00_00}" & ',' &
 				"main:{" &
 					"top:27, left:5, right:0, bottom:0, vertical:27, horizontal:1, background-color: 0xff_00_00_00}," &
 				"segment:{" &
@@ -177,15 +182,15 @@ architecture scopeio of ulx3s is
 				"{text: GP17, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff}]}," & -- vt(7)
 			"sdram:{" &
 				"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E=none") & ',' &
-				"phy_data:"  & string'(hdo(phy_db)**".ecp5g1=none") & "}}");
+				"phy_data:"  & string'(hdo(phy_db)**".ecp5g1=none")              & "}}");
 
-	constant chip_data   : string  := settings**".sdram.chip_data";
-	constant phy_data    : string  := settings**".sdram.phy_data";
+	constant chip_data   : string  := settings**".sdram.chip_data={}";
+	constant phy_data    : string  := settings**".sdram.phy_data={}";
+	constant bank_length : natural := hdo(chip_data)**".orgz.addr.ba=1";
+	constant addr_length : natural := hdo(chip_data)**".orgz.addr.row=1";
+	constant data_mask   : natural := hdo(chip_data)**".orgz.data.dm=1";
+	constant data_length : natural := hdo(chip_data)**".orgz.data.dq=1";
 	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant bank_length : natural := setif(chip_data/="none", sdram_ba'length,  1);
-	constant addr_length : natural := setif(chip_data/="none", sdram_a'length,   1);
-	constant data_mask   : natural := setif(chip_data/="none", sdram_dqm'length, 1);
-	constant data_length : natural := setif(chip_data/="none", sdram_d'length,   1);
 
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
@@ -511,9 +516,7 @@ begin
 	generic map (
 		debug       => debug,
 		profile     => 0,
-		sdram_tcp   => 1.0/sdram_freq,
-		chip_data   => chip_data,
-		phy_data    => phy_data,
+		sdram_freq  => sdram_freq,
 		settings    => settings)
 	port map (
 		tp => tp,
@@ -565,7 +568,7 @@ begin
 		di  => ctlrphy_sto,
 		do  => sdrphy_sti);
 
-	sdramphy_g : if chip_data/="none" and phy_data/="none" generate
+	sdramphy_g : if chip_data/="{}" and phy_data/="{}" generate
 		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 		generic map (
 			gear       => gear,
@@ -608,7 +611,7 @@ begin
 			sdram_dq   => sdram_d);
 	end generate;
 
-	nosdram_g : if chip_data="none" or phy_data="none" generate
+	nosdram_g : if chip_data="{}" or phy_data="{}" generate
 		sdram_clk  <= 'Z';
 		sdram_cke  <= 'Z';
 		sdram_csn  <= '1';
