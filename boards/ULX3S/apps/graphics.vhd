@@ -36,8 +36,8 @@ use ecp5u.components.all;
 
 architecture graphics of ulx3s is
 
-	--------------------------------------
-	--     Set your profile here        --
+	------------------------------------
+	--     Custom profile here        --
 	constant settings : string := compact("{"                                                             &
 		"io_link: io_usb,"                                                                                &
 		"video:{"                                                                                         &
@@ -296,8 +296,8 @@ begin
 		debug        => debug,
 		profile      => 0,
 
-		sdram_freq     => sdram_freq(settings**".sdram.dcm"),
-		settings       => settings,
+		sdram_freq   => sdram_freq(settings**".sdram.dcm"),
+		settings     => settings,
 		fifo_size    => mem_size)
 
 	port map (
