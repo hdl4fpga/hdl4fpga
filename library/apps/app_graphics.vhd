@@ -36,12 +36,9 @@ entity app_graphics is
 		fifo_size    : natural := 8*8192;
 		intrp_trans  : boolean := true;
 
-		sdram_tcp    : real;
-		phy_data     : string := "";
-		chip_data    : string := "";
+		settings     : string;
+		sdram_freq   : real;
 		burst_length : natural := 0;
-
-		video_settings: string;
 		dvid_fifo    : boolean := false);
 	port (
 		sin_clk       : in  std_logic;
@@ -62,16 +59,16 @@ entity app_graphics is
 		video_vtsync  : buffer std_logic;
 		video_blank   : buffer std_logic;
 		video_pixel   : buffer std_logic_vector;
-		dvid_crgb     : out std_logic_vector(4*video_settings**".gear=1"-1 downto 0);
+		dvid_crgb     : out std_logic_vector(4*settings**".video.gear=1"-1 downto 0);
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
-		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.al=3"-1 downto 0) := (others => '0');
-		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.bl=3"-1 downto 0);
-		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.cl=3"-1 downto 0);
-		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.cwl=3"-1 downto 0) := (others => '0');
-		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.rtt=2"-1 downto 0) := (others => '0');
-		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(chip_data)**".generation"))))**".length.ods=1"-1 downto 0) := (others => '0');
+		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.al=3"-1 downto 0) := (others => '0');
+		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.bl=3"-1 downto 0);
+		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.cl=3"-1 downto 0);
+		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.cwl=3"-1 downto 0) := (others => '0');
+		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.rtt=2"-1 downto 0) := (others => '0');
+		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.ods=1"-1 downto 0) := (others => '0');
 
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
@@ -92,30 +89,34 @@ entity app_graphics is
 		ctlrphy_cas   : buffer std_logic;
 		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
-		ctlrphy_b     : out std_logic_vector(hdo(chip_data)**".orgz.addr.ba=1"-1 downto 0);
-		ctlrphy_a     : out std_logic_vector(hdo(chip_data)**".orgz.addr.row=1"-1 downto 0);
-		ctlrphy_dqst  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
-		ctlrphy_dqso  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dm=1"-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dm=1"-1 downto 0);
-		ctlrphy_dqt   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dq=1"-1 downto 0) := (others => '-');
-		ctlrphy_dqo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dq=1"-1 downto 0);
-		ctlrphy_dqv   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1"-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1"*hdo(chip_data)**".orgz.data.dm=1"-1 downto 0) := (others => '-');
+		ctlrphy_b     : out std_logic_vector(hdo(settings)**".sdram.chip_data.orgz.addr.ba=1"-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(hdo(settings)**".sdram.chip_data.orgz.addr.row=1"-1 downto 0);
+		ctlrphy_dqst  : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dm=1"-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dm=1"-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dq=1"-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dq=1"-1 downto 0);
+		ctlrphy_dqv   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dm=1"-1 downto 0) := (others => '-');
 		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
 
-	constant video_gear   : natural := video_settings**".video.gear=2";
-	constant red_length   : natural := video_settings**".video.pixel.R=8";
-	constant green_length : natural := video_settings**".video.pixel.G=8";
-	constant blue_length  : natural := video_settings**".video.pixel.B=8";
-
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
-	constant gear          : natural := hdo(phy_data)**".orgz.gear=1";
-	constant coln_size     : natural := hdo(chip_data)**".orgz.addr.col=1";
 
+	constant chip_data      : string  := hdo(settings)**".sdram.chip_data";
+	constant phy_data       : string  := hdo(settings)**".sdram.phy_data";
+	constant video_settings : string  := hdo(settings)**".video";
+
+	constant coln_size      : natural := hdo(chip_data)**".orgz.addr.col=1";
+	constant gear           : natural := hdo(phy_data)**".orgz.gear=1";
+
+	constant red_length     : natural := hdo(video_settings)**".video.pixel.R=8";
+	constant green_length   : natural := hdo(video_settings)**".video.pixel.G=8";
+	constant blue_length    : natural := hdo(video_settings)**".video.pixel.B=8";
+	constant video_gear     : natural := hdo(video_settings)**".video.gear=2";
 end;
 
 architecture mix of app_graphics is
@@ -913,8 +914,8 @@ begin
 		sdrctlr_e : entity hdl4fpga.sdram_ctlr
 		generic map (
 			debug        => debug,
-			chip_data   => chip_data,
-			ctlr_tcp     => sdram_tcp,
+			chip_data    => chip_data,
+			ctlr_tcp     => 1.0/sdram_freq,
 
 			phy_data     => phy_data)
 		port map (

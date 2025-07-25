@@ -38,20 +38,22 @@ architecture graphics of ulx3s is
 
 	--------------------------------------
 	--     Set your profile here        --
-	constant settings : string := "{"   &
-		"io_link: io_usb,"              &
-		"video:{"                       &
-			"dcm:"     & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6))  & ',' &
-			"videoio_freq:" & "36.0e6," &
-			"gear:"    & "2,"           &
-			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")      & ',' &
-			"pixel:{"                   &
-				"R:8,"                  &
-				"G:8,"                  &
-				"B:8}},"                &
-		"sdram:{"                       &
-			"dcm:"     & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))         & ',' &
-			"cl:"      & "'010'}}";
+	constant settings : string := compact("{"                                                             &
+		"io_link: io_usb,"                                                                                &
+		"video:{"                                                                                         &
+			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
+			"videoio_freq:" & "36.0e6,"                                                                   &
+			"gear:"         & "2,"                                                                        &
+			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
+			"pixel:{"                                                                                     &
+				"R:8,"                                                                                    &
+				"G:8,"                                                                                    &
+				"B:8}},"                                                                                  &
+		"sdram:{"                                                                                         &
+			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))           & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E")                             & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".ecp5g1")                                          & ',' &
+			"cl:"        & "'010'}}");
 
 	constant io_link      : string := settings**".io_link";
 	constant baudrate     : natural      := 3000000;
@@ -294,11 +296,8 @@ begin
 		debug        => debug,
 		profile      => 0,
 
-		sdram_tcp    => 1.0/sdram_freq(settings**".sdram.dcm"),
-		phy_data     => hdo(phy_db)**".ecp5g1",
-		sdram_data   => hdo(sdram_db)**".MT48LC16M16MA2-7E",
-
-		video_settings => settings**".video",
+		sdram_freq     => sdram_freq(settings**".sdram.dcm"),
+		settings       => settings,
 		fifo_size    => mem_size)
 
 	port map (
