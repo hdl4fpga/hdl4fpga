@@ -25,13 +25,12 @@ use hdl4fpga.base.all;
 
 architecture hdo_tb of testbench is
 
-	constant settings : string := "[1, length:16]";
-	constant yyy : natural_vector := to_naturalvector(settings);
+	constant settings : string := "[1, length:16, 5]";
 begin
 
 	process
 	begin
-		report natural'image(yyy'length);
+		report natural'image(hdo_length(settings));
 		wait;
 	end process;
 
