@@ -502,21 +502,6 @@ begin
 
 	end block;
  
-	process
-		constant waveform : string  := hdo(settings)**".waveform={}";
-		constant xxx : string := hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale);
-		constant vt_gains : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
-	begin
-		report 
-			LF & "****************************************************" & 
-			-- LF & string'(waveform**".axis.vertical.gains=") & dlft_vtscale &
-			LF & xxx &
-			LF & string'(xxx**"[length]") &
-			LF & natural'image(vt_gains'length) &
-			LF & "****************************************************";
-		wait;
-	end process;
-
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		debug       => debug,
