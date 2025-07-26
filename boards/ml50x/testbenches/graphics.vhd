@@ -39,7 +39,7 @@ architecture ml509_graphics of testbench is
 	constant timer_200u : natural := 9;
 	constant data_bits  : natural := byte_bits*data_bytes;
 
-	component ml509 is
+	component ml50x is
 		generic (
 			debug : boolean := true);
 		port (
@@ -205,7 +205,7 @@ begin
 		mii_txen => mii_rxdv,
 		mii_txd  => mii_rxd);
 
-	du_e : ml509
+	du_e : ml50x
 	generic map (
 		debug => true)
 	port map (
@@ -264,16 +264,16 @@ end;
 
 configuration ml509_graphics_structure_md of testbench is
 	for ml509_graphics
-		for all: ml509
-			use entity work.ml509(structure);
+		for all: ml50x
+			use entity work.ml50x(structure);
 		end for;
 	end for;
 end;
 
 configuration ml509_graphics_md of testbench is
 	for ml509_graphics
-		for all: ml509
-			use entity work.ml509(graphics);
+		for all: ml50x
+			use entity work.ml50x(graphics);
 		end for;
 	end for;
 end;

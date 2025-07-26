@@ -36,7 +36,7 @@ use hdl4fpga.app_profiles.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture graphics of ml509 is
+architecture graphics of ml50x is
 
 	type app_profiles is (
 		sdr200MHz_600p,
