@@ -135,6 +135,7 @@ entity scopeio is
 		3 => (ddro => 3, dmaio => 2, sodata => 1, adapter => 1)); -- NUHS3ADSP BOARD 166 MHz
 
 	constant inputs        : natural := hdo(settings)**".inputs";
+	-- constant inputs        : natural := hdo_length(hdo(settings)**".waveform.vt");
 	constant waveform      : string  := hdo(settings)**".waveform={}";
 	constant chip_data     : string  := hdo(settings)**".sdram.chip_data={}";
 	constant phy_data      : string  := hdo(settings)**".sdram.phy_data={}";

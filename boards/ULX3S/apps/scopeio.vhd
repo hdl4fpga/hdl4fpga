@@ -160,15 +160,15 @@ architecture scopeio of ulx3s is
 					"top:27, left:5, right:0, bottom:0, vertical:27, horizontal:1, background-color: 0xff_00_00_00}," &
 				"segment:{" &
 					"top: 1, left:1, right:1, bottom:1, vertical: 1, horizontal:1, background-color: 0xff_ff_ff_ff}," &
-			"vt:[" &
-				"{text: GN14, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(0)
-				"{text: GP14, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(1)
-				"{text: GN15, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(2)
-				"{text: GP15, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(3)
-				"{text: GN16, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(4)
-				"{text: GP16, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(5)
-				"{text: GN17, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(6)
-				"{text: GP17, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff}]}," & -- vt(7)
+				"vt:[" &
+					"{text: GN14, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(0)
+					"{text: GP14, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(1)
+					"{text: GN15, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(2)
+					"{text: GP15, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(3)
+					"{text: GN16, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(4)
+					"{text: GP16, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(5)
+					"{text: GN17, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(6)
+					"{text: GP17, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff}]}," & -- vt(7)
 			"sdram:{" &
 				"cl:"        & "'010'"                                         & "," &
 				"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E={}") & ',' &
