@@ -29,7 +29,6 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.app_profiles.all;
 
 library unisim;
@@ -39,17 +38,22 @@ architecture graphics of s3estarter is
 
 	--------------------------------------
 	-- Set of profiles                  --
-	type app_profiles is (
-		sdr133mhz_480p24bpp,
-		sdr166mhz_600p24bpp,
-		sdr170mhz_600p24bpp,
-		sdr200mhz_1080p24bpp);
-
-	--------------------------------------
-	--     Set your profile here        --
-	constant app_profile : app_profiles := sdr133mhz_480p24bpp;
-	-- constant app_profile : app_profiles := sdr166mhz_600p24bpp;
-	--------------------------------------
+	constant settings : string := "{"                                                                     &
+		"io_link: io_usb,"                                                                                &
+		"video:{"                                                                                         &
+			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
+			"videoio_freq:" & "36.0e6,"                                                                   &
+			"gear:"         & "2,"                                                                        &
+			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
+			"pixel:{"                                                                                     &
+				"R:8,"                                                                                    &
+				"G:8,"                                                                                    &
+				"B:8}},"                                                                                  &
+		"sdram:{"                                                                                         &
+			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))           & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E")                             & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".ecp5g1")                                          & ',' &
+			"cl:"        & "'010'}}";
 
 	type profile_param is record
 		comms       : io_comms;
@@ -57,12 +61,11 @@ architecture graphics of s3estarter is
 		video_mode  : video_modes;
 	end record;
 
-	type profileparam_vector is array (app_profiles) of profile_param;
-	constant profile_tab : profileparam_vector := (
-		sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp),
-		sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp),
-		sdr170mhz_600p24bpp  => (io_ipoe, sdram170MHz, mode600p24bpp),
-		sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp));
+	-- constant profile_tab : profileparam_vector := (
+		-- sdr133mhz_480p24bpp  => (io_ipoe, sdram133MHz, mode480p24bpp),
+		-- sdr166mhz_600p24bpp  => (io_ipoe, sdram166MHz, mode600p24bpp),
+		-- sdr170mhz_600p24bpp  => (io_ipoe, sdram170MHz, mode600p24bpp),
+		-- sdr200mhz_1080p24bpp => (io_ipoe, sdram200MHz, mode1080p24bpp));
 
 	type dcm_params is record
 		dcm_mul : natural;
@@ -100,8 +103,6 @@ architecture graphics of s3estarter is
 
 		return tab(tab'left);
 	end;
-
-	constant video_mode   : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
 
 	type sdramparams_record is record
 		id  : sdram_speeds;
