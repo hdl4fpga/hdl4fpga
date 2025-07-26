@@ -182,13 +182,6 @@ begin
 	end generate;
 
 	usb_g : if io_link="io_usb" generate
-		signal usb_cken : std_logic;
-		signal fltr_en : std_logic;
-		signal fltr_bs : std_logic;
-		signal fltr_d  : std_logic;
-
-	begin
-
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
@@ -203,7 +196,6 @@ begin
 			usb_oversampling => usb_oversampling)
 		port map (
 			usb_clk   => videoio_clk,
-			usb_cken  => usb_cken,
 			usb_dp    => usb_fpga_dp,
 			usb_dn    => usb_fpga_dn,
 
