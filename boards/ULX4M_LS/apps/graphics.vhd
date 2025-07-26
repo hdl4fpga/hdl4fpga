@@ -60,12 +60,11 @@ architecture graphics of ulx4m_ls is
 	constant baudrate     : natural      := 3000000;
 
 	constant byte_size  : natural := sdram_d'length/sdram_dqm'length;
-	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
-	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear";
+	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	constant usb_oversampling : natural := 3;
 
 	signal ctlr_clk      : std_logic;
-	signal sdrsys_rst    : std_logic;
+	signal ctlr_rst      : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic;
@@ -123,10 +122,10 @@ begin
 	generic map (
 		settings => "{" & 
 			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
-			"gear:" & string'(hdo(phy_data)**".orgz.gear") & '}')
+			"gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	port map (
 		clk_ref  => clk_25mhz,
-		ctlr_rst => sdrsys_rst,
+		ctlr_rst => ctlr_rst,
 		sclk     => ctlr_clk);
 
 	process (ctlr_clk)
@@ -289,7 +288,7 @@ begin
 		dvid_crgb    => dvid_crgb,
 
 		ctlr_clk     => ctlr_clk,
-		ctlr_rst     => sdrsys_rst,
+		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => settings**".sdram.cl",
 
@@ -329,7 +328,7 @@ begin
 		bypass     => false)
 	port map (
 		sclk       => ctlr_clk,
-		rst        => sdrsys_rst,
+		rst        => ctlr_rst,
 
 		sys_cs(0)  => ctlrphy_cs,
 		sys_cke(0) => ctlrphy_cke,
