@@ -56,8 +56,8 @@ entity scopeio_layout is
 	constant num_of_segments       : natural := hdo(waveform)**".num_of_segments";
 	constant main_top              : natural := hdo(waveform)**".main.top";
 	constant main_bottom           : natural := hdo(waveform)**".main.bottom";
-	constant main_height           : natural := hdo(waveform)**".display.height";
-	constant main_width            : natural := hdo(waveform)**".display.width";
+	constant main_height           : natural := hdo(waveform)**".video.timings.vt.active";
+	constant main_width            : natural := hdo(waveform)**".video.timings.hz.active";
 	constant main_left             : natural := hdo(waveform)**".main.left";
 	constant main_right            : natural := hdo(waveform)**".main.right";
 	constant main_horizontal       : natural := hdo(waveform)**".main.horizontal";
@@ -80,7 +80,7 @@ entity scopeio_layout is
 	constant vtaxis_tickrotate     : string  := hdo(waveform)**".axis.vertical.rotate=ccw0.";
 
 	constant axishorizontal_inside : boolean := hdo(waveform)**".axis.horizontal.inside=false.";
-	constant axishorizontal_height : natural := hzaxis_height; --         hdo(waveform)**".axis.horizontal.height";
+	constant axishorizontal_height : natural := hzaxis_height;
 	constant axisvertical_inside   : boolean := hdo(waveform)**".axis.vertical.inside=false.";
 	constant axisvertical_width    : natural := hdo(waveform)**".axis.vertical.width";
 	constant axis_fontsize         : natural := hdo(waveform)**".axis.fontsize=8.";
@@ -173,6 +173,17 @@ entity scopeio_layout is
 		end if;
 
 		return retval(0 to index-1);
+	end;
+
+	function to_edges (
+		constant data : natural_vector)
+		return natural_vector is
+		variable retval : natural_vector(data'range);
+	begin
+		for i in retval'range loop
+			retval(i) := data(i)-1;
+		end loop;
+		return retval;
 	end;
 
 	function sgmnt_hzedges
@@ -272,7 +283,7 @@ entity scopeio_layout is
 			gap          => main_horizontal);
 	begin
 		assert sides(sides'right)<=main_width
-			report "Boxes' Width sum up cannot be greater than Display's Width"
+			report "Boxes' width sum up " & natural'image(sides(sides'right)) & " cannot be greater than Display's width " & natural'image(main_width)
 			severity FAILURE;
 		return to_edges(sides);
 	end;

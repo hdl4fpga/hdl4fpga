@@ -30,7 +30,7 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_btnctlr is
 	generic (
-		layout  : string);
+		settings  : string);
 	port (
 		tp      : out std_logic_vector(1 to 32);
 		event_vld : in std_logic;
@@ -47,8 +47,8 @@ entity scopeio_btnctlr is
 		so_trdy : in  std_logic := '1';
 		so_data : buffer std_logic_vector(0 to 8-1)); -- := (0 to 7 => '-'));
 
-	constant inputs        : natural := hdo(layout)**".inputs";
-	constant waveform      : string  := hdo(layout)**".waveform";
+	constant inputs        : natural := hdo(settings)**".inputs";
+	constant waveform      : string  := hdo(settings)**".waveform";
 	constant max_delay     : natural := hdo(waveform)**".max_delay=16384.";
 	constant hz_unit       : real    := hdo(waveform)**".axis.horizontal.unit";
 	constant vt_unit       : real    := hdo(waveform)**".axis.vertical.unit";

@@ -36,18 +36,10 @@ entity app_graphics is
 		fifo_size    : natural := 8*8192;
 		intrp_trans  : boolean := true;
 
-		sdram_tcp    : real;
-		phy_data     : string := "";
-		sdram_data   : string := "";
+		settings     : string;
+		sdram_freq   : real;
 		burst_length : natural := 0;
-
-		timing_id    : videotiming_ids;
-		dvid_fifo    : boolean := false;
-		video_gear   : natural := 2;
-		red_length   : natural := 8;
-		green_length : natural := 8;
-		blue_length  : natural := 8);
-
+		dvid_fifo    : boolean := false);
 	port (
 		sin_clk       : in  std_logic;
 		sin_frm       : in  std_logic;
@@ -67,16 +59,16 @@ entity app_graphics is
 		video_vtsync  : buffer std_logic;
 		video_blank   : buffer std_logic;
 		video_pixel   : buffer std_logic_vector;
-		dvid_crgb     : out std_logic_vector(4*video_gear-1 downto 0);
+		dvid_crgb     : out std_logic_vector(4*settings**".video.gear=1"-1 downto 0);
 
 		ctlr_clk      : in  std_logic;
 		ctlr_rst      : in  std_logic;
-		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.al=3."-1 downto 0) := (others => '0');
-		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.bl=3."-1 downto 0);
-		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cl=3."-1 downto 0);
-		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.cwl=3."-1 downto 0) := (others => '0');
-		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.rtt=2."-1 downto 0) := (others => '0');
-		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(sdram_data)**".generation"))))**".length.ods=1."-1 downto 0) := (others => '0');
+		ctlr_al       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.al=3"-1 downto 0) := (others => '0');
+		ctlr_bl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.bl=3"-1 downto 0);
+		ctlr_cl       : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.cl=3"-1 downto 0);
+		ctlr_cwl      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.cwl=3"-1 downto 0) := (others => '0');
+		ctlr_rtt      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.rtt=2"-1 downto 0) := (others => '0');
+		ctlr_ods      : in std_logic_vector(hdo(string'(hdo(generation_db)**("."&string'(hdo(settings)**".sdram.chip_data.generation"))))**".length.ods=1"-1 downto 0) := (others => '0');
 
 		ctlr_cmd      : buffer std_logic_vector(0 to 3-1);
 		ctlr_inirdy   : buffer std_logic;
@@ -97,25 +89,34 @@ entity app_graphics is
 		ctlrphy_cas   : buffer std_logic;
 		ctlrphy_we    : buffer std_logic;
 		ctlrphy_odt   : out std_logic;
-		ctlrphy_b     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.ba=1."-1 downto 0);
-		ctlrphy_a     : out std_logic_vector(hdo(sdram_data)**".orgz.addr.row=1."-1 downto 0);
-		ctlrphy_dqst  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dqso  : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dmi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
-		ctlrphy_dmo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0);
-		ctlrphy_dqt   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_dqi   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0) := (others => '-');
-		ctlrphy_dqo   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dq=1."-1 downto 0);
-		ctlrphy_dqv   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_sto   : out std_logic_vector(hdo(phy_data)**".orgz.gear=1."-1 downto 0);
-		ctlrphy_sti   : in  std_logic_vector(hdo(phy_data)**".orgz.gear=1."*hdo(sdram_data)**".orgz.data.dm=1."-1 downto 0) := (others => '-');
+		ctlrphy_b     : out std_logic_vector(hdo(settings)**".sdram.chip_data.orgz.addr.ba=1"-1 downto 0);
+		ctlrphy_a     : out std_logic_vector(hdo(settings)**".sdram.chip_data.orgz.addr.row=1"-1 downto 0);
+		ctlrphy_dqst  : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_dqso  : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_dmi   : in  std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dm=1"-1 downto 0) := (others => '-');
+		ctlrphy_dmo   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dm=1"-1 downto 0);
+		ctlrphy_dqt   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_dqi   : in  std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dq=1"-1 downto 0) := (others => '-');
+		ctlrphy_dqo   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dq=1"-1 downto 0);
+		ctlrphy_dqv   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_sto   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
+		ctlrphy_sti   : in  std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dm=1"-1 downto 0) := (others => '-');
 		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
-	constant gear          : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant coln_size     : natural := hdo(sdram_data)**".orgz.addr.col=1.";
 
+	constant chip_data      : string  := hdo(settings)**".sdram.chip_data";
+	constant phy_data       : string  := hdo(settings)**".sdram.phy_data";
+	constant video_settings : string  := hdo(settings)**".video";
+
+	constant coln_size      : natural := hdo(chip_data)**".orgz.addr.col=1";
+	constant gear           : natural := hdo(phy_data)**".orgz.gear=1";
+
+	constant red_length     : natural := hdo(video_settings)**".video.pixel.R=8";
+	constant green_length   : natural := hdo(video_settings)**".video.pixel.G=8";
+	constant blue_length    : natural := hdo(video_settings)**".video.pixel.B=8";
+	constant video_gear     : natural := hdo(video_settings)**".video.gear=2";
 end;
 
 architecture mix of app_graphics is
@@ -129,10 +130,6 @@ architecture mix of app_graphics is
 
 	type latencies_vector is array (natural range <>) of latencies;
 	constant latencies_tab : latencies_vector := (
---		0 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX3S BOARD
---		1 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
---		2 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0),  -- ULX4M BOARD
---		3 => (ddro => 0, dmaio => 0, sodata => 0, adapter => 0)); -- NUHS3ADSP BOARD 166 MHz
 		0 => (ddro => 2, dmaio => 3, sodata => 1, adapter => 1),  -- ULX3S BOARD
 		1 => (ddro => 3, dmaio => 2, sodata => 0, adapter => 0),  -- NUHS3ADSP BOARD 200 MHz
 		2 => (ddro => 3, dmaio => 3, sodata => 3, adapter => 3),  -- ULX4M BOARD
@@ -664,8 +661,8 @@ begin
 		constant sync_lat  : natural := 4;
 		constant dma_lat   : natural := latencies_tab(profile).adapter;
 
-		signal hzcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(3)-1)-1 downto 0);
-		signal vtcntr      : std_logic_vector(unsigned_num_bits(modeline_tab(timing_id)(7)-1)-1 downto 0);
+		signal hzcntr      : std_logic_vector(unsigned_num_bits(video_settings**".timings.hz.total"-1)-1 downto 0);
+		signal vtcntr      : std_logic_vector(unsigned_num_bits(video_settings**".timings.vt.total"-1)-1 downto 0);
 		signal hzsync      : std_logic;
 		signal vtsync      : std_logic;
 		signal hzon        : std_logic;
@@ -686,7 +683,7 @@ begin
 
 		sync_e : entity hdl4fpga.video_sync
 		generic map (
-			timing_id => timing_id)
+			timings      => video_settings**".timings")
 		port map (
 			video_clk    => video_clk,
 			video_hzcntr => hzcntr,
@@ -725,7 +722,7 @@ begin
 
 		graphics_e : entity hdl4fpga.graphics
 		generic map (
-			video_width => modeline_tab(timing_id)(0))
+			video_width => video_settings**".timings.hz.active")
 		port map (
 			ctlr_inirdy => ctlr_inirdy,
 			ctlr_clk    => ctlr_clk,
@@ -829,11 +826,6 @@ begin
 	(dmacfgvideo_rdy, dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
 	(dmavideo_rdy,    dmaio_rdy)    <= to_stdlogicvector(to_bitvector(dev_rdy));
 
-	-- dev_req    <= (0 => '0', 1 => dmaio_req);
-	-- dmacfg_req <= (0 => '0', 1 => dmacfgio_req);
-	-- dev_addr   <= (others => '0'); --to_stdlogicvector(to_bitvector(dmavideo_addr & (dmactlr_addr'range => '0')));
-	-- dev_we     <= to_stdulogic(to_bit(dmaio_we)) & to_stdulogic(to_bit(dmaio_we));
-
 	dmactlr_b : block
 		constant buffdo_lat : natural := latencies_tab(profile).ddro;
 		signal   dev_do_dv  : std_logic_vector(dev_gnt'range);
@@ -866,7 +858,6 @@ begin
 
 			ctlr_inirdy  => ctlr_inirdy,
 			ctlr_refreq  => burst_ref,
-			-- ctlr_refreq  => ctlr_refreq,
 
 			ctlr_frm     => ctlr_frm,
 			ctlr_trdy    => ctlr_trdy,
@@ -923,8 +914,8 @@ begin
 		sdrctlr_e : entity hdl4fpga.sdram_ctlr
 		generic map (
 			debug        => debug,
-			sdram_data   => sdram_data,
-			ctlr_tcp     => sdram_tcp,
+			chip_data    => chip_data,
+			ctlr_tcp     => 1.0/sdram_freq,
 
 			phy_data     => phy_data)
 		port map (

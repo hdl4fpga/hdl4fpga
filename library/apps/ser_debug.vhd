@@ -32,24 +32,24 @@ use ieee.std_logic_1164.all;
 
 entity ser_debug is
 	generic (
-		timing_id    : videotiming_ids;
-		video_gear   : natural := 2;
-		red_length   : natural := 5;
-		green_length : natural := 6;
-		blue_length  : natural := 5);
+		video_timings : string;
+		video_gear    : natural := 2;
+		red_length    : natural := 5;
+		green_length  : natural := 6;
+		blue_length   : natural := 5);
 	port (
-		ser_clk      : in  std_logic;
-		ser_frm      : in  std_logic;
-		ser_irdy     : in  std_logic;
-		ser_data     : in  std_logic_vector;
+		ser_clk       : in  std_logic;
+		ser_frm       : in  std_logic;
+		ser_irdy      : in  std_logic;
+		ser_data      : in  std_logic_vector;
 		
-		video_clk    : in  std_logic;
+		video_clk     : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
-		video_hzsync : buffer std_logic;
-		video_vtsync : buffer std_logic;
-		video_blank  : buffer std_logic;
-		video_pixel  : buffer std_logic_vector;
-		dvid_crgb    : out std_logic_vector(7 downto 0));
+		video_hzsync  : buffer std_logic;
+		video_vtsync  : buffer std_logic;
+		video_blank   : buffer std_logic;
+		video_pixel   : buffer std_logic_vector;
+		dvid_crgb     : out std_logic_vector(7 downto 0));
 end;
 
 architecture def of ser_debug is
@@ -61,10 +61,10 @@ begin
 
 	ser_display_e : entity hdl4fpga.ser_display
 	generic map (
-		code_spce   => to_ascii(" "),
-		code_digits => to_ascii("0123456789abcdef"),
-		cga_bitrom  => to_ascii("Ready Steady GO!"),
-		timing_id   => timing_id)
+		code_spce     => to_ascii(" "),
+		code_digits   => to_ascii("0123456789abcdef"),
+		cga_bitrom    => to_ascii("Ready Steady GO!"),
+		video_timings => video_timings)
 	port map (
 		phy_clk     => ser_clk,
 		phy_frm     => ser_frm,

@@ -19,20 +19,18 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-library ieee;
-use ieee.std_logic_1164.all;
+use work.hdo.all;
 library hdl4fpga;
-use hdl4fpga.hdo.all;
-use hdl4fpga.sdrampkg.all;
-
+use hdl4fpga.base.all;
 
 architecture hdo_tb of testbench is
 
+	constant settings : string := "[1, length:16, 5]";
 begin
 
 	process
 	begin
-		report sdram_db**".MT41K256M16-125";
+		report natural'image(hdo_length(settings));
 		wait;
 	end process;
 

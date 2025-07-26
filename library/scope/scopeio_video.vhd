@@ -32,7 +32,6 @@ use hdl4fpga.scopeiopkg.all;
 
 entity scopeio_video is
 	generic (
-		timing_id          : videotiming_ids;
 		sample_length      : natural;
 		inputs             : natural;
 		waveform           : string);
@@ -68,10 +67,11 @@ entity scopeio_video is
 
 	constant num_of_segments : natural := hdo(waveform)**".num_of_segments";
 	constant axis_fontsize   : natural := hdo(waveform)**".axis.fontsize=8.";
-	constant main_width      : natural := hdo(waveform)**".display.width";
-	constant main_height     : natural := hdo(waveform)**".display.height";
 	constant textbox_width   : natural := hdo(waveform)**".textbox.width=0.";
 	constant grid_height     : natural := hdo(waveform)**".grid.height";
+	constant video_timings   : string  := hdo(waveform)**".video.timings";
+	constant main_width      : natural := hdo(video_timings)**".hz.active";
+	constant main_height     : natural := hdo(video_timings)**".vt.active";
 	constant chanid_bits     : natural := unsigned_num_bits(inputs-1);
 	subtype storage_word is std_logic_vector(unsigned_num_bits(grid_height)-1 downto 0);
 
@@ -167,9 +167,7 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		timing_id     => timing_id,
-		width         => main_width,
-		height        => main_height)
+		timings       => video_timings)
 	port map (
 		video_clk     => video_clk,
 		extern_video  => extern_video,

@@ -127,6 +127,12 @@ package hdo is
 	function to_stdlogicvector (
 		constant value : string)
 		return std_logic_vector;
+
+	impure --|note
+	function hdo_length(
+		constant object : string)
+		return natural;
+
 end;
 
 package body hdo is
@@ -186,7 +192,7 @@ package body hdo is
 	constant log_parsetagvaluepathdefault : natural := 2**8;
 	constant log_locatevalue  : natural := 2**6;
 	constant log_resolve      : natural := 2**7;
-	constant log_flags        : natural := 0; --511-log_parsestring;
+	constant log_flags        : natural := 511-log_parsestring;
 
 	function unsigned_num_bits (
 		arg: natural)
@@ -1618,6 +1624,30 @@ package body hdo is
 		else
 			return "";
 		end if;
+	end;
+
+	impure --|note
+	function hdo_length(
+		constant object : string)
+		return natural is
+
+		function check (
+			constant arg : string)
+			return boolean is
+		begin
+			if arg'length=0 then
+				return false;
+			end if;
+			return true;
+		end;
+		variable length : natural;
+	begin
+		length := 0;
+		for i in object'range loop
+			exit when not check(hdo(object)**length);
+			length := length + 1;
+		end loop;
+		return length;
 	end;
 
 end;
