@@ -402,7 +402,6 @@ begin
 		scopeio_video_e : entity hdl4fpga.scopeio_video
 		generic map (
 			sample_length  => sample_length,
-			timings        => hdo(settings)**".video_timings",
 			inputs         => inputs,
 			waveform       => waveform)
 		port map (

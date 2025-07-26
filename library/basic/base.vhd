@@ -767,7 +767,6 @@ package body base is
 		variable length : natural;
 		variable retval : natural_vector(0 to object'length/2-1);
 	begin
-		report object;
 		length := 0;
 		for i in retval'range loop
 			validate(valid, retval(i), hdo(object)**i);

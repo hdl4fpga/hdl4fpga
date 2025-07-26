@@ -127,15 +127,15 @@ architecture scopeio of ulx3s is
 		natural'image(2**(0+2)*5**(1+2)) & ']';  -- [15]
 
 	constant settings : string := compact("{" &   
-			"video:{"                                                                                          &
-				"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'64mhz'", 36.0e6)) & ','  &
-				"videoio_freq:" & "36.0e6,"                                                                    &
-				"gear:"         & "2,"                                                                         &
-				"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'1280x720'.'@60'.'64mhz'")     & ',' &
-				"pixel:{R:8,G:8,B:8}},"                                                                        &
 			"inputs:"        & natural'image(inputs)   & ',' &
 			"waveform:{"     &
-				"num_of_segments: 3," &
+				"video:{"                                                                                          &
+					"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'64mhz'", 36.0e6)) & ','  &
+					"videoio_freq:" & "36.0e6,"                                                                    &
+					"gear:"         & "2,"                                                                         &
+					"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'1280x720'.'@60'.'64mhz'")     & ',' &
+					"pixel:{R:8,G:8,B:8}},"                                                                        &
+					"num_of_segments: 3," &
 				"grid:{" &
 					"width:"  & natural'image(32*32+1) & ',' &
 					"height:" & natural'image( 6*32+1) & ',' &
@@ -206,7 +206,7 @@ begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		settings     => settings**".video")
+		settings     => settings**".waveform.video")
 	port map (
 		clk_rst     => right,
 		clk_ref     => clk_25mhz,
