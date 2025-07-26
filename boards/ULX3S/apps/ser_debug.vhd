@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
@@ -36,19 +37,25 @@ use ecp5u.components.all;
 architecture ser_debug of ulx3s is
 
 	constant usb_oversampling : natural := 3;
-	constant io_link : io_comms := io_usb;
 	constant usb_device : boolean := true;
 	constant monitor : boolean := true;
 
-	constant video_mode   : video_modes := mode600p24bpp;
-	constant video_params : video_record := videoparam(
-		video_modes'VAL(setif(debug,
-			video_modes'POS(video_mode),
-			video_modes'POS(video_mode))), clk25mhz_freq);
+	constant settings : string := "{"                                                             &
+		"io_link: io_usb,"                                                                                &
+		"video:{"                                                                                         &
+			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
+			"videoio_freq:" & "36.0e6,"                                                                   &
+			"gear:"         & "2,"                                                                        &
+			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
+			"pixel:{"                                                                                     &
+				"R:8,"                                                                                    &
+				"G:8,"                                                                                    &
+				"B:8}}}";
 
-	signal video_pixel   : std_logic_vector(0 to setif(
-		video_params.pixel=rgb565, 16, setif(
-		video_params.pixel=rgb888, 24, 0))-1);
+	constant io_link      : string := settings**".io_link";
+	constant baudrate     : natural      := 3000000;
+
+	signal video_pixel   : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
 
 	signal sys_rst         : std_logic;
 	signal sys_clk         : std_logic;
@@ -74,7 +81,7 @@ architecture ser_debug of ulx3s is
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
 	signal ser_irdy        : std_logic;
-	signal ser_data        : std_logic_vector(0 to setif(io_link=io_ipoe, 2,1)-1);
+	signal ser_data        : std_logic_vector(0 to setif(io_link="io_ipoe", 2,1)-1);
 
 	constant hdplx         : std_logic := setif(debug, '0', '1');
 begin
@@ -83,19 +90,16 @@ begin
 
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		io_link      => io_link,
-		clkio_freq   => 12.0e6*real(usb_oversampling),
-		clkref_freq  => clk25mhz_freq,
-		default_gear => 2,
-		video_params => video_params)
+		settings     => settings**".video")
 	port map (
+		clk_rst     => right,
 		clk_ref     => clk_25mhz,
-		video_clk   => video_clk,
 		videoio_clk => videoio_clk,
+		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
 		video_lck   => video_lck);
 
-	usb_g : if io_link=io_usb generate 
+	usb_g : if io_link="io_usb" generate
 		signal cken : std_logic;
 		signal cfgd : std_logic;
 
@@ -231,14 +235,8 @@ begin
 		-- led(2) <= cfgd;
 	end generate;
 
-	hdlc_g : if io_link=io_hdlc generate
-		constant uart_freq : real := 
-			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
-			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
-		constant baudrate : natural := setif(
-			uart_freq >= 32.0e6, 3000000, setif(
-			uart_freq >= 25.0e6, 2000000,
-								 115200));
+	hdlc_g : if io_link="io_hdlc" generate
+		constant uart_freq : real := 30.0e6;
 		signal uart_clk : std_logic;
 		signal uart_frm    : std_logic;
 		signal uart_rxdv   : std_logic;
@@ -265,7 +263,7 @@ begin
 		ftdi_txden <= '1';
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_g : if io_link="io_ipoe" generate
 		signal mii_clk : std_logic;
 		signal tp : std_logic_vector(1 to 32);
 	begin
@@ -361,7 +359,7 @@ begin
 	video_g : if monitor generate
 		ser_debug_e : entity hdl4fpga.ser_debug
 		generic map (
-			timing_id       => video_params.timing)
+			video_timings => hdo(settings)**".video.timings")
 		port map (
 			ser_clk         => ser_clk, 
 			ser_frm         => ser_frm, 

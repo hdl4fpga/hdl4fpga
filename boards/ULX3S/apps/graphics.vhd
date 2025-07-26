@@ -38,7 +38,7 @@ architecture graphics of ulx3s is
 
 	------------------------------------
 	--     Custom profile here        --
-	constant settings : string := compact("{"                                                             &
+	constant settings : string := "{"                                                                     &
 		"io_link: io_usb,"                                                                                &
 		"video:{"                                                                                         &
 			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
@@ -53,7 +53,7 @@ architecture graphics of ulx3s is
 			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E")                             & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ecp5g1")                                          & ',' &
-			"cl:"        & "'010'}}");
+			"cl:"        & "'010'}}";
 
 	constant io_link      : string := settings**".io_link";
 	constant baudrate     : natural      := 3000000;

@@ -40,7 +40,7 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------
 	-- Set your profile here             --
-	constant settings : string := compact("{"                                                             &
+	constant settings : string := "{"                                                                     &
 		"io_link: io_usb,"                                                                                &
 		"video:{"                                                                                         &
 			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
@@ -55,7 +55,7 @@ architecture graphics of ulx4m_ld is
 			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT41K256M16-125")                               & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
-			"cl:"        & "'010'}}");
+			"cl:"        & "'010'}}";
 
 	constant io_link      : string := settings**".io_link";
 	constant baudrate     : natural      := 3000000;
