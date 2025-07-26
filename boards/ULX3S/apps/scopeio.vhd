@@ -27,7 +27,6 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
-use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.scopeiopkg.all;
@@ -41,15 +40,7 @@ architecture scopeio of ulx3s is
 	constant tsttab : boolean := false;
 	--------------------------------------
 	--     Set your profile here        --
-	constant io_link      : io_comms     := io_usb;
-	-- constant video_mode   : video_modes  := mode600p24bpp;
-	constant video_mode   : video_modes  := mode720p24bpp;
-	-- constant video_mode   : video_modes  := mode900p24bpp;
-	-- constant video_mode   : video_modes  := mode1080p24bpp30;
-	-- constant video_mode   : video_modes  := mode1080p24bpp;
-	-- constant video_mode   : video_modes  := mode1440p24bpp30;
-	-- constant sdram_speed  : sdram_speeds := sdram225MHz; 
-	--------------------------------------
+	constant io_link      : string := "io_usb";
 
 	constant adc1clkref_freq : real := 64.0e6;
 	constant adc1clki_div    : natural := 5;
@@ -117,25 +108,23 @@ architecture scopeio of ulx3s is
 
 	signal adc_clk       : std_logic;
 
-	constant time_factors : string := compact( 
-		"[" &
-			natural'image(2**(0+0)*5**(0+0)) & "," & -- [0]
-			natural'image(2**(0+0)*5**(0+0)) & "," & -- [1]
-			natural'image(2**(0+0)*5**(0+0)) & "," & -- [2]
-			natural'image(2**(0+0)*5**(0+0)) & "," & -- [3]
-			natural'image(2**(0+0)*5**(0+0)) & "," & -- [4]
-			natural'image(2**(1+0)*5**(0+0)) & "," & -- [5]
-			natural'image(2**(2+0)*5**(0+0)) & "," & -- [6]
-			natural'image(2**(0+0)*5**(1+0)) & "," & -- [7]
-			natural'image(2**(0+1)*5**(0+1)) & "," & -- [8]
-			natural'image(2**(1+1)*5**(0+1)) & "," & -- [9]
-			natural'image(2**(2+1)*5**(0+1)) & "," & -- [10]
-			natural'image(2**(0+1)*5**(1+1)) & "," & -- [11]
-			natural'image(2**(0+2)*5**(0+2)) & "," & -- [12]
-			natural'image(2**(1+2)*5**(0+2)) & "," & -- [13]
-			natural'image(2**(2+2)*5**(0+2)) & "," & -- [14]
-			natural'image(2**(0+2)*5**(1+2)) & "," & -- [15]
-		"length : 16].");
+	constant time_factors : string := '['      &
+		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [0]
+		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [1]
+		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [2]
+		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [3]
+		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [4]
+		natural'image(2**(1+0)*5**(0+0)) & ',' & -- [5]
+		natural'image(2**(2+0)*5**(0+0)) & ',' & -- [6]
+		natural'image(2**(0+0)*5**(1+0)) & ',' & -- [7]
+		natural'image(2**(0+1)*5**(0+1)) & ',' & -- [8]
+		natural'image(2**(1+1)*5**(0+1)) & ',' & -- [9]
+		natural'image(2**(2+1)*5**(0+1)) & ',' & -- [10]
+		natural'image(2**(0+1)*5**(1+1)) & ',' & -- [11]
+		natural'image(2**(0+2)*5**(0+2)) & ',' & -- [12]
+		natural'image(2**(1+2)*5**(0+2)) & ',' & -- [13]
+		natural'image(2**(2+2)*5**(0+2)) & ',' & -- [14]
+		natural'image(2**(0+2)*5**(1+2)) & ']';  -- [15]
 
 	constant settings : string := compact("{" &   
 			"video:{"                                                                                          &
@@ -181,8 +170,9 @@ architecture scopeio of ulx3s is
 				"{text: GN17, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(6)
 				"{text: GP17, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff}]}," & -- vt(7)
 			"sdram:{" &
-				"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E=none") & ',' &
-				"phy_data:"  & string'(hdo(phy_db)**".ecp5g1=none")              & "}}");
+				"cl:"        & "'010'"                                         & "," &
+				"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E={}") & ',' &
+				"phy_data:"  & string'(hdo(phy_db)**".ecp5g1={}")              & "}}");
 
 	constant chip_data   : string  := settings**".sdram.chip_data={}";
 	constant phy_data    : string  := settings**".sdram.phy_data={}";
@@ -226,7 +216,7 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
-	usb_g : if io_link=io_usb generate
+	usb_g : if io_link="io_usb" generate
 		signal usb_cken : std_logic;
 		signal fltr_en : std_logic;
 		signal fltr_bs : std_logic;
@@ -511,6 +501,21 @@ begin
 		si_data <= iolink_data when opacity_frm='0' else opacity_data;
 
 	end block;
+ 
+	process
+		constant waveform : string  := hdo(settings)**".waveform={}";
+		constant xxx : string := hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale);
+		constant vt_gains : natural_vector := to_naturalvector(hdo(waveform)**compact(".axis.vertical.gains=" & dlft_vtscale));
+	begin
+		report 
+			LF & "****************************************************" & 
+			-- LF & string'(waveform**".axis.vertical.gains=") & dlft_vtscale &
+			LF & xxx &
+			LF & string'(xxx**"[length]") &
+			LF & natural'image(vt_gains'length) &
+			LF & "****************************************************";
+		wait;
+	end process;
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (

@@ -729,21 +729,21 @@ package body base is
 		constant width   : natural := 0;
 		constant padding : boolean := false)
 		return string is
-		constant xxx : string := natural'image(arg);
+		constant aux : string := natural'image(arg);
 	begin
-		if width > xxx'length then
+		if width > aux'length then
 			if padding then
-				return (1 to width-xxx'length => '0') & xxx;
+				return (1 to width-aux'length => '0') & aux;
 			else
-				return (1 to width-xxx'length => ' ') & xxx;
+				return (1 to width-aux'length => ' ') & aux;
 			end if;
 		elsif width=0 then
-			return xxx;
-		elsif width=xxx'length then
-			return xxx;
+			return aux;
+		elsif width=aux'length then
+			return aux;
 		else
 			assert false
-				report "to_string() : width(" & natural'image(width) & ") less than value'length(" & natural'image(xxx'length) & ")"
+				report "to_string() : width(" & natural'image(width) & ") less than value'length(" & natural'image(aux'length) & ")"
 				severity FAILURE;
 		end if;
 	end;
@@ -751,13 +751,30 @@ package body base is
 	function to_naturalvector (
 		constant object : string)
 		return natural_vector is
-		constant length : natural := hdo(object)**".length";
-		variable retval : natural_vector(0 to length-1);
+		procedure validate (
+			variable valid  : out boolean;
+			variable number : inout natural;
+			constant value  : in string) is
+		begin
+			if value'length=0 then
+				valid := false;
+				return;
+			end if;
+			number := to_integer(value);
+			valid  := true;
+		end;
+		variable valid  : boolean;
+		variable length : natural;
+		variable retval : natural_vector(0 to object'length/2-1);
 	begin
-		for i in 0 to length-1 loop
-			retval(i) := hdo(object)**("["&natural'image(i)&"]");
+		report object;
+		length := 0;
+		for i in retval'range loop
+			validate(valid, retval(i), hdo(object)**i);
+			exit when not valid;
+			length := length + 1;
 		end loop;
-		return retval;
+		return retval(0 to length-1);
 	end;
 
 	function textalign (
