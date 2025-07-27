@@ -39,7 +39,7 @@ architecture graphics of s3estarter is
 	--------------------------------------
 	-- Set of profiles                  --
 	constant settings : string := "{"                                                                     &
-		"io_link: io_usb,"                                                                                &
+		"io_link: io_ipoe,"                                                                                &
 		"video:{"                                                                                         &
 			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
 			"videoio_freq:" & "36.0e6,"                                                                   &
