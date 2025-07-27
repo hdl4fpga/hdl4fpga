@@ -21,10 +21,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.profiles.all;
 
 entity xc_idelay is
 	generic (
@@ -37,6 +33,8 @@ entity xc_idelay is
 		idatain : in std_logic;
 		dataout : out std_logic);
 end;
+
+library hdl4fpga;
 
 library unisim;
 use unisim.vcomponents.all;

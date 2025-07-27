@@ -21,10 +21,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.profiles.all;
 
 entity ogbx is
 	generic (

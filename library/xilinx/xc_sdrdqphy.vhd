@@ -23,13 +23,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library hdl4fpga;
-use hdl4fpga.base.all;
-use hdl4fpga.profiles.all;
-
-library unisim;
-use unisim.vcomponents.all;
-
 entity xc_sdrdqphy is
 	generic (
 		-- dqs_delay   : time := (1000 ns /450.0)*(4.5/4.0);
@@ -99,6 +92,12 @@ entity xc_sdrdqphy is
 		sdram_dqst  : buffer std_logic;
 		sdram_dqso  : buffer std_logic);
 end;
+
+library hdl4fpga;
+use hdl4fpga.base.all;
+
+library unisim;
+use unisim.vcomponents.all;
 
 architecture xilinx of xc_sdrdqphy is
 

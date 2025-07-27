@@ -22,9 +22,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library hdl4fpga;
-use hdl4fpga.profiles.all;
-
 entity xc3s_dqsdelay is
 	port (
 		clk    : in  std_logic;
@@ -34,6 +31,8 @@ entity xc3s_dqsdelay is
 		dqso_p : out std_logic;
 		dqso_n : out std_logic);
 end;
+
+library hdl4fpga;
 
 architecture xilinx of xc3s_dqsdelay is
 begin

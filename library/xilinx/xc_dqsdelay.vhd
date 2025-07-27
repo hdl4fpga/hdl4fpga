@@ -21,10 +21,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.profiles.all;
 
 entity xc_dqsdelay is
 	generic (
@@ -37,6 +33,8 @@ entity xc_dqsdelay is
 		dqsi   : in  std_logic;
 		dqso   : out std_logic_vector(0 to gear-1));
 end;
+
+library hdl4fpga;
 
 library unisim;
 use unisim.vcomponents.all;

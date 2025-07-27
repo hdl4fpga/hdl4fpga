@@ -21,10 +21,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.profiles.all;
 
 entity igbx is
 	generic (
@@ -40,6 +36,8 @@ entity igbx is
 		d         : in  std_logic_vector(0 to size-1);
 		q         : out std_logic_vector(0 to size*gear-1));
 end;
+
+library hdl4fpga;
 
 library unisim;
 use unisim.vcomponents.all;
