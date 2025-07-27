@@ -47,9 +47,9 @@ architecture graphics of s3estarter is
 				"G:8,"                                                                                    &
 				"B:8}},"                                                                                  &
 		"sdram:{"                                                                                         &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))           & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E")                             & ',' &
-			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                          & ',' &
+			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))                 & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                                      & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                                & ',' &
 			"cl:"        & "'010'}}";
 
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
@@ -100,6 +100,7 @@ architecture graphics of s3estarter is
 	signal video_blank    : std_logic;
 	signal video_pixel    : std_logic_vector(0 to 32-1);
 
+	constant mem_size    : natural := 8*(1024*8);
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
 	signal si_trdy        : std_logic;
@@ -111,19 +112,13 @@ architecture graphics of s3estarter is
 	signal so_data        : std_logic_vector(0 to 8-1);
 
 	signal mii_clk        : std_logic;
-	alias ctlr_clk        : std_logic is ddr_clk0;
 	alias sio_clk         : std_logic is e_tx_clk;
 
 	signal sys_rst        : std_logic;
-	signal sys_clk        : std_logic;
+	alias sys_clk         : std_logic is clk_50mhz;
 
 	signal tp : std_logic_vector(1 to 32);
 begin
-
-	clkin_ibufg : ibufg
-	port map (
-		I => clk_50mhz,
-		O => sys_clk);
 
 	process(sys_clk)
 	begin
@@ -132,16 +127,14 @@ begin
 		end if;
 	end process;
 
-	end generate;
-
 	sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
 	generic map (
 		settings  => settings**".dcm")
-	port (
+	port map (
 		clk        => clk,
 		ctlr_clk   => ctlr_clk,
 		ctlr_clk90 => ctlr_clk90,
-		locked     => ctlrdcm_locked;
+		locked     => ctlrdcm_locked);
 
 	ipoe_b : block
 		signal dhcpcd_req : std_logic := '0';
@@ -283,20 +276,13 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		sdram_tcp    => sdram_tcp,
-		sdram_data   => hdo(sdram_db)**".MT46V16M16M-6T",
-		phy_data     => phy_data,
-
 		debug        => debug,
 		profile      => 1,
 		burst_length => 2,
-		timing_id    => videoparam(video_mode).timing,
-		red_length   => 8,
-		green_length => 8,
-		blue_length  => 8,
 
-		fifo_size    => 8*2048)
-
+		sdram_freq   => sdram_freq(settings**".sdram.dcm"),
+		settings     => settings,
+		fifo_size    => mem_size)
 	port map (
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
@@ -319,7 +305,7 @@ begin
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => ctlr_rst  ,
 		ctlr_bl      => "001",
-		ctlr_cl      => sdram_params.cl,
+		ctlr_cl      => settings**".sdram.cl",
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
 		ctlrphy_cs   => ctlrphy_cs(0),
