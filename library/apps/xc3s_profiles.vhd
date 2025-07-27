@@ -19,9 +19,6 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-library hdl4fpga;
-use hdl4fpga.hdo.all;
-
 package xc3s_profiles is
 	function video_dcm (
 		constant video_id     : string;
@@ -37,8 +34,8 @@ package xc3s_profiles is
 		return real;
 end;
 
-library ieee;
-use ieee.math_real.all;
+library hdl4fpga;
+use hdl4fpga.hdo.all;
 
 package body xc3s_profiles is
 

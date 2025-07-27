@@ -30,7 +30,7 @@ entity xc_sdrbaphy is
 		bank_size  : natural;
 		addr_size  : natural;
 		gear       : natural;
-		device     : fpga_devices;
+		device     : string;
 		ba_latency : natural);
 	port (
 		grst      : in  std_logic := '0';

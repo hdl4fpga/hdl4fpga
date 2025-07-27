@@ -39,7 +39,7 @@ entity xc_sdrdqphy is
 		dqs_delay   : time := 1 ns ; --(1000 ns /450.0)*(4.5/4.0);
 		dqi_delay   : time := 0 ns ; --(1000 ns /450.0)*(4.5/4.0);
 		byteno      : natural;
-		device      : fpga_devices;
+		device      : string;
 		gear        : natural;
 		byte_size   : natural;
 
@@ -126,7 +126,7 @@ architecture xilinx of xc_sdrdqphy is
 	signal pause_req    : std_logic;
 	signal pause_rdy    : std_logic;
 
-	signal dqsi_delay   : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
+	signal dqsi_delay   : std_logic_vector(0 to setif(device="xc7a",5,6)-1);
 	signal tp_dqsdly    : std_logic_vector(6-1 downto 0) := (others => '0');
 	signal tp_dqidly    : std_logic_vector(6-1 downto 0);
 	signal tp_dqssel    : std_logic_vector(3-1 downto 0);
@@ -400,7 +400,7 @@ begin
 		i_igbx : for i in sdram_dq'range generate
 		begin
 			adjdqi_b : block
-				signal delay  : std_logic_vector(0 to setif(device=xc7a,5,6)-1);
+				signal delay  : std_logic_vector(0 to setif(device="xc7a",5,6)-1);
 				signal dq_smp : std_logic_vector(gear-1 downto 0);
 				signal ddqi   : std_logic;
 			begin

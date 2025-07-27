@@ -28,7 +28,7 @@ use hdl4fpga.profiles.all;
 
 entity xc_idelay is
 	generic (
-		device         : fpga_devices;
+		device         : string;
 		signal_pattern : string);
 	port (
 		clk     : in  std_logic;
@@ -43,7 +43,7 @@ use unisim.vcomponents.all;
 
 architecture def of xc_idelay is
 begin
-	xc5v_g : if device=xc5v generate
+	xc5v_g : if device="xc5v" generate
 		idelay_i : entity hdl4fpga.xc5v_idelay
 		generic map (
 			delay_src      => string'("I"),
@@ -56,7 +56,7 @@ begin
 			dataout => dataout);
 	end generate;
 
-	xc7a_g : if device=xc7a generate
+	xc7a_g : if device="xc7a" generate
 		idelay_i : entity hdl4fpga.xc7a_idelay
 		generic map (
 			delay_src      => "IDATAIN",

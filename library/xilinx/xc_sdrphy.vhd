@@ -38,7 +38,7 @@ entity xc_sdrphy is
 		byte_size   : natural;
 		gear        : natural;
 
-		device      : fpga_devices;
+		device      : string;
 		ba_latency  : natural := 0;
 		rd_fifo     : boolean := true;
 		rd_align    : boolean := true;

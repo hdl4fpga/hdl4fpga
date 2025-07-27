@@ -28,7 +28,7 @@ use hdl4fpga.profiles.all;
 
 entity xc_dqsdelay is
 	generic (
-		device : fpga_devices;
+		device : string;
 		gear   : natural);
 	port (
 		clk    : in  std_logic;
@@ -43,7 +43,7 @@ use unisim.vcomponents.all;
 
 architecture xilinx of xc_dqsdelay is
 begin
-	xc3s_g : if device=xc3s generate
+	xc3s_g : if device="xc3s" generate
 		signal dqso_p : std_logic;
 		signal dqso_n : std_logic;
 	begin
@@ -58,7 +58,7 @@ begin
 		dqso <= (dqso_p, dqso_n);
 	end generate;
 
-	xc5v_g : if device=xc5v generate
+	xc5v_g : if device="xc5v" generate
 		signal dataout : std_logic;
 	begin
 		idelay_i : entity hdl4fpga.xc5v_idelay
@@ -74,7 +74,7 @@ begin
 		dqso <= (others => dataout);
 	end generate;
 
-	xc7a_g : if device=xc7a generate
+	xc7a_g : if device="xc7a" generate
 		signal dataout : std_logic;
 	begin
 		idelay_i : entity hdl4fpga.xc7a_idelay

@@ -28,7 +28,7 @@ use hdl4fpga.profiles.all;
 
 entity ogbx is
 	generic (
-		device    : fpga_devices := xc7a;
+		device    : string;
 		size      : natural;
 		gear      : natural);
 	port (
@@ -93,7 +93,7 @@ begin
 		end generate;
 
 		gear2_g : if gear = 2 generate
-			xc3s_g : if device=xc3s generate
+			xc3s_g : if device="xc3s" generate
 				signal clk_n : std_logic;
 			begin
 				ddrto_i : fdce
@@ -117,7 +117,7 @@ begin
 					q  => q(i));
 			end generate;
 
-			xcother_g : if device/=xc3s generate
+			xcother_g : if device/="xc3s" generate
 				fft_i : fdrse
 				port map (
 					c  => clk,
@@ -141,7 +141,7 @@ begin
 		end generate;
 
 		oserdese_g : if gear > 2 generate
-			xc5v_g : if device=xc5v generate
+			xc5v_g : if device="xc5v" generate
 				signal sr : std_logic;
 			begin
 
@@ -172,7 +172,7 @@ begin
 					tce      => '1');
 			end generate;
 
-			xc7a_g : if device=xc7a generate
+			xc7a_g : if device="xc7a" generate
 				oser_i : oserdese2
 				generic map (
 					data_width => gear)

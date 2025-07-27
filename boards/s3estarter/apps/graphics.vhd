@@ -31,6 +31,9 @@ use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.xc3s_profiles.all;
 
+library unisim;
+use unisim.vcomponents.all;
+
 architecture graphics of s3estarter is
 
 	--------------------------------------
@@ -131,7 +134,7 @@ begin
 	generic map (
 		settings  => settings**".dcm")
 	port map (
-		clk        => clk,
+		clk        => sys_clk,
 		ctlr_clk   => ctlr_clk,
 		ctlr_clk90 => ctlr_clk90,
 		locked     => ctlrdcm_locked);
@@ -333,7 +336,7 @@ begin
 	generic map (
 		-- dqs_delay   => (0 to 0 => 0 ns),
 		-- dqi_delay   => (0 to 0 => 0 ns),
-		device      => xc3s,
+		device      => hdo(settings)**".sdram.phy_data.device",
 		bank_size   => sd_ba'length,
 		addr_size   => sd_a'length,
 		word_size   => sd_dq'length,
@@ -388,7 +391,6 @@ begin
 		sdram_dqst    => sdram_dqst,
 		sdram_dqs     => sd_dqs,
 		sdram_dqso    => sdram_dqso);
-
 
 	sdram_clk_i : obufds
 	generic map (
