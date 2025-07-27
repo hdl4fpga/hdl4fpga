@@ -130,6 +130,14 @@ begin
 		end if;
 	end process;
 
+	videodcm_i : entity hdl4fpga.xc3s_videodcm
+	generic map(
+		settings => hdo(settings)**".dcm")
+	port map(
+		rst       => sys_rst,
+		clk       => sys_clk,
+		video_clk => video_clk);
+
 	sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
 	generic map (
 		settings  => settings**".dcm")
@@ -138,6 +146,7 @@ begin
 		ctlr_clk   => ctlr_clk,
 		ctlr_clk90 => ctlr_clk90,
 		locked     => ctlrdcm_locked);
+	ctlr_rst <= not ctlrdcm_locked;
 
 	ipoe_b : block
 		signal dhcpcd_req : std_logic := '0';

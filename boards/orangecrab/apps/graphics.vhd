@@ -30,7 +30,6 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 
 library ecp5u;
@@ -38,33 +37,31 @@ use ecp5u.components.all;
 
 architecture graphics of orangecrab is
 
-	---------------------------------------
-	-- Set your profile here             --
-	constant sdram_speed  : sdram_speeds := sdram400MHz;
-	constant video_mode   : video_modes  := mode600p24bpp;
-	constant io_link      : io_comms     := io_usb;
-	constant baudrate     : natural      := setif(debug, 3e6, 115200);
+	constant settings : string := "{"                                                               &
+		"io_link: io_usb,"                                                                          &
+		"video:{"                                                                                   &
+			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'48mhz'.'40mhz'", 36.0e6)) & ',' &
+			"videoio_freq:" & "36.0e6"                                                              & ',' &
+			"gear:"         & "4"                                                                   & ',' &
+			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
+			"pixel:{"                                                                               &
+				"R:8"                                                                               & ',' &
+				"G:8"                                                                               & ',' &
+				"B:8}}"                                                                             & ',' &
+		"sdram:{"                                                                                   &
+			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT41K256M16-125")                               & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".orangecrab_ecp5g4")                               & ',' &
+			"cl:"        & "'010'}}";
+
+	constant io_link      : string  := settings**".io_link";
+	constant baudrate     : natural := 115200;
 	-- Set your UART pinout here         --
 	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
 	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
-	---------------------------------------
 
-	constant video_params  : video_record := videoparam(
-		video_modes'VAL(setif(debug,
-			video_modes'POS(modedebug),
-			video_modes'POS(video_mode))), clk48MHz_freq);
-
-	constant sdram_params : sdramparams_record := sdramparams(
-		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram400Mhz),
-			sdram_speeds'POS(sdram_speed))), clk48MHz_freq);
-	
-	constant sdram_tcp : real := 1.0/sdram_freq(sdram_params, clk48MHz_freq);
-
-	constant phy_data    : string  := hdo(phy_db)**".orangecrab_ecp5g4";
-	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear";
+	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
-	constant usb_oversampling : natural := 3;
 
 	signal sys_rst       : std_logic;
 
@@ -108,7 +105,7 @@ architecture graphics of orangecrab is
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
 	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := video_params.gear;
+	constant video_gear  : natural := 4; --video_params.gear;
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	constant mem_size    : natural := 8*(1024*8);
@@ -124,8 +121,8 @@ architecture graphics of orangecrab is
 
 	signal sio_clk       : std_logic;
 
-	signal sclk          : std_logic;
-	signal eclk          : std_logic;
+	signal ctlr_sclk          : std_logic;
+	signal ctlr_eclk          : std_logic;
 
 	signal video_pixel   : std_logic_vector(0 to 32-1);
 
@@ -143,12 +140,9 @@ begin
 	sys_rst <= not rst_n;
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		io_link      => io_link,
-		clkio_freq   => 12.0e6*real(usb_oversampling),
-		clkref_freq => clk48MHz_freq,
-		video_params => video_params)
+		settings     => settings**".video")
 	port map (
-		clk_ref     => clk_48MHz,
+		clk_ref     => clk_48mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -157,19 +151,19 @@ begin
 
 	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
 	generic map (
-		gear         => sdram_gear,
-		clkref_freq  => clk48MHz_freq,
-		sdram_params => sdram_params)
+		settings => "{" & 
+			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
+			"gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	port map (
-		clk_ref      => clk_48MHz,
 		ctlr_rst     => ctlr_rst,
-		sclk         => sclk,
-		eclk         => eclk,
+		clk_ref      => clk_48MHz,
+		sclk         => ctlr_sclk,
+		eclk         => ctlr_eclk,
 		phy_rst      => sdrphy_rst,
 		phy_mspause  => ms_pause,
 		phy_ddrdel   => ddrdel);
 
-	hdlc_g : if io_link=io_hdlc generate
+	hdlc_g : if io_link="io_hdlc" generate
 		constant uart_freq : real := clk48MHz_freq;
 		signal uart_clk : std_logic;
 	begin
@@ -205,8 +199,8 @@ begin
 
 	end generate;
 
-	usb_g : if io_link=io_usb generate
-		signal tp : std_logic_vector(1 to 32);
+	usb_g : if io_link="io_usb" generate
+		constant usb_oversampling : natural := 3;
 		signal usb_cken : std_logic;
 	begin
 
@@ -220,7 +214,6 @@ begin
 		generic map (
 			usb_oversampling => usb_oversampling)
 		port map (
-			tp        => tp,
 			usb_clk   => videoio_clk,
 			usb_cken  => usb_cken,
 			usb_dp    => usb_d_p,
@@ -242,24 +235,13 @@ begin
 		rgb_led0_g <= usb_d_n;
 	end generate;
 
-	assert io_link/=io_ipoe 
-	report "NO mii ready"
-	severity FAILURE;
-
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		debug        => debug,
+		debug        => debug, -- true,
 		profile      => 2,
-		sdram_tcp    => 2.0*sdram_tcp,
-		phy_data     => phy_data,
-		sdram_data   => hdo(sdram_db)**".MT41K8G125",
 		burst_length => 8,
-
-		timing_id    => video_params.timing,
-		video_gear   => video_gear,
-		red_length   => 8,
-		green_length => 8,
-		blue_length  => 8,
+		sdram_freq   => sdram_freq(settings**".sdram.dcm")/2.0,
+		settings     => settings,
 		fifo_size    => mem_size)
 	port map (
 		sin_clk      => sio_clk,
@@ -279,11 +261,11 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clk     => sclk,
+		ctlr_clk     => ctlr_sclk,
 		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "000",
-		ctlr_cl      => sdram_params.cl,
-		ctlr_cwl     => sdram_params.cwl,
+		ctlr_cl      => settings**".sdram.cl",
+		ctlr_cwl     => settings**".sdram.cwl",
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 		ctlr_inirdy  => tp(1),
@@ -356,11 +338,11 @@ begin
 	tp_b : block
 		signal tp_dv : std_logic;
 	begin
-		process (sclk)
+		process (ctlr_sclk)
 			variable q : std_logic;
 			variable q1 : std_logic := '0';
 		begin
-			if rising_edge(sclk) then
+			if rising_edge(ctlr_sclk) then
 				if ctlrphy_sti(0)='1' then
 					if q='0' then
 						q1 := not q1;
@@ -385,13 +367,13 @@ begin
 		rd_fifo      => false,
 		wr_fifo      => true,
 		bypass       => false,
-		taps         => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
+		taps       => natural(ceil((1.0/sdram_freq(settings**".sdram.dcm")-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (
 		-- tpin       => btn(1),
 
 		rst          => sdrphy_rst,
-		sclk         => sclk,
-		eclk         => eclk,
+		sclk         => ctlr_sclk,
+		eclk         => ctlr_eclk,
 		ms_pause     => ms_pause,
 		ddrdel       => ddrdel,
 
@@ -461,10 +443,10 @@ begin
 		-- q         => gpdi_d);
 
 	-- SDRAM-clk-divided-by-4 monitor
-	process (sclk)
+	process (ctlr_sclk)
 		variable q : std_logic;
 	begin
-		if rising_edge(sclk) then
+		if rising_edge(ctlr_sclk) then
 			gpio(5) <= q;
 			q := not q;
 		end if;

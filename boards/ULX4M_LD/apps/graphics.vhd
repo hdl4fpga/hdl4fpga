@@ -44,7 +44,7 @@ architecture graphics of ulx4m_ld is
 		"video:{"                                                                                         &
 			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
 			"videoio_freq:" & "36.0e6,"                                                                   &
-			"gear:"         & "2,"                                                                        &
+			"gear:"         & "4,"                                                                        &
 			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
 			"pixel:{"                                                                                     &
 				"R:8,"                                                                                    &
@@ -56,8 +56,8 @@ architecture graphics of ulx4m_ld is
 			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
 			"cl:"        & "'010'}}";
 
-	constant io_link      : string := settings**".io_link";
-	constant baudrate     : natural      := 3000000;
+	constant io_link      : string  := settings**".io_link";
+	constant baudrate     : natural := 3000000;
 
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
@@ -348,7 +348,7 @@ begin
 		debug        => debug, -- true,
 		profile      => 2,
 		burst_length => 8,
-		sdram_freq   => sdram_freq(settings**".sdram.dcm"),
+		sdram_freq   => sdram_freq(settings**".sdram.dcm")/2.0,
 		settings     => settings,
 		fifo_size    => mem_size)
 	port map (

@@ -35,32 +35,28 @@ use ecp5u.components.all;
 
 architecture graphics of ulx3s is
 
-	------------------------------------
-	--     Custom profile here        --
-	constant settings : string := "{"                                                                     &
-		"io_link: io_usb,"                                                                                &
-		"video:{"                                                                                         &
+	constant settings : string := "{"                                                               &
+		"io_link: io_usb,"                                                                          &
+		"video:{"                                                                                   &
 			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
-			"videoio_freq:" & "36.0e6,"                                                                   &
-			"gear:"         & "2,"                                                                        &
+			"videoio_freq:" & "36.0e6"                                                              & ',' &
+			"gear:"         & "2"                                                                   & ',' &
 			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
-			"pixel:{"                                                                                     &
-				"R:8,"                                                                                    &
-				"G:8,"                                                                                    &
-				"B:8}},"                                                                                  &
-		"sdram:{"                                                                                         &
+			"pixel:{"                                                                               &
+				"R:8"                                                                               & ',' &
+				"G:8"                                                                               & ',' &
+				"B:8}}"                                                                             & ',' &
+		"sdram:{"                                                                                   &
 			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E")                             & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ecp5g1")                                          & ',' &
 			"cl:"        & "'010'}}";
 
-	constant io_link      : string := settings**".io_link";
-	constant baudrate     : natural      := 3000000;
-	--------------------------------------
+	constant io_link      : string  := settings**".io_link";
+	constant baudrate     : natural := 3000000;
 
 	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
-	constant usb_oversampling : natural := 3;
 
 	signal ctlr_rst      : std_logic;
 	signal ctlr_clk      : std_logic;
@@ -180,6 +176,8 @@ begin
 	end generate;
 
 	usb_g : if io_link="io_usb" generate
+		constant usb_oversampling : natural := 3;
+	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
