@@ -25,19 +25,14 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 
-entity xc3s_sdramdcm is
+entity xc3s_videodcm is
 	generic (
 		settings  : string);
 	port (
-		rst        : in  std_logic := '0';
-		clk        : in  std_logic;
-		ctlr_clk   : buffer std_logic;
-		ctlr_clk90 : out std_logic;
-		locked     : buffer std_logic);
-
-    constant freq_in        : real    := settings**".dcm.freq_in";
-	constant clkfx_multiply : natural := settings**".clkfx_multiply=0";
-	constant clkfx_divide   : natural := settings**".clkfx_divide=1";
+		rst       : in std_logic := '0';
+		clk       : in std_logic;
+		video_clk : out std_logic;
+		locked    : buffer std_logic);
 
 end;
 
@@ -47,84 +42,48 @@ use hdl4fpga.xc3s_profiles.all;
 library unisim;
 use unisim.vcomponents.all;
 
-architecture def of xc3s_sdramdcm is
+architecture def of xc3s_videodcm is
+    constant freq_in        : real    := settings**".freq_in";
+	constant clkfx_multiply : natural := settings**".clkfx_multiply=0";
+	constant clkfx_divide   : natural := settings**".clkfx_divide=1";
 
-	constant sdram_freq : real := hdl4fpga.xc3s_profiles.sdram_freq(settings**".dcm"); -- GHDL annoyance
-
-	signal dfs_lckd  : std_logic;
-	signal dfs_clkfb : std_logic;
-	
-	signal dcm_clkin : std_logic;
 	signal dcm_clkfb : std_logic;
-	signal dcm_clk   : std_logic;
-	signal dcm_clk90 : std_logic;
+	signal dcm_clk0  : std_logic;
 
 begin
 
-	dcmdfs_i : dcm_sp
+	bug_i : bufg
+	port map (
+		I => dcm_clk0,
+		O => dcm_clkfb);
+
+	dcm_i : dcm
 	generic map(
-		clk_feedback   => "NONE",
-		clkin_period   => 1.0e9/freq_in,
+		clk_feedback   => "1x",
 		clkdv_divide   => 2.0,
-		clkin_divide_by_2 => FALSE,
 		clkfx_multiply => clkfx_multiply,
 		clkfx_divide   => clkfx_divide,
-		clkout_phase_shift => "NONE",
-		deskew_adjust  => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "HIGH",
-		duty_cycle_correction => TRUE,
-		factory_jf     => X"C080",
-		phase_shift    => 0,
-		startup_wait   => FALSE)
+		clkin_divide_by_2 => false,
+		clkin_period   => 1.0e9/freq_in,
+		clkout_phase_shift => "none",
+		deskew_adjust  => "system_synchronous",
+		dfs_frequency_mode => "LOW",
+		duty_cycle_correction => true,
+		factory_jf   => x"c080",
+		phase_shift  => 0,
+		startup_wait => false)
 	port map (
+		rst      => rst ,
 		dssen    => '0',
 		psclk    => '0',
 		psen     => '0',
 		psincdec => '0',
-
-		rst      => rst,
+		clkfb    => dcm_clkfb,
 		clkin    => clk,
-		clkfb    => '0',
-		clk0     => dfs_clkfb,
-		clkfx    => dcm_clkin,
-		locked   => dfs_lckd);
-
-	dcmdll_i : dcm_sp
-	generic map(
-		clk_feedback   => "1X",
-		clkin_period   => 1.0e9/sdram_freq,
-		clkdv_divide   => 2.0,
-		clkin_divide_by_2 => FALSE,
-		clkfx_divide   => 1,
-		clkfx_multiply => 2,
-		clkout_phase_shift => "NONE",
-		deskew_adjust => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "HIGH",
-		duty_cycle_correction => TRUE,
-		factory_jf    => x"C080",
-		phase_shift   => 0,
-		startup_wait  => FALSE)
-	port map (
-		dssen    => '0',
-		psclk    => '0',
-		psen     => '0',
-		psincdec => '0',
-
-		rst      => '0',
-		clkin    => dcm_clkin,
-		clkfb    => ctlr_clk,
-		clk0     => dcm_clk,
-		clk90    => dcm_clk90,
-		locked   => locked);
-
-	clk0_bufg_i : bufg
-	port map (
-		i => dcm_clk,
-		o => ctlr_clk);
-
-	clk90_bufg_i : bufg
-	port map (
-		i => dcm_clk90,
-		o => ctlr_clk90);
-
+		clkfx    => video_clk,
+		clkfx180 => open,
+		clk0     => dcm_clk0,
+		locked   => open,
+		psdone   => open,
+		status   => open);
 end;

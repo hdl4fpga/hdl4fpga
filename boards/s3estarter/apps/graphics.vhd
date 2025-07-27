@@ -132,46 +132,6 @@ begin
 		end if;
 	end process;
 
-	videodcm_b : if not debug generate
-		signal dcm_clkfb : std_logic;
-		signal dcm_clk0  : std_logic;
-	begin
-	
-		bug_i : bufg
-		port map (
-			I => dcm_clk0,
-			O => dcm_clkfb);
-	
-		dcm_i : dcm
-		generic map(
-			clk_feedback   => "1x",
-			clkdv_divide   => 2.0,
-			clkfx_divide   => videoparam(video_mode).dcm.dcm_div,
-			clkfx_multiply => videoparam(video_mode).dcm.dcm_mul,
-			clkin_divide_by_2 => false,
-			clkin_period   => sys_per*1.0e9,
-			clkout_phase_shift => "none",
-			deskew_adjust  => "system_synchronous",
-			dfs_frequency_mode => "LOW",
-			duty_cycle_correction => true,
-			factory_jf   => x"c080",
-			phase_shift  => 0,
-			startup_wait => false)
-		port map (
-			rst      => sys_rst ,
-			dssen    => '0',
-			psclk    => '0',
-			psen     => '0',
-			psincdec => '0',
-			clkfb    => dcm_clkfb,
-			clkin    => sys_clk,
-			clkfx    => video_clk,
-			clkfx180 => open,
-			clk0     => dcm_clk0,
-			locked   => open,
-			psdone   => open,
-			status   => open);
-
 	end generate;
 
 	sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
