@@ -30,6 +30,7 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
+use hdl4fpga.xc7a_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -45,15 +46,16 @@ architecture graphics of arty is
 			"pixel:"   & "{R:8,G:8,B:8}}"                                                  & ',' &
 		"sdram:{"                                                                          &
 			"dcm:"       & string'(hdl4fpga.xc5v_profiles.sdram_dcm(".'100mhz'.'400mhz'")) & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                       & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**"..MT41K128M16-125")                     & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".xc7vg4")                                 & ',' &
 			"cl:"        & "'010'}}";
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
+	constant io_link      : string  := settings**".io_link";
 
-	signal ddr_clk0       : std_logic;
-	signal ddr_clk0x2     : std_logic;
-	signal ddr_clk90x2    : std_logic;
-	signal ddr_clk90      : std_logic;
+	signal ctlr_clk       : std_logic;
+	signal ctlr_clkx2     : std_logic;
+	signal ctlr_clk90     : std_logic;
+	signal ctlr_clk90x2   : std_logic;
 	signal sdrsys_rst     : std_logic;
 	signal sdrphy_rst0    : std_logic;
 	signal sdrphy_rst90   : std_logic;
@@ -111,7 +113,7 @@ architecture graphics of arty is
 	signal video_clkx2    : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_pixel    : std_logic_vector(0 to 32-1);
-	constant video_gear   : natural := video_record.gear;
+	constant video_gear  : natural := 4; --video_params.gear;
 	signal dvid_crgb      : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk    : std_logic;
 
@@ -140,6 +142,7 @@ architecture graphics of arty is
 	alias  sio_clk        : std_logic is mii_txc;
 
 	signal sys_rst        : std_logic;
+	alias sys_clk is gclk100;
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
 
 	-----------------
@@ -147,7 +150,6 @@ architecture graphics of arty is
 	-----------------
 
 	constant bufiog     : boolean  := true;
-	constant io_link    : io_comms := profile_tab(app_profile).comms;
 
 begin
 
@@ -166,13 +168,13 @@ begin
 		settings  => settings**".dcm")
 	port map (
 		rst          => sys_rst,
-		clk          => userclk_bufg,
+		clk          => sys_clk,
 		ctlr_clk     => ctlr_clk,
 		ctlr_clkx2   => ctlr_clkx2,
 		ctlr_clk90   => ctlr_clk90,
 		ctlr_clk90x2 => ctlr_clk90x2,
-		ctlr_rst      => sdrphy_rst0,
-		ctlr_rst90    => sdrphy_rst90);
+		ctlr_rst     => sdrphy_rst0,
+		ctlr_rst90   => sdrphy_rst90);
 
 	debug_q : if debug generate
 		signal q : bit;
@@ -214,16 +216,10 @@ begin
 
 	end block;
 
-	hdlc_g : if io_link=io_hdlc generate
+	hdlc_g : if io_link="io_hdlc" generate
 
-		constant uart_freq : real := 
-			real(videoparam(video_mode).pll.clkfbout_mult)*gclk100_freq/
-			real(videoparam(video_mode).pll.clkout0_divide);
-
-		constant baudrate : natural := setif(
-			uart_freq >= 32.0e6, 3000000, setif(
-			uart_freq >= 25.0e6, 2000000,
-								 115200));
+		constant uart_freq : real := 36.0e6;
+		constant baudrate : natural := 3e6;
 
 		signal uart_clk   : std_logic;
 		signal uart_rxdv  : std_logic;
@@ -301,7 +297,7 @@ begin
 
 	end generate;
 
-	ipoe_g : if io_link=io_ipoe generate
+	ipoe_g : if io_link="io_ipoe" generate
 
 		alias  mii_rxc    : std_logic is eth_rx_clk;
 		alias  mii_rxdv   : std_logic is eth_rx_dv;
@@ -447,21 +443,13 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		debug        => debug,
+		debug => debug,
 		profile      => 1,
-		sdram_tcp    => 2.0*sdram_tcp,
-		phy_data     => hdo(phy_db)**".xc7vg4",
-		sdram_data   => hdo(sdram_db)**".MT41K128M16-125",
+		sdram_freq   => sdram_freq(settings**".sdram.dcm")/2.0,
 		burst_length => 8,
 		dvid_fifo    => true,
-		timing_id    => videoparam(video_mode).timing,
-		video_gear   => video_gear,
-		red_length   => 8,
-		green_length => 8,
-		blue_length  => 8,
-
-		fifo_size    => 8*2048)
-
+		settings     => settings,
+		fifo_size    => mem_size)
 	port map (
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
@@ -480,11 +468,11 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clk     => ddr_clk0,
+		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => sdrphy_rst0,
 		ctlr_bl      => "00",
-		ctlr_cl      => sdram_params.cl,
-		ctlr_cwl     => sdram_params.cwl,
+		ctlr_cl      => settings**".sdram.cl",
+		ctlr_cwl     => settings**".sdram.cwl",
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 
@@ -519,7 +507,7 @@ begin
 		ctlrphy_dqv  => ctlrphy_dqv,
 		tp           => open);
 
-	cgear_g : for i in 1 to gear/2-1 generate
+	cgear_g : for i in 1 to sdram_gear/2-1 generate
     	ctlrphy_rst(i) <= ctlrphy_rst(0);
     	ctlrphy_cke(i) <= ctlrphy_cke(0);
     	ctlrphy_cs(i)  <= ctlrphy_cs(0);
@@ -532,8 +520,8 @@ begin
 	process (ddr_b)
 	begin
 		for i in ddr_b'range loop
-			for j in 0 to gear/2-1 loop
-				ctlrphy_b(i*gear/2+j) <= ddr_b(i);
+			for j in 0 to sdram_gear/2-1 loop
+				ctlrphy_b(i*sdram_gear/2+j) <= ddr_b(i);
 			end loop;
 		end loop;
 	end process;
@@ -541,8 +529,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to gear/2-1 loop
-				ctlrphy_a(i*gear/2+j) <= ddr_a(i);
+			for j in 0 to sdram_gear/2-1 loop
+				ctlrphy_a(i*sdram_gear/2+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -559,10 +547,10 @@ begin
 	    addr_size   => ddr3_a'length,
 	    word_size   => ddr3_dq'length,
 		byte_size   => ddr3_dq'length/ddr3_dqs_p'length,
-		gear        => gear,
+		gear        => sdram_gear,
 		ba_latency  => 1,
-		device      => xc7a,
-		taps        => natural(floor(sdram_tcp/((gclk100_per/2.0)/(32.0*2.0))))-1,
+		device     => hdo(settings)**".sdram.phy_data.device",
+		taps        => natural(floor((32.0*2.0*gclk100_freq)/(sdram_freq(settings**".sdram.dcm")/2.0)))-1,
 		dqs_highz   => false,
 		bufio       => bufiog,
 		bypass      => false,
@@ -577,10 +565,10 @@ begin
 		rst         => sdrphy_rst0,
 		rst_shift   => sdrphy_rst90,
 		iod_clk     => gclk100,
-		clk         => ddr_clk0,
-		clk_shift   => ddr_clk90,
-		clkx2       => ddr_clk0x2,
-		clkx2_shift => ddr_clk90x2,
+		clk         => ctlr_clk,
+		clk_shift   => ctlr_clk90,
+		clkx2       => ctlr_clkx2,
+		clkx2_shift => ctlr_clk90x2,
 
 		phy_frm     => ctlrphy_frm,
 		phy_trdy    => ctlrphy_trdy,
@@ -639,7 +627,7 @@ begin
 	ddr3_dm <= (others => '0');
 
 
-	process (sio_clk, gclk100, ddr_clk0)
+	process (sio_clk, gclk100, ctlr_clk)
 		variable d, e, q : std_logic := '0';
 	begin
 		if rising_edge(gclk100) then
@@ -664,6 +652,7 @@ begin
 	begin
 		oddr_i : entity hdl4fpga.ogbx
 		generic map (
+			device => hdo(settings)**".sdram.phy_data.device",
 			size => 4,
 			gear => video_gear)
 		port map (
@@ -716,22 +705,21 @@ begin
 		signal ser_irdy : std_logic;
 	begin
 		ser_irdy <= si_irdy and si_trdy and not si_end;
-		serdebug_e : entity hdl4fpga.ser_debug
-		generic map (
-			timing_id    => videoparam(video_mode).timing,
-			red_length   => 1,
-			green_length => 1,
-			blue_length  => 1)
-		port map (
-			ser_clk      => sio_clk,
-			ser_frm      => si_frm,
-			ser_irdy     => ser_irdy,
-			ser_data     => si_data,
-
-			video_clk    => video_clk,
-			video_hzsync => dd_hs,
-			video_vtsync => dd_vs,
-			video_pixel  => dd_pixel);
+		-- serdebug_e : entity hdl4fpga.ser_debug
+		-- generic map (
+			-- red_length   => 1,
+			-- green_length => 1,
+			-- blue_length  => 1)
+		-- port map (
+			-- ser_clk      => sio_clk,
+			-- ser_frm      => si_frm,
+			-- ser_irdy     => ser_irdy,
+			-- ser_data     => si_data,
+-- 
+			-- video_clk    => video_clk,
+			-- video_hzsync => dd_hs,
+			-- video_vtsync => dd_vs,
+			-- video_pixel  => dd_pixel);
 
     	process (video_clk)
     	begin
