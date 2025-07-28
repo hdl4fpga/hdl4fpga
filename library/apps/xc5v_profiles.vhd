@@ -43,8 +43,8 @@ package body xc5v_profiles is
 		constant dcm  : string)
 		return real is
 		constant freq_in        : real    := dcm**".freq_in=1";
-		constant clkfx_multiply : natural := dcm**".clkfx_multiply=0";
-		constant clkfx_divide   : natural := dcm**".clkfx_divide=1";
+		constant clkfx_multiply : natural := dcm**".clkfbout_mult=0";
+		constant clkfx_divide   : natural := dcm**".divclk_divide=1";
 	begin
 		return (real(clkfx_multiply)*freq_in)/real(clkfx_divide);
 	end;
@@ -67,15 +67,6 @@ package body xc5v_profiles is
 		return "{}";
 	end;
 
-			divclk_divide  => sdram_params.pll.divclk_divide,
-			clkfbout_mult  => 2*sdram_params.pll.clkfbout_mult,
-			clkin_period   => userclk_per*1.0e9,
-			clkout0_divide => gear/2,
-			clkout1_divide => gear/2,
-			clkout1_phase  => 90.0+180.0,
-			clkout2_divide => gear,
-			clkout3_divide => gear,
-			clkout3_phase  => 90.0/real((gear/2))+270.0)
 	function sdram_dcm (
 		constant sdram_id : string)
 		return string is

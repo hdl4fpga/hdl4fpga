@@ -84,7 +84,7 @@ package body xc3s_profiles is
 				"'145mhz': { clkfx_multiply: 29, clkfx_divide: 4, freq_in: 20.0e6},"   & -- cl => "110"
 				"'166mhz': { clkfx_multiply: 15, clkfx_divide: 2, freq_in: 20.0e6},"   & -- cl => "110"
 				"'170mhz': { clkfx_multiply: 25, clkfx_divide: 3, freq_in: 20.0e6},"   & -- cl => "110"
-				"'200mhz': { clkfx_multiply: 10, clkfx_divide: 1, freq_in: 20.0e6}}}";   -- cl => "011"
+				"'200mhz': { clkfx_multiply: 10, clkfx_divide: 1, freq_in: 20.0e6}}}"  & -- cl => "011" 
 			"'50mhz':{"                                                                &
 				"'133mhz': { clkfx_multiply: 3, clkfx_divide:  8, freq_in: 50.0e6},"   & -- cl => "010"
 				"'166mhz': { clkfx_multiply: 3, clkfx_divide: 10, freq_in: 50.0e6},"   & -- cl => "110"
