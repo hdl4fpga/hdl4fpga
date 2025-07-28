@@ -81,11 +81,11 @@ architecture scopeio of nuhs3adsp is
 	signal so_end      : std_logic;
 	signal so_data     : std_logic_vector(0 to 8-1);
 
-	constant settings : string := "{" &   
+	constant settings : string := compact("{" &   
 		"inputs:"          & natural'image(inputs) & ',' &
 		"waveform:{" &
 			"video:{"                                                                             &
-				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'50mhz'.'150mhz'"))       & ',' &
+				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'20mhz'.'150mhz'"))       & ',' &
 				"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
 				"pixel:"   & "{R:8,G:8,B:8}}"                                                     & ',' &
 			"max_delay:"       & natural'image(2**14)                                             & ',' &
@@ -118,10 +118,10 @@ architecture scopeio of nuhs3adsp is
 				"{text: J3," & "step:" & vt_step & ',' & "color:" & "0xff_00_ff_ff}"            & ',' &
 				"{text: J4," & "step:" & vt_step & ',' & "color:" & "0xff_ff_ff_ff}]}"          & ',' &
 		"sdram:{"                                                                                 &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'20mhz'.'133mhz'"))         & ',' &
+			"dcm:"       & string'(hdl4fpga.xc3s_profiles.sdram_dcm(".'20mhz'.'133mhz'"))         & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
-			"cl:"        & "'010'}}";
+			"cl:"        & "'010'}}");
 
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
 	constant chip_data   : string  := settings**".sdram.chip_data={}";
@@ -172,22 +172,22 @@ begin
 		end if;
 	end process;
 
-	videodcm_b : if string'(settings**".waveform") /= "" generate
+	videodcm_g : if string'(settings**".waveform") /= "" generate
 		videodcm_i : entity hdl4fpga.xc3s_videodcm
 		generic map(
-			settings => hdo(settings)**".dcm")
+			settings => hdo(settings)**".waveform.video.dcm")
 		port map(
 			rst       => sys_rst,
 			clk       => sys_clk,
 			video_clk => video_clk);
 	end generate;
 
-	sdrdcm_b : if string'(settings**".sdram") /= "" generate
+	sdrdcm_g : if string'(settings**".sdram") /= "" generate
 		signal ctlrdcm_locked : std_logic;
 	begin
 		sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
 		generic map (
-			settings  => settings**".dcm")
+			settings  => settings**".sdram.dcm")
 		port map (
 			clk        => sys_clk,
 			ctlr_clk   => ctlr_clk,
@@ -466,82 +466,82 @@ begin
 		signal ddr_odt       : std_logic_vector(0 to 0);
 		signal st_dqs_open   : std_logic;
 	begin
-    	ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
-    	ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
+		ctlrphy_wlreq <= to_stdulogic(to_bit(ctlrphy_wlrdy));
+		ctlrphy_rlreq <= to_stdulogic(to_bit(ctlrphy_rlrdy));
 
-    	sdrphy_e : entity hdl4fpga.xc_sdrphy
-    	generic map (
-    		-- dqs_delay   => (0 to 0 => 0 ns),
-    		-- dqi_delay   => (0 to 0 => 0 ns),
+		sdrphy_e : entity hdl4fpga.xc_sdrphy
+		generic map (
+			-- dqs_delay   => (0 to 0 => 0 ns),
+			-- dqi_delay   => (0 to 0 => 0 ns),
 			device      => hdo(settings)**".sdram.phy_data.device",
-    		bank_size   => ddr_ba'length,
-    		addr_size   => ddr_a'length,
-    		gear        => sdram_gear,
-    		word_size   => ddr_dq'length,
-    		byte_size   => ddr_dq'length/ddr_dm'length,
-    		bypass      => true,
-    		loopback    => true,
-    		rd_fifo     => true,
-    		rd_align    => true)
-    	port map (
-    		rst         => ctlr_rst,
-    		iod_clk     => ctlr_clk,
-    		clk         => ctlr_clk,
-    		clk_shift   => ctlr_clk90,
+			bank_size   => ddr_ba'length,
+			addr_size   => ddr_a'length,
+			gear        => sdram_gear,
+			word_size   => ddr_dq'length,
+			byte_size   => ddr_dq'length/ddr_dm'length,
+			bypass      => true,
+			loopback    => true,
+			rd_fifo     => true,
+			rd_align    => true)
+		port map (
+			rst         => ctlr_rst,
+			iod_clk     => ctlr_clk,
+			clk         => ctlr_clk,
+			clk_shift   => ctlr_clk90,
 
-    		phy_wlreq   => ctlrphy_wlreq,
-    		phy_wlrdy   => ctlrphy_wlrdy,
-    		phy_rlreq   => ctlrphy_rlreq,
-    		phy_rlrdy   => ctlrphy_rlrdy,
-    		sys_cke     => ctlrphy_cke,
-    		sys_cs      => ctlrphy_cs,
-    		sys_ras     => ctlrphy_ras,
-    		sys_cas     => ctlrphy_cas,
-    		sys_we      => ctlrphy_we,
-    		sys_b       => ctlrphy_b,
-    		sys_a       => ctlrphy_a,
-    		sys_dqsi    => ctlrphy_dqso,
-    		sys_dqst    => ctlrphy_dqst,
-    		sys_dqso    => ctlrphy_dqsi,
-    		sys_dmi     => ctlrphy_dmo,
-    		sys_dmo     => ctlrphy_dmi,
-    		sys_dqi     => ctlrphy_dqo,
-    		sys_dqt     => ctlrphy_dqt,
-    		sys_dqo     => ctlrphy_dqi,
-    		sys_odt     => ctlrphy_odt,
-    		sys_dqv     => ctlrphy_dqv,
-    		sys_sti     => ctlrphy_sto,
-    		sys_sto     => ctlrphy_sti,
+			phy_wlreq   => ctlrphy_wlreq,
+			phy_wlrdy   => ctlrphy_wlrdy,
+			phy_rlreq   => ctlrphy_rlreq,
+			phy_rlrdy   => ctlrphy_rlrdy,
+			sys_cke     => ctlrphy_cke,
+			sys_cs      => ctlrphy_cs,
+			sys_ras     => ctlrphy_ras,
+			sys_cas     => ctlrphy_cas,
+			sys_we      => ctlrphy_we,
+			sys_b       => ctlrphy_b,
+			sys_a       => ctlrphy_a,
+			sys_dqsi    => ctlrphy_dqso,
+			sys_dqst    => ctlrphy_dqst,
+			sys_dqso    => ctlrphy_dqsi,
+			sys_dmi     => ctlrphy_dmo,
+			sys_dmo     => ctlrphy_dmi,
+			sys_dqi     => ctlrphy_dqo,
+			sys_dqt     => ctlrphy_dqt,
+			sys_dqo     => ctlrphy_dqi,
+			sys_odt     => ctlrphy_odt,
+			sys_dqv     => ctlrphy_dqv,
+			sys_sti     => ctlrphy_sto,
+			sys_sto     => ctlrphy_sti,
 
-    		sdram_sto(0)  => ddr_st_dqs,
-    		sdram_sto(1)  => st_dqs_open,
-    		sdram_sti(0)  => ddr_st_lp_dqs,
-    		sdram_sti(1)  => ddr_st_lp_dqs,
-    		sdram_clk     => ddr_clk,
-    		sdram_cke     => sdram_cke,
-    		sdram_cs      => sdram_cs,
-    		sdram_odt     => ddr_odt,
-    		sdram_ras     => ddr_ras,
-    		sdram_cas     => ddr_cas,
-    		sdram_we      => ddr_we,
-    		sdram_b       => ddr_ba,
-    		sdram_a       => ddr_a,
+			sdram_sto(0)  => ddr_st_dqs,
+			sdram_sto(1)  => st_dqs_open,
+			sdram_sti(0)  => ddr_st_lp_dqs,
+			sdram_sti(1)  => ddr_st_lp_dqs,
+			sdram_clk     => ddr_clk,
+			sdram_cke     => sdram_cke,
+			sdram_cs      => sdram_cs,
+			sdram_odt     => ddr_odt,
+			sdram_ras     => ddr_ras,
+			sdram_cas     => ddr_cas,
+			sdram_we      => ddr_we,
+			sdram_b       => ddr_ba,
+			sdram_a       => ddr_a,
 
-    		sdram_dm      => open, --ddr_dm,
-    		sdram_dq      => ddr_dq,
-    		sdram_dqs     => ddr_dqs);
+			sdram_dm      => open, --ddr_dm,
+			sdram_dq      => ddr_dq,
+			sdram_dqs     => ddr_dqs);
 
-    	ddr_cke <= sdram_cke(0);
-    	ddr_cs  <= sdram_cs(0);
+		ddr_cke <= sdram_cke(0);
+		ddr_cs  <= sdram_cs(0);
 		ddr_dm <= (others => '0');
 
-    	ddr_clk_i : obufds
-    	generic map (
-    		iostandard => "DIFF_SSTL2_I")
-    	port map (
-    		i  => ddr_clk(0),
-    		o  => ddr_ckp,
-    		ob => ddr_ckn);
+		ddr_clk_i : obufds
+		generic map (
+			iostandard => "DIFF_SSTL2_I")
+		port map (
+			i  => ddr_clk(0),
+			o  => ddr_ckp,
+			ob => ddr_ckn);
 	end generate;
 
 	nosdram_g : if string'(hdo(settings)**".sdram")="" generate

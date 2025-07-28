@@ -258,8 +258,8 @@ begin
 		constant fifo_length : natural := 2**rd_addr'length;
 		variable delay  : signed(time_offset'range);
 		variable offset : signed(video_offset'range);
-		alias delay_lsbs is delay(video_addr'length-1 downto 0);
-		alias delay_msbs is delay(delay'left downto delay_lsbs'left+1);
+		-- alias delay_lsbs is delay(video_addr'length-1 downto 0);
+		-- alias delay_msbs is delay(delay'left downto delay_lsbs'left+1);
 	begin
 		if rising_edge(input_clk) then
 			if (capture_rdy xor capture_req)='1' then

@@ -443,7 +443,7 @@ package body hdo is
 				exit;
 			end if;
 			if not isdigit(value(idx)) then -- Xilinx ISE 14.7 warning complain
-				report "wrong character to_real"
+				report "to_real() : wrong character " & character'image(value(idx)) & " in value : " & value
 				severity failure; 
 			end if; 
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));

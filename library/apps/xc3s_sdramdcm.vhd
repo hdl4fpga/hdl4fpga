@@ -35,7 +35,7 @@ entity xc3s_sdramdcm is
 		ctlr_clk90 : out std_logic;
 		locked     : buffer std_logic);
 
-    constant freq_in        : real    := settings**".dcm.freq_in";
+    constant freq_in        : real    := settings**".freq_in";
 	constant clkfx_multiply : natural := settings**".clkfx_multiply=0";
 	constant clkfx_divide   : natural := settings**".clkfx_divide=1";
 
@@ -49,7 +49,7 @@ use unisim.vcomponents.all;
 
 architecture def of xc3s_sdramdcm is
 
-	constant sdram_freq : real := hdl4fpga.xc3s_profiles.sdram_freq(settings**".dcm"); -- GHDL annoyance
+	constant sdram_freq : real := hdl4fpga.xc3s_profiles.sdram_freq(settings); -- GHDL annoyance
 
 	signal dfs_lckd  : std_logic;
 	signal dfs_clkfb : std_logic;
