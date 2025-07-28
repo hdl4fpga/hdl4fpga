@@ -48,7 +48,6 @@ architecture graphics of nuhs3adsp is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                                & ',' &
 			"cl:"        & "'010'}}";
 
-
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
 	signal ctlr_rst       : std_logic;

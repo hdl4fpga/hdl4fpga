@@ -30,78 +30,26 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.profiles.all;
-use hdl4fpga.app_profiles.all;
+use hdl4fpga.xc5v_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture graphics of ml50x is
 
-	type app_profiles is (
-		sdr200MHz_600p,
-		sdr225MHz_600p,
-		sdr250MHz_600p,
-		sdr275MHz_600p,
-		sdr300MHz_600p,
-		sdr333MHz_600p,
-		sdr350MHz_600p,
-		sdr375MHz_600p,
-		sdr400MHz_600p);
+	constant settings : string := "{"                                                      &
+		"io_link: io_ipoe,"                                                                &
+		"video:{"                                                                          &
+			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'100mhz'.'40mhz'"))    & ',' &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+			"pixel:"   & "{R:8,G:8,B:8}}"                                                  & ',' &
+		"sdram:{"                                                                          &
+			"dcm:"       & string'(hdl4fpga.xc5v_profiles.sdram_dcm(".'100mhz'.'400mhz'")) & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                       & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                 & ',' &
+			"cl:"        & "'010'}}";
 
-	--------------------------------------
-	--     Set your profile here        --
-	constant app_profile : app_profiles := sdr400MHz_600p;  --
-	----------------------------------------------------------
-
-	type profileparam_vector is array (app_profiles) of profile_params;
-	constant profile_tab : profileparam_vector := (
-		sdr200MHz_600p => (io_ipoe, sdram200MHz, mode600p24bpp),
-		sdr225MHz_600p => (io_ipoe, sdram225MHz, mode600p24bpp),
-		sdr250MHz_600p => (io_ipoe, sdram250MHz, mode600p24bpp),
-		sdr275MHz_600p => (io_ipoe, sdram275MHz, mode600p24bpp),
-		sdr300MHz_600p => (io_ipoe, sdram300MHz, mode600p24bpp),
-		sdr333MHz_600p => (io_ipoe, sdram333MHz, mode600p24bpp),
-		sdr350MHz_600p => (io_ipoe, sdram350MHz, mode600p24bpp),
-		sdr375MHz_600p => (io_ipoe, sdram375MHz, mode600p24bpp),
-		sdr400MHz_600p => (io_ipoe, sdram400MHz, mode600p24bpp));
-
-	type dcm_params is record
-		dcm_mul : natural;
-		dcm_div : natural;
-	end record;
-
-	type video_params is record
-		id     : video_modes;
-		cm     : dcm_params;
-		timing : videotiming_ids;
-	end record;
-
-	type videoparams_vector is array (natural range <>) of video_params;
-	constant video_tab : videoparams_vector := (
-		(id => modedebug,     timing => pclk_debug,            cm => (dcm_mul => 4, dcm_div => 2)),
-		(id => mode480p24bpp, timing => pclk25_00m640x480at60, cm => (dcm_mul => 1, dcm_div => 4)),
-		(id => mode600p24bpp, timing => pclk40_00m800x600at60, cm => (dcm_mul => 2, dcm_div => 5)));
-
-	function videoparam (
-		constant id  : video_modes)
-		return video_params is
-		constant tab : videoparams_vector := video_tab;
-	begin
-		for i in tab'range loop
-			if id=tab(i).id then
-				return tab(i);
-			end if;
-		end loop;
-
-		assert false 
-		report ">>>videoparam<<< : video id not available"
-		severity failure;
-
-		return tab(tab'left);
-	end;
-
-	constant video_mode : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
+	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
 	type pll_params is record
 		clkfbout_mult : natural;
@@ -284,31 +232,13 @@ begin
 		sys_rst <= not tmr(0);
 	end process;
 	
-	videodcm_b : block
-		signal clkfx      : std_logic;
-		signal video_lckd : std_logic;
-	begin
-	
-		dcm_i : dcm_base
-		generic map (
-			clk_feedback   => "NONE",
-			clkin_period   => userclk_per*1.0e9,
-			clkfx_divide   => videoparam(video_mode).cm.dcm_div,
-			clkfx_multiply => videoparam(video_mode).cm.dcm_mul,
-			dfs_frequency_mode => "LOW")
-		port map (
-			rst    => sys_rst,
-			clkfb  => '0',
-			clkin  => userclk_bufg,
-			clkfx  => clkfx,
-			locked => video_lckd);
-
-		bufg_i : bufg
-		port map (
-			i => clkfx,
-			o => video_clk);
-
-	end block;
+	videodcm_i : entity hdl4fpga.xc5v_videodcm
+	generic map(
+		settings => hdo(settings)**".dcm")
+	port map(
+		rst       => sys_rst,
+		clk       => sys_clk,
+		video_clk => video_clk);
 
 	iodctrl_b : block
 		signal clk_fpga : std_logic;

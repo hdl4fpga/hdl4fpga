@@ -140,9 +140,7 @@ architecture scopeio of s3estarter is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
 			"cl:"        & "'010'}}";
 
-	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
-	constant sdram_data   : string  := hdo(sdram_db)**".MT46V16M16M-6T";
-
+	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
 	constant chip_data   : string  := settings**".sdram.chip_data={}";
 	constant phy_data    : string  := settings**".sdram.phy_data={}";
 	constant bank_length : natural := hdo(chip_data)**".orgz.addr.ba=1";
@@ -741,7 +739,7 @@ begin
 	vga_green <= video_pixel(2*8-1);
 	vga_blue  <= video_pixel(1*8-1);
 
-	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+	sdramphy_g : if string'(hdo(settings)**".sdram") /= "" generate
 		signal ctlrphy_wlreq : std_logic;
 		signal ctlrphy_wlrdy : std_logic;
 		signal ctlrphy_rlreq : std_logic;
@@ -825,7 +823,7 @@ begin
 
 	end generate;
 
-	nosdram_g : if sdram_data="none" or phy_data="none" generate
+	nosdram_g : if string'(hdo(settings)**".sdram")="" generate
 		ddr_clk_i : obufds
 		generic map (
 			iostandard => "DIFF_SSTL2_I")
