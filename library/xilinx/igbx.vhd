@@ -21,14 +21,10 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.profiles.all;
 
 entity igbx is
 	generic (
-		device    : fpga_devices := xc7a;
+		device    : string;
 		size      : natural := 1;
 		gear      : natural := 2;
 		data_edge : string := "SAME_EDGE");
@@ -40,6 +36,8 @@ entity igbx is
 		d         : in  std_logic_vector(0 to size-1);
 		q         : out std_logic_vector(0 to size*gear-1));
 end;
+
+library hdl4fpga;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -64,7 +62,7 @@ begin
 		end generate;
 
 		gear2_g : if gear=2 generate
-			xc3s_g : if device=xc3s generate
+			xc3s_g : if device="xc3s" generate
 				signal clk_n : std_logic;
 			begin
 				clk_n <= not clk;
@@ -80,7 +78,7 @@ begin
 					q1 => po(1));
 			end generate;
 
-			xv5_g : if device=xc5v generate
+			xv5_g : if device="xc5v" generate
 				iddr_i : iddr
 				generic map (
 					DDR_CLK_EDGE => data_edge)
@@ -95,7 +93,7 @@ begin
 		end generate;
 
 		iserdese_g : if gear=4 generate
-			xv5_g : if device=xc5v generate
+			xv5_g : if device="xc5v" generate
 				signal sy_rst : std_logic;
 				signal clkb   : std_logic;
 				signal oclkb  : std_logic;
@@ -135,7 +133,7 @@ begin
 					shiftin2 => '0');
 			end generate;
 
-			xv7_g : if device=xc7a generate
+			xv7_g : if device="xc7a" generate
 				signal clkb  : std_logic;
 				signal oclkb : std_logic;
 			begin

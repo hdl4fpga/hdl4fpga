@@ -22,25 +22,68 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity xc3s_dqsdelay is
+library hdl4fpga;
+use hdl4fpga.hdo.all;
+
+entity xc3s_videodcm is
+	generic (
+		settings  : string);
 	port (
-		clk    : in  std_logic;
-		rst    : in  std_logic;
-		delay  : in  std_logic_vector;
-		dqsi   : in  std_logic;
-		dqso_p : out std_logic;
-		dqso_n : out std_logic);
+		rst       : in std_logic := '0';
+		clk       : in std_logic;
+		video_clk : out std_logic;
+		locked    : buffer std_logic);
+
 end;
 
 library hdl4fpga;
+use hdl4fpga.xc3s_profiles.all;
 
-architecture xilinx of xc3s_dqsdelay is
+library unisim;
+use unisim.vcomponents.all;
+
+architecture def of xc3s_videodcm is
+    constant freq_in        : real    := settings**".freq_in";
+	constant clkfx_multiply : natural := settings**".clkfx_multiply=0";
+	constant clkfx_divide   : natural := settings**".clkfx_divide=1";
+
+	signal dcm_clkfb : std_logic;
+	signal dcm_clk0  : std_logic;
+
 begin
-	delayed_e : entity hdl4fpga.pgm_delay
-	generic map(
-		n => 2) --gate_delay)
+
+	bug_i : bufg
 	port map (
-		xi  => dqsi,
-		x_p => dqso_p,
-		x_n => dqso_n);
+		I => dcm_clk0,
+		O => dcm_clkfb);
+
+	dcm_i : dcm
+	generic map(
+		clk_feedback   => "1x",
+		clkdv_divide   => 2.0,
+		clkfx_multiply => clkfx_multiply,
+		clkfx_divide   => clkfx_divide,
+		clkin_divide_by_2 => false,
+		clkin_period   => 1.0e9/freq_in,
+		clkout_phase_shift => "none",
+		deskew_adjust  => "system_synchronous",
+		dfs_frequency_mode => "LOW",
+		duty_cycle_correction => true,
+		factory_jf   => x"c080",
+		phase_shift  => 0,
+		startup_wait => false)
+	port map (
+		rst      => rst ,
+		dssen    => '0',
+		psclk    => '0',
+		psen     => '0',
+		psincdec => '0',
+		clkfb    => dcm_clkfb,
+		clkin    => clk,
+		clkfx    => video_clk,
+		clkfx180 => open,
+		clk0     => dcm_clk0,
+		locked   => open,
+		psdone   => open,
+		status   => open);
 end;

@@ -19,17 +19,53 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-package profiles is
+library ieee;
+use ieee.std_logic_1164.all;
 
-	type fpga_devices is (
-		-- Xilinx-AMD
-		ecp3,
-		ecp5,
-		xc3s,
-		xc5v,
-		xc7a,
+library hdl4fpga;
+use hdl4fpga.hdo.all;
 
-		-- Altera-Intel
-		cyclonev);
+entity xc5v_videodcm is
+	generic (
+		settings  : string);
+	port (
+		rst       : in std_logic := '0';
+		clk       : in std_logic;
+		video_clk : out std_logic;
+		locked    : buffer std_logic);
 
-end package;
+    constant freq_in        : real    := settings**".freq_in";
+	constant clkfx_multiply : natural := settings**".clkfx_multiply=0";
+	constant clkfx_divide   : natural := settings**".clkfx_divide=1";
+
+end;
+
+library hdl4fpga;
+use hdl4fpga.xc5v_profiles.all;
+
+library unisim;
+use unisim.vcomponents.all;
+
+architecture def of xc5v_videodcm is
+	signal clkfx : std_logic;
+begin
+
+	dcm_i : dcm_base
+	generic map (
+		clk_feedback   => "NONE",
+		clkin_period   => 1.0e9/freq_in,
+		clkfx_multiply => clkfx_multiply,
+		clkfx_divide   => clkfx_divide,
+		dfs_frequency_mode => "LOW")
+	port map (
+		rst    => rst,
+		clkfb  => '0',
+		clkin  => clk,
+		clkfx  => clkfx,
+		locked => locked);
+
+	bufg_i : bufg
+	port map (
+		i => clkfx,
+		o => video_clk);
+end;

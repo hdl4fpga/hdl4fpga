@@ -21,12 +21,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.base.all;
-use hdl4fpga.sdrampkg.all;
-use hdl4fpga.profiles.all;
 
 entity xc_sdrphy is
 	generic (
@@ -38,7 +32,7 @@ entity xc_sdrphy is
 		byte_size   : natural;
 		gear        : natural;
 
-		device      : fpga_devices;
+		device      : string;
 		ba_latency  : natural := 0;
 		rd_fifo     : boolean := true;
 		rd_align    : boolean := true;
@@ -121,7 +115,7 @@ entity xc_sdrphy is
 end;
 
 library hdl4fpga;
-use hdl4fpga.base.all;
+use hdl4fpga.sdrampkg.all;
 
 library unisim;
 use unisim.vcomponents.all;

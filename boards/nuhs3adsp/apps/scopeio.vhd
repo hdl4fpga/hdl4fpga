@@ -27,18 +27,17 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
-use hdl4fpga.profiles.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.app_profiles.all;
+use hdl4fpga.xc3s_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture scopeio of nuhs3adsp is
 
-	constant io_link  : io_comms := io_ipoe;
+	constant io_link : string := "io_ipoe";
 	constant sys_per  : real := 50.0;
 
 	signal sys_rst     : std_logic;
@@ -82,162 +81,83 @@ architecture scopeio of nuhs3adsp is
 	signal so_end      : std_logic;
 	signal so_data     : std_logic_vector(0 to 8-1);
 
-	type display_param is record
-		timing_id : videotiming_ids;
-		dcm_mul   : natural;
-		dcm_div   : natural;
-	end record;
+	constant settings : string := "{" &   
+		"inputs:"          & natural'image(inputs) & ',' &
+		"waveform:{" &
+			"video:{"                                                                             &
+				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'50mhz'.'150mhz'"))       & ',' &
+				"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
+				"pixel:"   & "{R:8,G:8,B:8}}"                                                     & ',' &
+			"max_delay:"       & natural'image(2**14)                                             & ',' &
+			"min_storage:"     & "256"                                                            & ',' & -- samples, storage size will be equal or larger than this
+			"num_of_segments:" & "4"                                                              & ',' &
+			"grid:{"                                                                              &
+				"width:"  & natural'image(50*32+1)                                                & ',' &
+				"height:" & natural'image( 8*32+1)                                                & ',' &
+				"color:"  & "0xff_ff_00_ff"                                                       & ',' &
+				"background-color:" & "0xff_00_00_00}"                                            & ',' &
+			"axis:{"                                                                              &
+				"horizontal:{"                                                                    &
+					"unit:"    & "250.0e-9"                                                       & ',' &
+					"color:"   & "0xff_00_00_00"                                                  & ',' &
+					"background-color:" & "0xff_00_ff_ff}"                                        & ',' &
+				"vertical:{"                                                                      &
+					"unit:"  & "5.0e-3"                                                           & ',' &
+					"width:" & natural'image(6*8)                                                 & ',' &
+					"color:" & "0xff_00_00_00"                                                    & ',' &
+					"background-color : 0xff_00_ff_ff}},"                                         &
+			"textbox:{"                                                                           &
+				"width:"     & natural'image(33*8)                                                & ',' &
+				"color:"     & "0xff_ff_00_ff"                                                    & ',' &
+				"background-color:" & "0xff_00_00_00}"                                            & ',' &
+			"main:{"                                                                              &
+				"top:5, left:2, right:0, bottom:0, vertical:1, horizontal:1, background-color: 0xff_00_00_00}" & ',' &
+			"segment:{"                                                                           &
+				"top:1, left:1, right:1, bottom:1, vertical:0, horizontal:1, background-color: 0xff_ff_ff_ff}" & ',' &
+			"vt:[" &
+				"{text: J3," & "step:" & vt_step & ',' & "color:" & "0xff_00_ff_ff}"            & ',' &
+				"{text: J4," & "step:" & vt_step & ',' & "color:" & "0xff_ff_ff_ff}]}"          & ',' &
+		"sdram:{"                                                                                 &
+			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'20mhz'.'133mhz'"))         & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
+			"cl:"        & "'010'}}";
 
-	type display_modes is (
-		mode1080p);
+	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
+	constant chip_data   : string  := settings**".sdram.chip_data={}";
+	constant phy_data    : string  := settings**".sdram.phy_data={}";
+	constant bank_length : natural := hdo(chip_data)**".orgz.addr.ba=1";
+	constant addr_length : natural := hdo(chip_data)**".orgz.addr.row=1";
+	constant data_mask   : natural := hdo(chip_data)**".orgz.data.dm=1";
+	constant data_length : natural := hdo(chip_data)**".orgz.data.dq=1";
 
-	type displayparam_vector is array (display_modes) of display_param;
-	constant display_tab : displayparam_vector := (
-		mode1080p   => (timing_id => pclk150_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
-
-	constant video_mode : display_modes := mode1080p;
-
-	constant layout : string := compact(
-			"{                             " &   
-			"    inputs          : " & natural'image(inputs) & ',' &
-			"    waveform        : { " &
-			"        max_delay       : " & natural'image(2**14)  & ',' &
-			"        min_storage     : 256,     " & -- samples, storage size will be equal or larger than this
-			"        num_of_segments :   4,     " &
-			"        display : {                " &
-			"            width  : 1920,         " &
-			"            height : 1080},        " &
-			"        grid : {                   " &
-			"            unit   : 32,           " &
-			"            width  : " & natural'image(50*32+1) & ',' &
-			"            height : " & natural'image( 8*32+1) & ',' &
-			"            color  : 0xff_ff_00_ff, " &
-			"            background-color : 0xff_00_00_00}," &
-			"        axis : {                   " &
-			"            fontsize   : 8,        " &
-			"            horizontal : {         " &
-			"                unit   : 250.0e-9, " &
-			"                height : 8,        " &
-			"                inside : false,    " &
-			"                color  : 0xff_00_00_00," &
-			"                background-color : 0xff_00_ff_ff}," &
-			"            vertical : {           " &
-			"                unit   : 5.0e-3, " &
-			"                width  : " & natural'image(6*8) & ','  &
-			"                rotate : ccw0,     " &
-			"                inside : false,    " &
-			"                color  : 0xff_00_00_00," &
-			"                background-color : 0xff_00_ff_ff}}," &
-			"        textbox : {                " &
-			"            font_width : 8,        " &
-			"            width      : " & natural'image(33*8) & ','&
-			"            inside     : false,    " &
-			"            color      : 0xff_ff_00_ff," &
-			"            background-color : 0xff_00_00_00}," &
-			"        main : {                   " &
-			"            top        :  5,       " & 
-			"            left       :  2,       " & 
-			"            right      :  0,       " & 
-			"            bottom     :  0,       " & 
-			"            vertical   :  1,       " & 
-			"            horizontal :  1,       " &
-			"            background-color : 0xff_00_00_00}," &
-			"        segment : {                " &
-			"            top        : 1,        " &
-			"            left       : 1,        " &
-			"            right      : 1,        " &
-			"            bottom     : 1,        " &
-			"            vertical   : 0,        " &
-			"            horizontal : 1,        " &
-			"            background-color : 0xff_ff_ff_ff}," &
-			"        vt : [                      " &
-			"         { text  : J3,        " &
-			"           step  : " & vt_step & ","  &
-			"           color : 0xff_00_ff_ff},  " &
-			"         { text  : J4,        " &
-			"           step  : " & vt_step & ","  &
-			"           color : 0xff_ff_ff_ff}]}}");
-
-	type dcm_params is record
-		dcm_mul : natural;
-		dcm_div : natural;
-	end record;
-
-	type sdramparams_record is record
-		id  : sdram_speeds;
-		cm : dcm_params;
-		cl  : std_logic_vector(0 to 3-1);
-	end record;
-
-	type sdramparams_vector is array (natural range <>) of sdramparams_record;
-	constant sdram_tab : sdramparams_vector := (
-		(id => sdram133MHz, cm => (dcm_mul => 20, dcm_div => 3), cl => "010"),
-		(id => sdram145MHz, cm => (dcm_mul => 29, dcm_div => 4), cl => "110"),
-		(id => sdram150MHz, cm => (dcm_mul => 15, dcm_div => 2), cl => "110"),
-		(id => sdram166MHz, cm => (dcm_mul => 25, dcm_div => 3), cl => "110"),
-		(id => sdram200MHz, cm => (dcm_mul => 10, dcm_div => 1), cl => "011"));
-
-	function sdramparams (
-		constant id  : sdram_speeds)
-		return sdramparams_record is
-		constant tab : sdramparams_vector := sdram_tab;
-	begin
-		for i in tab'range loop
-			if id=tab(i).id then
-				return tab(i);
-			end if;
-		end loop;
-
-		assert false 
-		report ">>>sdramparams<<< : sdram speed not enabled"
-		severity failure;
-
-		return tab(tab'left);
-	end;
-
-	constant sdram_speed  : sdram_speeds := sdram133MHz;
-	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant sdram_tcp    : real := (real(sdram_params.cm.dcm_div)*clk_per)/real(sdram_params.cm.dcm_mul);
-
-	-- constant sdram_data   : string  := "none";
-	-- constant phy_data     : string  := "none";
-	constant sdram_data  : string  := compact(hdo(sdram_db)**".MT46V16M16M-6T");
-	constant phy_data    : string  := compact(hdo(phy_db)**".xc3sg2");
-	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
-	constant bank_length : natural := setif(sdram_data/="none", ddr_ba'length,  1);
-	constant addr_length : natural := setif(sdram_data/="none", ddr_a'length,   1);
-	constant data_mask   : natural := setif(sdram_data/="none", ddr_dm'length,  1);
-	constant data_length : natural := setif(sdram_data/="none", ddr_dq'length,  1);
-	constant dqs_length  : natural := setif(sdram_data/="none", ddr_dqs'length, 1);
-
-	signal sdrsys_rst    : std_logic;
+	signal ctlr_rst    : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
-	signal ctlrphy_cke   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cs    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_ras   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_cas   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_we    : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_odt   : std_logic_vector((gear+1)/2-1 downto 0);
-	signal ctlrphy_b     : std_logic_vector((gear+1)/2*bank_length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector((gear+1)/2*addr_length-1 downto 0);
-	signal ctlrphy_dqst  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqsi  : std_logic_vector(gear*dqs_length-1 downto 0);
-	signal ctlrphy_dqso  : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi   : std_logic_vector(gear*data_mask-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*data_mask-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*data_length-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*data_length-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*dqs_length-1 downto 0);
+	signal ctlrphy_cke   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_cs    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_ras   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_cas   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_we    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_odt   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_b     : std_logic_vector((sdram_gear+1)/2*bank_length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector((sdram_gear+1)/2*addr_length-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqsi  : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*data_length-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*data_length-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
 
-	signal ddr_clk0      : std_logic;
-	signal ddr_clk90     : std_logic;
+	signal ctlr_clk      : std_logic;
+	signal ctlr_clk90     : std_logic;
 	signal ddr_clk       : std_logic_vector(0 downto 0);
 
-	alias ctlr_clk is ddr_clk0;
 begin
 
 	clkin_ibufg : ibufg
@@ -251,6 +171,30 @@ begin
 			sys_rst <= not sw1;
 		end if;
 	end process;
+
+	videodcm_b : if string'(settings**".waveform") /= "" generate
+		videodcm_i : entity hdl4fpga.xc3s_videodcm
+		generic map(
+			settings => hdo(settings)**".dcm")
+		port map(
+			rst       => sys_rst,
+			clk       => sys_clk,
+			video_clk => video_clk);
+	end generate;
+
+	sdrdcm_b : if string'(settings**".sdram") /= "" generate
+		signal ctlrdcm_locked : std_logic;
+	begin
+		sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
+		generic map (
+			settings  => settings**".dcm")
+		port map (
+			clk        => sys_clk,
+			ctlr_clk   => ctlr_clk,
+			ctlr_clk90 => ctlr_clk90,
+			locked     => ctlrdcm_locked);
+		ctlr_rst <= not ctlrdcm_locked;
+	end generate;
 
 	adcdfs_i : dcm_sp
 	generic map(
@@ -279,32 +223,6 @@ begin
 		clkfx    => adc_clk);
 	adcclk_n  <= not adc_clk;
 	input_clk <= not adc_clkout;
-
-	videodfs_i : dcm_sp
-	generic map(
-		clk_feedback  => "NONE",
-		clkin_period  => sys_per*1.0e9,
-		clkdv_divide  => 2.0,
-		clkin_divide_by_2 => FALSE,
-		clkfx_multiply => display_tab(video_mode).dcm_mul,
-		clkfx_divide  => display_tab(video_mode).dcm_div,
-		clkout_phase_shift => "NONE",
-		deskew_adjust => "SYSTEM_SYNCHRONOUS",
-		dfs_frequency_mode => "HIGH",
-		duty_cycle_correction => TRUE,
-		factory_jf   => X"C080",
-		phase_shift  => 0,
-		startup_wait => FALSE)
-	port map (
-		dssen    => '0',
-		psclk    => '0',
-		psen     => '0',
-		psincdec => '0',
-
-		rst      => '0',
-		clkin    => sys_clk,
-		clkfb    => '0',
-		clkfx    => video_clk);
 
 	miidfs_e : dcm_sp
 	generic map(
@@ -360,7 +278,7 @@ begin
 	uart_sin <= rs232_rd;
 	uart_rxc <= mii_rxc;
 
-	ipoe_g : if io_link=io_ipoe generate
+	ipoe_g : if io_link="io_ipoe" generate
 		signal dhcpcd_req : std_logic := '0';
 		signal dhcpcd_rdy : std_logic := '0';
 
@@ -489,104 +407,12 @@ begin
 
 	end generate;
 
-	sdrdcm_b : block
-		signal dfs_clkfx : std_logic;
-		signal dfs_lckd  : std_logic;
-		
-		signal dcm_rst   : std_logic := '1';
-		signal dcm_clk0  : std_logic;
-		signal dcm_clk90 : std_logic;
-		signal dcm_lckd  : std_logic;
-
-	begin
-
-		dcmdfs_i : dcm_sp
-		generic map(
-			clk_feedback  => "NONE",
-			clkin_period  => clk_per*1.0e9,
-			clkdv_divide  => 2.0,
-			clkin_divide_by_2 => FALSE,
-			clkfx_divide  => sdram_params.cm.dcm_div,
-			clkfx_multiply => sdram_params.cm.dcm_mul,
-			clkout_phase_shift => "NONE",
-			deskew_adjust => "SYSTEM_SYNCHRONOUS",
-			dfs_frequency_mode => "HIGH",
-			duty_cycle_correction => TRUE,
-			factory_jf   => X"C080",
-			phase_shift  => 0,
-			startup_wait => FALSE)
-		port map (
-			dssen    => '0',
-			psclk    => '0',
-			psen     => '0',
-			psincdec => '0',
-	
-			rst      => sys_rst,
-			clkin    => sys_clk,
-			clkfb    => '0',
-			clkfx    => dfs_clkfx,
-			locked   => dfs_lckd);
-
-		process (sys_rst, sys_clk)
-		begin
-			if sys_rst='1' then
-				dcm_rst <= '1';
-			elsif rising_edge(sys_clk) then
-				dcm_rst <= not dfs_lckd;
-			end if;
-		end process;
-
-		dcmdll_i : dcm_sp
-		generic map(
-			clk_feedback  => "1X",
-			clkdv_divide  => 2.0,
-			clkfx_divide  => 1,
-			clkfx_multiply => 2,
-			clkin_divide_by_2 => FALSE,
-			clkin_period  => (real(sdram_params.cm.dcm_div)*clk_per*1.0e9)/real( sdram_params.cm.dcm_mul),
-			clkout_phase_shift => "NONE",
-			deskew_adjust => "SYSTEM_SYNCHRONOUS",
-			dfs_frequency_mode => "HIGH",
-			duty_cycle_correction => TRUE,
-			factory_jf    => x"C080",
-			phase_shift   => 0,
-			startup_wait  => FALSE)
-		port map (
-			dssen    => '0',
-			psclk    => '0',
-			psen     => '0',
-			psincdec => '0',
-	
-			rst      => dcm_rst,
-			clkin    => dfs_clkfx,
-			clkfb    => ddr_clk0,
-			clk0     => dcm_clk0,
-			clk90    => dcm_clk90,
-			locked   => dcm_lckd);
-
-		clk0_bufg_i : bufg
-		port map (
-			i => dcm_clk0,
-			o => ddr_clk0);
-	
-		clk90_bufg_i : bufg
-		port map (
-			i => dcm_clk90,
-			o => ddr_clk90);
-	
-		sdrsys_rst <= not dcm_lckd;
-
-	end block;
-
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
 		debug       => debug,
 		profile     => 1,
-		sdram_tcp   => sdram_tcp,
-		sdram_data  => sdram_data,
-		phy_data    => phy_data,
-		timing_id   => pclk150_00m1920x1080at60,
-		layout      => layout)
+		sdram_freq  => sdram_freq(settings**".sdram.dcm"),
+		settings    => settings)
 	port map (
 		sio_clk     => sio_clk,
 		si_frm      => si_frm,
@@ -601,9 +427,9 @@ begin
 		input_data  => input_samples,
 
 		ctlr_clk     => ctlr_clk,
-		ctlr_rst     => sdrsys_rst,
+		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "001",
-		ctlr_cl      => sdram_params.cl,
+		ctlr_cl      => settings**".sdram.cl",
 
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
@@ -630,7 +456,7 @@ begin
 		video_vton  => video_vton,
 		video_blank => video_blank);
 
-	sdramphy_g : if sdram_data/="none" and phy_data/="none" generate
+	sdramphy_g : if string'(hdo(settings)**".sdram") /= "" generate
 		signal ctlrphy_wlreq : std_logic;
 		signal ctlrphy_wlrdy : std_logic;
 		signal ctlrphy_rlreq : std_logic;
@@ -647,10 +473,10 @@ begin
     	generic map (
     		-- dqs_delay   => (0 to 0 => 0 ns),
     		-- dqi_delay   => (0 to 0 => 0 ns),
-    		device      => xc3s,
+			device      => hdo(settings)**".sdram.phy_data.device",
     		bank_size   => ddr_ba'length,
     		addr_size   => ddr_a'length,
-    		gear        => gear,
+    		gear        => sdram_gear,
     		word_size   => ddr_dq'length,
     		byte_size   => ddr_dq'length/ddr_dm'length,
     		bypass      => true,
@@ -658,10 +484,10 @@ begin
     		rd_fifo     => true,
     		rd_align    => true)
     	port map (
-    		rst         => sdrsys_rst,
-    		iod_clk     => ddr_clk0,
-    		clk         => ddr_clk0,
-    		clk_shift   => ddr_clk90,
+    		rst         => ctlr_rst,
+    		iod_clk     => ctlr_clk,
+    		clk         => ctlr_clk,
+    		clk_shift   => ctlr_clk90,
 
     		phy_wlreq   => ctlrphy_wlreq,
     		phy_wlrdy   => ctlrphy_wlrdy,
@@ -718,7 +544,7 @@ begin
     		ob => ddr_ckn);
 	end generate;
 
-	nosdram_g : if sdram_data="none" or phy_data="none" generate
+	nosdram_g : if string'(hdo(settings)**".sdram")="" generate
 		ddr_clk_i : obufds
 		generic map (
 			iostandard => "DIFF_SSTL2_I")

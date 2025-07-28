@@ -28,7 +28,6 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 
 library ecp5u;
@@ -36,36 +35,31 @@ use ecp5u.components.all;
 
 architecture graphics of ulx3s is
 
-	------------------------------------
-	--     Custom profile here        --
-	constant settings : string := compact("{"                                                             &
-		"io_link: io_usb,"                                                                                &
-		"video:{"                                                                                         &
+	constant settings : string := "{"                                                               &
+		"io_link: io_usb,"                                                                          &
+		"video:{"                                                                                   &
 			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
-			"videoio_freq:" & "36.0e6,"                                                                   &
-			"gear:"         & "2,"                                                                        &
+			"videoio_freq:" & "36.0e6"                                                              & ',' &
+			"gear:"         & "2"                                                                   & ',' &
 			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
-			"pixel:{"                                                                                     &
-				"R:8,"                                                                                    &
-				"G:8,"                                                                                    &
-				"B:8}},"                                                                                  &
-		"sdram:{"                                                                                         &
+			"pixel:{"                                                                               &
+				"R:8"                                                                               & ',' &
+				"G:8"                                                                               & ',' &
+				"B:8}}"                                                                             & ',' &
+		"sdram:{"                                                                                   &
 			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E")                             & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ecp5g1")                                          & ',' &
-			"cl:"        & "'010'}}");
+			"cl:"        & "'010'}}";
 
-	constant io_link      : string := settings**".io_link";
-	constant baudrate     : natural      := 3000000;
-	--------------------------------------
+	constant io_link      : string  := settings**".io_link";
+	constant baudrate     : natural := 3000000;
 
 	constant byte_size   : natural := sdram_d'length/sdram_dqm'length;
-	constant phy_data    : string  := hdo(phy_db)**".ecp5g1";
-	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear";
-	constant usb_oversampling : natural := 3;
+	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
+	signal ctlr_rst      : std_logic;
 	signal ctlr_clk      : std_logic;
-	signal sdrsys_rst    : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic;
@@ -122,10 +116,10 @@ begin
 	generic map (
 		settings => "{" & 
 			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
-			"gear:" & string'(hdo(phy_data)**".orgz.gear") & '}')
+			"gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	port map (
 		clk_ref  => clk_25mhz,
-		ctlr_rst => sdrsys_rst,
+		ctlr_rst => ctlr_rst,
 		sclk     => ctlr_clk);
 
 	process (ctlr_clk)
@@ -182,13 +176,8 @@ begin
 	end generate;
 
 	usb_g : if io_link="io_usb" generate
-		signal usb_cken : std_logic;
-		signal fltr_en : std_logic;
-		signal fltr_bs : std_logic;
-		signal fltr_d  : std_logic;
-
+		constant usb_oversampling : natural := 3;
 	begin
-
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
@@ -203,7 +192,6 @@ begin
 			usb_oversampling => usb_oversampling)
 		port map (
 			usb_clk   => videoio_clk,
-			usb_cken  => usb_cken,
 			usb_dp    => usb_fpga_dp,
 			usb_dn    => usb_fpga_dn,
 
@@ -319,7 +307,7 @@ begin
 		dvid_crgb    => dvid_crgb,
 
 		ctlr_clk     => ctlr_clk,
-		ctlr_rst     => sdrsys_rst,
+		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => settings**".sdram.cl",
 
@@ -359,7 +347,7 @@ begin
 		bypass     => false)
 	port map (
 		sclk       => ctlr_clk,
-		rst        => sdrsys_rst,
+		rst        => ctlr_rst,
 
 		sys_cs(0)  => ctlrphy_cs,
 		sys_cke(0) => ctlrphy_cke,

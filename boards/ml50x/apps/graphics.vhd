@@ -30,147 +30,33 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.profiles.all;
-use hdl4fpga.app_profiles.all;
+use hdl4fpga.xc5v_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
-architecture graphics of ml509 is
+architecture graphics of ml50x is
 
-	type app_profiles is (
-		sdr200MHz_600p,
-		sdr225MHz_600p,
-		sdr250MHz_600p,
-		sdr275MHz_600p,
-		sdr300MHz_600p,
-		sdr333MHz_600p,
-		sdr350MHz_600p,
-		sdr375MHz_600p,
-		sdr400MHz_600p);
+	constant settings : string := "{"                                                      &
+		"io_link: io_ipoe,"                                                                &
+		"video:{"                                                                          &
+			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'100mhz'.'40mhz'"))    & ',' &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+			"pixel:"   & "{R:8,G:8,B:8}}"                                                  & ',' &
+		"sdram:{"                                                                          &
+			"dcm:"       & string'(hdl4fpga.xc5v_profiles.sdram_dcm(".'100mhz'.'400mhz'")) & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                       & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                 & ',' &
+			"cl:"        & "'010'}}";
 
-	--------------------------------------
-	--     Set your profile here        --
-	constant app_profile : app_profiles := sdr400MHz_600p;  --
-	----------------------------------------------------------
-
-	type profileparam_vector is array (app_profiles) of profile_params;
-	constant profile_tab : profileparam_vector := (
-		sdr200MHz_600p => (io_ipoe, sdram200MHz, mode600p24bpp),
-		sdr225MHz_600p => (io_ipoe, sdram225MHz, mode600p24bpp),
-		sdr250MHz_600p => (io_ipoe, sdram250MHz, mode600p24bpp),
-		sdr275MHz_600p => (io_ipoe, sdram275MHz, mode600p24bpp),
-		sdr300MHz_600p => (io_ipoe, sdram300MHz, mode600p24bpp),
-		sdr333MHz_600p => (io_ipoe, sdram333MHz, mode600p24bpp),
-		sdr350MHz_600p => (io_ipoe, sdram350MHz, mode600p24bpp),
-		sdr375MHz_600p => (io_ipoe, sdram375MHz, mode600p24bpp),
-		sdr400MHz_600p => (io_ipoe, sdram400MHz, mode600p24bpp));
-
-	type dcm_params is record
-		dcm_mul : natural;
-		dcm_div : natural;
-	end record;
-
-	type video_params is record
-		id     : video_modes;
-		cm     : dcm_params;
-		timing : videotiming_ids;
-	end record;
-
-	type videoparams_vector is array (natural range <>) of video_params;
-	constant video_tab : videoparams_vector := (
-		(id => modedebug,     timing => pclk_debug,            cm => (dcm_mul => 4, dcm_div => 2)),
-		(id => mode480p24bpp, timing => pclk25_00m640x480at60, cm => (dcm_mul => 1, dcm_div => 4)),
-		(id => mode600p24bpp, timing => pclk40_00m800x600at60, cm => (dcm_mul => 2, dcm_div => 5)));
-
-	function videoparam (
-		constant id  : video_modes)
-		return video_params is
-		constant tab : videoparams_vector := video_tab;
-	begin
-		for i in tab'range loop
-			if id=tab(i).id then
-				return tab(i);
-			end if;
-		end loop;
-
-		assert false 
-		report ">>>videoparam<<< : video id not available"
-		severity failure;
-
-		return tab(tab'left);
-	end;
-
-	constant video_mode : video_modes := setdebug(debug, profile_tab(app_profile).video_mode);
-
-	type pll_params is record
-		clkfbout_mult : natural;
-		divclk_divide : natural;
-	end record;
-
-	type sdramparams_record is record
-		id  : sdram_speeds;
-		pll : pll_params;
-		cl  : std_logic_vector(0 to 3-1);
-	end record;
-
-	type sdramparams_vector is array (natural range <>) of sdramparams_record;
-	constant sdram_tab : sdramparams_vector := (
-
-		------------------------------------------------------------------------
-		-- Frequency   -- 300 Mhz -- 275 Mhz -- 250 Mhz -- 225 Mhz -- 200 Mhz --
-		-- Multiply by --   3     --  11     --  15     --   4     --  17     --
-		-- Divide by   --   1     --   4     --   4     --   1     --   4     --
-		------------------------------------------------------------------------
-
-		(sdram200MHz, pll => (clkfbout_mult =>  4, divclk_divide => 2), cl => "011"),
-		(sdram225MHz, pll => (clkfbout_mult =>  9, divclk_divide => 4), cl => "011"),
-		(sdram250MHz, pll => (clkfbout_mult =>  5, divclk_divide => 2), cl => "011"),
-		(sdram275MHz, pll => (clkfbout_mult => 11, divclk_divide => 4), cl => "011"),
-		(sdram300MHz, pll => (clkfbout_mult =>  3, divclk_divide => 1), cl => "111"),
-
-		------------------------------------------------------------------------
-		-- Frequency   -- 333 Mhz -- 350 Mhz -- 375 Mhz -- 400 Mhz -- 425 Mhz --
-		-- Multiply by --  10     --   7     --  15     --   4     --  17     --
-		-- Divide by   --   3     --   2     --   4     --   1     --   4     --
-		------------------------------------------------------------------------
-
-		(sdram333MHz, pll => (clkfbout_mult => 10, divclk_divide => 3), cl => "111"),
-		(sdram350MHz, pll => (clkfbout_mult =>  7, divclk_divide => 2), cl => "101"),
-		(sdram375MHz, pll => (clkfbout_mult => 15, divclk_divide => 4), cl => "110"),
-		(sdram400MHz, pll => (clkfbout_mult =>  4, divclk_divide => 1), cl => "110"));
-
-	function sdramparams (
-		constant id  : sdram_speeds)
-		return sdramparams_record is
-		constant tab : sdramparams_vector := sdram_tab;
-	begin
-		for i in tab'range loop
-			if id=tab(i).id then
-				return tab(i);
-			end if;
-		end loop;
-
-		assert false 
-		report ">>>sdramparams<<< : sdram speed not enabled"
-		severity failure;
-
-		return tab(tab'left);
-	end;
-
-	constant sdram_speed  : sdram_speeds := profile_tab(app_profile).sdram_speed;
-	constant sdram_params : sdramparams_record := sdramparams(sdram_speed);
-	constant sdram_tcp    : real := (real(sdram_params.pll.divclk_divide)*userclk_per)/real(sdram_params.pll.clkfbout_mult);
+	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
 	constant byte_size    : natural := ddr2_d'length/ddr2_dm'length;
-	constant phy_data     : string  := hdo(phy_db)**".xc5vg4";
-	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 
-	signal ddr_clk0       : std_logic;
-	signal ddr_clk90      : std_logic;
-	signal ddr_clk0x2     : std_logic;
-	signal ddr_clk90x2    : std_logic;
-	signal sdrsys_rst     : std_logic;
+	signal ctlr_clk       : std_logic;
+	signal ctlr_clk90     : std_logic;
+	signal ctlr_clkx2     : std_logic;
+	signal ctlr_clk90x2   : std_logic;
 
 	signal ctlrphy_frm    : std_logic;
 	signal ctlrphy_trdy   : std_logic;
@@ -181,26 +67,26 @@ architecture graphics of ml509 is
 	signal ddr_b          : std_logic_vector(ddr2_ba'range);
 	signal ddr_a          : std_logic_vector(ddr2_a'range);
 
-	signal ctlrphy_rst    : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_cke    : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_cs     : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_ras    : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_cas    : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_we     : std_logic_vector(0 to gear/2-1);
-	signal ctlrphy_odt    : std_logic_vector(0 to gear/2-1);
+	signal ctlrphy_rst    : std_logic_vector(0 to sdram_gear/2-1);
+	signal ctlrphy_cke    : std_logic_vector(0 to sdram_gear/2-1);
+	signal ctlrphy_cs     : std_logic_vector(0 to sdram_gear/2-1);
+	signal ctlrphy_ras    : std_logic_vector(0 to sdram_gear/2-1);
+	signal ctlrphy_cas    : std_logic_vector(0 to sdram_gear/2-1);
+	signal ctlrphy_we     : std_logic_vector(0 to sdram_gear/2-1);
+	signal ctlrphy_odt    : std_logic_vector(0 to sdram_gear/2-1);
 	signal ctlrphy_cmd    : std_logic_vector(0 to 3-1);
-	signal ctlrphy_b      : std_logic_vector(gear/2*ddr_b'length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector(gear/2*ddr_a'length-1 downto 0);
-	signal ctlrphy_dqst   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqso   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(gear*ddr2_dm'length-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(gear*ddr2_dm'length-1 downto 0);
-	signal ctlrphy_dqt    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(gear*ddr2_d'length-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(gear*ddr2_d'length-1 downto 0);
-	signal ctlrphy_dqv    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(gear*ddr2_dqs_p'length-1 downto 0);
+	signal ctlrphy_b      : std_logic_vector(sdram_gear/2*ddr_b'length-1 downto 0);
+	signal ctlrphy_a      : std_logic_vector(sdram_gear/2*ddr_a'length-1 downto 0);
+	signal ctlrphy_dqst   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqso   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dmi    : std_logic_vector(sdram_gear*ddr2_dm'length-1 downto 0);
+	signal ctlrphy_dmo    : std_logic_vector(sdram_gear*ddr2_dm'length-1 downto 0);
+	signal ctlrphy_dqt    : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqi    : std_logic_vector(sdram_gear*ddr2_d'length-1 downto 0);
+	signal ctlrphy_dqo    : std_logic_vector(sdram_gear*ddr2_d'length-1 downto 0);
+	signal ctlrphy_dqv    : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sto    : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sti    : std_logic_vector(sdram_gear*ddr2_dqs_p'length-1 downto 0);
 
 	signal ctlrphy_wlreq  : std_logic;
 	signal ctlrphy_wlrdy  : std_logic;
@@ -214,6 +100,7 @@ architecture graphics of ml509 is
 	signal ddr2_dqo       : std_logic_vector(ddr2_d'length-1 downto 0);
 	signal ddr2_dqt       : std_logic_vector(ddr2_d'length-1 downto 0);
 
+	constant mem_size    : natural := 8*(1024*8);
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
 	signal si_trdy        : std_logic;
@@ -265,7 +152,7 @@ architecture graphics of ml509 is
 	signal tp_sel         : std_logic_vector(1 downto 0);
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
 	signal mii_tp         : std_logic_vector(1 to 32);
-
+	alias sys_clk is userclk_bufg;
 begin
 
 	clkin_ibufg : ibufg
@@ -284,31 +171,26 @@ begin
 		sys_rst <= not tmr(0);
 	end process;
 	
-	videodcm_b : block
-		signal clkfx      : std_logic;
-		signal video_lckd : std_logic;
-	begin
-	
-		dcm_i : dcm_base
-		generic map (
-			clk_feedback   => "NONE",
-			clkin_period   => userclk_per*1.0e9,
-			clkfx_divide   => videoparam(video_mode).cm.dcm_div,
-			clkfx_multiply => videoparam(video_mode).cm.dcm_mul,
-			dfs_frequency_mode => "LOW")
-		port map (
-			rst    => sys_rst,
-			clkfb  => '0',
-			clkin  => userclk_bufg,
-			clkfx  => clkfx,
-			locked => video_lckd);
+	videodcm_i : entity hdl4fpga.xc5v_videodcm
+	generic map(
+		settings => hdo(settings)**".dcm")
+	port map(
+		rst       => sys_rst,
+		clk       => sys_clk,
+		video_clk => video_clk);
 
-		bufg_i : bufg
-		port map (
-			i => clkfx,
-			o => video_clk);
-
-	end block;
+	sdramdcm_i : entity hdl4fpga.xc5v_sdramdcm
+	generic map (
+		settings  => settings**".dcm")
+	port map (
+		rst          => sys_rst,
+		clk          => userclk_bufg,
+		ctlr_clk     => ctlr_clk,
+		ctlr_clkx2   => ctlr_clkx2,
+		ctlr_clk90   => ctlr_clk90,
+		ctlr_clk90x2 => ctlr_clk90x2,
+		ctlr_rst      => sdrphy_rst0,
+		ctlr_rst90    => sdrphy_rst90);
 
 	iodctrl_b : block
 		signal clk_fpga : std_logic;
@@ -324,97 +206,6 @@ begin
 		port map (
 			i => clk_fpga,
 			o => iodctrl_clk);
-	end block;
-
-	
-	sdrampll_b : block
-
-		signal ddr_clk0_mmce2    : std_logic;
-		signal ddr_clk90_mmce2   : std_logic;
-		signal ddr_clk0x2_mmce2  : std_logic;
-		signal ddr_clk90x2_mmce2 : std_logic;
-		signal ddr_clkfb         : std_logic;
-		signal ddr_locked : std_logic;
-
-	begin
-
-		pll_i : pll_base
-		generic map (
-			divclk_divide  => sdram_params.pll.divclk_divide,
-			clkfbout_mult  => 2*sdram_params.pll.clkfbout_mult,
-			clkin_period   => userclk_per*1.0e9,
-			clkout0_divide => gear/2,
-			clkout1_divide => gear/2,
-			clkout1_phase  => 90.0+180.0,
-			clkout2_divide => gear,
-			clkout3_divide => gear,
-			clkout3_phase  => 90.0/real((gear/2))+270.0)
-		port map (
-			rst      => sys_rst,
-			clkin    => userclk_bufg,
-			clkfbin  => ddr_clkfb,
-			clkfbout => ddr_clkfb,
-			clkout0  => ddr_clk0x2_mmce2,
-			clkout1  => ddr_clk90x2_mmce2,
-			clkout2  => ddr_clk0_mmce2,
-			clkout3  => ddr_clk90_mmce2,
-			locked   => ddr_locked);
-
-		ddr_clk0x2_bufg : bufg
-		port map (
-			i => ddr_clk0x2_mmce2,
-			o => ddr_clk0x2);
-
-		ddr_clk90x2_bufg : bufg
-		port map (
-			i => ddr_clk90x2_mmce2,
-			o => ddr_clk90x2);
-
-		ddr_clk0_bufg : bufg
-		port map (
-			i => ddr_clk0_mmce2,
-			o => ddr_clk0);
-
-		ddr_clk90_bufg : bufg
-		port map (
-			i => ddr_clk90_mmce2,
-			o => ddr_clk90);
-
-    	process (userclk_bufg)
-    		variable tmr : unsigned(0 to 8-1) := (others => '0');
-    	begin
-    		if rising_edge(userclk_bufg) then
-    			if (gpio_sw_c or not ddr_locked or sys_rst or not iodctrl_rdy)='1' then
-    				tmr := (others => '0');
-    			elsif tmr(0)='0' then
-    				tmr := tmr + 1;
-    			end if;
-    		end if;
-    		sdrsys_rst <= not tmr(0);
-    	end process;
-	
-		process (ddr_clk0)
-		begin
-			if rising_edge(ddr_clk0) then
-				if sdrsys_rst='1' then
-					sdrphy_rst0 <= '1';
-				else
-					sdrphy_rst0 <= sdrsys_rst;
-				end if;
-			end if;
-		end process;
-
-		process (ddr_clk90)
-		begin
-			if rising_edge(ddr_clk90) then
-				if sdrsys_rst='1' then
-					sdrphy_rst90 <= '1';
-				else
-					sdrphy_rst90 <= sdrsys_rst;
-				end if;
-			end if;
-		end process;
-
 	end block;
 
 	gtx_b : block
@@ -611,18 +402,10 @@ begin
 	generic map (
 		debug => debug,
 		profile      => 1,
-		sdram_tcp    => 2.0*sdram_tcp,
-		sdram_data   => hdo(sdram_db)**".MT4HTF12864HZ",
-		phy_data     => phy_data,
+		sdram_freq   => sdram_freq(settings**".sdram.dcm")/2.0,
 		burst_length => 8,
-
-		timing_id    => videoparam(video_mode).timing,
-		red_length   => 8,
-		green_length => 8,
-		blue_length  => 8,
-
-		fifo_size    => 8*2048)
-
+		settings     => settings,
+		fifo_size    => mem_size)
 	port map (
 		sin_clk       => sio_clk,
 		sin_frm       => so_frm,
@@ -644,12 +427,12 @@ begin
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
-		ctlr_clk      => ddr_clk0,
+		ctlr_clk      => ctlr_clk,
 		ctlr_rst      => sdrphy_rst0,
 		ctlr_rtt      => "11",
 		ctlr_al       => "000",
 		ctlr_bl       => "011", -- Busrt length 8
-		ctlr_cl       => sdram_params.cl,
+		ctlr_cl      => settings**".sdram.cl",
 		ctlr_cmd      => ctlrphy_cmd,
 		ctlrphy_ini   => ctlrphy_ini,
 		ctlrphy_rlreq => ctlrphy_rlreq,
@@ -678,7 +461,7 @@ begin
 		ctlrphy_dqv   => ctlrphy_dqv,
 		tp            => open);
 
-	cgear_g : for i in 1 to gear/2-1 generate
+	cgear_g : for i in 1 to sdram_gear/2-1 generate
 		ctlrphy_rst(i) <= ctlrphy_rst(0);
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
@@ -691,8 +474,8 @@ begin
 	process (ddr_b)
 	begin
 		for i in ddr_b'range loop
-			for j in 0 to gear/2-1 loop
-				ctlrphy_b(i*gear/2+j) <= ddr_b(i);
+			for j in 0 to sdram_gear/2-1 loop
+				ctlrphy_b(i*sdram_gear/2+j) <= ddr_b(i);
 			end loop;
 		end loop;
 	end process;
@@ -700,8 +483,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to gear/2-1 loop
-				ctlrphy_a(i*gear/2+j) <= ddr_a(i);
+			for j in 0 to sdram_gear/2-1 loop
+				ctlrphy_a(i*sdram_gear/2+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -717,16 +500,16 @@ begin
 	
 	sdrphy_e : entity hdl4fpga.xc_sdrphy
 	generic map (
+		device     => hdo(settings)**".sdram.phy_data.device",
 		bank_size  => ddr2_ba'length,
 		addr_size  => ddr2_a'length,
 		word_size  => ddr2_d'length,
 		byte_size  => byte_size,
-		gear       => gear,
+		gear       => sdram_gear,
 		ba_latency => 1,
-		device     => xc5v,
 		loopback   => false,
 		bypass     => false,
-		taps       => natural(floor(sdram_tcp*(64.0*200.0e6)))-1,
+		taps       => natural(floor((64.0*200.0e6)/sdram_freq(settings**".sdram.dcm")))-1,
 		dqs_highz  => false)
 	port map (
 		tp_sel     => tp_sel,
@@ -734,10 +517,10 @@ begin
 		rst        => sdrphy_rst0,
 		rst_shift  => sdrphy_rst90,
 		iod_clk    => userclk_bufg,
-		clk        => ddr_clk0,
-		clk_shift  => ddr_clk90,
-		clkx2      => ddr_clk0x2,
-		clkx2_shift => ddr_clk90x2,
+		clk        => ctlr_clk,
+		clk_shift  => ctlr_clk90,
+		clkx2      => ctlr_clkx2,
+		clkx2_shift => ctlr_clk90x2,
 		phy_frm    => ctlrphy_frm,
 		phy_trdy   => ctlrphy_trdy,
 		phy_rw     => ctlrphy_rw,

@@ -22,15 +22,12 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library hdl4fpga;
-use hdl4fpga.profiles.all;
-
 entity xc_sdrbaphy is
 	generic (
 		bank_size  : natural;
 		addr_size  : natural;
 		gear       : natural;
-		device     : fpga_devices;
+		device     : string;
 		ba_latency : natural);
 	port (
 		grst      : in  std_logic := '0';
@@ -55,6 +52,8 @@ entity xc_sdrbaphy is
 		sdram_b   : out std_logic_vector(bank_size-1 downto 0);
 		sdram_a   : out std_logic_vector(addr_size-1 downto 0));
 end;
+
+library hdl4fpga;
 
 architecture xilinx of xc_sdrbaphy is
 

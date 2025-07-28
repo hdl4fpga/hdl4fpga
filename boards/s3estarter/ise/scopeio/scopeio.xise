@@ -162,7 +162,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="97"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
-    <file xil_pn:name="../../../../library/scope/scopeio_tds.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../../../../library/scope/scopeio_capture.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="112"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="117"/>
       <library xil_pn:name="hdl4fpga"/>
@@ -649,6 +649,11 @@
     <file xil_pn:name="../../../../library/sdram/sdrampkg.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="156"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="67"/>
+      <library xil_pn:name="hdl4fpga"/>
+    </file>
+    <file xil_pn:name="../../../../library/scope/scopeio_storage.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="129"/>
+      <association xil_pn:name="Implementation" xil_pn:seqID="129"/>
       <library xil_pn:name="hdl4fpga"/>
     </file>
   </files>

@@ -30,7 +30,6 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.sdrampkg.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.app_profiles.all;
 use hdl4fpga.ecp5_profiles.all;
 
 library ecp5u;
@@ -40,48 +39,34 @@ architecture graphics of ulx4m_ld is
 
 	---------------------------------------
 	-- Set your profile here             --
-	constant io_link      : io_comms     := io_usb;
-	constant sdram_speed  : sdram_speeds := sdram400MHz;
-	constant video_mode   : video_modes  := mode600p24bpp;
-	-- constant video_mode   : video_modes  := mode720p24bpp;
-	-- constant video_mode   : video_modes  := mode900p24bpp;
-	-- constant video_mode   : video_modes  := mode1080p24bpp30;
-	-- constant video_mode   : video_modes  := mode1080p24bpp;
-	-- constant video_mode   : video_modes  := mode1440p24bpp30;
-	---------------------------------------
+	constant settings : string := "{"                                                                     &
+		"io_link: io_usb,"                                                                                &
+		"video:{"                                                                                         &
+			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
+			"videoio_freq:" & "36.0e6,"                                                                   &
+			"gear:"         & "4,"                                                                        &
+			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
+			"pixel:{"                                                                                     &
+				"R:8,"                                                                                    &
+				"G:8,"                                                                                    &
+				"B:8}},"                                                                                  &
+		"sdram:{"                                                                                         &
+			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT41K256M16-125")                               & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
+			"cl:"        & "'010'}}";
 
-	constant video_params : video_record := videoparam(
-		video_modes'VAL(setif(debug,
-			video_modes'POS(modedebug),
-			video_modes'POS(video_mode))), clk25mhz_freq);
+	constant io_link      : string  := settings**".io_link";
+	constant baudrate     : natural := 3000000;
 
-	constant sdram_params : sdramparams_record := sdramparams(
-		sdram_speeds'VAL(setif(debug,
-			sdram_speeds'POS(sdram400Mhz),
-			sdram_speeds'POS(sdram_speed))), clk25mhz_freq);
-	
-	constant sdram_tcp    : real := 
-		real(sdram_params.pll.clki_div*sdram_params.pll.clkop_div)/
-		(real(sdram_params.pll.clkos_div*sdram_params.pll.clkfb_div)*clk25mhz_freq);
-
-	constant phy_data    : string  := hdo(phy_db)**".ulx4ld_ecp5g4";
-	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear";
+	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
-	constant ba_latency  : natural := 1;
 	constant usb_oversampling : natural := 3;
-
-	signal sys_rst       : std_logic;
+	constant ba_latency  : natural := 1;
 
 	signal ctlr_rst      : std_logic;
-
-	signal ctlrphy_frm   : std_logic;
-	signal ctlrphy_trdy  : std_logic;
-	signal ctlrphy_ini   : std_logic;
-	signal ctlrphy_rw    : std_logic;
-	signal ctlrphy_wlreq : std_logic;
-	signal ctlrphy_wlrdy : std_logic;
-	signal ctlrphy_rlreq : std_logic;
-	signal ctlrphy_rlrdy : std_logic;
+	signal ctlr_clk      : std_logic;
+	signal ctlr_eclk     : std_logic;
 
 	signal ctlrphy_rst   : std_logic_vector(0 to 2-1);
 	signal ctlrphy_cke   : std_logic_vector(0 to 2-1);
@@ -102,6 +87,15 @@ architecture graphics of ulx4m_ld is
 	signal ctlrphy_dqv   : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
+
+	signal ctlrphy_frm   : std_logic;
+	signal ctlrphy_trdy  : std_logic;
+	signal ctlrphy_ini   : std_logic;
+	signal ctlrphy_rw    : std_logic;
+	signal ctlrphy_wlreq : std_logic;
+	signal ctlrphy_wlrdy : std_logic;
+	signal ctlrphy_rlreq : std_logic;
+	signal ctlrphy_rlrdy : std_logic;
 
 	signal sdr_b         : std_logic_vector(ddram_ba'range);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
@@ -128,8 +122,6 @@ architecture graphics of ulx4m_ld is
 
 	signal sio_clk       : std_logic;
 
-	signal sclk          : std_logic;
-	signal eclk          : std_logic;
 
 	signal video_pixel   : std_logic_vector(0 to 24-1);
 
@@ -143,14 +135,9 @@ architecture graphics of ulx4m_ld is
 
 begin
 
-	sys_rst <= '0';
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		io_link      => io_link,
-		clkio_freq   => 12.0e6*real(usb_oversampling),
-		clkref_freq  => clk25mhz_freq,
-		default_gear => video_gear,
-		video_params => video_params)
+		settings     => settings**".video")
 	port map (
 		clk_ref     => clk_25mhz,
 		videoio_clk => videoio_clk,
@@ -161,28 +148,23 @@ begin
 
 	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
 	generic map (
-		gear         => sdram_gear,
-		clkref_freq  => clk25mhz_freq,
-		sdram_params => sdram_params)
+		settings => "{" & 
+			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
+			"gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	port map (
 		clk_ref      => clk_25mhz,
 		ctlr_rst     => ctlr_rst,
-		sclk         => sclk,
-		eclk         => eclk,
+		sclk         => ctlr_clk,
+		eclk         => ctlr_eclk,
 		phy_rst      => sdrphy_rst,
 		phy_mspause  => ms_pause,
 		phy_ddrdel   => ddrdel);
 
-	hdlc_g : if io_link=io_hdlc generate
-		constant uart_freq : real := 
-			real(video_params.pll.clkfb_div*video_params.pll.clkos_div)*clk25mhz_freq/
-			real(video_params.pll.clki_div*video_params.pll.clkos3_div);
-		constant baudrate : natural := setif(
-			uart_freq >= 32.0e6, 3000000, setif(
-			uart_freq >= 25.0e6, 2000000,
-								 115200));
+	hdlc_g : if io_link="io_hdlc" generate
+		constant uart_freq : real := 30.0e6;
 		signal uart_clk : std_logic;
 	begin
+
 		nodebug_g : if not debug generate
 			uart_clk <= videoio_clk;
 			sio_clk  <= videoio_clk;
@@ -192,12 +174,13 @@ begin
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 			sio_clk  <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
+		led(7) <= video_lck;
 
 		hdlc_e : entity hdl4fpga.link_hdlc
 		generic map (
 			uart_freq => uart_freq,
-			baudrate => baudrate,
-			mem_size => mem_size)
+			baudrate  => baudrate,
+			mem_size  => mem_size)
 		port map (
 			sio_clk   => uart_clk,
 			si_frm    => si_frm,
@@ -217,17 +200,13 @@ begin
 		ftdi_txden <= '1';
 	end generate;
 
-	usb_g : if io_link=io_usb generate
-		signal tp : std_logic_vector(1 to 32);
-		signal usb_cken : std_logic;
-	begin
-
+	usb_g : if io_link="io_usb" generate
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
 		usb_fpga_dn    <= 'Z'; -- when up='0' else '0';
-		usb_fpga_bd_dp <= 'Z'; -- when up='0' else '0';
-		usb_fpga_bd_dn <= 'Z'; -- when up='0' else '0';
+		usb_fpga_bd_dp <= 'Z';
+		usb_fpga_bd_dn <= 'Z';
 
 		sio_clk  <= videoio_clk;
 
@@ -235,9 +214,7 @@ begin
 		generic map (
 			usb_oversampling => usb_oversampling)
 		port map (
-			tp        => tp,
 			usb_clk   => videoio_clk,
-			usb_cken  => usb_cken,
 			usb_dp    => usb_fpga_dp,
 			usb_dn    => usb_fpga_dn,
 
@@ -252,12 +229,9 @@ begin
 			so_irdy   => so_irdy,
 			so_trdy   => so_trdy,
 			so_data   => so_data);
-
-		-- led(7) <= usb_fpga_dp;
-		-- led(6) <= usb_fpga_dn;
 	end generate;
 
-	ipoe_e : if io_link=io_ipoe generate
+	ipoe_g : if io_link="io_ipoe" generate
 		signal gmii_rx_dv : std_logic;
 		signal gmii_rxd   : std_logic_vector(0 to 2*rgmii_rxd'length-1);
 		signal gmii_tx_en : std_logic;
@@ -373,16 +347,9 @@ begin
 	generic map (
 		debug        => debug, -- true,
 		profile      => 2,
-		sdram_tcp    => 2.0*sdram_tcp,
-		phy_data     => phy_data,
-		sdram_data   => hdo(sdram_db)**".MT41K256M16-125",
 		burst_length => 8,
-
-		timing_id    => video_params.timing,
-		video_gear   => video_gear,
-		red_length   => 8,
-		green_length => 8,
-		blue_length  => 8,
+		sdram_freq   => sdram_freq(settings**".sdram.dcm")/2.0,
+		settings     => settings,
 		fifo_size    => mem_size)
 	port map (
 		tp => tp,
@@ -403,11 +370,11 @@ begin
 		video_pixel  => video_pixel,
 		dvid_crgb    => dvid_crgb,
 
-		ctlr_clk     => sclk,
+		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "00",
-		ctlr_cl      => sdram_params.cl,
-		ctlr_cwl     => sdram_params.cwl,
+		ctlr_cl      => settings**".sdram.cl",
+		ctlr_cwl     => settings**".sdram.cwl",
 		ctlr_rtt     => "001",
 		ctlr_cmd     => ctlrphy_cmd,
 
@@ -479,11 +446,11 @@ begin
 	tp_b : block
 		signal tp_dv : std_logic;
 	begin
-		process (sclk)
+		process (ctlr_clk)
 			variable q : std_logic;
 			variable q1 : std_logic := '0';
 		begin
-			if rising_edge(sclk) then
+			if rising_edge(ctlr_clk) then
 				if ctlrphy_sti(0)='1' then
 					if q='0' then
 						q1 := not q1;
@@ -508,13 +475,13 @@ begin
 		rd_fifo    => false,
 		wr_fifo    => true,
 		bypass     => false,
-		taps       => natural(ceil((sdram_tcp-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
+		taps       => natural(ceil((1.0/sdram_freq(settings**".sdram.dcm")-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (
 		tpin       => btn(1),
 
 		rst        => sdrphy_rst,
-		sclk       => sclk,
-		eclk       => eclk,
+		sclk       => ctlr_clk,
+		eclk       => ctlr_eclk,
 		ms_pause   => ms_pause,
 		ddrdel     => ddrdel,
 
@@ -623,11 +590,11 @@ begin
 	end generate;
 
 	-- SDRAM-clk-divided-by-4 monitor
-	process (sclk)
+	process (ctlr_clk)
 		variable q0 : std_logic;
 		variable q1 : std_logic;
 	begin
-		if rising_edge(sclk) then
+		if rising_edge(ctlr_clk) then
 			cam_scl  <= q0;
 			gpio_scl <= q1;
 			q0       := not q0;

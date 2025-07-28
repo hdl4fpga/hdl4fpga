@@ -38,8 +38,6 @@ use ecp5u.components.all;
 architecture scopeio of ulx3s is
 
 	constant tsttab : boolean := false;
-	--------------------------------------
-	--     Set your profile here        --
 	constant io_link      : string := "io_usb";
 
 	constant adc1clkref_freq : real := 64.0e6;
@@ -129,13 +127,13 @@ architecture scopeio of ulx3s is
 	constant settings : string := compact("{" &   
 			"inputs:"        & natural'image(inputs)   & ',' &
 			"waveform:{"     &
-				"video:{"                                                                                          &
-					"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'64mhz'", 36.0e6)) & ','  &
-					"videoio_freq:" & "36.0e6,"                                                                    &
-					"gear:"         & "2,"                                                                         &
-					"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'1280x720'.'@60'.'64mhz'")     & ',' &
-					"pixel:{R:8,G:8,B:8}},"                                                                        &
-					"num_of_segments: 3," &
+				"video:{"                                                                                   &
+					"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'64mhz'", 36.0e6)) & ',' &
+					"videoio_freq:" & "36.0e6"                                                              & ',' &
+					"gear:"         & "2"                                                                   & ',' &
+					"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'1280x720'.'@60'.'64mhz'")    & ',' &
+					"pixel:{R:8,G:8,B:8}}"                                                                  & "," &
+				"num_of_segments:"  & "3"                                                                   & ',' &
 				"grid:{" &
 					"width:"  & natural'image(32*32+1) & ',' &
 					"height:" & natural'image( 6*32+1) & ',' &
@@ -180,7 +178,7 @@ architecture scopeio of ulx3s is
 	constant addr_length : natural := hdo(chip_data)**".orgz.addr.row=1";
 	constant data_mask   : natural := hdo(chip_data)**".orgz.data.dm=1";
 	constant data_length : natural := hdo(chip_data)**".orgz.data.dq=1";
-	constant gear        : natural := hdo(phy_data)**".orgz.gear=1.";
+	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear=1.";
 
 	signal ctlr_clk      : std_logic;
 	signal sdrsys_rst    : std_logic;
@@ -193,13 +191,13 @@ architecture scopeio of ulx3s is
 	signal ctlrphy_we    : std_logic;
 	signal ctlrphy_b     : std_logic_vector(bank_length-1 downto 0);
 	signal ctlrphy_a     : std_logic_vector(addr_length-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(gear*data_mask-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(gear*data_length-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(gear*data_length-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(gear-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(gear*data_mask-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*data_length-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*data_length-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
+	signal sdrphy_sti    : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
 	signal sdram_dqs     : std_logic_vector(data_mask-1 downto 0);
 
 begin
@@ -551,8 +549,8 @@ begin
 
 	latsti_e : entity hdl4fpga.latency
 	generic map (
-		n => gear,
-		d => (0 to gear-1 => 0))
+		n => sdram_gear,
+		d => (0 to sdram_gear-1 => 0))
 	port map (
 		clk => ctlr_clk,
 		di  => ctlrphy_sto,
@@ -561,7 +559,7 @@ begin
 	sdramphy_g : if chip_data/="{}" and phy_data/="{}" generate
 		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 		generic map (
-			gear       => gear,
+			gear       => sdram_gear,
 			bank_size  => sdram_ba'length,
 			addr_size  => sdram_a'length,
 			word_size  => sdram_d'length,

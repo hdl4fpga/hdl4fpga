@@ -19,87 +19,73 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-package app_profiles is
+library ieee;
+use ieee.std_logic_1164.all;
 
-	type video_modes is (
-		modedebug,
-		mode480p16bpp,
-		mode480p24bpp,
-		mode600p16bpp,
-		mode600p24bpp,
-		mode720p16bpp,
-		mode720p24bpp,
-		mode768p24bpp,
-		mode900p24bpp,
-		mode90024bpp,
-		mode1080r24bpp,
-		mode1080p16bpp30,
-		mode1080p24bpp30,
-		mode1080p24bpp,
-		mode1440p24bpp25,
-		mode1440p24bpp30);
+library hdl4fpga;
+use hdl4fpga.hdo.all;
 
-	type pixel_types is (
-		rgb565,
-		rgb888);
+entity xc7a_videodcm is
+	generic (
+		settings    : string);
+	port (
+		rst         : in std_logic := '0';
+		clk         : in std_logic;
+		video_clk   : out std_logic;
+		video_clkx2 : out std_logic;
+		video_shift_clk : out std_logic;
+		locked      : buffer std_logic);
 
-	type sdram_speeds is (
-		sdram133MHz,
-		sdram145MHz,
-		sdram150MHz,
-		sdram166MHz,
-		sdram170MHz,
-		sdram200MHz,
-		sdram225MHz,
-		sdram233MHz,
-		sdram250MHz,
-		sdram262MHz,
-		sdram275MHz,
-		sdram300MHz,
-		sdram325MHz,
-		sdram333MHz,
-		sdram350MHz,
-		sdram375MHz,
-		sdram400MHz,
-		sdram425MHz,
-		sdram450MHz,
-		sdram475MHz,
-		sdram500MHz,
-		sdram525MHz,
-		sdram550MHz,
-		sdram575MHz,
-		sdram600MHz);
+	constant gear           : natural := settings**".gear";
+	constant freq_in        : real    := settings**".dcm.freq_in";
+	constant clkfbout_mult  : natural := settings**".dcm.clkfbout_mult=0";
+	constant clkout0_divide : natural := settings**".dcm.clkout0_divide=1";
+	constant clkout1_divide : natural := settings**".dcm.clkout1_divide=1";
 
-	type io_comms is (
-		io_none,
-		io_hdlc,
-		io_ipoe,
-		io_usb);
+end;
 
-	type profile_params is record
-		comms       : io_comms;
-		sdram_speed : sdram_speeds;
-		video_mode  : video_modes;
-	end record;
+library hdl4fpga;
+use hdl4fpga.xc7a_profiles.all;
 
-	function setdebug (
-		constant expr : boolean;
-		constant mode : video_modes)
-		return video_modes;
+library unisim;
+use unisim.vcomponents.all;
 
-end package;
+architecture def of xc7a_videodcm is
+	signal clkfb   : std_logic;
+	signal clkout0 : std_logic;
+	signal clkout1 : std_logic;
+	signal clkout2 : std_logic;
+begin
+	pll_i :  plle2_base
+	generic map (
+		clkin1_period  => 1.0e9/freq_in,
+		clkfbout_mult  => clkfbout_mult,
+		clkout0_divide => clkout0_divide,
+		clkout1_divide => clkout1_divide,
+		clkout2_divide => clkout1_divide*2)
+	port map (
+		pwrdwn   => '0',
+		rst      => rst,
+		clkin1   => clk,
+		clkfbin  => clkfb,
+		clkfbout => clkfb,
+		clkout0  => clkout0,
+		clkout1  => clkout1,
+		clkout2  => clkout2,
+		locked   => locked);
 
-package body app_profiles is
+	gbx2_g : if gear=2 generate
+		video_clk       <= clkout0;
+		video_clkx2     <= clkout1;
+		video_shift_clk <= clkout1;
+	end generate;
 
-	function setdebug (
-		constant expr : boolean;
-		constant mode : video_modes)
-		return video_modes is
-	begin
-		if expr then
-			return modedebug;
-		end if;
-		return mode;
-	end;
-
-end package body;
+	gbx4_g : if gear=4 generate
+		video_clk       <= clkout0;
+		video_shift_clk <= clkout2;
+		buf_i : bufg
+		port map (
+			i => clkout1,
+			o => video_clkx2);
+	end generate;
+end;
