@@ -27,6 +27,12 @@ HDL4FPGA__xc_idelay__def = $(LIB_HDL4FPGA)/xc_idelay/def.dat
 HDL4FPGA__xc_idelay = $(LIB_HDL4FPGA)/xc_idelay/_primary.dat
 HDL4FPGA__xc_dqsdelay__xilinx = $(LIB_HDL4FPGA)/xc_dqsdelay/xilinx.dat
 HDL4FPGA__xc_dqsdelay = $(LIB_HDL4FPGA)/xc_dqsdelay/_primary.dat
+HDL4FPGA__xc7a_videodcm__def = $(LIB_HDL4FPGA)/xc7a_videodcm/def.dat
+HDL4FPGA__xc7a_videodcm = $(LIB_HDL4FPGA)/xc7a_videodcm/_primary.dat
+HDL4FPGA__xc7a_sdramdcm__def = $(LIB_HDL4FPGA)/xc7a_sdramdcm/def.dat
+HDL4FPGA__xc7a_sdramdcm = $(LIB_HDL4FPGA)/xc7a_sdramdcm/_primary.dat
+HDL4FPGA__xc7a_profiles__body = $(LIB_HDL4FPGA)/xc7a_profiles/body.dat
+HDL4FPGA__xc7a_profiles = $(LIB_HDL4FPGA)/xc7a_profiles/_primary.dat
 HDL4FPGA__xc7a_idelay__def = $(LIB_HDL4FPGA)/xc7a_idelay/def.dat
 HDL4FPGA__xc7a_idelay = $(LIB_HDL4FPGA)/xc7a_idelay/_primary.dat
 HDL4FPGA__xc5v_videodcm__def = $(LIB_HDL4FPGA)/xc5v_videodcm/def.dat
@@ -417,6 +423,12 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__xc_idelay) \
     $(HDL4FPGA__xc_dqsdelay__xilinx) \
     $(HDL4FPGA__xc_dqsdelay) \
+    $(HDL4FPGA__xc7a_videodcm__def) \
+    $(HDL4FPGA__xc7a_videodcm) \
+    $(HDL4FPGA__xc7a_sdramdcm__def) \
+    $(HDL4FPGA__xc7a_sdramdcm) \
+    $(HDL4FPGA__xc7a_profiles__body) \
+    $(HDL4FPGA__xc7a_profiles) \
     $(HDL4FPGA__xc7a_idelay__def) \
     $(HDL4FPGA__xc7a_idelay) \
     $(HDL4FPGA__xc5v_videodcm__def) \
@@ -2697,13 +2709,12 @@ $(HDL4FPGA__xc5v_profiles__body) : ../apps/xc5v_profiles.vhd \
 
 $(HDL4FPGA__xc5v_sdramdcm) \
 $(HDL4FPGA__xc5v_sdramdcm__def) : ../apps/xc5v_sdramdcm.vhd \
-		$(HDL4FPGA__xc5v_profiles) \
 		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents) \
-		$(HDL4FPGA__xc3s_profiles)
+		$(HDL4FPGA__xc5v_profiles)
 	$(VCOM) -2002 -work hdl4fpga ../apps/xc5v_sdramdcm.vhd
 
 $(HDL4FPGA__xc5v_videodcm) \
@@ -2723,6 +2734,34 @@ $(HDL4FPGA__xc7a_idelay__def) : ../xilinx/xc7a_idelay.vhd \
 		$(IEEE__std_logic_1164) \
 		$(UNISIM__vcomponents)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc7a_idelay.vhd
+
+$(HDL4FPGA__xc7a_profiles) \
+$(HDL4FPGA__xc7a_profiles__body) : ../apps/xc7a_profiles.vhd \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__hdo)
+	$(VCOM) -2002 -work hdl4fpga ../apps/xc7a_profiles.vhd
+
+$(HDL4FPGA__xc7a_sdramdcm) \
+$(HDL4FPGA__xc7a_sdramdcm__def) : ../apps/xc7a_sdramdcm.vhd \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(UNISIM__vcomponents) \
+		$(HDL4FPGA__xc7a_profiles)
+	$(VCOM) -2002 -work hdl4fpga ../apps/xc7a_sdramdcm.vhd
+
+$(HDL4FPGA__xc7a_videodcm) \
+$(HDL4FPGA__xc7a_videodcm__def) : ../apps/xc7a_videodcm.vhd \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__hdo) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(UNISIM__vcomponents) \
+		$(HDL4FPGA__xc7a_profiles)
+	$(VCOM) -2002 -work hdl4fpga ../apps/xc7a_videodcm.vhd
 
 $(HDL4FPGA__xc_dqsdelay) \
 $(HDL4FPGA__xc_dqsdelay__xilinx) : ../xilinx/xc_dqsdelay.vhd \

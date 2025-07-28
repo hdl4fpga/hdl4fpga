@@ -52,8 +52,6 @@ architecture graphics of ml50x is
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
 	constant byte_size    : natural := ddr2_d'length/ddr2_dm'length;
-	constant phy_data     : string  := hdo(phy_db)**".xc5vg4";
-	constant gear         : natural := hdo(phy_data)**".orgz.gear";
 
 	signal ctlr_clk       : std_logic;
 	signal ctlr_clk90     : std_logic;
@@ -191,8 +189,8 @@ begin
 		ctlr_clkx2   => ctlr_clkx2,
 		ctlr_clk90   => ctlr_clk90,
 		ctlr_clk90x2 => ctlr_clk90x2,
-		phy_rst      => sdrphy_rst0,
-		phy_rst90    => sdrphy_rst90);
+		ctlr_rst      => sdrphy_rst0,
+		ctlr_rst90    => sdrphy_rst90);
 
 	iodctrl_b : block
 		signal clk_fpga : std_logic;
@@ -463,7 +461,7 @@ begin
 		ctlrphy_dqv   => ctlrphy_dqv,
 		tp            => open);
 
-	cgear_g : for i in 1 to gear/2-1 generate
+	cgear_g : for i in 1 to sdram_gear/2-1 generate
 		ctlrphy_rst(i) <= ctlrphy_rst(0);
 		ctlrphy_cke(i) <= ctlrphy_cke(0);
 		ctlrphy_cs(i)  <= ctlrphy_cs(0);
@@ -476,8 +474,8 @@ begin
 	process (ddr_b)
 	begin
 		for i in ddr_b'range loop
-			for j in 0 to gear/2-1 loop
-				ctlrphy_b(i*gear/2+j) <= ddr_b(i);
+			for j in 0 to sdram_gear/2-1 loop
+				ctlrphy_b(i*sdram_gear/2+j) <= ddr_b(i);
 			end loop;
 		end loop;
 	end process;
@@ -485,8 +483,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to gear/2-1 loop
-				ctlrphy_a(i*gear/2+j) <= ddr_a(i);
+			for j in 0 to sdram_gear/2-1 loop
+				ctlrphy_a(i*sdram_gear/2+j) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -507,7 +505,7 @@ begin
 		addr_size  => ddr2_a'length,
 		word_size  => ddr2_d'length,
 		byte_size  => byte_size,
-		gear       => gear,
+		gear       => sdram_gear,
 		ba_latency => 1,
 		loopback   => false,
 		bypass     => false,

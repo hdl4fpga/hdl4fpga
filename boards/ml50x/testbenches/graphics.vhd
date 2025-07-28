@@ -29,7 +29,7 @@ use ieee.std_logic_textio.all;
 
 library micron;
 
-architecture ml509_graphics of testbench is
+architecture ml50x_graphics of testbench is
 	constant bank_bits  : natural := 3;
 	constant addr_bits  : natural := 14;
 	constant cols_bits  : natural := 9;
@@ -262,16 +262,16 @@ begin
 	end generate;
 end;
 
-configuration ml509_graphics_structure_md of testbench is
-	for ml509_graphics
+configuration ml50x_graphics_structure_md of testbench is
+	for ml50x_graphics
 		for all: ml50x
 			use entity work.ml50x(structure);
 		end for;
 	end for;
 end;
 
-configuration ml509_graphics_md of testbench is
-	for ml509_graphics
+configuration ml50x_graphics_md of testbench is
+	for ml50x_graphics
 		for all: ml50x
 			use entity work.ml50x(graphics);
 		end for;
