@@ -38,21 +38,21 @@ architecture graphics of s3estarter is
 
 	--------------------------------------
 	-- Set of profiles                  --
-	constant settings : string := "{"                                                                     &
-		"io_link: io_ipoe,"                                                                                &
-		"video:{"                                                                                         &
-			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
-			"videoio_freq:" & "36.0e6,"                                                                   &
-			"gear:"         & "2,"                                                                        &
+	constant settings : string := "{"                                                               &
+		"io_link: io_ipoe,"                                                                         &
+		"video:{"                                                                                   &
+			"dcm:"          & string'(hdl4fpga.xc3s_profiles.video_dcm(".'50mhz'.'40mhz'", 36.0e6)) & ',' &
+			"videoio_freq:" & "36.0e6,"                                                             &
+			"gear:"         & "2,"                                                                  &
 			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
-			"pixel:{"                                                                                     &
-				"R:8,"                                                                                    &
-				"G:8,"                                                                                    &
-				"B:8}},"                                                                                  &
-		"sdram:{"                                                                                         &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))                 & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                                      & ',' &
-			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                                & ',' &
+			"pixel:{"                                                                               &
+				"R:1,"                                                                              &
+				"G:1,"                                                                              &
+				"B:1}},"                                                                            &
+		"sdram:{"                                                                                   &
+			"dcm:"       & string'(hdl4fpga.xc3s_profiles.sdram_dcm(".'50mhz'.'133mhz'"))           & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                                & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                          & ',' &
 			"cl:"        & "'010'}}";
 
 	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
@@ -102,7 +102,7 @@ architecture graphics of s3estarter is
 	signal video_hs       : std_logic;
 	signal video_vs       : std_logic;
 	signal video_blank    : std_logic;
-	signal video_pixel    : std_logic_vector(0 to 32-1);
+	signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal si_frm         : std_logic;
@@ -141,7 +141,7 @@ begin
 
 	sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
 	generic map (
-		settings  => settings**"sdram.dcm")
+		settings  => settings**".sdram.dcm")
 	port map (
 		clk        => sys_clk,
 		ctlr_clk   => ctlr_clk,

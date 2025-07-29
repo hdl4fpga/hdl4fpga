@@ -37,53 +37,10 @@ use unisim.vcomponents.all;
 
 architecture scopeio of nuhs3adsp is
 
-	constant io_link : string := "io_ipoe";
-	constant sys_per  : real := 50.0;
-
-	signal sys_rst     : std_logic;
-	signal sys_clk     : std_logic;
-	signal sysclk_n    : std_logic;
-	signal video_clk   : std_logic;
-	signal videoclk_n  : std_logic;
-	signal video_hsync : std_logic;
-	signal video_vsync : std_logic;
-	signal video_vton  : std_logic;
-	signal video_pixel : std_logic_vector(0 to 3*8-1);
-	signal video_blank : std_logic;
-
-	constant inputs    : natural := 2;
-	constant vt_step   : string := "1.220703125e-4"; --2.0V/2.0**14; -- real'image() does not work on Xilinx ISE
-	alias  input_sample is adc_da;
-	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
-	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
-	signal input_samples : std_logic_vector(inputs*input_sample'length-1 downto 0);
-	signal adc_clk     : std_logic;
-	signal adcclk_n    : std_logic;
-
-	signal input_clk   : std_logic;
-
-	constant baudrate  : natural := 115200;
-
-	signal uart_rxc    : std_logic;
-	signal uart_sin    : std_logic;
-	signal uart_ena    : std_logic;
-	signal uart_rxdv   : std_logic;
-	signal uart_rxd    : std_logic_vector(8-1 downto 0);
-
-	alias  sio_clk is mii_txc;
-	signal si_frm      : std_logic;
-	signal si_irdy     : std_logic;
-	signal si_data     : std_logic_vector(0 to 8-1);
-
-	signal so_frm      : std_logic;
-	signal so_irdy     : std_logic;
-	signal so_trdy     : std_logic;
-	signal so_end      : std_logic;
-	signal so_data     : std_logic_vector(0 to 8-1);
-
+	constant vt_step  : string := "1.220703125e-4"; --2.0V/2.0**14; -- real'image() does not work on Xilinx ISE
 	constant settings : string := compact("{" &   
-		"inputs:"          & natural'image(inputs) & ',' &
-		"waveform:{" &
+		"inputs:" & "2"                                                                           & ',' &
+		"waveform:{"                                                                              &
 			"video:{"                                                                             &
 				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'20mhz'.'150mhz'"))       & ',' &
 				"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
@@ -122,6 +79,49 @@ architecture scopeio of nuhs3adsp is
 			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
 			"cl:"        & "'010'}}");
+
+	constant io_link : string := "io_ipoe";
+	constant sys_per  : real := 50.0;
+
+	signal sys_rst     : std_logic;
+	signal sys_clk     : std_logic;
+	signal sysclk_n    : std_logic;
+	signal video_clk   : std_logic;
+	signal videoclk_n  : std_logic;
+	signal video_hsync : std_logic;
+	signal video_vsync : std_logic;
+	signal video_vton  : std_logic;
+	signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	signal video_blank : std_logic;
+
+	constant inputs  : natural := hdo(settings)**".inputs";
+	alias  input_sample is adc_da;
+	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
+	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
+	signal input_samples : std_logic_vector(inputs*input_sample'length-1 downto 0);
+	signal adc_clk     : std_logic;
+	signal adcclk_n    : std_logic;
+
+	signal input_clk   : std_logic;
+
+	constant baudrate  : natural := 115200;
+
+	signal uart_rxc    : std_logic;
+	signal uart_sin    : std_logic;
+	signal uart_ena    : std_logic;
+	signal uart_rxdv   : std_logic;
+	signal uart_rxd    : std_logic_vector(8-1 downto 0);
+
+	alias  sio_clk is mii_txc;
+	signal si_frm      : std_logic;
+	signal si_irdy     : std_logic;
+	signal si_data     : std_logic_vector(0 to 8-1);
+
+	signal so_frm      : std_logic;
+	signal so_irdy     : std_logic;
+	signal so_trdy     : std_logic;
+	signal so_end      : std_logic;
+	signal so_data     : std_logic_vector(0 to 8-1);
 
 	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";

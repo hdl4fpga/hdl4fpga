@@ -65,7 +65,7 @@ package body xc3s_profiles is
 				" '25mhz': {clkfx_multiply: 4, clkfx_divide: 2, freq_in: 50.0e6},"   &
 				" '40mhz': {clkfx_multiply: 5, clkfx_divide: 4, freq_in: 50.0e6},"   &
 				" '75mhz': {clkfx_multiply: 2, clkfx_divide: 3, freq_in: 50.0e6},"   &
-				"'150mhz': {clkfx_multiply: 1, clkfx_divide: 3, freq_in: 50.0e6}}}";
+				"'150mhz': {clkfx_multiply: 2, clkfx_divide: 6, freq_in: 50.0e6}}}";
 
 		constant dcm : string  := dcm_db**(video_id&"={}");
 	begin

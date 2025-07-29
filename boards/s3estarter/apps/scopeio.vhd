@@ -36,64 +36,18 @@ use unisim.vcomponents.all;
 
 architecture scopeio of s3estarter is
 
-	constant tsttab  : boolean := false;
-	constant io_link : string := "io_ipoe";
-
-	constant baudrate : natural := 115200;
-
-	signal sys_rst    : std_logic;
-	signal sys_clk    : std_logic;
-	signal video_clk  : std_logic;
-	signal video_vton : std_logic;
-
-	constant sample_size : natural := 14;
-
-	constant inputs  : natural := 2;
-
-	signal samples   : std_logic_vector(inputs*sample_size-1 downto 0);
-	signal spi_clk   : std_logic;
-	signal spiclk_rd : std_logic;
-	signal spiclk_fd : std_logic;
-	signal sckamp_rd : std_logic;
-	signal sckamp_fd : std_logic;
-	signal amp_spi   : std_logic;
-	signal amp_sdi   : std_logic;
-	signal amp_rdy   : std_logic;
-	signal adc_spi   : std_logic;
-	signal ampcs     : std_logic;
-	signal spi_rst   : std_logic;
-	signal dac_sdi   : std_logic;
-	signal input_ena : std_logic;
-	signal video_pixel : std_logic_vector(24-1 downto 0);
-
-	constant max_delay : natural := 2**14;
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal hz_scale  : std_logic_vector(4-1 downto 0);
-	signal hz_dv     : std_logic;
-
-	alias  sio_clk   is e_tx_clk;
-	signal si_frm    : std_logic;
-	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(0 to 8-1);
-	signal so_frm    : std_logic;
-	signal so_irdy   : std_logic;
-	signal so_trdy   : std_logic;
-	signal so_end    : std_logic;
-	signal so_data   : std_logic_vector(0 to 8-1);
-
 	constant vt_step  : string := "0.152587890625e-3";  -- 2.5V/ 2.0**14 real'image() does not work on Xilinx ISE
-	constant settings : string := "{" &   
-		"inputs:"          & natural'image(inputs) & ',' &
-		"waveform:{" &
+	constant settings : string := "{"                                                             &
+		"inputs:" & "2"                                                                           & ',' &
+		"waveform:{"                                                                              &
 			"video:{"                                                                             &
-				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'50mhz'.'150mhz'"))       & ',' &
-				"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
-				"pixel:"   & "{R:8,G:8,B:8}}"                                                     & ',' &
-			"num_of_segments:" & "4"                                                              & ',' &
+				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'50mhz'.'40mhz'"))        & ',' &
+				"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")    & ',' &
+				"pixel:"   & "{R:1,G:1,B:1}}"                                                     & ',' &
+			"num_of_segments:" & "2"                                                              & ',' &
 			"grid:{"                                                                              &
-				"width:"  & natural'image(50*32+1)                                                & ',' &
-				"height:" & natural'image( 8*32+1)                                                & ',' &
+				"width:"  & natural'image(15*32+1)                                                & ',' &
+				"height:" & natural'image( 6*32+1)                                                & ',' &
 				"color:"  & "0xff_ff_00_ff"                                                       & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
 			"axis:{"                                                                              &
@@ -128,9 +82,9 @@ architecture scopeio of s3estarter is
 				"color:"     & "0xff_ff_00_ff"                                                    & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
 			"main:{"                                                                              &
-				"top:5, left:1, right:0, bottom:0, vertical:1, horizontal:1, background-color: 0xff_00_00_00}" & ',' &
+				"top:23, left:3, right:0, bottom:0, vertical:0, horizontal:0, background-color: 0xff_00_00_00}" & ',' &
 			"segment:{"                                                                           &
-				"top:1, left:1, right:1, bottom:1, vertical:0, horizontal:1, background-color: 0xff_ff_ff_ff}" & ',' &
+				"top: 1, left:1, right:0, bottom:1, vertical:0, horizontal:0, background-color: 0xff_ff_ff_ff}" & ',' &
 			"vt:[" &
 				"{text: VINA," & "step:" & vt_step & ',' & "color:" & "0xff_00_ff_ff}"            & ',' &
 				"{text: VINB," & "step:" & vt_step & ',' & "color:" & "0xff_ff_ff_ff}]}"          & ',' &
@@ -139,6 +93,52 @@ architecture scopeio of s3estarter is
 			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
 			"cl:"        & "'010'}}";
+
+	constant tsttab  : boolean := false;
+	constant io_link : string := "io_ipoe";
+
+	constant baudrate : natural := 115200;
+
+	signal sys_rst    : std_logic;
+	signal sys_clk    : std_logic;
+	signal video_clk  : std_logic;
+	signal video_vton : std_logic;
+
+	constant sample_size : natural := 14;
+
+	constant inputs  : natural := hdo(settings)**".inputs";
+
+	signal samples   : std_logic_vector(inputs*sample_size-1 downto 0);
+	signal spi_clk   : std_logic;
+	signal spiclk_rd : std_logic;
+	signal spiclk_fd : std_logic;
+	signal sckamp_rd : std_logic;
+	signal sckamp_fd : std_logic;
+	signal amp_spi   : std_logic;
+	signal amp_sdi   : std_logic;
+	signal amp_rdy   : std_logic;
+	signal adc_spi   : std_logic;
+	signal ampcs     : std_logic;
+	signal spi_rst   : std_logic;
+	signal dac_sdi   : std_logic;
+	signal input_ena : std_logic;
+	signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+
+	constant max_delay : natural := 2**14;
+	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
+	signal hz_scale  : std_logic_vector(4-1 downto 0);
+	signal hz_dv     : std_logic;
+
+	alias  sio_clk   is e_tx_clk;
+	signal si_frm    : std_logic;
+	signal si_irdy   : std_logic;
+	signal si_data   : std_logic_vector(0 to 8-1);
+	signal so_frm    : std_logic;
+	signal so_irdy   : std_logic;
+	signal so_trdy   : std_logic;
+	signal so_end    : std_logic;
+	signal so_data   : std_logic_vector(0 to 8-1);
 
 	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
