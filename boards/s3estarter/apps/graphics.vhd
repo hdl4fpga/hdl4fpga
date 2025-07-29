@@ -55,6 +55,7 @@ architecture graphics of s3estarter is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                                & ',' &
 			"cl:"        & "'010'}}";
 
+	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
 	signal ctlr_rst       : std_logic;
@@ -132,7 +133,7 @@ begin
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm
 	generic map(
-		settings => hdo(settings)**".dcm")
+		settings => hdo(settings)**".video.dcm")
 	port map(
 		rst       => sys_rst,
 		clk       => sys_clk,
@@ -140,7 +141,7 @@ begin
 
 	sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
 	generic map (
-		settings  => settings**".dcm")
+		settings  => settings**"sdram.dcm")
 	port map (
 		clk        => sys_clk,
 		ctlr_clk   => ctlr_clk,
@@ -292,7 +293,7 @@ begin
 		profile      => 1,
 		burst_length => 2,
 
-		sdram_freq   => sdram_freq(settings**".sdram.dcm"),
+		sdram_freq   => sdram_freq,
 		settings     => settings,
 		fifo_size    => mem_size)
 	port map (

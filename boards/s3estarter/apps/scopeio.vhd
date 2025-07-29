@@ -135,11 +135,12 @@ architecture scopeio of s3estarter is
 				"{text: VINA," & "step:" & vt_step & ',' & "color:" & "0xff_00_ff_ff}"            & ',' &
 				"{text: VINB," & "step:" & vt_step & ',' & "color:" & "0xff_ff_ff_ff}]}"          & ',' &
 		"sdram:{"                                                                                 &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))         & ',' &
+			"dcm:"       & string'(hdl4fpga.xc3s_profiles.sdram_dcm(".'50mhz'.'133mhz'"))         & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
 			"cl:"        & "'010'}}";
 
+	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
 	constant chip_data   : string  := settings**".sdram.chip_data={}";
 	constant phy_data    : string  := settings**".sdram.phy_data={}";
@@ -191,7 +192,7 @@ begin
 	videodcm_b : if string'(settings**".waveform") /= "" generate
 		videodcm_i : entity hdl4fpga.xc3s_videodcm
 		generic map(
-			settings => hdo(settings)**".dcm")
+			settings => hdo(settings)**".waveform.video.dcm")
 		port map(
 			rst       => sys_rst,
 			clk       => sys_clk,
@@ -203,7 +204,7 @@ begin
 	begin
 		sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
 		generic map (
-			settings  => settings**".dcm")
+			settings  => settings**".sdram.dcm")
 		port map (
 			clk        => sys_clk,
 			ctlr_clk   => ctlr_clk,
@@ -688,7 +689,7 @@ begin
 	generic map (
 		debug       => debug,
 		profile     => 1,
-		sdram_freq  => sdram_freq(settings**".sdram.dcm"),
+		sdram_freq  => sdram_freq,
 		settings    => settings)
 	port map (
 		-- tp => tp,
