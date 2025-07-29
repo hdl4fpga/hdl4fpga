@@ -36,8 +36,6 @@ use unisim.vcomponents.all;
 
 architecture graphics of s3estarter is
 
-	--------------------------------------
-	-- Set of profiles                  --
 	constant settings : string := "{"                                                               &
 		"io_link: io_ipoe,"                                                                         &
 		"video:{"                                                                                   &
@@ -55,13 +53,24 @@ architecture graphics of s3estarter is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                          & ',' &
 			"cl:"        & "'010'}}";
 
-	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
+
+	signal sys_rst        : std_logic;
+	alias sys_clk         : std_logic is clk_50mhz;
+
+	signal video_clk      : std_logic;
+	signal video_hzsync   : std_logic;
+	signal video_vtsync   : std_logic;
+	signal video_blank    : std_logic;
+	signal video_pixel    : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+
+	constant sdram_freq   : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
 	signal ctlr_rst       : std_logic;
 	signal ctlr_clk       : std_logic;
 	signal ctlr_clk90     : std_logic;
 	signal ctlrdcm_locked : std_logic;
+
 	signal ctlrphy_rst    : std_logic;
 	signal ctlrphy_cke    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
 	signal ctlrphy_cs     : std_logic_vector((sdram_gear+1)/2-1 downto 0);
@@ -98,13 +107,10 @@ architecture graphics of s3estarter is
 	signal sdram_cs       : std_logic_vector(0 to 0);
 	signal sdram_odt      : std_logic_vector(0 to 0);
 
-	signal video_clk      : std_logic;
-	signal video_hs       : std_logic;
-	signal video_vs       : std_logic;
-	signal video_blank    : std_logic;
-	signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	signal mii_clk        : std_logic;
 
-	constant mem_size    : natural := 8*(1024*8);
+	constant mem_size     : natural := 8*(1024*8);
+	alias sio_clk         : std_logic is e_tx_clk;
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
 	signal si_trdy        : std_logic;
@@ -115,11 +121,6 @@ architecture graphics of s3estarter is
 	signal so_trdy        : std_logic;
 	signal so_data        : std_logic_vector(0 to 8-1);
 
-	signal mii_clk        : std_logic;
-	alias sio_clk         : std_logic is e_tx_clk;
-
-	signal sys_rst        : std_logic;
-	alias sys_clk         : std_logic is clk_50mhz;
 
 	signal tp : std_logic_vector(1 to 32);
 begin
@@ -310,8 +311,8 @@ begin
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
-		video_hzsync => video_hs,
-		video_vtsync => video_vs,
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
@@ -419,8 +420,8 @@ begin
 			vga_red    <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8)(0);
 			vga_green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8)(0);
 			vga_blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8)(0);
-			vga_hsync  <= video_hs;
-			vga_vsync  <= video_vs;
+			vga_hsync  <= video_hzsync;
+			vga_vsync  <= video_vtsync;
 		end if;
 	end process;
 

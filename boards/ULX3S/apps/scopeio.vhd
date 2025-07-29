@@ -38,7 +38,6 @@ use ecp5u.components.all;
 architecture scopeio of ulx3s is
 
 	constant vt_step  : string := "0.805664063e-3"; -- 3.3/2.0**12; -- Volts
-	constant io_link  : string := "io_usb";
 	constant settings : string := "{"                                                                       &   
 			"inputs:" & "8"                                                                                 & ',' &
 			"waveform:{"                                                                                    &
@@ -103,7 +102,33 @@ architecture scopeio of ulx3s is
 				"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E={}") & ',' &
 				"phy_data:"  & string'(hdo(phy_db)**".ecp5g1={}")              & "}}";
 
-	constant tsttab : boolean := false;
+	constant io_link : string := "io_usb";
+	constant tsttab  : boolean := false;
+
+	alias sys_clk is clk_25mhz;
+
+	signal video_clk         : std_logic;
+	signal video_eclk        : std_logic;
+	signal video_shift_clk   : std_logic;
+	signal videoio_clk       : std_logic;
+	signal video_lck         : std_logic;
+	signal video_hzsync      : std_logic;
+	signal video_vtsync      : std_logic;
+	signal video_vton        : std_logic;
+	signal video_blank       : std_logic;
+	signal video_pixel       : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	constant video_gear      : natural := 2;
+	signal dvid_crgb         : std_logic_vector(4*video_gear-1 downto 0);
+
+	constant inputs          : natural := hdo(settings)**".inputs";
+	signal input_clk         : std_logic;
+	signal input_lck         : std_logic;
+	signal input_chni        : std_logic_vector(4-1 downto 0);
+	signal input_chno        : std_logic_vector(4-1 downto 0);
+	signal input_ena         : std_logic;
+	signal input_sample      : std_logic_vector(13-1 downto 0);
+	signal input_enas        : std_logic := '0';
+	signal input_samples     : std_logic_vector(0 to inputs*input_sample'length-1);
 
 	constant adc1clkref_freq : real := 64.0e6;
 	constant adc1clki_div    : natural := 5;
@@ -111,92 +136,61 @@ architecture scopeio of ulx3s is
 	constant adc1clkos2_div  : natural := 25;
 	constant adc1clkos_freq  : real := adc1clkref_freq/real(adc1clki_div);
 	constant adc1clkos2_freq : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(adc1clkos2_div)*real(adc1clki_div));
+	signal adc_clk           : std_logic;
+
+	alias  sio_clk is videoio_clk;
+	signal si_frm            : std_logic;
+	signal si_irdy           : std_logic;
+	signal si_data           : std_logic_vector(0 to 8-1);
+	signal so_frm            : std_logic;
+	signal so_trdy           : std_logic;
+	signal so_irdy           : std_logic;
+	signal so_end            : std_logic;
+	signal so_data           : std_logic_vector(8-1 downto 0);
+
 	constant sdram_freq      : real := (real(adc1clkos_div)*adc1clkref_freq)/(real(3)*real(adc1clki_div));
+	constant bank_length     : natural := hdo(settings)**".sdram.chip_data.orgz.addr.ba=1";
+	constant addr_length     : natural := hdo(settings)**".sdram.chip_data.orgz.addr.row=1";
+	constant data_mask       : natural := hdo(settings)**".sdram.chip_data.orgz.data.dm=1";
+	constant data_length     : natural := hdo(settings)**".sdram.chip_data.orgz.data.dq=1";
+	constant sdram_gear      : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
 
-	constant usb_oversampling : natural := 3;
+	signal ctlr_clk          : std_logic;
+	signal ctlr_rst          : std_logic;
 
-	constant video_gear  : natural := 2;
-	signal video_clk     : std_logic;
-	signal video_eclk    : std_logic;
-	signal video_shift_clk : std_logic;
-	signal videoio_clk   : std_logic;
-	signal video_lck     : std_logic;
-	signal video_hzsync  : std_logic;
-	signal video_vtsync  : std_logic;
-	signal video_vton    : std_logic;
-	signal video_blank   : std_logic;
-	signal video_pixel   : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
-	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
+	signal ctlrphy_rst       : std_logic;
+	signal ctlrphy_cke       : std_logic;
+	signal ctlrphy_cs        : std_logic;
+	signal ctlrphy_ras       : std_logic;
+	signal ctlrphy_cas       : std_logic;
+	signal ctlrphy_we        : std_logic;
+	signal ctlrphy_b         : std_logic_vector(bank_length-1 downto 0);
+	signal ctlrphy_a         : std_logic_vector(addr_length-1 downto 0);
+	signal ctlrphy_dmo       : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_dqi       : std_logic_vector(sdram_gear*data_length-1 downto 0);
+	signal ctlrphy_dqt       : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqo       : std_logic_vector(sdram_gear*data_length-1 downto 0);
+	signal ctlrphy_sto       : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sti       : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal sdram_sti         : std_logic_vector(sdram_gear-1 downto 0);
+	signal sdram_dqs         : std_logic_vector(data_mask-1 downto 0);
 
-	alias  sio_clk       is videoio_clk;
-	signal si_frm        : std_logic;
-	signal si_irdy       : std_logic;
-	signal si_data       : std_logic_vector(0 to 8-1);
+	signal usblnk_frm        : std_logic;
+	signal usblnk_irdy       : std_logic;
+	signal usblnk_trdy       : std_logic := '1';
+	signal usblnk_data       : std_logic_vector(si_data'range);
 
-	signal so_frm        : std_logic;
-	signal so_trdy       : std_logic;
-	signal so_irdy       : std_logic;
-	signal so_end        : std_logic;
-	signal so_data       : std_logic_vector(8-1 downto 0);
+	signal setup_frm         : std_logic;
+	signal setup_irdy        : std_logic;
+	signal setup_trdy        : std_logic := '1';
+	signal setup_data        : std_logic_vector(si_data'range);
 
-	constant max_delay   : natural := 2**14;
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
+	signal iolink_frm        : std_logic;
+	signal iolink_irdy       : std_logic;
+	signal iolink_trdy       : std_logic;
+	signal iolink_data       : std_logic_vector(si_data'range);
 
-	constant inputs      : natural := hdo(settings)**".inputs";
-	signal input_clk     : std_logic;
-	signal input_lck     : std_logic;
-	signal input_chni    : std_logic_vector(4-1 downto 0);
-	signal input_chno    : std_logic_vector(4-1 downto 0);
-	signal input_ena     : std_logic;
-	signal input_sample  : std_logic_vector(13-1 downto 0);
-	signal input_enas    : std_logic := '0';
-	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
-	signal tp            : std_logic_vector(1 to 32);
-
-	signal usblnk_frm    : std_logic;
-	signal usblnk_irdy   : std_logic;
-	signal usblnk_trdy   : std_logic := '1';
-	signal usblnk_data   : std_logic_vector(si_data'range);
-
-	signal setup_frm    : std_logic;
-	signal setup_irdy   : std_logic;
-	signal setup_trdy   : std_logic := '1';
-	signal setup_data   : std_logic_vector(si_data'range);
-
-	signal iolink_frm    : std_logic;
-	signal iolink_irdy   : std_logic;
-	signal iolink_trdy   : std_logic;
-	signal iolink_data   : std_logic_vector(si_data'range);
-
-	signal adc_clk       : std_logic;
-
-	constant chip_data   : string  := settings**".sdram.chip_data={}";
-	constant phy_data    : string  := settings**".sdram.phy_data={}";
-	constant bank_length : natural := hdo(chip_data)**".orgz.addr.ba=1";
-	constant addr_length : natural := hdo(chip_data)**".orgz.addr.row=1";
-	constant data_mask   : natural := hdo(chip_data)**".orgz.data.dm=1";
-	constant data_length : natural := hdo(chip_data)**".orgz.data.dq=1";
-	constant sdram_gear  : natural := hdo(phy_data)**".orgz.gear=1.";
-
-	signal ctlr_clk      : std_logic;
-	signal sdrsys_rst    : std_logic;
-
-	signal ctlrphy_rst   : std_logic;
-	signal ctlrphy_cke   : std_logic;
-	signal ctlrphy_cs    : std_logic;
-	signal ctlrphy_ras   : std_logic;
-	signal ctlrphy_cas   : std_logic;
-	signal ctlrphy_we    : std_logic;
-	signal ctlrphy_b     : std_logic_vector(bank_length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(addr_length-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*data_length-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*data_length-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
-	signal sdrphy_sti    : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
-	signal sdram_dqs     : std_logic_vector(data_mask-1 downto 0);
+	signal tp                : std_logic_vector(1 to 32);
 
 begin
 
@@ -204,8 +198,8 @@ begin
 	generic map (
 		settings     => settings**".waveform.video")
 	port map (
-		clk_rst     => right,
-		clk_ref     => clk_25mhz,
+		rst         => right,
+		clk         => sys_clk,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -213,11 +207,7 @@ begin
 		video_lck   => video_lck);
 
 	usb_g : if io_link="io_usb" generate
-		signal usb_cken : std_logic;
-		signal fltr_en : std_logic;
-		signal fltr_bs : std_logic;
-		signal fltr_d  : std_logic;
-
+		constant usb_oversampling : natural := 3;
 	begin
 
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
@@ -227,7 +217,6 @@ begin
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
-
 		-- led(7) <= tp(4);
 
 		usb_e : entity hdl4fpga.sio_dayusb
@@ -235,7 +224,6 @@ begin
 			usb_oversampling => usb_oversampling)
 		port map (
 			usb_clk   => videoio_clk,
-			usb_cken  => usb_cken,
 			usb_dp    => usb_fpga_dp,
 			usb_dn    => usb_fpga_dn,
 
@@ -377,6 +365,8 @@ begin
 	-- iolink_data <= usblnk_data;
 	inputs_b : block
 		constant mux_sampling : natural := 10;
+		constant max_delay   : natural := 2**14;
+		constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
 		signal rgtr_id      : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv      : std_logic;
@@ -520,7 +510,7 @@ begin
 		input_data  => input_samples,
 
 		ctlr_clk     => ctlr_clk,
-		ctlr_rst     => sdrsys_rst,
+		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "000",
 		ctlr_cl      => settings**".sdram.cl",
 
@@ -552,9 +542,9 @@ begin
 	port map (
 		clk => ctlr_clk,
 		di  => ctlrphy_sto,
-		do  => sdrphy_sti);
+		do  => sdram_sti);
 
-	sdramphy_g : if chip_data/="{}" and phy_data/="{}" generate
+	sdramphy_g : if string'(hdo(settings)**".sdram={}") /= "={}" generate
 		sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 		generic map (
 			gear       => sdram_gear,
@@ -567,7 +557,7 @@ begin
 			bypass     => false)
 		port map (
 			sclk       => ctlr_clk,
-			rst        => sdrsys_rst,
+			rst        => ctlr_rst,
 
 			sys_cs(0)  => ctlrphy_cs,
 			sys_cke(0) => ctlrphy_cke,
@@ -581,7 +571,7 @@ begin
 			sys_dqt    => ctlrphy_dqt,
 			sys_dqo    => ctlrphy_dqi,
 			sys_sto    => ctlrphy_sti,
-			sys_sti    => sdrphy_sti,
+			sys_sti    => sdram_sti,
 
 			sdram_clk  => sdram_clk,
 			sdram_cke  => sdram_cke,
@@ -597,7 +587,7 @@ begin
 			sdram_dq   => sdram_d);
 	end generate;
 
-	nosdram_g : if chip_data="{}" or phy_data="{}" generate
+	nosdram_g : if string'(hdo(settings)**".sdram=")="{}" generate
 		sdram_clk  <= 'Z';
 		sdram_cke  <= 'Z';
 		sdram_csn  <= '1';
@@ -778,7 +768,7 @@ begin
 
 	max1112x_b : block
 		port (
-			clk_25mhz    : in  std_logic;
+			clk          : in  std_logic;
 			input_clk    : buffer std_logic;
 			input_ena    : buffer std_logic;
 			input_chni   : in  std_logic_vector( 4-1 downto 0);
@@ -790,7 +780,7 @@ begin
 			adc_miso     : in  std_logic;
 			adc_mosi     : out std_logic);
 		port map (
-			clk_25mhz    => clk_25mhz,
+			clk          => video_clk,
 			input_clk    => input_clk,
 			input_ena    => input_ena,
 			input_chni   => input_chni,
@@ -858,7 +848,7 @@ begin
 			CLKOS2_DIV       => adc1clkos2_div,
 			CLKOS3_DIV       => 3)
 		port map (
-			clki      => video_clk,
+			clki      => clk,
 			CLKFB     => adc1_clkos,
 			PHASESEL0 => '0', PHASESEL1 => '0',
 			PHASEDIR  => '0',
@@ -879,7 +869,7 @@ begin
 		sdram_dqs <= (others => ctlr_clk);
 		adc_clk   <= adc1_clkos2;
 		input_clk <= adc1_clkos2;
-		sdrsys_rst <= not adc1_lock;
+		ctlr_rst <= not adc1_lock;
 
 		process (input_clk)
 			constant n    : natural := 16;
@@ -966,10 +956,10 @@ begin
 		d1   => '0',
 		q    => adc_sclk);
 
-	process (clk_25mhz)
+	process (sys_clk)
 		variable cntr : unsigned(0 to 20-1);
 	begin
-		if rising_edge(clk_25mhz) then
+		if rising_edge(sys_clk) then
 			-- (gp(17), gn(17), gp(16), gn(16), gp(15), gn(15), gp(14), gn(14)) <= std_logic_vector(cntr(0 to 8-1));
 			(gp(24), gn(24), gp(25), gn(25), gp(26), gn(26), gp(27), gn(27)) <= std_logic_vector(cntr(0 to 8-1));
 			cntr := cntr + 1;

@@ -142,7 +142,7 @@ begin
 	generic map (
 		settings     => settings**".video")
 	port map (
-		clk_ref     => clk_48mhz,
+		clk         => clk_48mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -156,7 +156,7 @@ begin
 			"gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	port map (
 		ctlr_rst     => ctlr_rst,
-		clk_ref      => clk_48MHz,
+		clk          => clk_48MHz,
 		sclk         => ctlr_sclk,
 		eclk         => ctlr_eclk,
 		phy_rst      => sdrphy_rst,

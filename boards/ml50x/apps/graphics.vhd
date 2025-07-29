@@ -49,10 +49,23 @@ architecture graphics of ml50x is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                 & ',' &
 			"cl:"        & "'010'}}";
 
+	signal sys_rst        : std_logic;
+	signal sys_clk        : std_logic;
+
+	signal video_clk      : std_logic;
+	signal video_lckd     : std_logic;
+	signal video_shift_clk : std_logic;
+	signal video_hzsync   : std_logic;
+	signal video_vtsync   : std_logic;
+    signal video_blank    : std_logic;
+    signal video_pixel    : std_logic_vector(0 to 32-1);
+	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+	signal videoio_clk    : std_logic;
+
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
-	constant byte_size    : natural := ddr2_d'length/ddr2_dm'length;
-
+	signal ctlr_rst       : std_logic;
+	signal ctlr_rst90     : std_logic;
 	signal ctlr_clk       : std_logic;
 	signal ctlr_clk90     : std_logic;
 	signal ctlr_clkx2     : std_logic;
@@ -100,7 +113,11 @@ architecture graphics of ml50x is
 	signal ddr2_dqo       : std_logic_vector(ddr2_d'length-1 downto 0);
 	signal ddr2_dqt       : std_logic_vector(ddr2_d'length-1 downto 0);
 
-	constant mem_size    : natural := 8*(1024*8);
+	alias  iodctrl_rst    : std_logic is sys_rst;
+	signal iodctrl_clk    : std_logic;
+	signal iodctrl_rdy    : std_logic;
+
+	constant mem_size     : natural := 8*(1024*8);
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
 	signal si_trdy        : std_logic;
@@ -111,33 +128,6 @@ architecture graphics of ml50x is
 	signal so_trdy        : std_logic;
 	signal so_data        : std_logic_vector(0 to 8-1);
 
-	signal video_clk      : std_logic;
-	signal video_lckd     : std_logic;
-	signal video_shift_clk : std_logic;
-	signal video_hs       : std_logic;
-	signal video_vs       : std_logic;
-    signal video_blank    : std_logic;
-    signal video_pixel    : std_logic_vector(0 to 32-1);
-	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
-	signal videoio_clk    : std_logic;
-
-	signal dd_hs          : std_logic;
-	signal dd_vs          : std_logic;
-	signal dd_pixel       : std_logic_vector(0 to 3-1);
-
-	alias red             : std_logic is hdr1(0);
-	alias green           : std_logic is hdr1(1);
-	alias blue            : std_logic is hdr1(2);
-	alias vs              : std_logic is hdr1(3);
-	alias hs              : std_logic is hdr1(4);
-
-	signal sys_rst        : std_logic;
-	signal sdrphy_rst0    : std_logic;
-	signal sdrphy_rst90   : std_logic;
-	alias  iodctrl_rst    : std_logic is sys_rst;
-	signal iodctrl_clk    : std_logic;
-	signal iodctrl_rdy    : std_logic;
-
 	signal gtx_rst        : std_logic;
 	signal gtx_clk        : std_logic;
 
@@ -145,25 +135,23 @@ architecture graphics of ml50x is
 	alias  sio_clk        : std_logic is gtx_clk;
 	alias  dmacfg_clk     : std_logic is gtx_clk;
 
-	signal userclk_bufg   : std_logic;
 	signal phyrxclk_bufg  : std_logic;
 	signal phytxclk_bufg  : std_logic;
 
 	signal tp_sel         : std_logic_vector(1 downto 0);
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
 	signal mii_tp         : std_logic_vector(1 to 32);
-	alias sys_clk is userclk_bufg;
 begin
 
 	clkin_ibufg : ibufg
 	port map (
 		I => user_clk,
-		O => userclk_bufg);
+		O => sys_clk);
 
-	process (userclk_bufg)
+	process (sys_clk)
 		variable tmr : unsigned(0 to 8-1) := (others => '0');
 	begin
-		if rising_edge(userclk_bufg) then
+		if rising_edge(sys_clk) then
 			if tmr(0)='0' then
 				tmr := tmr + 1;
 			end if;
@@ -184,13 +172,13 @@ begin
 		settings  => settings**".dcm")
 	port map (
 		rst          => sys_rst,
-		clk          => userclk_bufg,
+		clk          => sys_clk,
 		ctlr_clk     => ctlr_clk,
 		ctlr_clkx2   => ctlr_clkx2,
 		ctlr_clk90   => ctlr_clk90,
 		ctlr_clk90x2 => ctlr_clk90x2,
-		ctlr_rst      => sdrphy_rst0,
-		ctlr_rst90    => sdrphy_rst90);
+		ctlr_rst     => ctlr_rst,
+		ctlr_rst90   => ctlr_rst90);
 
 	iodctrl_b : block
 		signal clk_fpga : std_logic;
@@ -220,7 +208,7 @@ begin
 			clkfx_divide   => 4)
 		port map (
 			rst    => sys_rst,
-			clkin  => userclk_bufg,
+			clkin  => sys_clk,
 			clkfb  => '0',
 			clkfx  => clkfx, 
 			locked => locked);
@@ -421,14 +409,14 @@ begin
 
 		video_clk     => video_clk,
 		video_shift_clk => video_shift_clk,
-		video_hzsync  => video_hs,
-		video_vtsync  => video_vs,
+		video_hzsync  => video_hzsync,
+		video_vtsync  => video_vtsync,
 		video_blank   => video_blank,
 		video_pixel   => video_pixel,
 		dvid_crgb     => dvid_crgb,
 
 		ctlr_clk      => ctlr_clk,
-		ctlr_rst      => sdrphy_rst0,
+		ctlr_rst      => ctlr_rst,
 		ctlr_rtt      => "11",
 		ctlr_al       => "000",
 		ctlr_bl       => "011", -- Busrt length 8
@@ -504,7 +492,7 @@ begin
 		bank_size  => ddr2_ba'length,
 		addr_size  => ddr2_a'length,
 		word_size  => ddr2_d'length,
-		byte_size  => byte_size,
+		byte_size  => ddr2_d'length/ddr2_dm'length,
 		gear       => sdram_gear,
 		ba_latency => 1,
 		loopback   => false,
@@ -514,9 +502,9 @@ begin
 	port map (
 		tp_sel     => tp_sel,
 		tp         => tp_sdrphy,
-		rst        => sdrphy_rst0,
-		rst_shift  => sdrphy_rst90,
-		iod_clk    => userclk_bufg,
+		rst        => ctlr_rst,
+		rst_shift  => ctlr_rst90,
+		iod_clk    => sys_clk,
 		clk        => ctlr_clk,
 		clk_shift  => ctlr_clk90,
 		clkx2      => ctlr_clkx2,
@@ -575,8 +563,8 @@ begin
 		begin
 			if rising_edge(video_clk) then
 				dvi_de <= not video_blank;
-				dvi_h  <= video_hs;
-				dvi_v  <= video_vs;
+				dvi_h  <= video_hzsync;
+				dvi_v  <= video_vtsync;
 			end if;
 		end process;
 
@@ -651,9 +639,9 @@ begin
 		d2 => '0',
 		q  => phy_txc_gtxclk);
 	
-	process (userclk_bufg)
+	process (sys_clk)
 	begin
-		if rising_edge(userclk_bufg) then
+		if rising_edge(sys_clk) then
 			gpio_led <= tp_sdrphy(1 to 8);
 		end if;
 	end process;
