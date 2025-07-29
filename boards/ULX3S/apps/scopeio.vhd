@@ -37,8 +37,73 @@ use ecp5u.components.all;
 
 architecture scopeio of ulx3s is
 
+	constant vt_step  : string := "0.805664063e-3"; -- 3.3/2.0**12; -- Volts
+	constant io_link  : string := "io_usb";
+	constant settings : string := "{"                                                                       &   
+			"inputs:" & "8"                                                                                 & ',' &
+			"waveform:{"                                                                                    &
+				"video:{"                                                                                   &
+					"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'64mhz'", 36.0e6)) & ',' &
+					"videoio_freq:" & "36.0e6"                                                              & ',' &
+					"gear:"         & "2"                                                                   & ',' &
+					"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'1280x720'.'@60'.'64mhz'")    & ',' &
+					"pixel:{R:8,G:8,B:8}}"                                                                  & "," &
+				"num_of_segments:"  & "3"                                                                   & ',' &
+				"grid:{" &
+					"width:"  & natural'image(32*32+1) & ',' &
+					"height:" & natural'image( 6*32+1) & ',' &
+					"color:"  & "0xff_ff_00_ff"        & ',' &
+					"background-color: 0xff_00_00_00}" & ',' &
+				"axis:{" &
+					"horizontal:{"                             &
+						"unit:" & "31.25e-6"                   & ','  &
+						"scales:["                             &
+							natural'image(2**(0+0)*5**(0+0))   & ','  & -- [0]
+							natural'image(2**(0+0)*5**(0+0))   & ','  & -- [1]
+							natural'image(2**(0+0)*5**(0+0))   & ','  & -- [2]
+							natural'image(2**(0+0)*5**(0+0))   & ','  & -- [3]
+							natural'image(2**(0+0)*5**(0+0))   & ','  & -- [4]
+							natural'image(2**(1+0)*5**(0+0))   & ','  & -- [5]
+							natural'image(2**(2+0)*5**(0+0))   & ','  & -- [6]
+							natural'image(2**(0+0)*5**(1+0))   & ','  & -- [7]
+							natural'image(2**(0+1)*5**(0+1))   & ','  & -- [8]
+							natural'image(2**(1+1)*5**(0+1))   & ','  & -- [9]
+							natural'image(2**(2+1)*5**(0+1))   & ','  & -- [10]
+							natural'image(2**(0+1)*5**(1+1))   & ','  & -- [11]
+							natural'image(2**(0+2)*5**(0+2))   & ','  & -- [12]
+							natural'image(2**(1+2)*5**(0+2))   & ','  & -- [13]
+							natural'image(2**(2+2)*5**(0+2))   & ','  & -- [14]
+							natural'image(2**(0+2)*5**(1+2))   & "]," &  -- [15]
+						"color:"            & "0xff_00_00_00"  & ','  &
+						"background-color:" & "0xff_00_ff_ff}" & ','  &
+					"vertical:{" &
+						"unit:"  & "50.00e-3"         & ',' &
+						"width:" & natural'image(6*8) & ',' &
+						"color:" & "0xff_00_00_00"    & ',' &
+						"background-color : 0xff_00_ff_ff}}," &
+				"textbox:{"  &
+					"width:" & natural'image(6*32) & ',' &
+					"color:" & "0xff_ff_00_ff"     & ',' &
+					"background-color:" & "0xff_00_00_00}" & ',' &
+				"main:{" &
+					"top:27, left:5, right:0, bottom:0, vertical:27, horizontal:1, background-color: 0xff_00_00_00}," &
+				"segment:{" &
+					"top: 1, left:1, right:1, bottom:1, vertical: 1, horizontal:1, background-color: 0xff_ff_ff_ff}," &
+				"vt:[" &
+					"{text: GN14, step:" & vt_step & ", color: 0xff_00_ff_ff},"   & -- vt(0)
+					"{text: GP14, step:" & vt_step & ", color: 0xff_ff_ff_ff},"   & -- vt(1)
+					"{text: GN15, step:" & vt_step & ", color: 0xff_00_ff_ff},"   & -- vt(2)
+					"{text: GP15, step:" & vt_step & ", color: 0xff_ff_ff_ff},"   & -- vt(3)
+					"{text: GN16, step:" & vt_step & ", color: 0xff_00_ff_ff},"   & -- vt(4)
+					"{text: GP16, step:" & vt_step & ", color: 0xff_ff_ff_ff},"   & -- vt(5)
+					"{text: GN17, step:" & vt_step & ", color: 0xff_00_ff_ff},"   & -- vt(6)
+					"{text: GP17, step:" & vt_step & ", color: 0xff_ff_ff_ff}]}," & -- vt(7)
+			"sdram:{" &
+				"cl:"        & "'010'"                                         & "," &
+				"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E={}") & ',' &
+				"phy_data:"  & string'(hdo(phy_db)**".ecp5g1={}")              & "}}";
+
 	constant tsttab : boolean := false;
-	constant io_link      : string := "io_usb";
 
 	constant adc1clkref_freq : real := 64.0e6;
 	constant adc1clki_div    : natural := 5;
@@ -60,7 +125,7 @@ architecture scopeio of ulx3s is
 	signal video_vtsync  : std_logic;
 	signal video_vton    : std_logic;
 	signal video_blank   : std_logic;
-	signal video_pixel   : std_logic_vector(0 to 24-1);
+	signal video_pixel   : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
 	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
 
 	alias  sio_clk       is videoio_clk;
@@ -77,14 +142,13 @@ architecture scopeio of ulx3s is
 	constant max_delay   : natural := 2**14;
 	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
 
-	constant inputs      : natural := 8;
+	constant inputs      : natural := hdo(settings)**".inputs";
 	signal input_clk     : std_logic;
 	signal input_lck     : std_logic;
 	signal input_chni    : std_logic_vector(4-1 downto 0);
 	signal input_chno    : std_logic_vector(4-1 downto 0);
 	signal input_ena     : std_logic;
 	signal input_sample  : std_logic_vector(13-1 downto 0);
-	constant vt_step     : real := 3.3/2.0**(input_sample'length-1); -- Volts
 	signal input_enas    : std_logic := '0';
 	signal input_samples : std_logic_vector(0 to inputs*input_sample'length-1);
 	signal tp            : std_logic_vector(1 to 32);
@@ -105,72 +169,6 @@ architecture scopeio of ulx3s is
 	signal iolink_data   : std_logic_vector(si_data'range);
 
 	signal adc_clk       : std_logic;
-
-	constant time_factors : string := '['      &
-		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [0]
-		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [1]
-		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [2]
-		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [3]
-		natural'image(2**(0+0)*5**(0+0)) & ',' & -- [4]
-		natural'image(2**(1+0)*5**(0+0)) & ',' & -- [5]
-		natural'image(2**(2+0)*5**(0+0)) & ',' & -- [6]
-		natural'image(2**(0+0)*5**(1+0)) & ',' & -- [7]
-		natural'image(2**(0+1)*5**(0+1)) & ',' & -- [8]
-		natural'image(2**(1+1)*5**(0+1)) & ',' & -- [9]
-		natural'image(2**(2+1)*5**(0+1)) & ',' & -- [10]
-		natural'image(2**(0+1)*5**(1+1)) & ',' & -- [11]
-		natural'image(2**(0+2)*5**(0+2)) & ',' & -- [12]
-		natural'image(2**(1+2)*5**(0+2)) & ',' & -- [13]
-		natural'image(2**(2+2)*5**(0+2)) & ',' & -- [14]
-		natural'image(2**(0+2)*5**(1+2)) & ']';  -- [15]
-
-	constant settings : string := compact("{" &   
-			"inputs:"        & natural'image(inputs)   & ',' &
-			"waveform:{"     &
-				"video:{"                                                                                   &
-					"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'64mhz'", 36.0e6)) & ',' &
-					"videoio_freq:" & "36.0e6"                                                              & ',' &
-					"gear:"         & "2"                                                                   & ',' &
-					"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'1280x720'.'@60'.'64mhz'")    & ',' &
-					"pixel:{R:8,G:8,B:8}}"                                                                  & "," &
-				"num_of_segments:"  & "3"                                                                   & ',' &
-				"grid:{" &
-					"width:"  & natural'image(32*32+1) & ',' &
-					"height:" & natural'image( 6*32+1) & ',' &
-					"color:"  & "0xff_ff_00_ff"        & ',' &
-					"background-color: 0xff_00_00_00}" & ',' &
-				"axis:{" &
-					"horizontal:{"                                   &
-						"unit:"             & "31.25e-6"       & ',' &
-						"scales:"           & time_factors     & ',' &
-						"color:"            & "0xff_00_00_00"  & ',' &
-						"background-color:" & "0xff_00_ff_ff}" & ',' &
-					"vertical:{" &
-						"unit:"  & "50.00e-3"         & ',' &
-						"width:" & natural'image(6*8) & ',' &
-						"color:" & "0xff_00_00_00"    & ',' &
-						"background-color : 0xff_00_ff_ff}}," &
-				"textbox:{"  &
-					"width:" & natural'image(6*32) & ',' &
-					"color:" & "0xff_ff_00_ff"     & ',' &
-					"background-color:" & "0xff_00_00_00}" & ',' &
-				"main:{" &
-					"top:27, left:5, right:0, bottom:0, vertical:27, horizontal:1, background-color: 0xff_00_00_00}," &
-				"segment:{" &
-					"top: 1, left:1, right:1, bottom:1, vertical: 1, horizontal:1, background-color: 0xff_ff_ff_ff}," &
-				"vt:[" &
-					"{text: GN14, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(0)
-					"{text: GP14, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(1)
-					"{text: GN15, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(2)
-					"{text: GP15, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(3)
-					"{text: GN16, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(4)
-					"{text: GP16, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff},"   & -- vt(5)
-					"{text: GN17, step:" & real'image(vt_step) & ", color: 0xff_00_ff_ff},"   & -- vt(6)
-					"{text: GP17, step:" & real'image(vt_step) & ", color: 0xff_ff_ff_ff}]}," & -- vt(7)
-			"sdram:{" &
-				"cl:"        & "'010'"                                         & "," &
-				"chip_data:" & string'(hdo(sdram_db)**".MT48LC16M16MA2-7E={}") & ',' &
-				"phy_data:"  & string'(hdo(phy_db)**".ecp5g1={}")              & "}}");
 
 	constant chip_data   : string  := settings**".sdram.chip_data={}";
 	constant phy_data    : string  := settings**".sdram.phy_data={}";
