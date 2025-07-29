@@ -443,7 +443,7 @@ package body hdo is
 				exit;
 			end if;
 			if not isdigit(value(idx)) then -- Xilinx ISE 14.7 warning complain
-				report "wrong character to_real"
+				report "to_real() : wrong character " & character'image(value(idx)) & " in value : " & value
 				severity failure; 
 			end if; 
 			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
@@ -765,464 +765,464 @@ package body hdo is
 			end if;                                                      --|note
 		end;                                                             --|note
 
-    	procedure parse_domain (
-    		constant object          : in    string;
-    		variable position        : inout positive;
-    		variable domain_position : inout positive;
-    		variable domain_length   : inout natural) is
-    		variable open_char       : character;
-    	begin
-    		skipws(object, position);
+		procedure parse_domain (
+			constant object          : in    string;
+			variable position        : inout positive;
+			variable domain_position : inout positive;
+			variable domain_length   : inout natural) is
+			variable open_char       : character;
+		begin
+			skipws(object, position);
 
-    		assert (log_flags/log_parsedomain) mod 2=0 --|note
-    			report indent("@parsedomain")          --|note
-    			severity note;                         --|note
+			assert (log_flags/log_parsedomain) mod 2=0 --|note
+				report indent("@parsedomain")          --|note
+				severity note;                         --|note
 
-    		domain_length := 0;
-    		for l in object'range loop             -- Avoid synthesizes tools loop-warnings
-    			exit when position > object'right; -- Avoid synthesizes tools loop-warnings
+			domain_length := 0;
+			for l in object'range loop             -- Avoid synthesizes tools loop-warnings
+				exit when position > object'right; -- Avoid synthesizes tools loop-warnings
 
-    			assert (log_flags/log_parsedomain) mod 2=0         --|note
-    				report indent(field("path", object, position)) --|note
-    				severity note;                                 --|note
+				assert (log_flags/log_parsedomain) mod 2=0         --|note
+					report indent(field("path", object, position)) --|note
+					severity note;                                 --|note
 
-    			case object(position) is
-    			when '['|'{' =>
-    				open_char := object(position);
-    				position    := position + 1;
-    				parse_string(object, position, domain_position, domain_length);
+				case object(position) is
+				when '['|'{' =>
+					open_char := object(position);
+					position    := position + 1;
+					parse_string(object, position, domain_position, domain_length);
 
-    				assert ((log_flags/log_parsedomain) mod 2=0)                                 --|note
-    					report indent(field("position", object, domain_position, domain_length)) --|note
-    					severity note;                                                           --|note
+					assert ((log_flags/log_parsedomain) mod 2=0)                                 --|note
+						report indent(field("position", object, domain_position, domain_length)) --|note
+						severity note;                                                           --|note
 
-    				if domain_length=0 then
-    					assert false
-    						report "invalid path : " & field(object,position)
-    						severity failure;
-    				end if;
+					if domain_length=0 then
+						assert false
+							report "invalid path : " & field(object,position)
+							severity failure;
+					end if;
 
-    				skipws(object, position);
-    				case object(position) is
-    				when ']' => 
-    					if open_char/='[' then -- Xilinx ISE 14.7 warning complain
-    						assert false                                                                                             
-    							report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
-    							severity failure;                                                                                       
-    					end if;                                                                                                        
+					skipws(object, position);
+					case object(position) is
+					when ']' => 
+						if open_char/='[' then -- Xilinx ISE 14.7 warning complain
+							assert false                                                                                             
+								report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
+								severity failure;                                                                                       
+						end if;                                                                                                        
 
-    					assert ((log_flags/log_parsedomain) mod 2=0)                   --|note
-    						report indent("closing character " & at(object, position)) --|note
-    						severity note;                                             --|note
+						assert ((log_flags/log_parsedomain) mod 2=0)                   --|note
+							report indent("closing character " & at(object, position)) --|note
+							severity note;                                             --|note
 
-    					position := position + 1;
-    				when '}' => 
+						position := position + 1;
+					when '}' => 
 
-    					if open_char/='{' then -- Xilinx ISE 14.7 warning complain
-    						assert false
-    							report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
-    							severity failure; 
-    					end if;
+						if open_char/='{' then -- Xilinx ISE 14.7 warning complain
+							assert false
+								report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
+								severity failure; 
+						end if;
 
-    					assert ((log_flags/log_parsedomain) mod 2=0)                   --|note
-    						report indent("closing character " & at(object, position)) --|note
-    						severity note;                                             --|note
+						assert ((log_flags/log_parsedomain) mod 2=0)                   --|note
+							report indent("closing character " & at(object, position)) --|note
+							severity note;                                             --|note
 
-    					position := position + 1;
+						position := position + 1;
 
-    				when others =>
-    					assert false
-    						report "wrong token : " & at(object, position)
-    						severity failure;
-    				end case;
-    				exit;
-    			when '.' =>
-    				position := position + 1;
-    				skipws(object, position);
-    				parse_string(object, position, domain_position, domain_length);
-    				if domain_length=0 then                                         --|note
-    					assert false                                                --|note
-    						report indent("null path : " & field(object, position)) --|note
-    						severity note;                                          --|note
-    				end if;                                                         --|note
-    				position := domain_position+domain_length;
-    				exit;
-    			when others =>
-    				domain_length := 0;
-    				assert ((log_flags/log_parsedomain) mod 2=0) --|note
-    					report indent("null")                    --|note
-    					severity note;                           --|note
-    				exit;
-    			end case;
-    		end loop;
+					when others =>
+						assert false
+							report "wrong token : " & at(object, position)
+							severity failure;
+					end case;
+					exit;
+				when '.' =>
+					position := position + 1;
+					skipws(object, position);
+					parse_string(object, position, domain_position, domain_length);
+					if domain_length=0 then                                         --|note
+						assert false                                                --|note
+							report indent("null path : " & field(object, position)) --|note
+							severity note;                                          --|note
+					end if;                                                         --|note
+					position := domain_position+domain_length;
+					exit;
+				when others =>
+					domain_length := 0;
+					assert ((log_flags/log_parsedomain) mod 2=0) --|note
+						report indent("null")                    --|note
+						severity note;                           --|note
+					exit;
+				end case;
+			end loop;
 
-    		assert ((log_flags/log_parsedomain) mod 2=0)                                 --|note
-    			report indent("domain " & field(object, domain_position, domain_length)) --|note
-    			severity note;                                                           --|note
+			assert ((log_flags/log_parsedomain) mod 2=0)                                 --|note
+				report indent("domain " & field(object, domain_position, domain_length)) --|note
+				severity note;                                                           --|note
 
-    		assert (log_flags/log_parsedomain) mod 2=0 --|note
-    			report indent("#parsedomain")          --|note
-    			severity note;                         --|note
-    	end;
+			assert (log_flags/log_parsedomain) mod 2=0 --|note
+				report indent("#parsedomain")          --|note
+				severity note;                         --|note
+		end;
 
-    	procedure parse_path (
-    		constant object        : in    string;
-    		variable position      : inout natural;
-    		variable path_position : inout positive;
-    		variable path_length   : inout natural) is
-    		variable tag_position  : positive;
-    		variable tag_length    : natural;
-    	begin
+		procedure parse_path (
+			constant object        : in    string;
+			variable position      : inout natural;
+			variable path_position : inout positive;
+			variable path_length   : inout natural) is
+			variable tag_position  : positive;
+			variable tag_length    : natural;
+		begin
 			assert ((log_flags/log_parsepath) mod 2=0) --|note
 				report indent("@parsepath")            --|note
 				severity note;                         --|note
 
-    		skipws(object, position);
-    		path_position := position;
-    		assert ((log_flags/log_parsepath) mod 2=0)          --|note
-    			report indent("path" & field(object, position)) --|note
-    			severity note;                                  --|note
+			skipws(object, position);
+			path_position := position;
+			assert ((log_flags/log_parsepath) mod 2=0)          --|note
+				report indent("path" & field(object, position)) --|note
+				severity note;                                  --|note
 
-    		for i in object'range loop
-    			parse_domain(object, position, tag_position, tag_length);
-    			assert ((log_flags/log_parsepath) mod 2=0)                           --|note
-    				report indent("domain" & field(object,tag_position, tag_length)) --|note
-    				severity note;                                                   --|note
+			for i in object'range loop
+				parse_domain(object, position, tag_position, tag_length);
+				assert ((log_flags/log_parsepath) mod 2=0)                           --|note
+					report indent("domain" & field(object,tag_position, tag_length)) --|note
+					severity note;                                                   --|note
 
-    			if tag_length=0 then
-    				path_length := position-path_position;
-    				exit;
-    			end if;
-    		end loop;
+				if tag_length=0 then
+					path_length := position-path_position;
+					exit;
+				end if;
+			end loop;
 
-    		assert ((log_flags/log_parsepath) mod 2=0)                          --|note
-    			report indent("path" & field(object,path_position,path_length)) --|note
-    			severity note;                                                  --|note
+			assert ((log_flags/log_parsepath) mod 2=0)                          --|note
+				report indent("path" & field(object,path_position,path_length)) --|note
+				severity note;                                                  --|note
 
 			assert ((log_flags/log_parsepath) mod 2=0) --|note
 				report indent("#parsepath")            --|note
 				severity note;                         --|note
-    	end;
+		end;
 
-    	procedure parse_value (
-    		constant object         : in    string;
-    		variable position       : inout positive;
-    		variable value_position : inout positive;
-    		variable value_length   : inout natural) is
-    		variable stack : string(1 to 32);
-    		variable stptr : positive := stack'left;
-    		procedure push (
-    			variable stptr : inout positive;
-    			constant char : in character) is
-    		begin
-    			stack(stptr) := char;
-    			stptr := stptr + 1;
-    		end;
+		procedure parse_value (
+			constant object         : in    string;
+			variable position       : inout positive;
+			variable value_position : inout positive;
+			variable value_length   : inout natural) is
+			variable stack : string(1 to 32);
+			variable stptr : positive := stack'left;
+			procedure push (
+				variable stptr : inout positive;
+				constant char : in character) is
+			begin
+				stack(stptr) := char;
+				stptr := stptr + 1;
+			end;
 
-    		procedure pop (
-    			variable stptr : inout positive) is
-    		begin
-    			stptr := stptr - 1;
-    		end;
+			procedure pop (
+				variable stptr : inout positive) is
+			begin
+				stptr := stptr - 1;
+			end;
 
-    		variable aphos  : boolean := false;
-    		variable bkslh  : boolean := false;
-    		variable list   : boolean := false;
-    	begin
+			variable aphos  : boolean := false;
+			variable bkslh  : boolean := false;
+			variable list   : boolean := false;
+		begin
 			assert ((log_flags/log_parsevalue) mod 2=0) --|note
 				report indent("@parsevalue")            --|note
 				severity note;                          --|note
 
-    		skipws(object, position);
-    		value_position := position;
-    		for i in value_position to object'right loop
-    			if not aphos and not bkslh then
-    				case object(position) is
-    				when '['|'{' =>
-    					if stptr=stack'left then 
-    						if value_position=position then
-    							list := true;
-    						end if;
-    					end if;
-    					push(stptr, object(position));
-    				when ',' =>
-    					if stptr=stack'left then
-    						exit;
-    					end if;
-    				when ']' =>
-    					if stptr/=stack'left then
-    						if stack(stptr-1)/='[' then
-    							assert false
-    								report "parse_value # close path " & at(object,position) & " expecting " & at(stack, stptr-1)
-    								severity failure;
-    						end if;
-    						pop(stptr);
-    					else
-    						exit;
-    					end if;
-    				when '}' =>
-    					if stptr/=stack'left then
-    						if stack(stptr-1)/='{' then
-    							assert false
-    								report "parse_value # close path " & at(object,position) & " expecting " & at(stack, stptr-1)
+			skipws(object, position);
+			value_position := position;
+			for i in value_position to object'right loop
+				if not aphos and not bkslh then
+					case object(position) is
+					when '['|'{' =>
+						if stptr=stack'left then 
+							if value_position=position then
+								list := true;
+							end if;
+						end if;
+						push(stptr, object(position));
+					when ',' =>
+						if stptr=stack'left then
+							exit;
+						end if;
+					when ']' =>
+						if stptr/=stack'left then
+							if stack(stptr-1)/='[' then
+								assert false
+									report "parse_value # close path " & at(object,position) & " expecting " & at(stack, stptr-1)
 									severity failure;
-    						end if;
-    						pop(stptr);
-    					else
-    						exit;
-    					end if;
-    				when others =>
-    				end case;
-    			end if;
-    			if not bkslh then
-    				if object(position)='\' then
-    					bkslh := true;
-    				elsif object(position)=''' then
-    					aphos := not aphos;
-    				end if;
-    			else
-    				bkslh := false;
-    			end if;
-    			position := position + 1;
-    			if list then
-    				if stptr=stack'left then
-    					exit;
-    				end if;
-    			end if;
-    		end loop;
-    		value_length := position-value_position;
-    		assert ((log_flags/log_parsevalue) mod 2=0)                            --|note
-    			report indent(field("value", object,value_position, value_length)) --|note
-    			severity note;                                                     --|note
+							end if;
+							pop(stptr);
+						else
+							exit;
+						end if;
+					when '}' =>
+						if stptr/=stack'left then
+							if stack(stptr-1)/='{' then
+								assert false
+									report "parse_value # close path " & at(object,position) & " expecting " & at(stack, stptr-1)
+									severity failure;
+							end if;
+							pop(stptr);
+						else
+							exit;
+						end if;
+					when others =>
+					end case;
+				end if;
+				if not bkslh then
+					if object(position)='\' then
+						bkslh := true;
+					elsif object(position)=''' then
+						aphos := not aphos;
+					end if;
+				else
+					bkslh := false;
+				end if;
+				position := position + 1;
+				if list then
+					if stptr=stack'left then
+						exit;
+					end if;
+				end if;
+			end loop;
+			value_length := position-value_position;
+			assert ((log_flags/log_parsevalue) mod 2=0)                            --|note
+				report indent(field("value", object,value_position, value_length)) --|note
+				severity note;                                                     --|note
 
 			assert ((log_flags/log_parsevalue) mod 2=0) --|note
 				report indent("#parsevalue")            --|note
 				severity note;                          --|note
-    	end;
+		end;
 
-    	procedure parse_tagvaluepath (
-    		constant object         : string;  -- Xilinx ISE bug left and right are not sent according slice
-    		variable position       : inout positive;
-    		variable tag_position   : inout positive;
-    		variable tag_length     : inout natural;
-    		variable value_position : inout positive;
-    		variable value_length   : inout natural;
-    		variable path_position  : inout positive;
-    		variable path_length    : inout natural) is
-    	begin
+		procedure parse_tagvaluepath (
+			constant object         : string;  -- Xilinx ISE bug left and right are not sent according slice
+			variable position       : inout positive;
+			variable tag_position   : inout positive;
+			variable tag_length     : inout natural;
+			variable value_position : inout positive;
+			variable value_length   : inout natural;
+			variable path_position  : inout positive;
+			variable path_length    : inout natural) is
+		begin
 
-    		assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
-    			report indent("@tagvaluepath")                 --|note
-    			severity note;                                 --|note
+			assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
+				report indent("@tagvaluepath")                 --|note
+				severity note;                                 --|note
 
 			if position > object'right then
 				assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
 					report indent("#tagvaluepath")                 --|note
 					severity note;                                 --|note
-				return;
-			end if;
+					-- return; -- Xilinx 14.7 doesn't like a return in a procedure
+			else
+    			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                            --|note
+    				report indent(field("object", object, position, object'right-position+1)) --|note
+    				severity note;                                                            --|note
 
-    		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                           --|note
-    			report indent(field("object", object, position, object'right-position+1)) --|note
-    			severity note;                                                           --|note
+    			parse_string(object, position, value_position, value_length);
+    			skipws(object, position);
+    			tag_position := value_position;
+    			tag_length   := 0;
+    			if position <= object'right then
+    				if value_length=0 then
+    					tag_length     := 0;
+    					value_position := position;
+    					value_length   := object'right-position+1; 
+    					parse_value(object, position, value_position, value_length);
+    					if position > object'right then                                            --|note
+    						assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
+    							report indent(field("value",object, value_position, value_length)) --|note
+    							severity note;                                                     --|note
+    					else                                                                       --|note
+    						assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
+    							report indent(field("value",object, value_position, value_length)) --|note
+    							severity note;                                                     --|note
+    					end if;                                                                    --|note
+    				elsif object(position)/=':' then
+    					tag_length     := 0;
+    					tag_position   := value_position;
 
-    		parse_string(object, position, value_position, value_length);
-    		skipws(object, position);
-    		tag_position := value_position;
-    		tag_length   := 0;
-    		if position <= object'right then
-    			if value_length=0 then
-    				tag_length     := 0;
-    				value_position := position;
-    				value_length   := object'right-position+1; 
-    				parse_value(object, position, value_position, value_length);
-    				if position > object'right then                                            --|note
-    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
-    						report indent(field("value",object, value_position, value_length)) --|note
-    						severity note;                                                     --|note
-    				else                                                                       --|note
-    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
-    						report indent(field("value",object, value_position, value_length)) --|note
-    						severity note;                                                     --|note
-    				end if;                                                                    --|note
-    			elsif object(position)/=':' then
-    				tag_length     := 0;
-    				tag_position   := value_position;
+    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
+    						report indent(field("value", object, value_position, value_length)) --|note
+    						severity note;                                                      --|note
+    				else
+    					tag_position   := value_position;
+    					tag_length     := value_length;
+    					position       := position + 1;
+    					skipws(object, position);
+    					parse_value(object, position, value_position, value_length);
 
-    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
-    					report indent(field("value", object, value_position, value_length)) --|note
-    					severity note;                                                      --|note
+    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
+    						report indent(field("tag",   object, tag_position,   tag_length))   --|note
+    						severity note;                                                      --|note
+    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
+    						report indent(field("value", object, value_position, value_length)) --|note
+    						severity note;                                                      --|note
+    				end if;
     			else
-    				tag_position   := value_position;
-    				tag_length     := value_length;
-    				position       := position + 1;
-    				skipws(object, position);
-    				parse_value(object, position, value_position, value_length);
-
-    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
-    					report indent(field("tag",   object, tag_position,   tag_length))   --|note
-    					severity note;                                                      --|note
-    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
-    					report indent(field("value", object, value_position, value_length)) --|note
-    					severity note;                                                      --|note
+    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                       --|note
+    					report indent(field("string", object, value_position, value_length)) --|note
+    					severity note;                                                       --|note
     			end if;
-    		else
-    			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                       --|note
-    				report indent(field("string", object, value_position, value_length)) --|note
-    				severity note;                                                       --|note
-    		end if;
-    		skipws(object, position);
-    		parse_path(object, position, path_position, path_length);
-    		assert ((log_flags/log_parsetagvaluepath) mod 2=0)                  --|note
-    			report indent(field("path", object,path_position, path_length)) --|note
-    			severity note;                                                  --|note
+    			skipws(object, position);
+    			parse_path(object, position, path_position, path_length);
+    			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                  --|note
+    				report indent(field("path", object,path_position, path_length)) --|note
+    				severity note;                                                  --|note
 
-			assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
-				report indent("#parsetagvaluepath")            --|note
-				severity note;                                 --|note
-    	end;
-    		
-    	procedure parse_tagvaluepathdefault (
-    		constant object           : in    string;
-    		variable position         : inout positive;
-    		variable tag_position     : inout positive;
-    		variable tag_length       : inout natural;
-    		variable value_position   : inout positive;
-    		variable value_length     : inout natural;
-    		variable path_position    : inout positive;
-    		variable path_length      : inout natural;
-    		variable default_position : inout positive;
-    		variable default_length   : inout natural) is
-    	begin
+    			assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
+    				report indent("#parsetagvaluepath")            --|note
+    				severity note;                                 --|note
+			end if;
+		end;
+			
+		procedure parse_tagvaluepathdefault (
+			constant object           : in    string;
+			variable position         : inout positive;
+			variable tag_position     : inout positive;
+			variable tag_length       : inout natural;
+			variable value_position   : inout positive;
+			variable value_length     : inout natural;
+			variable path_position    : inout positive;
+			variable path_length      : inout natural;
+			variable default_position : inout positive;
+			variable default_length   : inout natural) is
+		begin
 			assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0) --|note
 				report indent("@tagvaluepathdefault")                 --|note
 				severity note;                                        --|note
 
-    		parse_tagvaluepath(
-    			object,         position,
-    			tag_position,   tag_length, 
-    			value_position, value_length, 
-    			path_position,  path_length);
+			parse_tagvaluepath(
+				object,         position,
+				tag_position,   tag_length, 
+				value_position, value_length, 
+				path_position,  path_length);
 
-    		skipws(object, position);
-    		default_position := position+1;
+			skipws(object, position);
+			default_position := position+1;
 			default_length   := 0;
-    		if path_length/=0 then
-    			if object'right >= position then
-    				if object(position)='=' then
-    					default_length := object'right-position;
-    					assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                     --|note
-    						report indent(field("default", object, default_position, default_length)) --|note
-    						severity note;                                                            --|note
-    				end if;
-    			end if;
-    		end if;
+			if path_length/=0 then
+				if object'right >= position then
+					if object(position)='=' then
+						default_length := object'right-position;
+						assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0)                     --|note
+							report indent(field("default", object, default_position, default_length)) --|note
+							severity note;                                                            --|note
+					end if;
+				end if;
+			end if;
 
 			assert ((log_flags/log_parsetagvaluepathdefault) mod 2=0) --|note
 				report indent("#tagvaluepathdefault")                 --|note
 				severity note;                                        --|note
-    	end;
+		end;
 
-    	procedure locate_value (
-    		constant object          : in    string;
-    		variable position        : inout positive;
-    		constant domain_position : in    positive;
-    		constant domain_length   : in    positive;
-    		variable tag_position    : inout positive;
-    		variable tag_length      : inout natural;
-    		variable value_position  : inout positive;
-    		variable value_length    : inout natural) is
-    		variable path_position   : positive;
-    		variable path_length     : natural;
-    		variable default_position : positive;
-    		variable default_length : natural;
-    		variable index          : natural;
-    		variable open_char      : character;
-    		variable closed         : boolean;
-    	begin
+		procedure locate_value (
+			constant object          : in    string;
+			variable position        : inout positive;
+			constant domain_position : in    positive;
+			constant domain_length   : in    positive;
+			variable tag_position    : inout positive;
+			variable tag_length      : inout natural;
+			variable value_position  : inout positive;
+			variable value_length    : inout natural) is
+			variable path_position   : positive;
+			variable path_length     : natural;
+			variable default_position : positive;
+			variable default_length : natural;
+			variable index          : natural;
+			variable open_char      : character;
+			variable closed         : boolean;
+		begin
 
 			assert ((log_flags/log_locatevalue) mod 2=0) --|note
 				report indent("@locatevalue")            --|note
 				severity note;                           --|note
 	
-    		assert ((log_flags/log_locatevalue) mod 2=0)          --|note
-    			report indent("object" & field(object, position)) --|note
-    			severity note;                                    --|note
+			assert ((log_flags/log_locatevalue) mod 2=0)          --|note
+				report indent("object" & field(object, position)) --|note
+				severity note;                                    --|note
 
-    		parse_tagvaluepathdefault(
-    			object,           position,
-    			tag_position,     tag_length, 
-    			value_position,   value_length, 
-    			path_position,    path_length, 
-    			default_position, default_length);
+			parse_tagvaluepathdefault(
+				object,           position,
+				tag_position,     tag_length, 
+				value_position,   value_length, 
+				path_position,    path_length, 
+				default_position, default_length);
 
-    		position       := value_position;
-    		value_length   := 0;
-    		value_position := tag_position;
-    		index := 0;
-    		closed := true;
+			position       := value_position;
+			value_length   := 0;
+			value_position := tag_position;
+			index := 0;
+			closed := true;
 
-    		for l in object'range loop             -- Avoid synthesizes tools loop-warnings
-    			exit when position > object'right; -- Avoid synthesizes tools loop-warnings
-    		
-    			skipws(object, position);
-    			case object(position) is
-    			when '['|'{' =>
-    				assert ((log_flags/log_locatevalue) mod 2=0)          --|note
-    					report indent("token open" & at(object,position)) --|note
-    					severity note;                                    --|note
+			for l in object'range loop             -- Avoid synthesizes tools loop-warnings
+				exit when position > object'right; -- Avoid synthesizes tools loop-warnings
+			
+				skipws(object, position);
+				case object(position) is
+				when '['|'{' =>
+					assert ((log_flags/log_locatevalue) mod 2=0)          --|note
+						report indent("token open" & at(object,position)) --|note
+						severity note;                                    --|note
 
-    				open_char := object(position);
-    				closed    := false;
-    				position  := position + 1;
-    			when ',' =>
-    				index := index + 1;
-    				assert ((log_flags/log_locatevalue) mod 2=0)           --|note
-    					report indent("token next" & at(object, position)) --|note
-    					severity note;                                     --|note
+					open_char := object(position);
+					closed    := false;
+					position  := position + 1;
+				when ',' =>
+					index := index + 1;
+					assert ((log_flags/log_locatevalue) mod 2=0)           --|note
+						report indent("token next" & at(object, position)) --|note
+						severity note;                                     --|note
 
-    				position := position + 1;
-    			when ']' =>
-    				assert ((log_flags/log_locatevalue) mod 2=0)            --|note
-    					report indent("token close" & at(object, position)) --|note
-    					severity note;                                      --|note
+					position := position + 1;
+				when ']' =>
+					assert ((log_flags/log_locatevalue) mod 2=0)            --|note
+						report indent("token close" & at(object, position)) --|note
+						severity note;                                      --|note
 
-    				if closed then
-    					assert false
-    						report "array haven't been opened yet" & at(object, position)
-    						severity failure;
-    					exit;
-    				end if;
+					if closed then
+						assert false
+							report "array haven't been opened yet" & at(object, position)
+							severity failure;
+						exit;
+					end if;
 
-    				if open_char/='[' then
-    					assert false
-    						report "wrong close token " & at(object, position) & " opened by " & character'image(open_char)
-    						severity failure;
-    				end if;
+					if open_char/='[' then
+						assert false
+							report "wrong close token " & at(object, position) & " opened by " & character'image(open_char)
+							severity failure;
+					end if;
 
-    				closed   := true;
-    				position := position + 1;
-    			when '}' =>
-    				assert ((log_flags/log_locatevalue) mod 2=0)            --|note
-    					report indent("token close" & at(object, position)) --|note
-    					severity note;                                      --|note
+					closed   := true;
+					position := position + 1;
+				when '}' =>
+					assert ((log_flags/log_locatevalue) mod 2=0)            --|note
+						report indent("token close" & at(object, position)) --|note
+						severity note;                                      --|note
 
-    				if closed then
-    					assert false                                               --|note
-    						report indent("close path at " & at(object, position)) --|note
-    						severity note;                                         --|note
-    					exit;
-    				end if;
-    				if open_char/='{' then
-    					assert false
-    						report "wrong close path at " & at(object, position) & " opened by " & character'image(open_char)
-    						severity failure;
-    				end if;
+					if closed then
+						assert false                                               --|note
+							report indent("close path at " & at(object, position)) --|note
+							severity note;                                         --|note
+						exit;
+					end if;
+					if open_char/='{' then
+						assert false
+							report "wrong close path at " & at(object, position) & " opened by " & character'image(open_char)
+							severity failure;
+					end if;
 
-    				closed   := true;
-    				position := position + 1;
-    			when others =>
-    			end case;
+					closed   := true;
+					position := position + 1;
+				when others =>
+				end case;
 
 				if not closed then 
 					parse_tagvaluepathdefault(
@@ -1238,21 +1238,21 @@ package body hdo is
 				end if;
 
 				if not isdigit(object(domain_position)) then
-    				assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                --|note
-    					report indent("object requested path " & field("domain", object, domain_position, domain_length) & " " & field("tag", object, tag_position, tag_length)) --|note
-    					severity note;                                                                                                                          --|note
+					assert ((log_flags/log_locatevalue) mod 2=0)                                                                                                --|note
+						report indent("object requested path " & field("domain", object, domain_position, domain_length) & " " & field("tag", object, tag_position, tag_length)) --|note
+						severity note;                                                                                                                          --|note
 
-    				if tag_length/=0 then
-    					if compare_string(object(domain_position to domain_position+domain_length-1), object(tag_position to tag_position+tag_length-1)) then
-    						value_position := tag_position;
-    						value_length   := position-value_position;
+					if tag_length/=0 then
+						if compare_string(object(domain_position to domain_position+domain_length-1), object(tag_position to tag_position+tag_length-1)) then
+							value_position := tag_position;
+							value_length   := position-value_position;
 							exit;
 						else
 							tag_position   := position;
 							tag_length     := 0;
 							value_position := position;
 							value_length   := 0;
-    					end if;
+						end if;
 					else
 						tag_position   := position;
 						tag_length     := 0;
@@ -1263,15 +1263,15 @@ package body hdo is
 							report indent("domain not found : " & field(object, domain_position, domain_length)) --|note
 							severity note;                                                                       --|note
 						exit;
-    				end if;
-    			elsif to_integer(object(domain_position to domain_position+domain_length-1)) <= index then
-    				value_position := tag_position;
-    				value_length   := position-value_position;
+					end if;
+				elsif to_integer(object(domain_position to domain_position+domain_length-1)) <= index then
+					value_position := tag_position;
+					value_length   := position-value_position;
 
-    				assert ((log_flags/log_locatevalue) mod 2=0)                                --|note
-    					report indent("object index" & field(object, tag_position, tag_length)) --|note
-    					severity note;                                                          --|note
-    				exit;
+					assert ((log_flags/log_locatevalue) mod 2=0)                                --|note
+						report indent("object index" & field(object, tag_position, tag_length)) --|note
+						severity note;                                                          --|note
+					exit;
 				elsif closed then
 					tag_position   := position;
 					tag_length     := 0;
@@ -1281,23 +1281,23 @@ package body hdo is
 					assert ((log_flags/log_locatevalue) mod 2=0)                                                 --|note
 						report indent("out of range " & field("domain", object, domain_position, domain_length)) --|note
 						severity note;                                                                           --|note
-    				exit;
-    			end if;
+					exit;
+				end if;
 
-    		end loop;
+			end loop;
 
-    		assert ((log_flags/log_locatevalue) mod 2=0)                      --|note
-    			report indent("tag" & field(object,tag_position, tag_length)) --|note
-    			severity note;                                                --|note
-    		assert ((log_flags/log_locatevalue) mod 2=0)                            --|note
-    			report indent("value" & field(object,value_position, value_length)) --|note
-    			severity note;                                                      --|note
+			assert ((log_flags/log_locatevalue) mod 2=0)                      --|note
+				report indent("tag" & field(object,tag_position, tag_length)) --|note
+				severity note;                                                --|note
+			assert ((log_flags/log_locatevalue) mod 2=0)                            --|note
+				report indent("value" & field(object,value_position, value_length)) --|note
+				severity note;                                                      --|note
 
 			assert ((log_flags/log_locatevalue) mod 2=0) --|note
 				report indent("#locatevalue")            --|note
 				severity note;                           --|note
 	
-    	end;
+		end;
 
 	begin
 
@@ -1425,7 +1425,7 @@ package body hdo is
 	function resolve (
 		constant object : string)
 		return boolean is
-        constant true_value : string := "true";
+		constant true_value : string := "true";
 		variable value_position : positive;
 		variable value_length : natural;
 		variable tag_position : positive;
@@ -1434,7 +1434,7 @@ package body hdo is
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		if value_length/=true_value'length then          -- avoid synthesizes tools length-warnings
 			return false;
-        elsif object(value_position to value_position+value_length-1)/=true_value then
+		elsif object(value_position to value_position+value_length-1)/=true_value then
 			return false;
 		end if;
 		return true;

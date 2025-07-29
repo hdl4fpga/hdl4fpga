@@ -42,8 +42,8 @@ entity dmactlr is
 		dev_len      : in  std_logic_vector;
 		dev_addr     : in  std_logic_vector;
 		dev_we       : in  std_logic_vector;
-		dma_caddr    : out std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
-		dma_clen     : out std_logic_vector(bank_size+addr_size+coln_size-1 downto 0);
+		dma_caddr    : out std_logic_vector(bank_size+addr_size+(coln_size-(unsigned_num_bits(data_gear)-1))-1 downto 0);
+		dma_clen     : out std_logic_vector(bank_size+addr_size+(coln_size-(unsigned_num_bits(data_gear)-1))-1 downto 0);
 
 		dev_req      : in  std_logic_vector;
 		dev_gnt      : buffer std_logic_vector;

@@ -139,6 +139,9 @@ architecture mix of video_sync is
 		return retval;
 	end;
 
+	constant hz_edges : natural_vector := to_edges(timings**".hz");
+	constant vt_edges : natural_vector := to_edges(timings**".vt");
+
 	signal hz_ini  : std_logic;
 	signal vt_ini  : std_logic;
 	signal hz_edge : std_logic;
@@ -147,8 +150,8 @@ architecture mix of video_sync is
 	signal vt_next : std_logic;
 	signal hz_div  : std_logic_vector(2-1 downto 0);
 	signal vt_div  : std_logic_vector(2-1 downto 0);
-	signal hz_cntr : std_logic_vector(video_hzcntr'range) := (others => '0');
-	signal vt_cntr : std_logic_vector(video_vtcntr'range) := (others => '1');
+	signal hz_cntr : std_logic_vector(0 to unsigned_num_bits(max(hz_edges))-1) := (others => '0');
+	signal vt_cntr : std_logic_vector(0 to unsigned_num_bits(max(vt_edges))-1) := (others => '1');
 
 	signal extern_vton : std_logic;
 
@@ -158,7 +161,7 @@ begin
 	hz_next <= hz_edge;
 	hzedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(timings**".hz"))
+		edges =>  hz_edges)
 	port map (
 		video_clk  => video_clk,
 		video_ini  => hz_ini,
@@ -168,7 +171,7 @@ begin
 		video_div  => hz_div);
 	video_hzsync <= setif(hz_div="10") when extern_video='0' else extern_hzsync;
 	video_hzon   <= setif(hz_div="00") when extern_video='0' else extern_blankn;
-	video_hzcntr <= hz_cntr;
+	video_hzcntr <= std_logic_vector(resize(unsigned(hz_cntr), video_hzcntr'length));
 
 	process(video_clk)
 	begin
@@ -189,7 +192,7 @@ begin
 
 	vtedges_e : entity hdl4fpga.box_edges
 	generic map (
-		edges =>  to_edges(timings**".vt"))
+		edges => vt_edges)
 	port map (
 		video_clk  => video_clk,
 		video_ini  => vt_ini,
@@ -238,7 +241,7 @@ begin
 
 	video_vtsync <= setif(vt_div="10") when extern_video='0' else extern_vtsync;
 	video_vton   <= setif(vt_div="00") when extern_video='0' else extern_vton;
-	video_vtcntr <= vt_cntr;
+	video_vtcntr <= std_logic_vector(resize(unsigned(vt_cntr), vt_cntr'length));
 
 end;
 

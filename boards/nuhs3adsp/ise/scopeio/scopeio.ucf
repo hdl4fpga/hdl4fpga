@@ -73,10 +73,10 @@ OFFSET = IN 0 ns VALID 3 ns BEFORE ddr_dqs[1] RISING;
 # Ignore crossclock time #
 # ###################### #
 
-NET "ddr_clk0"  TNM_NET = FFS  FFS_clk0;
-NET "ddr_clk0"  TNM_NET = RAMS RAMS_clk0;
-NET "ddr_clk90" TNM_NET = FFS  FFS_clk90;
-NET "ddr_clk90" TNM_NET = RAMS RAMS_clk90;
+NET "ctlr_clk"  TNM_NET = FFS  FFS_clk0;
+NET "ctlr_clk"  TNM_NET = RAMS RAMS_clk0;
+NET "ctlr_clk90" TNM_NET = FFS  FFS_clk90;
+NET "ctlr_clk90" TNM_NET = RAMS RAMS_clk90;
 
 TIMESPEC TS_ddr2ddr90 = FROM RAMS_clk0 TO FFS_clk90 TIG;
 
