@@ -713,345 +713,340 @@ package body hdo is
 
 
 
-    	procedure parse_domain (
-    		constant object          : in    string;
-    		variable position        : inout positive;
-    		variable domain_position : inout positive;
-    		variable domain_length   : inout natural) is
-    		variable open_char       : character;
-    	begin
-    		skipws(object, position);
+		procedure parse_domain (
+			constant object          : in    string;
+			variable position        : inout positive;
+			variable domain_position : inout positive;
+			variable domain_length   : inout natural) is
+			variable open_char       : character;
+		begin
+			skipws(object, position);
 
 
-    		domain_length := 0;
-    		for l in object'range loop             -- Avoid synthesizes tools loop-warnings
-    			exit when position > object'right; -- Avoid synthesizes tools loop-warnings
+			domain_length := 0;
+			for l in object'range loop             -- Avoid synthesizes tools loop-warnings
+				exit when position > object'right; -- Avoid synthesizes tools loop-warnings
 
 
-    			case object(position) is
-    			when '['|'{' =>
-    				open_char := object(position);
-    				position    := position + 1;
-    				parse_string(object, position, domain_position, domain_length);
+				case object(position) is
+				when '['|'{' =>
+					open_char := object(position);
+					position    := position + 1;
+					parse_string(object, position, domain_position, domain_length);
 
 
-    				if domain_length=0 then
-    					assert false
-    						report "invalid path : " & field(object,position)
-    						severity failure;
-    				end if;
+					if domain_length=0 then
+						assert false
+							report "invalid path : " & field(object,position)
+							severity failure;
+					end if;
 
-    				skipws(object, position);
-    				case object(position) is
-    				when ']' => 
-    					if open_char/='[' then -- Xilinx ISE 14.7 warning complain
-    						assert false                                                                                             
-    							report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
-    							severity failure;                                                                                       
-    					end if;                                                                                                        
-
-
-    					position := position + 1;
-    				when '}' => 
-
-    					if open_char/='{' then -- Xilinx ISE 14.7 warning complain
-    						assert false
-    							report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
-    							severity failure; 
-    					end if;
+					skipws(object, position);
+					case object(position) is
+					when ']' => 
+						if open_char/='[' then -- Xilinx ISE 14.7 warning complain
+							assert false                                                                                             
+								report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
+								severity failure;                                                                                       
+						end if;                                                                                                        
 
 
-    					position := position + 1;
+						position := position + 1;
+					when '}' => 
 
-    				when others =>
-    					assert false
-    						report "wrong token : " & at(object, position)
-    						severity failure;
-    				end case;
-    				exit;
-    			when '.' =>
-    				position := position + 1;
-    				skipws(object, position);
-    				parse_string(object, position, domain_position, domain_length);
-    				position := domain_position+domain_length;
-    				exit;
-    			when others =>
-    				domain_length := 0;
-    				exit;
-    			end case;
-    		end loop;
+						if open_char/='{' then -- Xilinx ISE 14.7 warning complain
+							assert false
+								report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
+								severity failure; 
+						end if;
 
 
-    	end;
+						position := position + 1;
 
-    	procedure parse_path (
-    		constant object        : in    string;
-    		variable position      : inout natural;
-    		variable path_position : inout positive;
-    		variable path_length   : inout natural) is
-    		variable tag_position  : positive;
-    		variable tag_length    : natural;
-    	begin
-
-    		skipws(object, position);
-    		path_position := position;
-
-    		for i in object'range loop
-    			parse_domain(object, position, tag_position, tag_length);
-
-    			if tag_length=0 then
-    				path_length := position-path_position;
-    				exit;
-    			end if;
-    		end loop;
+					when others =>
+						assert false
+							report "wrong token : " & at(object, position)
+							severity failure;
+					end case;
+					exit;
+				when '.' =>
+					position := position + 1;
+					skipws(object, position);
+					parse_string(object, position, domain_position, domain_length);
+					position := domain_position+domain_length;
+					exit;
+				when others =>
+					domain_length := 0;
+					exit;
+				end case;
+			end loop;
 
 
-    	end;
+		end;
 
-    	procedure parse_value (
-    		constant object         : in    string;
-    		variable position       : inout positive;
-    		variable value_position : inout positive;
-    		variable value_length   : inout natural) is
-    		variable stack : string(1 to 32);
-    		variable stptr : positive := stack'left;
-    		procedure push (
-    			variable stptr : inout positive;
-    			constant char : in character) is
-    		begin
-    			stack(stptr) := char;
-    			stptr := stptr + 1;
-    		end;
+		procedure parse_path (
+			constant object        : in    string;
+			variable position      : inout natural;
+			variable path_position : inout positive;
+			variable path_length   : inout natural) is
+			variable tag_position  : positive;
+			variable tag_length    : natural;
+		begin
 
-    		procedure pop (
-    			variable stptr : inout positive) is
-    		begin
-    			stptr := stptr - 1;
-    		end;
+			skipws(object, position);
+			path_position := position;
 
-    		variable aphos  : boolean := false;
-    		variable bkslh  : boolean := false;
-    		variable list   : boolean := false;
-    	begin
+			for i in object'range loop
+				parse_domain(object, position, tag_position, tag_length);
 
-    		skipws(object, position);
-    		value_position := position;
-    		for i in value_position to object'right loop
-    			if not aphos and not bkslh then
-    				case object(position) is
-    				when '['|'{' =>
-    					if stptr=stack'left then 
-    						if value_position=position then
-    							list := true;
-    						end if;
-    					end if;
-    					push(stptr, object(position));
-    				when ',' =>
-    					if stptr=stack'left then
-    						exit;
-    					end if;
-    				when ']' =>
-    					if stptr/=stack'left then
-    						if stack(stptr-1)/='[' then
-    							assert false
-    								report "parse_value # close path " & at(object,position) & " expecting " & at(stack, stptr-1)
-    								severity failure;
-    						end if;
-    						pop(stptr);
-    					else
-    						exit;
-    					end if;
-    				when '}' =>
-    					if stptr/=stack'left then
-    						if stack(stptr-1)/='{' then
-    							assert false
-    								report "parse_value # close path " & at(object,position) & " expecting " & at(stack, stptr-1)
+				if tag_length=0 then
+					path_length := position-path_position;
+					exit;
+				end if;
+			end loop;
+
+
+		end;
+
+		procedure parse_value (
+			constant object         : in    string;
+			variable position       : inout positive;
+			variable value_position : inout positive;
+			variable value_length   : inout natural) is
+			variable stack : string(1 to 32);
+			variable stptr : positive := stack'left;
+			procedure push (
+				variable stptr : inout positive;
+				constant char : in character) is
+			begin
+				stack(stptr) := char;
+				stptr := stptr + 1;
+			end;
+
+			procedure pop (
+				variable stptr : inout positive) is
+			begin
+				stptr := stptr - 1;
+			end;
+
+			variable aphos  : boolean := false;
+			variable bkslh  : boolean := false;
+			variable list   : boolean := false;
+		begin
+
+			skipws(object, position);
+			value_position := position;
+			for i in value_position to object'right loop
+				if not aphos and not bkslh then
+					case object(position) is
+					when '['|'{' =>
+						if stptr=stack'left then 
+							if value_position=position then
+								list := true;
+							end if;
+						end if;
+						push(stptr, object(position));
+					when ',' =>
+						if stptr=stack'left then
+							exit;
+						end if;
+					when ']' =>
+						if stptr/=stack'left then
+							if stack(stptr-1)/='[' then
+								assert false
+									report "parse_value # close path " & at(object,position) & " expecting " & at(stack, stptr-1)
 									severity failure;
-    						end if;
-    						pop(stptr);
-    					else
-    						exit;
-    					end if;
-    				when others =>
-    				end case;
-    			end if;
-    			if not bkslh then
-    				if object(position)='\' then
-    					bkslh := true;
-    				elsif object(position)=''' then
-    					aphos := not aphos;
-    				end if;
-    			else
-    				bkslh := false;
-    			end if;
-    			position := position + 1;
-    			if list then
-    				if stptr=stack'left then
-    					exit;
-    				end if;
-    			end if;
-    		end loop;
-    		value_length := position-value_position;
+							end if;
+							pop(stptr);
+						else
+							exit;
+						end if;
+					when '}' =>
+						if stptr/=stack'left then
+							if stack(stptr-1)/='{' then
+								assert false
+									report "parse_value # close path " & at(object,position) & " expecting " & at(stack, stptr-1)
+									severity failure;
+							end if;
+							pop(stptr);
+						else
+							exit;
+						end if;
+					when others =>
+					end case;
+				end if;
+				if not bkslh then
+					if object(position)='\' then
+						bkslh := true;
+					elsif object(position)=''' then
+						aphos := not aphos;
+					end if;
+				else
+					bkslh := false;
+				end if;
+				position := position + 1;
+				if list then
+					if stptr=stack'left then
+						exit;
+					end if;
+				end if;
+			end loop;
+			value_length := position-value_position;
 
-    	end;
+		end;
 
-    	procedure parse_tagvaluepath (
-    		constant object         : string;  -- Xilinx ISE bug left and right are not sent according slice
-    		variable position       : inout positive;
-    		variable tag_position   : inout positive;
-    		variable tag_length     : inout natural;
-    		variable value_position : inout positive;
-    		variable value_length   : inout natural;
-    		variable path_position  : inout positive;
-    		variable path_length    : inout natural) is
-    	begin
+		procedure parse_tagvaluepath (
+			constant object         : string;  -- Xilinx ISE bug left and right are not sent according slice
+			variable position       : inout positive;
+			variable tag_position   : inout positive;
+			variable tag_length     : inout natural;
+			variable value_position : inout positive;
+			variable value_length   : inout natural;
+			variable path_position  : inout positive;
+			variable path_length    : inout natural) is
+		begin
 
+			if position <= object'right then
+	    		parse_string(object, position, value_position, value_length);
+	    		skipws(object, position);
+	    		tag_position := value_position;
+	    		tag_length   := 0;
+	    		if position <= object'right then
+	    			if value_length=0 then
+	    				tag_length     := 0;
+	    				value_position := position;
+	    				value_length   := object'right-position+1; 
+	    				parse_value(object, position, value_position, value_length);
+	    			elsif object(position)/=':' then
+	    				tag_length     := 0;
+	    				tag_position   := value_position;
 
-			if position > object'right then
-				return;
+	    			else
+	    				tag_position   := value_position;
+	    				tag_length     := value_length;
+	    				position       := position + 1;
+	    				skipws(object, position);
+	    				parse_value(object, position, value_position, value_length);
+
+	    			end if;
+	    		else
+	    		end if;
+	    		skipws(object, position);
+	    		parse_path(object, position, path_position, path_length);
+			end if;
+		end;
+			
+		procedure parse_tagvaluepathdefault (
+			constant object           : in    string;
+			variable position         : inout positive;
+			variable tag_position     : inout positive;
+			variable tag_length       : inout natural;
+			variable value_position   : inout positive;
+			variable value_length     : inout natural;
+			variable path_position    : inout positive;
+			variable path_length      : inout natural;
+			variable default_position : inout positive;
+			variable default_length   : inout natural) is
+		begin
+
+			parse_tagvaluepath(
+				object,         position,
+				tag_position,   tag_length, 
+				value_position, value_length, 
+				path_position,  path_length);
+
+			skipws(object, position);
+			default_position := position+1;
+			default_length   := 0;
+			if path_length/=0 then
+				if object'right >= position then
+					if object(position)='=' then
+						default_length := object'right-position;
+					end if;
+				end if;
 			end if;
 
+		end;
 
-    		parse_string(object, position, value_position, value_length);
-    		skipws(object, position);
-    		tag_position := value_position;
-    		tag_length   := 0;
-    		if position <= object'right then
-    			if value_length=0 then
-    				tag_length     := 0;
-    				value_position := position;
-    				value_length   := object'right-position+1; 
-    				parse_value(object, position, value_position, value_length);
-    			elsif object(position)/=':' then
-    				tag_length     := 0;
-    				tag_position   := value_position;
-
-    			else
-    				tag_position   := value_position;
-    				tag_length     := value_length;
-    				position       := position + 1;
-    				skipws(object, position);
-    				parse_value(object, position, value_position, value_length);
-
-    			end if;
-    		else
-    		end if;
-    		skipws(object, position);
-    		parse_path(object, position, path_position, path_length);
-
-    	end;
-    		
-    	procedure parse_tagvaluepathdefault (
-    		constant object           : in    string;
-    		variable position         : inout positive;
-    		variable tag_position     : inout positive;
-    		variable tag_length       : inout natural;
-    		variable value_position   : inout positive;
-    		variable value_length     : inout natural;
-    		variable path_position    : inout positive;
-    		variable path_length      : inout natural;
-    		variable default_position : inout positive;
-    		variable default_length   : inout natural) is
-    	begin
-
-    		parse_tagvaluepath(
-    			object,         position,
-    			tag_position,   tag_length, 
-    			value_position, value_length, 
-    			path_position,  path_length);
-
-    		skipws(object, position);
-    		default_position := position+1;
-			default_length   := 0;
-    		if path_length/=0 then
-    			if object'right >= position then
-    				if object(position)='=' then
-    					default_length := object'right-position;
-    				end if;
-    			end if;
-    		end if;
-
-    	end;
-
-    	procedure locate_value (
-    		constant object          : in    string;
-    		variable position        : inout positive;
-    		constant domain_position : in    positive;
-    		constant domain_length   : in    positive;
-    		variable tag_position    : inout positive;
-    		variable tag_length      : inout natural;
-    		variable value_position  : inout positive;
-    		variable value_length    : inout natural) is
-    		variable path_position   : positive;
-    		variable path_length     : natural;
-    		variable default_position : positive;
-    		variable default_length : natural;
-    		variable index          : natural;
-    		variable open_char      : character;
-    		variable closed         : boolean;
-    	begin
+		procedure locate_value (
+			constant object          : in    string;
+			variable position        : inout positive;
+			constant domain_position : in    positive;
+			constant domain_length   : in    positive;
+			variable tag_position    : inout positive;
+			variable tag_length      : inout natural;
+			variable value_position  : inout positive;
+			variable value_length    : inout natural) is
+			variable path_position   : positive;
+			variable path_length     : natural;
+			variable default_position : positive;
+			variable default_length : natural;
+			variable index          : natural;
+			variable open_char      : character;
+			variable closed         : boolean;
+		begin
 
 	
 
-    		parse_tagvaluepathdefault(
-    			object,           position,
-    			tag_position,     tag_length, 
-    			value_position,   value_length, 
-    			path_position,    path_length, 
-    			default_position, default_length);
+			parse_tagvaluepathdefault(
+				object,           position,
+				tag_position,     tag_length, 
+				value_position,   value_length, 
+				path_position,    path_length, 
+				default_position, default_length);
 
-    		position       := value_position;
-    		value_length   := 0;
-    		value_position := tag_position;
-    		index := 0;
-    		closed := true;
+			position       := value_position;
+			value_length   := 0;
+			value_position := tag_position;
+			index := 0;
+			closed := true;
 
-    		for l in object'range loop             -- Avoid synthesizes tools loop-warnings
-    			exit when position > object'right; -- Avoid synthesizes tools loop-warnings
-    		
-    			skipws(object, position);
-    			case object(position) is
-    			when '['|'{' =>
+			for l in object'range loop             -- Avoid synthesizes tools loop-warnings
+				exit when position > object'right; -- Avoid synthesizes tools loop-warnings
+			
+				skipws(object, position);
+				case object(position) is
+				when '['|'{' =>
 
-    				open_char := object(position);
-    				closed    := false;
-    				position  := position + 1;
-    			when ',' =>
-    				index := index + 1;
+					open_char := object(position);
+					closed    := false;
+					position  := position + 1;
+				when ',' =>
+					index := index + 1;
 
-    				position := position + 1;
-    			when ']' =>
+					position := position + 1;
+				when ']' =>
 
-    				if closed then
-    					assert false
-    						report "array haven't been opened yet" & at(object, position)
-    						severity failure;
-    					exit;
-    				end if;
+					if closed then
+						assert false
+							report "array haven't been opened yet" & at(object, position)
+							severity failure;
+						exit;
+					end if;
 
-    				if open_char/='[' then
-    					assert false
-    						report "wrong close token " & at(object, position) & " opened by " & character'image(open_char)
-    						severity failure;
-    				end if;
+					if open_char/='[' then
+						assert false
+							report "wrong close token " & at(object, position) & " opened by " & character'image(open_char)
+							severity failure;
+					end if;
 
-    				closed   := true;
-    				position := position + 1;
-    			when '}' =>
+					closed   := true;
+					position := position + 1;
+				when '}' =>
 
-    				if closed then
-    					exit;
-    				end if;
-    				if open_char/='{' then
-    					assert false
-    						report "wrong close path at " & at(object, position) & " opened by " & character'image(open_char)
-    						severity failure;
-    				end if;
+					if closed then
+						exit;
+					end if;
+					if open_char/='{' then
+						assert false
+							report "wrong close path at " & at(object, position) & " opened by " & character'image(open_char)
+							severity failure;
+					end if;
 
-    				closed   := true;
-    				position := position + 1;
-    			when others =>
-    			end case;
+					closed   := true;
+					position := position + 1;
+				when others =>
+				end case;
 
 				if not closed then 
 					parse_tagvaluepathdefault(
@@ -1065,17 +1060,17 @@ package body hdo is
 
 				if not isdigit(object(domain_position)) then
 
-    				if tag_length/=0 then
-    					if compare_string(object(domain_position to domain_position+domain_length-1), object(tag_position to tag_position+tag_length-1)) then
-    						value_position := tag_position;
-    						value_length   := position-value_position;
+					if tag_length/=0 then
+						if compare_string(object(domain_position to domain_position+domain_length-1), object(tag_position to tag_position+tag_length-1)) then
+							value_position := tag_position;
+							value_length   := position-value_position;
 							exit;
 						else
 							tag_position   := position;
 							tag_length     := 0;
 							value_position := position;
 							value_length   := 0;
-    					end if;
+						end if;
 					else
 						tag_position   := position;
 						tag_length     := 0;
@@ -1083,26 +1078,26 @@ package body hdo is
 						value_length   := 0;
 
 						exit;
-    				end if;
-    			elsif to_integer(object(domain_position to domain_position+domain_length-1)) <= index then
-    				value_position := tag_position;
-    				value_length   := position-value_position;
+					end if;
+				elsif to_integer(object(domain_position to domain_position+domain_length-1)) <= index then
+					value_position := tag_position;
+					value_length   := position-value_position;
 
-    				exit;
+					exit;
 				elsif closed then
 					tag_position   := position;
 					tag_length     := 0;
 					value_position := position;
 					value_length   := 0;
 
-    				exit;
-    			end if;
+					exit;
+				end if;
 
-    		end loop;
+			end loop;
 
 
 	
-    	end;
+		end;
 
 	begin
 
@@ -1171,7 +1166,7 @@ package body hdo is
 	function resolve (
 		constant object : string)
 		return boolean is
-        constant true_value : string := "true";
+		constant true_value : string := "true";
 		variable value_position : positive;
 		variable value_length : natural;
 		variable tag_position : positive;
@@ -1180,7 +1175,7 @@ package body hdo is
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		if value_length/=true_value'length then          -- avoid synthesizes tools length-warnings
 			return false;
-        elsif object(value_position to value_position+value_length-1)/=true_value then
+		elsif object(value_position to value_position+value_length-1)/=true_value then
 			return false;
 		end if;
 		return true;

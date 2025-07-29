@@ -123,6 +123,7 @@ architecture scopeio of nuhs3adsp is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
 			"cl:"        & "'010'}}");
 
+	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
 	constant chip_data   : string  := settings**".sdram.chip_data={}";
 	constant phy_data    : string  := settings**".sdram.phy_data={}";
@@ -411,7 +412,7 @@ begin
 	generic map (
 		debug       => debug,
 		profile     => 1,
-		sdram_freq  => sdram_freq(settings**".sdram.dcm"),
+		sdram_freq  => sdram_freq,
 		settings    => settings)
 	port map (
 		sio_clk     => sio_clk,

@@ -758,10 +758,10 @@ package body base is
 		begin
 			if value'length=0 then
 				valid := false;
-				return;
+			else
+				number := to_integer(value);
+				valid  := true;
 			end if;
-			number := to_integer(value);
-			valid  := true;
 		end;
 		variable valid  : boolean;
 		variable length : natural;
