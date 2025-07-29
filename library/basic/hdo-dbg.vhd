@@ -408,47 +408,47 @@ package body hdo is
 	function to_real(
 		constant value : string) 
 		return real is
-		variable idx  : natural;
+		variable pos  : natural;
 		variable sign : character;
 		variable mant : real;
 		variable exp  : integer;
 	begin
-		idx := value'left;
-		case value(idx) is
+		pos := value'left;
+		case value(pos) is
 		when '+'|'-' =>
-			sign := value(idx);
-			idx  := idx + 1;
+			sign := value(pos);
+			pos  := pos + 1;
 		when others =>
 			sign := '+';
 		end case;
 
 		mant := 0.0;
 		for l in value'range loop -- avoid synthesizes tools loop-warnings
-			exit when idx > value'right; -- avoid synthesizes tools loop-warnings
+			exit when pos > value'right; -- avoid synthesizes tools loop-warnings
 
-			if value(idx)='.' then
-				idx := idx + 1;
+			if value(pos)='.' then
+				pos := pos + 1;
 				exit;
 			end if;
-			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
-			idx  := idx + 1;
+			mant := 10.0*mant + real(character'pos(value(pos))-character'pos('0'));
+			pos  := pos + 1;
 		end loop;
 
 		exp := 0;
 		for l in value'range loop -- avoid synthesizes tools loop-warnings
-			exit when idx > value'right; -- avoid synthesizes tools loop-warnings
+			exit when pos > value'right; -- avoid synthesizes tools loop-warnings
 
-			if value(idx)='e' then
-				idx := idx + 1;
+			if value(pos)='e' then
+				pos := pos + 1;
 				exit;
 			end if;
-			if not isdigit(value(idx)) then -- Xilinx ISE 14.7 warning complain
-				report "to_real() : wrong character " & character'image(value(idx)) & " in value : " & value
+			if not isdigit(value(pos)) then -- Xilinx ISE 14.7 warning complain
+				report "to_real() : wrong character " & character'image(value(pos)) & " in value : " & value
 				severity failure; 
 			end if; 
-			mant := 10.0*mant + real(character'pos(value(idx))-character'pos('0'));
+			mant := 10.0*mant + real(character'pos(value(pos))-character'pos('0'));
 			exp  := exp + 1;
-			idx  := idx + 1;
+			pos  := pos + 1;
 		end loop;
 		while exp > 0 loop
 			mant := mant / 10.0;
@@ -459,24 +459,24 @@ package body hdo is
 			mant := -mant;
 		end if;
 
-		if idx > value'right then
+		if pos > value'right then
 			return mant;
 		end if;
 
-		case value(idx) is
+		case value(pos) is
 		when '+'|'-' =>
-			sign := value(idx);
-			idx  := idx + 1;
+			sign := value(pos);
+			pos  := pos + 1;
 		when others =>
 			sign := '+';
 		end case;
 
 		exp := 0;
 		for l in value'range loop           -- avoid synthesizes tools loop-warnings
-			exit when idx > value'right;    -- avoid synthesizes tools loop-warnings
+			exit when pos > value'right;    -- avoid synthesizes tools loop-warnings
 
-			exp := 10*exp + (character'pos(value(idx))-character'pos('0'));
-			idx := idx + 1;
+			exp := 10*exp + (character'pos(value(pos))-character'pos('0'));
+			pos := pos + 1;
 		end loop;
 		if sign='-' then
 			exp := -exp;

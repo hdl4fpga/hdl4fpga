@@ -34,8 +34,8 @@ entity ecp5_videopll is
 	generic (
 		settings     : string);
 	port (
-		clk_rst      : in std_logic := '0';
-		clk_ref      : in std_logic;
+		rst          : in std_logic := '0';
+		clk          : in std_logic;
 		videoio_clk  : out std_logic;
 		video_clk    : out std_logic;
 		video_shift_clk : out std_logic;
@@ -114,8 +114,8 @@ begin
 		CLKFB_DIV        => clkfb_div,
 		CLKI_DIV         => clki_div)
 	port map (
-		rst       => clk_rst,
-		clki      => clk_ref,
+		rst       => rst,
+		clki      => clk,
 		CLKFB     => clkos,
 		PHASESEL0 => '0', PHASESEL1 => '0',
 		PHASEDIR  => '0',
@@ -176,7 +176,7 @@ begin
 		gddr_sync_i : gddr_sync 
 		port map (
 		  rst       => gddr_rst,
-		  sync_clk  => clk_ref,
+		  sync_clk  => clk,
 		  start     => gddr_rst,
 		  stop      => stop,
 		  ddr_reset => video_phyrst,

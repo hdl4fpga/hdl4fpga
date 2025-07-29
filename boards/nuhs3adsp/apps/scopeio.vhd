@@ -37,53 +37,10 @@ use unisim.vcomponents.all;
 
 architecture scopeio of nuhs3adsp is
 
-	constant io_link : string := "io_ipoe";
-	constant sys_per  : real := 50.0;
-
-	signal sys_rst     : std_logic;
-	signal sys_clk     : std_logic;
-	signal sysclk_n    : std_logic;
-	signal video_clk   : std_logic;
-	signal videoclk_n  : std_logic;
-	signal video_hsync : std_logic;
-	signal video_vsync : std_logic;
-	signal video_vton  : std_logic;
-	signal video_pixel : std_logic_vector(0 to 3*8-1);
-	signal video_blank : std_logic;
-
-	constant inputs    : natural := 2;
-	constant vt_step   : string := "1.220703125e-4"; --2.0V/2.0**14; -- real'image() does not work on Xilinx ISE
-	alias  input_sample is adc_da;
-	signal samples_doa : std_logic_vector(input_sample'length-1 downto 0);
-	signal samples_dib : std_logic_vector(input_sample'length-1 downto 0);
-	signal input_samples : std_logic_vector(inputs*input_sample'length-1 downto 0);
-	signal adc_clk     : std_logic;
-	signal adcclk_n    : std_logic;
-
-	signal input_clk   : std_logic;
-
-	constant baudrate  : natural := 115200;
-
-	signal uart_rxc    : std_logic;
-	signal uart_sin    : std_logic;
-	signal uart_ena    : std_logic;
-	signal uart_rxdv   : std_logic;
-	signal uart_rxd    : std_logic_vector(8-1 downto 0);
-
-	alias  sio_clk is mii_txc;
-	signal si_frm      : std_logic;
-	signal si_irdy     : std_logic;
-	signal si_data     : std_logic_vector(0 to 8-1);
-
-	signal so_frm      : std_logic;
-	signal so_irdy     : std_logic;
-	signal so_trdy     : std_logic;
-	signal so_end      : std_logic;
-	signal so_data     : std_logic_vector(0 to 8-1);
-
+	constant vt_step  : string := "1.220703125e-4"; --2.0V/2.0**14; -- real'image() does not work on Xilinx ISE
 	constant settings : string := compact("{" &   
-		"inputs:"          & natural'image(inputs) & ',' &
-		"waveform:{" &
+		"inputs:" & "2"                                                                           & ',' &
+		"waveform:{"                                                                              &
 			"video:{"                                                                             &
 				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'20mhz'.'150mhz'"))       & ',' &
 				"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
@@ -123,16 +80,47 @@ architecture scopeio of nuhs3adsp is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
 			"cl:"        & "'010'}}");
 
-	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
-	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
-	constant chip_data   : string  := settings**".sdram.chip_data={}";
-	constant phy_data    : string  := settings**".sdram.phy_data={}";
-	constant bank_length : natural := hdo(chip_data)**".orgz.addr.ba=1";
-	constant addr_length : natural := hdo(chip_data)**".orgz.addr.row=1";
-	constant data_mask   : natural := hdo(chip_data)**".orgz.data.dm=1";
-	constant data_length : natural := hdo(chip_data)**".orgz.data.dq=1";
+	constant io_link   : string := "io_ipoe";
 
-	signal ctlr_rst    : std_logic;
+	constant sys_per   : real := 50.0;
+	signal sys_rst     : std_logic;
+	signal sys_clk     : std_logic;
+
+	signal video_clk   : std_logic;
+	signal videoclk_n  : std_logic;
+	signal video_hsync : std_logic;
+	signal video_vsync : std_logic;
+	signal video_vton  : std_logic;
+	signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	signal video_blank : std_logic;
+
+	constant inputs      : natural := hdo(settings)**".inputs";
+	alias  input_sample is adc_da;
+	signal input_samples : std_logic_vector(inputs*input_sample'length-1 downto 0);
+	signal input_clk     : std_logic;
+	signal adc_clk       : std_logic;
+	signal adcclk_n      : std_logic;
+
+	alias  sio_clk is mii_txc;
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_end        : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
+
+	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
+	constant bank_length : natural := hdo(settings)**".sdram.chip_data.orgz.addr.ba=1";
+	constant addr_length : natural := hdo(settings)**".sdram.chip_data.orgz.addr.row=1";
+	constant data_mask   : natural := hdo(settings)**".sdram.chip_data.orgz.data.dm=1";
+	constant data_length : natural := hdo(settings)**".sdram.chip_data.orgz.data.dq=1";
+	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
+
+	signal ctlr_rst      : std_logic;
+	signal ctlr_clk      : std_logic;
+	signal ctlr_clk90    : std_logic;
 
 	signal ctlrphy_rst   : std_logic;
 	signal ctlrphy_cke   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
@@ -155,9 +143,7 @@ architecture scopeio of nuhs3adsp is
 	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_sti   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
 
-	signal ctlr_clk      : std_logic;
-	signal ctlr_clk90     : std_logic;
-	signal ddr_clk       : std_logic_vector(0 downto 0);
+	signal sdram_clk     : std_logic_vector(0 downto 0);
 
 begin
 
@@ -260,24 +246,6 @@ begin
 			adc_dab := adc_da & adc_db;
 		end if;
 	end process;
-
-	process (mii_rxc)
-		constant max_count : natural := (25*10**6+16*baudrate/2)/(16*baudrate);
-		variable cntr      : unsigned(0 to unsigned_num_bits(max_count-1)-1) := (others => '0');
-	begin
-		if rising_edge(mii_rxc) then
-			if cntr >= max_count-1 then
-				uart_ena <= '1';
-				cntr := (others => '0');
-			else
-				uart_ena <= '0';
-				cntr := cntr + 1;
-			end if;
-		end if;
-	end process;
-
-	uart_sin <= rs232_rd;
-	uart_rxc <= mii_rxc;
 
 	ipoe_g : if io_link="io_ipoe" generate
 		signal dhcpcd_req : std_logic := '0';
@@ -450,14 +418,14 @@ begin
 		ctlrphy_dqv  => ctlrphy_dqv,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti,
-		video_clk   => video_clk,
-		video_pixel => video_pixel,
-		video_hsync => video_hsync,
-		video_vsync => video_vsync,
-		video_vton  => video_vton,
-		video_blank => video_blank);
+		video_clk    => video_clk,
+		video_pixel  => video_pixel,
+		video_hsync  => video_hsync,
+		video_vsync  => video_vsync,
+		video_vton   => video_vton,
+		video_blank  => video_blank);
 
-	sdramphy_g : if string'(hdo(settings)**".sdram") /= "" generate
+	sdramphy_g : if string'(hdo(settings)**".sdram={}") /= "={}" generate
 		signal ctlrphy_wlreq : std_logic;
 		signal ctlrphy_wlrdy : std_logic;
 		signal ctlrphy_rlreq : std_logic;
@@ -518,7 +486,7 @@ begin
 			sdram_sto(1)  => st_dqs_open,
 			sdram_sti(0)  => ddr_st_lp_dqs,
 			sdram_sti(1)  => ddr_st_lp_dqs,
-			sdram_clk     => ddr_clk,
+			sdram_clk     => sdram_clk,
 			sdram_cke     => sdram_cke,
 			sdram_cs      => sdram_cs,
 			sdram_odt     => ddr_odt,
@@ -540,12 +508,12 @@ begin
 		generic map (
 			iostandard => "DIFF_SSTL2_I")
 		port map (
-			i  => ddr_clk(0),
+			i  => sdram_clk(0),
 			o  => ddr_ckp,
 			ob => ddr_ckn);
 	end generate;
 
-	nosdram_g : if string'(hdo(settings)**".sdram")="" generate
+	nosdram_g : if string'(hdo(settings)**".sdram=")="{}" generate
 		ddr_clk_i : obufds
 		generic map (
 			iostandard => "DIFF_SSTL2_I")

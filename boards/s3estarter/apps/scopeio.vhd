@@ -36,64 +36,18 @@ use unisim.vcomponents.all;
 
 architecture scopeio of s3estarter is
 
-	constant tsttab  : boolean := false;
-	constant io_link : string := "io_ipoe";
-
-	constant baudrate : natural := 115200;
-
-	signal sys_rst    : std_logic;
-	signal sys_clk    : std_logic;
-	signal video_clk  : std_logic;
-	signal video_vton : std_logic;
-
-	constant sample_size : natural := 14;
-
-	constant inputs  : natural := 2;
-
-	signal samples   : std_logic_vector(inputs*sample_size-1 downto 0);
-	signal spi_clk   : std_logic;
-	signal spiclk_rd : std_logic;
-	signal spiclk_fd : std_logic;
-	signal sckamp_rd : std_logic;
-	signal sckamp_fd : std_logic;
-	signal amp_spi   : std_logic;
-	signal amp_sdi   : std_logic;
-	signal amp_rdy   : std_logic;
-	signal adc_spi   : std_logic;
-	signal ampcs     : std_logic;
-	signal spi_rst   : std_logic;
-	signal dac_sdi   : std_logic;
-	signal input_ena : std_logic;
-	signal video_pixel : std_logic_vector(24-1 downto 0);
-
-	constant max_delay : natural := 2**14;
-	constant hzoffset_bits : natural := unsigned_num_bits(max_delay-1);
-	signal hz_slider : std_logic_vector(hzoffset_bits-1 downto 0);
-	signal hz_scale  : std_logic_vector(4-1 downto 0);
-	signal hz_dv     : std_logic;
-
-	alias  sio_clk   is e_tx_clk;
-	signal si_frm    : std_logic;
-	signal si_irdy   : std_logic;
-	signal si_data   : std_logic_vector(0 to 8-1);
-	signal so_frm    : std_logic;
-	signal so_irdy   : std_logic;
-	signal so_trdy   : std_logic;
-	signal so_end    : std_logic;
-	signal so_data   : std_logic_vector(0 to 8-1);
-
 	constant vt_step  : string := "0.152587890625e-3";  -- 2.5V/ 2.0**14 real'image() does not work on Xilinx ISE
-	constant settings : string := "{" &   
-		"inputs:"          & natural'image(inputs) & ',' &
-		"waveform:{" &
+	constant settings : string := "{"                                                             &
+		"inputs:" & "2"                                                                           & ',' &
+		"waveform:{"                                                                              &
 			"video:{"                                                                             &
-				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'50mhz'.'150mhz'"))       & ',' &
-				"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
-				"pixel:"   & "{R:8,G:8,B:8}}"                                                     & ',' &
-			"num_of_segments:" & "4"                                                              & ',' &
+				"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'50mhz'.'40mhz'"))        & ',' &
+				"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")    & ',' &
+				"pixel:"   & "{R:1,G:1,B:1}}"                                                     & ',' &
+			"num_of_segments:" & "2"                                                              & ',' &
 			"grid:{"                                                                              &
-				"width:"  & natural'image(50*32+1)                                                & ',' &
-				"height:" & natural'image( 8*32+1)                                                & ',' &
+				"width:"  & natural'image(15*32+1)                                                & ',' &
+				"height:" & natural'image( 6*32+1)                                                & ',' &
 				"color:"  & "0xff_ff_00_ff"                                                       & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
 			"axis:{"                                                                              &
@@ -128,52 +82,77 @@ architecture scopeio of s3estarter is
 				"color:"     & "0xff_ff_00_ff"                                                    & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
 			"main:{"                                                                              &
-				"top:5, left:1, right:0, bottom:0, vertical:1, horizontal:1, background-color: 0xff_00_00_00}" & ',' &
+				"top:23, left:3, right:0, bottom:0, vertical:0, horizontal:0, background-color: 0xff_00_00_00}" & ',' &
 			"segment:{"                                                                           &
-				"top:1, left:1, right:1, bottom:1, vertical:0, horizontal:1, background-color: 0xff_ff_ff_ff}" & ',' &
+				"top: 1, left:1, right:0, bottom:1, vertical:0, horizontal:0, background-color: 0xff_ff_ff_ff}" & ',' &
 			"vt:[" &
 				"{text: VINA," & "step:" & vt_step & ',' & "color:" & "0xff_00_ff_ff}"            & ',' &
 				"{text: VINB," & "step:" & vt_step & ',' & "color:" & "0xff_ff_ff_ff}]}"          & ',' &
-		"sdram:{"                                                                                 &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))         & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
-			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
-			"cl:"        & "'010'}}";
+		-- "sdram:{"                                                                                 &
+			-- "dcm:"       & string'(hdl4fpga.xc3s_profiles.sdram_dcm(".'50mhz'.'133mhz'"))         & ',' &
+			-- "chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
+			-- "phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
+			-- "cl:"        & "'010'}}";
+			"}";
 
+	constant io_link : string := "io_ipoe";
+	constant baudrate : natural := 115200;
+
+	signal sys_rst       : std_logic;
+	signal sys_clk       : std_logic;
+
+	signal video_clk     : std_logic;
+	signal video_vton    : std_logic;
+	signal video_pixel   : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+
+	constant inputs      : natural := hdo(settings)**".inputs";
+	signal input_sample  : std_logic_vector(14-1 downto 0);
+	signal input_samples : std_logic_vector(inputs*input_sample'length-1 downto 0);
+	signal input_clk     : std_logic;
+	signal input_ena     : std_logic;
+
+	alias  sio_clk is e_tx_clk;
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_end        : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
+
+	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm={}");
+	constant bank_length : natural := hdo(settings)**".sdram.chip_data.orgz.addr.ba=1";
+	constant addr_length : natural := hdo(settings)**".sdram.chip_data.orgz.addr.row=1";
+	constant data_mask   : natural := hdo(settings)**".sdram.chip_data.orgz.data.dm=1";
+	constant data_length : natural := hdo(settings)**".sdram.chip_data.orgz.data.dq=1";
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear=1";
-	constant chip_data   : string  := settings**".sdram.chip_data={}";
-	constant phy_data    : string  := settings**".sdram.phy_data={}";
-	constant bank_length : natural := hdo(chip_data)**".orgz.addr.ba=1";
-	constant addr_length : natural := hdo(chip_data)**".orgz.addr.row=1";
-	constant data_mask   : natural := hdo(chip_data)**".orgz.data.dm=1";
-	constant data_length : natural := hdo(chip_data)**".orgz.data.dq=1";
 
-	signal ctlr_rst    : std_logic;
+	signal ctlr_rst      : std_logic;
+	signal ctlr_clk      : std_logic;
+	signal ctlr_clk90    : std_logic;
 
-	signal ctlrphy_rst    : std_logic;
-	signal ctlrphy_cke    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
-	signal ctlrphy_cs     : std_logic_vector((sdram_gear+1)/2-1 downto 0);
-	signal ctlrphy_ras    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
-	signal ctlrphy_cas    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
-	signal ctlrphy_we     : std_logic_vector((sdram_gear+1)/2-1 downto 0);
-	signal ctlrphy_odt    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
-	signal ctlrphy_b      : std_logic_vector((sdram_gear+1)/2*bank_length-1 downto 0);
-	signal ctlrphy_a      : std_logic_vector((sdram_gear+1)/2*addr_length-1 downto 0);
-	signal ctlrphy_dqst   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dqsi   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
-	signal ctlrphy_dqso   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dmi    : std_logic_vector(sdram_gear*data_mask-1 downto 0);
-	signal ctlrphy_dmo    : std_logic_vector(sdram_gear*data_mask-1 downto 0);
-	signal ctlrphy_dqt    : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dqi    : std_logic_vector(sdram_gear*data_length-1 downto 0);
-	signal ctlrphy_dqo    : std_logic_vector(sdram_gear*data_length-1 downto 0);
-	signal ctlrphy_dqv    : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_sto    : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_sti    : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_rst   : std_logic;
+	signal ctlrphy_cke   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_cs    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_ras   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_cas   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_we    : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_odt   : std_logic_vector((sdram_gear+1)/2-1 downto 0);
+	signal ctlrphy_b     : std_logic_vector((sdram_gear+1)/2*bank_length-1 downto 0);
+	signal ctlrphy_a     : std_logic_vector((sdram_gear+1)/2*addr_length-1 downto 0);
+	signal ctlrphy_dqst  : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqsi  : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_dqso  : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dmi   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
+	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*data_length-1 downto 0);
+	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*data_length-1 downto 0);
+	signal ctlrphy_dqv   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sti   : std_logic_vector(sdram_gear*data_mask-1 downto 0);
 
-
-	signal ctlr_clk   : std_logic;
-	signal ctlr_clk90 : std_logic;
 begin
 
 	clkin_ibufg : ibufg
@@ -188,22 +167,22 @@ begin
 		end if;
 	end process;
 
-	videodcm_b : if string'(settings**".waveform") /= "" generate
+	videodcm_b : if string'(settings**".waveform={}") /= "{}" generate
 		videodcm_i : entity hdl4fpga.xc3s_videodcm
 		generic map(
-			settings => hdo(settings)**".dcm")
+			settings => hdo(settings)**".waveform.video.dcm")
 		port map(
 			rst       => sys_rst,
 			clk       => sys_clk,
 			video_clk => video_clk);
 	end generate;
 
-	sdrdcm_b : if string'(settings**".sdram") /= "" generate
+	sdrdcm_b : if string'(settings**".sdram={}") /= "{}" generate
 		signal ctlrdcm_locked : std_logic;
 	begin
 		sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
 		generic map (
-			settings  => settings**".dcm")
+			settings  => settings**".sdram.dcm")
 		port map (
 			clk        => sys_clk,
 			ctlr_clk   => ctlr_clk,
@@ -213,7 +192,18 @@ begin
 	end generate;
 
 	spi_b: block
+		signal spiclk_rd : std_logic;
+		signal spiclk_fd : std_logic;
+		signal sckamp_rd : std_logic;
+		signal sckamp_fd : std_logic;
 		signal spiclk_n : std_logic;
+		signal amp_spi   : std_logic;
+		signal amp_sdi   : std_logic;
+		signal amp_rdy   : std_logic;
+		signal adc_spi   : std_logic;
+		signal ampcs     : std_logic;
+		signal spi_rst   : std_logic;
+		signal dac_sdi   : std_logic;
 	begin
 
 		spidcm_e : entity hdl4fpga.dfs2dfs
@@ -226,10 +216,10 @@ begin
 		port map(
 			dcm_rst  => '0',
 			dcm_clk  => sys_clk,
-			dfs_clk  => spi_clk,
+			dfs_clk  => input_clk,
 			dcm_lck  => spi_rst);
 		spiclk_n <= not sys_clk;
---		spi_clk <= sys_clk;
+--		input_clk <= sys_clk;
 --		spi_rst <= not dfs_rst;
 
 
@@ -239,32 +229,32 @@ begin
 
 		adcclkab_e : oddr2
 		port map (
-			c0 => spi_clk,
+			c0 => input_clk,
 			c1 => spiclk_n,
 			ce => '1',
 			d0 => spiclk_rd,
 			d1 => spiclk_fd,
 			q  => spi_sck);
 
-		ampclkr_p : process (spi_rst, spi_clk)
+		ampclkr_p : process (spi_rst, input_clk)
 			variable cntr : unsigned(0 to 4-1);
 		begin
 			if spi_rst='0' then
 				cntr := (others => '0');
 				sckamp_rd <= cntr(0);
 				adc_spi <= '1';
-			elsif rising_edge(spi_clk) then
+			elsif rising_edge(input_clk) then
 				cntr := cntr + 1;
 				sckamp_rd <= cntr(0);
 				amp_cs <= ampcs;
 			end if;
 		end process;
 
-		ampclkf_p : process (spi_rst, spi_clk)
+		ampclkf_p : process (spi_rst, input_clk)
 		begin
 			if spi_rst='0' then
 				sckamp_fd <= '0';
-			elsif falling_edge(spi_clk) then
+			elsif falling_edge(input_clk) then
 				sckamp_fd <= sckamp_rd;
 			end if;
 		end process;
@@ -301,28 +291,29 @@ begin
 			end if;
 		end process;
 
-		adcdac_p : process (amp_spi, spi_clk)
+		adcdac_p : process (amp_spi, input_clk)
 			constant p2p        : natural := 2*1550;
 			constant cycle      : natural := 34;
 			variable cntr       : unsigned(0 to 6) := (others => '0');
 			variable adin       : unsigned(32-1 downto 0);
-			variable aux        : unsigned(samples'range);
+			variable aux        : unsigned(input_samples'range);
 			variable dac_shr    : unsigned(0 to 30-1);
 			variable adcdac_sel : std_logic;
 			variable dac_data   : unsigned(0 to 12-1);
 			variable dac_chan   : unsigned(0 to 2-1);
+			variable hz_scale   : std_logic_vector(4-1 downto 0) := (others =>'0');
 		begin
 			if amp_spi='1' then
 				cntr       := to_unsigned(cycle-2, cntr'length);
 				adcdac_sel := '0';
 				dac_sdi    <= '0';
 				dac_cs     <= '1';
-			elsif rising_edge(spi_clk) then
+			elsif rising_edge(input_clk) then
 				if cntr(0)='1' then
 					if adcdac_sel ='0' then
-						samples <= std_logic_vector(
-							adin(1*16+sample_size-1 downto 1*16) &
-							adin(0*16+sample_size-1 downto 0*16));
+						input_samples <= std_logic_vector(
+							adin(1*16+input_sample'length-1 downto 1*16) &
+							adin(0*16+input_sample'length-1 downto 0*16));
 						input_ena <= not amp_spi;
 						ad_conv   <= '0';
 					else
@@ -688,7 +679,7 @@ begin
 	generic map (
 		debug       => debug,
 		profile     => 1,
-		sdram_freq  => sdram_freq(settings**".sdram.dcm"),
+		sdram_freq  => sdram_freq,
 		settings    => settings)
 	port map (
 		-- tp => tp,
@@ -701,13 +692,13 @@ begin
 		so_trdy     => so_trdy,
 		so_end      => so_end,
 		so_data     => so_data,
-		input_clk   => spi_clk,
-		input_data  => samples,
+		input_clk   => input_clk,
+		input_data  => input_samples,
 
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => ctlr_rst,
 		ctlr_bl      => "001",
-		ctlr_cl      => settings**".sdram.cl",
+		ctlr_cl      => settings**".sdram.cl=000",
 
 		ctlrphy_rst  => ctlrphy_rst,
 		ctlrphy_cke  => ctlrphy_cke(0),
@@ -739,7 +730,7 @@ begin
 	vga_green <= video_pixel(2*8-1);
 	vga_blue  <= video_pixel(1*8-1);
 
-	sdramphy_g : if string'(hdo(settings)**".sdram") /= "" generate
+	sdramphy_g : if string'(hdo(settings)**".sdram={}") /= "{}" generate
 		signal ctlrphy_wlreq : std_logic;
 		signal ctlrphy_wlrdy : std_logic;
 		signal ctlrphy_rlreq : std_logic;
@@ -823,7 +814,7 @@ begin
 
 	end generate;
 
-	nosdram_g : if string'(hdo(settings)**".sdram")="" generate
+	nosdram_g : if string'(hdo(settings)**".sdram={}") = "{}" generate
 		ddr_clk_i : obufds
 		generic map (
 			iostandard => "DIFF_SSTL2_I")

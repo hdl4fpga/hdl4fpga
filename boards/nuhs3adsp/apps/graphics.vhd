@@ -48,6 +48,16 @@ architecture graphics of nuhs3adsp is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                                & ',' &
 			"cl:"        & "'010'}}";
 
+	signal sys_rst       : std_logic;
+	alias sys_clk is clk;
+
+	signal video_clk     : std_logic;
+	signal video_hzsync  : std_logic;
+	signal video_vtsync  : std_logic;
+    signal video_blank   : std_logic;
+	signal video_pixel    : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+
+	constant sdram_freq   : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
 	signal ctlr_rst       : std_logic;
@@ -88,13 +98,8 @@ architecture graphics of nuhs3adsp is
 	signal ddr_lp_ck     : std_logic;
 	signal st_dqs_open   : std_logic;
 
-	signal video_clk     : std_logic;
-	signal video_hs      : std_logic;
-	signal video_vs      : std_logic;
-    signal video_blank   : std_logic;
-    signal video_pixel   : std_logic_vector(0 to 24-1);
-
 	constant mem_size    : natural := 8*(1024*8);
+	alias sio_clk        : std_logic is mii_txc;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
 	signal si_trdy       : std_logic;
@@ -104,11 +109,6 @@ architecture graphics of nuhs3adsp is
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
-
-	alias sio_clk        : std_logic is mii_txc;
-
-	signal sys_rst       : std_logic;
-	alias sys_clk is clk;
 
 	signal mii_tp         : std_logic_vector(1 to 32);
 
@@ -324,7 +324,7 @@ begin
 		-- burst_length => 4,
 		-- burst_length => 8,
 
-		sdram_freq   => sdram_freq(settings**".sdram.dcm"),
+		sdram_freq   => sdram_freq,
 		settings     => settings,
 		fifo_size    => mem_size)
 	port map (
@@ -342,8 +342,8 @@ begin
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
-		video_hzsync => video_hs,
-		video_vtsync => video_vs,
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
 		video_blank  => video_blank,
 		video_pixel  => video_pixel,
 
@@ -473,9 +473,9 @@ begin
     			green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
     			blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
     			blankn <= not video_blank;
-    			hsync  <= video_hs;
-    			vsync  <= video_vs;
-    			sync   <= not video_hs and not video_vs;
+    			hsync  <= video_hzsync;
+    			vsync  <= video_vtsync;
+    			sync   <= not video_hzsync and not video_vtsync;
     		end if;
     	end process;
 	end block;

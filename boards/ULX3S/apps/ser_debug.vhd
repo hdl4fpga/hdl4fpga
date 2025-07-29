@@ -91,8 +91,8 @@ begin
 	generic map (
 		settings     => settings**".video")
 	port map (
-		clk_rst     => right,
-		clk_ref     => clk_25mhz,
+		rst         => right,
+		clk         => clk_25mhz,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,

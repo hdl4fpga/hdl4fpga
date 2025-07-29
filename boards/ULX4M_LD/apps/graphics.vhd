@@ -37,8 +37,6 @@ use ecp5u.components.all;
 
 architecture graphics of ulx4m_ld is
 
-	---------------------------------------
-	-- Set your profile here             --
 	constant settings : string := "{"                                                                     &
 		"io_link: io_usb,"                                                                                &
 		"video:{"                                                                                         &
@@ -59,57 +57,61 @@ architecture graphics of ulx4m_ld is
 	constant io_link      : string  := settings**".io_link";
 	constant baudrate     : natural := 3000000;
 
-	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
-	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
-	constant usb_oversampling : natural := 3;
-	constant ba_latency  : natural := 1;
+	alias sys_clk is clk_25mhz;
 
-	signal ctlr_rst      : std_logic;
-	signal ctlr_clk      : std_logic;
-	signal ctlr_eclk     : std_logic;
+	signal video_clk       : std_logic;
+	signal video_lck       : std_logic;
+	signal video_shift_clk : std_logic;
+	signal video_eclk      : std_logic;
+	constant video_gear    : natural := 4; --video_params.gear;
+	signal video_pixel     : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	signal dvid_crgb       : std_logic_vector(4*video_gear-1 downto 0);
+	signal videoio_clk     : std_logic;
 
-	signal ctlrphy_rst   : std_logic_vector(0 to 2-1);
-	signal ctlrphy_cke   : std_logic_vector(0 to 2-1);
-	signal ctlrphy_cs    : std_logic_vector(0 to 2-1);
-	signal ctlrphy_ras   : std_logic_vector(0 to 2-1);
-	signal ctlrphy_cas   : std_logic_vector(0 to 2-1);
-	signal ctlrphy_we    : std_logic_vector(0 to 2-1);
-	signal ctlrphy_odt   : std_logic_vector(0 to 2-1);
-	signal ctlrphy_cmd   : std_logic_vector(0 to 3-1);
-	signal ctlrphy_b     : std_logic_vector(sdram_gear/2*ddram_ba'length-1 downto 0);
-	signal ctlrphy_a     : std_logic_vector(sdram_gear/2*ddram_a'length-1 downto 0);
-	signal ctlrphy_dqst  : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dqso  : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dmo   : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
-	signal ctlrphy_dqt   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_dqi   : std_logic_vector(sdram_gear*ddram_dq'length-1 downto 0);
-	signal ctlrphy_dqo   : std_logic_vector(sdram_gear*ddram_dq'length-1 downto 0);
-	signal ctlrphy_dqv   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_sto   : std_logic_vector(sdram_gear-1 downto 0);
-	signal ctlrphy_sti   : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
+	constant sdram_gear    : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
+	constant ba_latency    : natural := 1;
 
-	signal ctlrphy_frm   : std_logic;
-	signal ctlrphy_trdy  : std_logic;
-	signal ctlrphy_ini   : std_logic;
-	signal ctlrphy_rw    : std_logic;
-	signal ctlrphy_wlreq : std_logic;
-	signal ctlrphy_wlrdy : std_logic;
-	signal ctlrphy_rlreq : std_logic;
-	signal ctlrphy_rlrdy : std_logic;
+	signal ctlr_rst        : std_logic;
+	signal ctlr_clk        : std_logic;
+	signal ctlr_eclk       : std_logic;
 
+	signal ctlrphy_rst     : std_logic_vector(0 to 2-1);
+	signal ctlrphy_cke     : std_logic_vector(0 to 2-1);
+	signal ctlrphy_cs      : std_logic_vector(0 to 2-1);
+	signal ctlrphy_ras     : std_logic_vector(0 to 2-1);
+	signal ctlrphy_cas     : std_logic_vector(0 to 2-1);
+	signal ctlrphy_we      : std_logic_vector(0 to 2-1);
+	signal ctlrphy_odt     : std_logic_vector(0 to 2-1);
+	signal ctlrphy_cmd     : std_logic_vector(0 to 3-1);
+	signal ctlrphy_b       : std_logic_vector(sdram_gear/2*ddram_ba'length-1 downto 0);
+	signal ctlrphy_a       : std_logic_vector(sdram_gear/2*ddram_a'length-1 downto 0);
+	signal ctlrphy_dqst    : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqso    : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dmo     : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
+	signal ctlrphy_dqt     : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_dqi     : std_logic_vector(sdram_gear*ddram_dq'length-1 downto 0);
+	signal ctlrphy_dqo     : std_logic_vector(sdram_gear*ddram_dq'length-1 downto 0);
+	signal ctlrphy_dqv     : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sto     : std_logic_vector(sdram_gear-1 downto 0);
+	signal ctlrphy_sti     : std_logic_vector(sdram_gear*ddram_dm'length-1 downto 0);
+
+	signal ctlrphy_frm     : std_logic;
+	signal ctlrphy_trdy    : std_logic;
+	signal ctlrphy_ini     : std_logic;
+	signal ctlrphy_rw      : std_logic;
+	signal ctlrphy_wlreq   : std_logic;
+	signal ctlrphy_wlrdy   : std_logic;
+	signal ctlrphy_rlreq   : std_logic;
+	signal ctlrphy_rlrdy   : std_logic;
+	signal sdrphy_rst      : std_logic;
+
+	signal ms_pause      : std_logic;
+	signal ddrdel        : std_logic;
 	signal sdr_b         : std_logic_vector(ddram_ba'range);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
-	signal video_clk     : std_logic;
-	signal videoio_clk   : std_logic;
-	signal video_lck     : std_logic;
-	signal video_shift_clk : std_logic;
-	signal video_eclk    : std_logic;
-	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := 4; --video_params.gear;
-	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
-
 	constant mem_size    : natural := 8*(1024*8);
+	signal sio_clk       : std_logic;
 	signal so_frm        : std_logic;
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
@@ -120,18 +122,8 @@ architecture graphics of ulx4m_ld is
 	signal si_end        : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 
-	signal sio_clk       : std_logic;
-
-
-	signal video_pixel   : std_logic_vector(0 to 24-1);
-
 	signal tp            : std_logic_vector(1 to 32);
 	signal tp_phy        : std_logic_vector(1 to 32);
-	signal sdrphy_locked : std_logic;
-
-	signal sdrphy_rst    : std_logic;
-	signal ms_pause      : std_logic;
-	signal ddrdel        : std_logic;
 
 begin
 
@@ -139,7 +131,7 @@ begin
 	generic map (
 		settings     => settings**".video")
 	port map (
-		clk_ref     => clk_25mhz,
+		clk         => sys_clk,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -152,10 +144,10 @@ begin
 			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
 			"gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	port map (
-		clk_ref      => clk_25mhz,
-		ctlr_rst     => ctlr_rst,
+		clk          => sys_clk,
 		sclk         => ctlr_clk,
 		eclk         => ctlr_eclk,
+		ctlr_rst     => ctlr_rst,
 		phy_rst      => sdrphy_rst,
 		phy_mspause  => ms_pause,
 		phy_ddrdel   => ddrdel);
@@ -201,6 +193,7 @@ begin
 	end generate;
 
 	usb_g : if io_link="io_usb" generate
+		constant usb_oversampling : natural := 3;
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
@@ -417,9 +410,9 @@ begin
 		ctlrphy_odt(i) <= ctlrphy_odt(0);
 	end generate;
 
-	process (clk_25mhz)
+	process (sys_clk)
 	begin
-		if rising_edge(clk_25mhz) then
+		if rising_edge(sys_clk) then
 			
 			led <= reverse(tp(1 to 8));
 		end if;
@@ -469,7 +462,7 @@ begin
 		bank_size  => ddram_ba'length,
 		addr_size  => ddram_a'length,
 		word_size  => ddram_dq'length,
-		byte_size  => byte_size,
+		byte_size  => ddram_dq'length/ddram_dm'length,
 		gear       => sdram_gear,
 		ba_latency => ba_latency,
 		rd_fifo    => false,
@@ -490,7 +483,6 @@ begin
 		phy_cmd    => ctlrphy_cmd,
 		phy_rw     => ctlrphy_rw,
 		phy_ini    => ctlrphy_ini,
-		phy_locked => sdrphy_locked,
 		phy_wlreq  => ctlrphy_wlreq,
 		phy_wlrdy  => ctlrphy_wlrdy,
 

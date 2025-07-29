@@ -62,7 +62,7 @@ package body xc5v_profiles is
 		constant dcm : string  := dcm_db**(video_id&"={}");
 	begin
 		assert dcm /= "{}"
-			report "video_dcm() : video_id " & video_id & " not valid"
+			report "xc5v_profiles.video_dcm() : video_id " & video_id & " not valid"
 			severity failure;
 		return "{}";
 	end;
@@ -85,7 +85,7 @@ package body xc5v_profiles is
 		constant dcm : string := dcm_db**(sdram_id&"={}");
 	begin
 		assert dcm/="{}"
-			report "sdram_dcm() : sdram speed_id " & sdram_id & " not valid"
+			report "xc5v_profiles.sdram_dcm() : sdram speed_id " & sdram_id & " not valid"
 			severity failure;
 		return dcm;
 	end;

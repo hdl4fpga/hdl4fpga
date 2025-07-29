@@ -34,14 +34,14 @@ entity ecp5_sdrampll is
 	generic (
 		settings     : string);
 	port (
-		clk_ref      : in  std_logic;
-		ctlr_rst     : out std_logic;
+		clk          : in  std_logic;
 		sclk         : buffer std_logic;
 		eclk         : buffer std_logic;
+		ctlr_rst     : out std_logic;
 		phy_rst      : buffer std_logic;
 		phy_mspause  : out std_logic;
 		phy_ddrdel   : out std_logic;
-		sdrampll_lck : buffer std_logic);
+		locked       : buffer std_logic);
 
     constant gear       : natural := settings**".gear";
     constant freq_in    : real    := settings**".dcm.freq_in";
@@ -107,7 +107,7 @@ begin
 		CLKI_DIV         => clki_div)
 	port map (
 		rst       => '0',
-		clki      => clk_ref,
+		clki      => clk,
 		CLKFB     => clkfb,
 		PHASESEL0 => '0', PHASESEL1 => '0',
 		PHASEDIR  => '0',
@@ -121,14 +121,14 @@ begin
 		CLKOS     => clkfb,
 		CLKOS2    => open,
 		CLKOS3    => open,
-		LOCK      => sdrampll_lck,
+		LOCK      => locked,
 		INTLOCK   => open,
 		REFCLK    => open,
 		CLKINTFB  => open);
 
 	gear1_g : if gear=1 generate
 		sclk     <= clkop;
-		ctlr_rst <= not sdrampll_lck;
+		ctlr_rst <= not locked;
 	end generate;
 
 	gear4_g : if gear=4 generate
@@ -175,13 +175,13 @@ begin
 			"CDIVX : " &   clkdivf_i'FREQUENCY_PIN_CDIVX  & " MHz "
 		severity NOTE;
 
-		memsync_rst <= not sdrampll_lck;
+		memsync_rst <= not locked;
 		pll_lock <= '1';
 		update   <= '0';
 
 		mem_sync_i : mem_sync
 		port map (
-			start_clk => clk_ref,
+			start_clk => clk,
 			rst       => memsync_rst,
 			dll_lock  => dll_lock,
 			pll_lock  => pll_lock,

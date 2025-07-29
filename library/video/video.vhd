@@ -241,7 +241,7 @@ begin
 
 	video_vtsync <= setif(vt_div="10") when extern_video='0' else extern_vtsync;
 	video_vton   <= setif(vt_div="00") when extern_video='0' else extern_vton;
-	video_vtcntr <= std_logic_vector(resize(unsigned(vt_cntr), vt_cntr'length));
+	video_vtcntr <= std_logic_vector(resize(unsigned(vt_cntr), video_vtcntr'length));
 
 end;
 

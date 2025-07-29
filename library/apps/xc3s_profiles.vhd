@@ -65,12 +65,12 @@ package body xc3s_profiles is
 				" '25mhz': {clkfx_multiply: 4, clkfx_divide: 2, freq_in: 50.0e6},"   &
 				" '40mhz': {clkfx_multiply: 5, clkfx_divide: 4, freq_in: 50.0e6},"   &
 				" '75mhz': {clkfx_multiply: 2, clkfx_divide: 3, freq_in: 50.0e6},"   &
-				"'150mhz': {clkfx_multiply: 1, clkfx_divide: 3, freq_in: 50.0e6}}}";
+				"'150mhz': {clkfx_multiply: 2, clkfx_divide: 6, freq_in: 50.0e6}}}";
 
 		constant dcm : string  := dcm_db**(video_id&"={}");
 	begin
 		assert dcm /= "{}"
-			report "video_dcm() : video_id " & video_id & " not valid"
+			report "xc3s_profiles.video_dcm() : video_id " & video_id & " not valid"
 			severity failure;
 		return dcm;
 	end;
@@ -86,15 +86,15 @@ package body xc3s_profiles is
 				"'170mhz': {clkfx_multiply: 25, clkfx_divide: 3, freq_in: 20.0e6},"   & -- cl => "110"
 				"'200mhz': {clkfx_multiply: 10, clkfx_divide: 1, freq_in: 20.0e6}},"  & -- cl => "011" 
 			"'50mhz':{"                                                               &
-				"'133mhz': {clkfx_multiply: 3, clkfx_divide:  8, freq_in: 50.0e6},"   & -- cl => "010"
-				"'166mhz': {clkfx_multiply: 3, clkfx_divide: 10, freq_in: 50.0e6},"   & -- cl => "110"
-				"'170mhz': {clkfx_multiply: 5, clkfx_divide: 17, freq_in: 50.0e6},"   & -- cl => "110"
-				"'200mhz': {clkfx_multiply: 1, clkfx_divide:  4, freq_in: 50.0e6}}}";   -- cl => "011"
+				"'133mhz': {clkfx_multiply:  8, clkfx_divide: 3, freq_in: 50.0e6},"   & -- cl => "010"
+				"'166mhz': {clkfx_multiply: 10, clkfx_divide: 3, freq_in: 50.0e6},"   & -- cl => "110"
+				"'170mhz': {clkfx_multiply: 17, clkfx_divide: 5, freq_in: 50.0e6},"   & -- cl => "110"
+				"'200mhz': {clkfx_multiply:  4, clkfx_divide: 1, freq_in: 50.0e6}}}";   -- cl => "011"
 
 		constant dcm : string := dcm_db**(sdram_id&"={}");
 	begin
 		assert dcm/="{}"
-			report "sdram_dcm() : sdram speed_id " & sdram_id & " not valid"
+			report "xc3s_profiles.sdram_dcm() : sdram speed_id " & sdram_id & " not valid"
 			severity failure;
 		return dcm;
 	end;
