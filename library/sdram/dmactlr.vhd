@@ -66,6 +66,9 @@ entity dmactlr is
 		ctlr_b       : out std_logic_vector(bank_size-1 downto 0);
 		ctlr_a       : out std_logic_vector(addr_size-1 downto 0));
 
+	constant coln_align : natural := unsigned_num_bits(data_gear)-1;
+	constant burst_bits : natural := unsigned_num_bits(setif(burst_length=0, data_gear, burst_length))-1;
+
 end;
 
 architecture def of dmactlr is
@@ -84,8 +87,8 @@ architecture def of dmactlr is
 	signal dmatrans_iaddr : std_logic_vector(dmargtr_addr'range);
 	signal dmatrans_ilen  : std_logic_vector(dmargtr_len'range);
 	signal dmatrans_we    : std_logic_vector(0 to 0);
-	signal dmatrans_taddr : std_logic_vector(dmargtr_addr'range);
-	signal dmatrans_tlen  : std_logic_vector(dmargtr_len'range);
+	signal dmatrans_taddr : std_logic_vector(dmatrans_ilen'length-1  downto burst_bits-coln_align);
+	signal dmatrans_tlen  : std_logic_vector(dmatrans_iaddr'length-1 downto burst_bits-coln_align);
 
 	signal ctlr_act       : std_logic;
 	signal ctlr_ras       : std_logic;
@@ -239,7 +242,7 @@ begin
 		ctlr_b         => ctlr_b,
 		ctlr_a         => ctlr_a);
 
-	dma_caddr <= std_logic_vector(resize(unsigned(dmatrans_taddr), dma_caddr'length));
-	dma_clen  <= std_logic_vector(resize(unsigned(dmatrans_tlen),  dma_clen 'length));
+	dma_caddr <= std_logic_vector(rotate_left(resize(unsigned(dmatrans_taddr), dma_caddr'length), dma_caddr'length-dmatrans_taddr'length));
+	dma_clen  <= std_logic_vector(rotate_left(resize(unsigned(dmatrans_tlen),  dma_clen'length),  dma_clen'length-dmatrans_tlen'length));
 
 end;
