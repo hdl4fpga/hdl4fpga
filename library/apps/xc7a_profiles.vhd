@@ -57,8 +57,7 @@ package body xc7a_profiles is
 		constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 		constant dcm_db : string := "{"                                               &
 			"'100mhz':{"                                                              &
-				" '25mhz': {clkfbout_mult:  1, clkout0_divide:" & natural'image(11*video_ratio) & ", clkout1_divide: 11, freq_in: 100.0e6},"  &
-				" '40mhz': {clkfbout_mult: 15, clkout0_divide:" & natural'image( 2*video_ratio) & ", clkout1_divide:  2, freq_in: 100.0e6}}}";
+				" '64mhz': {clkfbout_mult: 6.4, clkout0_divide:" & natural'image(1*video_ratio) & ", clkout1_divide: 1, freq_in: 100.0e6}}}";
 
 		constant dcm : string  := dcm_db**(video_id&"={}");
 	begin
@@ -88,6 +87,8 @@ package body xc7a_profiles is
 
 		constant dcm : string := dcm_db**(sdram_id&"={}");
 	begin
+		report real'image(real'(dcm**".freq_in"));
+		report real'image(real'(dcm**".clkfbout_mult_f"));
 		assert dcm/="{}"
 			report "xc7a_profiles.sdram_dcm() : sdram speed_id " & sdram_id & " not valid"
 			severity failure;
