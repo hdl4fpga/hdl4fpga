@@ -242,7 +242,7 @@ begin
 		ctlr_b         => ctlr_b,
 		ctlr_a         => ctlr_a);
 
-	dma_caddr <= std_logic_vector(rotate_left(resize(unsigned(dmatrans_taddr), dma_caddr'length), dma_caddr'length-dmatrans_taddr'length));
-	dma_clen  <= std_logic_vector(rotate_left(resize(unsigned(dmatrans_tlen),  dma_clen'length),  dma_clen'length-dmatrans_tlen'length));
+	dma_caddr <= std_logic_vector(rotate_right(resize(unsigned(dmatrans_taddr), dma_caddr'length), dmatrans_taddr'length));
+	dma_clen  <= std_logic_vector(rotate_right(resize(unsigned(dmatrans_tlen),  dma_clen'length),  dmatrans_tlen'length));
 
 end;
