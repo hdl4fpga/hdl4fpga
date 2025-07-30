@@ -196,7 +196,7 @@ begin
 		signal spiclk_fd : std_logic;
 		signal sckamp_rd : std_logic;
 		signal sckamp_fd : std_logic;
-		signal spiclk_n : std_logic;
+		signal spiclk_n  : std_logic;
 		signal amp_spi   : std_logic;
 		signal amp_sdi   : std_logic;
 		signal amp_rdy   : std_logic;
