@@ -677,6 +677,26 @@ begin
 			end loop;
 		end process;
 
+    	iodctrl_b : block
+    		signal clkfb  : std_logic;
+    		signal locked : std_logic;
+    	begin
+    		pll_i :  plle2_base
+    		generic map (
+    			clkin1_period  => gclk100_per*1.0e9,
+    			clkfbout_mult  => 12,
+    			clkout0_divide => 6)
+    		port map (
+    			pwrdwn   => '0',
+    			rst      => sys_rst,
+    			clkin1   => gclk100,
+    			clkfbin  => clkfb,
+    			clkfbout => clkfb,
+    			clkout0  => iodctrl_clk,
+    			locked   => locked);
+    		iodctrl_rst <= not locked;
+    	end block;
+
 		idelayctrl_i : idelayctrl
 		port map (
 			rst    => iodctrl_rst,
