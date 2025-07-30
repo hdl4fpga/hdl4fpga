@@ -40,7 +40,7 @@ entity xc7a_sdramdcm is
 		ctlr_rst90   : out std_logic;
 		locked       : buffer std_logic);
 
-    constant freq_in         : real := settings**".dcm.freq_in";
+    constant freq_in         : real := settings**".freq_in";
 	constant clkfbout_mult_f : real := settings**".clkfbout_mult_f=0.0";
 	constant divclk_divide : natural := settings**".divclk_divide=1";
 	constant gear : natural := 4;
@@ -55,8 +55,6 @@ library unisim;
 use unisim.vcomponents.all;
 
 architecture def of xc7a_sdramdcm is
-
-	constant sdram_freq     : real := hdl4fpga.xc7a_profiles.sdram_freq(settings**".dcm"); -- GHDL annoyance
 
 	signal ctlr_clk0_mmce2    : std_logic;
 	signal ctlr_clk90_mmce2   : std_logic;
