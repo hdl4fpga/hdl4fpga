@@ -23,7 +23,7 @@
 
 NET "clk_50mhz" TNM_NET = clk_50mhz;
 TIMESPEC TS_clk_50mhz = PERIOD "clk_50mhz" 20 ns HIGH 50%;
-NET "clk_50mhz" CLOCK_DEDICATED_ROUTE = true;
+NET "clk_50mhz" CLOCK_DEDICATED_ROUTE = TRUE;
 
 NET "e_rx_clk" TNM_NET = e_rx_clk;
 TIMESPEC TS_e_rx_clk = PERIOD "e_rx_clk" 40 ns HIGH 50%;
@@ -94,8 +94,8 @@ NET sys_clk    TNM_NET = FFS  FFS_sysclk;
 NET sys_clk    TNM_NET = RAMS RAMS_sysclk;
 NET video_clk  TNM_NET = FFS  FFS_videoclk;
 NET video_clk  TNM_NET = RAMS RAMS_videoclk;
-NET ctlr_clk0  TNM_NET = FFS  FFS_clk0;
-NET ctlr_clk0  TNM_NET = RAMS RAMS_clk0;
+NET ctlr_clk   TNM_NET = FFS  FFS_clk0;
+NET ctlr_clk   TNM_NET = RAMS RAMS_clk0;
 NET ctlr_clk90 TNM_NET = FFS  FFS_clk90;
 NET ctlr_clk90 TNM_NET = RAMS RAMS_clk90;
 
