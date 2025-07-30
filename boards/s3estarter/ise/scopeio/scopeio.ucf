@@ -120,11 +120,11 @@ TIMESPEC TS_ram2ff     = FROM RAMS_clk90   TO FFS_clk0     TIG;
 # Data Byte 0 #
 # ########### #
 
-#INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" LOC = SLICE_X2Y29;
-#INST "sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" LOC = SLICE_X2Y29;
-#
-## Data Byte 1 #
-## ########### #
-#
-#INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" LOC = SLICE_X2Y72;
-#INST "sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" LOC = SLICE_X2Y72;
+INST "sdramphy_g.sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" LOC = SLICE_X2Y29;
+INST "sdramphy_g.sdrphy_e/byte_g[0].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" LOC = SLICE_X2Y29;
+
+# Data Byte 1 #
+# ########### #
+
+INST "sdramphy_g.sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutn" LOC = SLICE_X2Y72;
+INST "sdramphy_g.sdrphy_e/byte_g[1].sdrdqphy_i/dqsi_b.dqsidelay_i/xc3s_g.idelay_i/delayed_e/lutp" LOC = SLICE_X2Y72;
