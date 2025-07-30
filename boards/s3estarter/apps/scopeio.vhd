@@ -196,7 +196,7 @@ begin
 		signal spiclk_fd : std_logic;
 		signal sckamp_rd : std_logic;
 		signal sckamp_fd : std_logic;
-		signal spiclk_n : std_logic;
+		signal spiclk_n  : std_logic;
 		signal amp_spi   : std_logic;
 		signal amp_sdi   : std_logic;
 		signal amp_rdy   : std_logic;
@@ -221,7 +221,6 @@ begin
 		spiclk_n <= not sys_clk;
 --		input_clk <= sys_clk;
 --		spi_rst <= not dfs_rst;
-
 
 		spiclk_rd <= '0' when spi_rst='0' else sckamp_rd when amp_spi='1' else '0' ;
 		spiclk_fd <= '0' when spi_rst='0' else sckamp_fd when amp_spi='1' else '1' ;
@@ -647,8 +646,6 @@ begin
 			end if;
 		end process;
 
-		led <= tp(1 to 8);
-		-- led <= rot_left & b"000_000" & rot_right;
    		up    <= btn_north or rot_right;
    		down  <= btn_south or rot_left;
    		-- up    <= btn_north;
@@ -849,14 +846,14 @@ begin
 	fpga_init_b <= '0';
 	spi_ss_b <= '0';
 
-	-- led0 <= '1';
-	-- led1 <= '1';
-	-- led2 <= '1';
-	-- led3 <= '1';
-	-- led4 <= '1';
-	-- led5 <= '1';
-	-- led6 <= '1';
-	-- led7 <= '1';
+	led0 <= 'Z';
+	led1 <= 'Z';
+	led2 <= 'Z';
+	led3 <= 'Z';
+	led4 <= 'Z';
+	led5 <= 'Z';
+	led6 <= 'Z';
+	led7 <= 'Z';
 
 	rs232_dte_txd <= 'Z';
 	rs232_dce_txd <= 'Z';
