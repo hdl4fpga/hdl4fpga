@@ -88,12 +88,12 @@ architecture scopeio of s3estarter is
 			"vt:[" &
 				"{text: VINA," & "step:" & vt_step & ',' & "color:" & "0xff_00_ff_ff}"            & ',' &
 				"{text: VINB," & "step:" & vt_step & ',' & "color:" & "0xff_ff_ff_ff}]}"          & ',' &
-		"sdram:{"                                                                                 &
-			"dcm:"       & string'(hdl4fpga.xc3s_profiles.sdram_dcm(".'50mhz'.'133mhz'"))         & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
-			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
-			"cl:"        & "'010'}}";
-			-- "}";
+		-- "sdram:{"                                                                                 &
+			-- "dcm:"       & string'(hdl4fpga.xc3s_profiles.sdram_dcm(".'50mhz'.'133mhz'"))         & ',' &
+			-- "chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                              & ',' &
+			-- "phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                        & ',' &
+			-- "cl:"        & "'010'}}";
+			"}";
 
 	constant io_link : string := "io_ipoe";
 	constant baudrate : natural := 115200;
@@ -221,7 +221,6 @@ begin
 		spiclk_n <= not sys_clk;
 --		input_clk <= sys_clk;
 --		spi_rst <= not dfs_rst;
-
 
 		spiclk_rd <= '0' when spi_rst='0' else sckamp_rd when amp_spi='1' else '0' ;
 		spiclk_fd <= '0' when spi_rst='0' else sckamp_fd when amp_spi='1' else '1' ;
