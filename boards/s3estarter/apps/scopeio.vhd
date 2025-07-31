@@ -78,7 +78,7 @@ architecture scopeio of s3estarter is
 					"color:" & "0xff_00_00_00"                                                    & ',' &
 					"background-color : 0xff_00_ff_ff}},"                                         &
 			"textbox:{"                                                                           &
-				"width:"     & natural'image(32*8)                                                & ',' &
+				"width:"     & natural'image(28*8)                                                & ',' &
 				"color:"     & "0xff_ff_00_ff"                                                    & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
 			"main:{"                                                                              &

@@ -450,7 +450,10 @@ package body hdo is
 			exp  := exp + 1;
 			pos  := pos + 1;
 		end loop;
-		while exp > 0 loop
+
+	
+		for i in value'range loop	-- while exp > 0 loop
+			exit when exp <= 0;	    -- while exp > 0 loop
 			mant := mant / 10.0;
 			exp  := exp - 1;
 		end loop;
