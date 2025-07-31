@@ -46,7 +46,7 @@ architecture scopeio of s3estarter is
 				"pixel:"   & "{R:1,G:1,B:1}}"                                                     & ',' &
 			"num_of_segments:" & "2"                                                              & ',' &
 			"grid:{"                                                                              &
-				"width:"  & natural'image(15*32+1)                                                & ',' &
+				"width:"  & natural'image(16*32+1)                                                & ',' &
 				"height:" & natural'image( 6*32+1)                                                & ',' &
 				"color:"  & "0xff_ff_00_ff"                                                       & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
@@ -78,7 +78,7 @@ architecture scopeio of s3estarter is
 					"color:" & "0xff_00_00_00"                                                    & ',' &
 					"background-color : 0xff_00_ff_ff}},"                                         &
 			"textbox:{"                                                                           &
-				"width:"     & natural'image(33*8)                                                & ',' &
+				"width:"     & natural'image(32*8)                                                & ',' &
 				"color:"     & "0xff_ff_00_ff"                                                    & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
 			"main:{"                                                                              &
@@ -846,11 +846,11 @@ begin
 	fpga_init_b <= '0';
 	spi_ss_b <= '0';
 
-	led0 <= 'Z';
-	led1 <= 'Z';
-	led2 <= 'Z';
-	led3 <= 'Z';
-	led4 <= 'Z';
+	led0 <= btn_north; --'Z';
+	led1 <= btn_east ; --'Z';
+	led2 <= btn_west ; --'Z';
+	led3 <= btn_south; --'Z';
+	led4 <= rot_center; --'Z';
 	led5 <= 'Z';
 	led6 <= 'Z';
 	led7 <= 'Z';
