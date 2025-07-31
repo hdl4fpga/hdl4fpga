@@ -81,21 +81,12 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.app_profiles.all;
-use hdl4fpga.alt_profiles.all;
 
 library altera_mf;
 use altera_mf.altera_mf_components.all;
 
 architecture usbdev of acyiib is
 	constant usb_oversampling : natural := 3;
-	constant io_link : io_comms := io_usb;
-
-	constant video_mode   : video_modes := mode600p24bpp;
-	constant video_params : video_record := videoparam(
-		video_modes'VAL(setif(debug,
-			video_modes'POS(video_mode),
-			video_modes'POS(video_mode))), osc50mhz_freq);
 
 	signal sys_rst         : std_logic;
 	signal sys_clk         : std_logic;
@@ -115,10 +106,8 @@ begin
 
 	videopll_e : entity hdl4fpga.alt_videopll
 	generic map (
-		io_link      => io_link,
 		clkio_freq   => 12.0e6*real(usb_oversampling),
-		clkref_freq  => osc50mhz_freq,
-		video_params => video_params)
+		clkref_freq  => osc50mhz_freq)
 	port map (
 		clk_ref     => osc_50mhz,
 		video_clk   => video_clk,
