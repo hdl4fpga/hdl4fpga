@@ -27,15 +27,11 @@ use ieee.math_real.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.app_profiles.all;
-use hdl4fpga.alt_profiles.all;
 
 entity alt_videopll is
 	generic (
-		io_link      : io_comms := io_hdlc;
 		clkio_freq   : real := 36.0e6;
-		clkref_freq  : real;
-		video_params : video_record);
+		clkref_freq  : real);
 	port (
 		clk_rst      : in std_logic := '0';
 		clk_ref      : in std_logic;
@@ -47,9 +43,12 @@ entity alt_videopll is
 end;
 
 architecture def of alt_videopll is
-	constant c2 : natural := setif(io_link=io_hdlc, 
-		video_params.pll.c2,
-		natural(clkref_freq*real(video_params.pll.m)/(2.0*real(video_params.pll.n)*clkio_freq)));
+	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
+	constant m  : natural := 16;
+	constant n  : natural := 1;
+	constant c1 : natural := 2;
+	constant c0 : natural := video_ratio*2;
+	constant c2 : natural := natural(clkref_freq*real(m)/(2.0*real(n)*clkio_freq));
 
 	component altpll
 	generic (
@@ -139,12 +138,12 @@ begin
 
 	pll_i : altpll
 	generic map (
-		m       => video_params.pll.m,
-		n       => video_params.pll.n,
-		c0_high => video_params.pll.c0,
-		c0_low  => video_params.pll.c0,
-		c1_high => video_params.pll.c1,
-		c1_low  => video_params.pll.c1,
+		m       => m,
+		n       => n,
+		c0_high => c0,
+		c0_low  => c0,
+		c1_high => c1,
+		c1_low  => c1,
 		c2_high => c2,
 		c2_low  => c2,
 

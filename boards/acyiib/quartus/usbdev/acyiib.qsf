@@ -74,7 +74,6 @@ set_global_assignment -name SDC_FILE ../../common/acyiib.sdc
 set_global_assignment -name SDC_FILE usbdev.sdc
 set_global_assignment -name VHDL_FILE ../../../../library/video/videopkg.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../apps/usbdev.vhd
-set_global_assignment -name VHDL_FILE ../../../../library/apps/alt_profiles.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/apps/alt_videopll.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/barrel.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/sdram/phy_iofifo.vhd -library hdl4fpga
