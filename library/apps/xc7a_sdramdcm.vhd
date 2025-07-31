@@ -56,9 +56,9 @@ use unisim.vcomponents.all;
 
 architecture def of xc7a_sdramdcm is
 
-	signal ctlr_clk0_mmce2    : std_logic;
+	signal ctlr_clk_mmce2    : std_logic;
 	signal ctlr_clk90_mmce2   : std_logic;
-	signal ctlr_clk0x2_mmce2  : std_logic;
+	signal ctlr_clkx2_mmce2  : std_logic;
 	signal ctlr_clk90x2_mmce2 : std_logic;
 	signal ctlr_clkfb         : std_logic;
 	signal tmr_rdy            : std_logic;
@@ -82,20 +82,20 @@ begin
 		clkin1   => clk,
 		clkfbin  => ctlr_clkfb,
 		clkfbout => ctlr_clkfb,
-		clkout0  => ctlr_clk0x2_mmce2,
+		clkout0  => ctlr_clkx2_mmce2,
 		clkout1  => ctlr_clk90x2_mmce2,
-		clkout2  => ctlr_clk0_mmce2,
+		clkout2  => ctlr_clk_mmce2,
 		clkout3  => ctlr_clk90_mmce2,
 		locked   => locked);
 
-	ctlr_clk0_bufg: bufg
+	ctlr_clk_bufg: bufg
 	port map (
-		i => ctlr_clk0_mmce2,
+		i => ctlr_clk_mmce2,
 		o => ctlr_clk);
 
-	ctlr_clk0x2_bufg: bufg
+	ctlr_clkx2_bufg: bufg
 	port map (
-		i => ctlr_clk0x2_mmce2,
+		i => ctlr_clkx2_mmce2,
 		o => ctlr_clkx2);
 
 	ctlr_clk90_bufg : bufg

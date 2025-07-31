@@ -279,7 +279,9 @@ package body scopeiopkg is
 
 		exp := 0;
 		sgfc := unit;
-		while sgfc >= 1.0 loop
+		-- for i in 0 to natural(ceil(log(abs(real'high)/log(10.0)))) loop  --  Xilinx 14.7 says its real'high must be grater than 0.0
+		for i in 0 to 38 loop     -- while sgfc >= 1.0 loop
+			exit when sgfc < 1.0; -- while sgfc >= 1.0 loop
 			sgfc := sgfc / 10.0;
 			exp  := exp + 1;
 		end loop;
