@@ -46,7 +46,7 @@ architecture scopeio of s3estarter is
 				"pixel:"   & "{R:1,G:1,B:1}}"                                                     & ',' &
 			"num_of_segments:" & "2"                                                              & ',' &
 			"grid:{"                                                                              &
-				"width:"  & natural'image(16*32+1)                                                & ',' &
+				"width:"  & natural'image(18*32+1)                                                & ',' &
 				"height:" & natural'image( 6*32+1)                                                & ',' &
 				"color:"  & "0xff_ff_00_ff"                                                       & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
@@ -78,13 +78,13 @@ architecture scopeio of s3estarter is
 					"color:" & "0xff_00_00_00"                                                    & ',' &
 					"background-color : 0xff_00_ff_ff}},"                                         &
 			"textbox:{"                                                                           &
-				"width:"     & natural'image(20*8)                                                & ',' &
+				"width:"     & natural'image(21*8)                                                & ',' &
 				"color:"     & "0xff_ff_00_ff"                                                    & ',' &
 				"background-color:" & "0xff_00_00_00}"                                            & ',' &
 			"main:{"                                                                              &
-				"top:23, left:0, right:0, bottom:0, vertical:0, horizontal:0, background-color: 0xff_00_00_00}" & ',' &
+				"top:23, left:1, right:1, bottom:0, vertical:0, horizontal:0, background-color: 0xff_00_00_00}" & ',' &
 			"segment:{"                                                                           &
-				"top: 1, left:0, right:0, bottom:1, vertical:0, horizontal:0, background-color: 0xff_ff_ff_ff}" & ',' &
+				"top: 1, left:1, right:1, bottom:1, vertical:0, horizontal:0, background-color: 0xff_ff_ff_ff}" & ',' &
 			"vt:[" &
 				"{text: VINA," & "step:" & vt_step & ',' & "color:" & "0xff_00_ff_ff}"            & ',' &
 				"{text: VINB," & "step:" & vt_step & ',' & "color:" & "0xff_ff_ff_ff}]}"          & ',' &
@@ -95,7 +95,7 @@ architecture scopeio of s3estarter is
 			-- "cl:"        & "'010'}}";
 			"}";
 
-	constant io_link : string := ""; -- "io_ipoe";
+	constant io_link : string := "io_ipoe";
 	constant baudrate : natural := 115200;
 
 	signal sys_rst       : std_logic;
