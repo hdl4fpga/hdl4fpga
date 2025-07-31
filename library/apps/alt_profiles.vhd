@@ -27,63 +27,30 @@ use hdl4fpga.videopkg.all;
 
 package alt_profiles is
 
-	type pll_record is record
-		m  : natural;
-		n  : natural;
-		c0 : natural;
-		c1 : natural;
-		c2 : natural;
-	end record;
-
-	type video_record is record
-		id     : video_modes;
-		pll    : pll_record;
-		timing : videotiming_ids;
-		pixel  : pixel_types;
-		gear   : natural;
-	end record;
-
-	type videoparams_vector is array (natural range <>) of video_record;
-	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
-	function videoparam (
+	function video_dcm (
 		constant video_id : video_modes;
-		constant clk_ref  : real)
-		return video_record;
+		constant videoio_freq : real)
+		return string;
 
 end package;
 
 package body alt_profiles is
 
-	-- c0              = clkop_div*video_ratio
-	-- video_clk       = (clk_ref*m/(2*n*c0)
-	-- video_shift_clk = (clk_ref*m/(2*n*c1)
-	-- videoio_clk     = (clk_ref*m/(2*n*c2)
-	constant acyiibvideo_tab : videoparams_vector := (
-		-- (id => modedebug,        pll => (m => 25, clkop_div => 5, n => 1, c0 => video_ratio*5, c2 => 16), gear => 2, pixel => rgb888, timing => pclk_debug),
-		(id => modedebug,     pll => (m => 80, c1 => 1, n => 3, c0 => video_ratio*1, c2 => 17), gear => 2, pixel => rgb888, timing => pclk_debug),
-		(id => mode600p16bpp, pll => (m => 16, c1 => 2, n => 1, c0 => video_ratio*2, c2 => 10), gear => 2, pixel => rgb565, timing => pclk40_00m800x600at60),
-		(id => mode600p24bpp, pll => (m => 16, c1 => 2, n => 1, c0 => video_ratio*2, c2 => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60));
+	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
+	constant dcm_db : string := '{' &
+		"'50mhz':{" &
+			"'40mhz':{m: 16, c1: 2, n: 1, c0:" & natural'image(video_ratio*2)  & ", c2: 10}}"; -- ((m => 16, c1 => 2, n => 1, c0 => video_ratio*2, c2 => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60);
 
-	function videoparam (
+	function video_dcm (
 		constant video_id : video_modes;
-		constant clk_ref  : real)
-		return video_record is
-		variable retval : video_record;
+		constant videoio_freq : real)
+		return string is
+		constant dcm : string  := dcm_db**(video_id&"={}");
 	begin
-		if clk_ref=50.0e6 then
-			for i in acyiibvideo_tab'range loop
-				if video_id=acyiibvideo_tab(i).id then
-					return acyiibvideo_tab(i);
-				end if;
-			end loop;
-			retval := acyiibvideo_tab(acyiibvideo_tab'left);
-		end if;
-
-		assert false 
-		report ">>>videoparam<<< : video id not available"
-		severity failure;
-
-		return retval;
+		assert dcm /= "{}"
+			report "xc3s_profiles.video_dcm() : video_id " & video_id & " not valid"
+			severity failure;
+		return dcm;
 	end;
 
 end package body;
