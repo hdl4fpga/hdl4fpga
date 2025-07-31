@@ -240,7 +240,7 @@ begin
 		port map (
 			pwrdwn   => '0',
 			rst      => '0',
-			clkin1   => gclk100,
+			clkin1   => sys_clk,
 			clkfbin  => video_clkfb,
 			clkfbout => video_clkfb,
 			clkout0  => video_clk,
@@ -295,10 +295,10 @@ begin
 			ctlr_rst90   => ctlr_rst90);
 	end generate;
 
-	process (gclk100)
+	process (sys_clk)
 		variable div : unsigned(0 to 1) := (others => '0');
 	begin
-		if rising_edge(gclk100) then
+		if rising_edge(sys_clk) then
 			div := div + 1;
 			eth_ref_clk <= div(0);
 		end if;
@@ -689,7 +689,7 @@ begin
     		port map (
     			pwrdwn   => '0',
     			rst      => sys_rst,
-    			clkin1   => gclk100,
+    			clkin1   => sys_clk,
     			clkfbin  => clkfb,
     			clkfbout => clkfb,
     			clkout0  => iodctrl_clk,
@@ -727,7 +727,7 @@ begin
 
 			rst         => ctlr_rst,
 			rst_shift   => ctlr_rst90,
-			iod_clk     => gclk100,
+			iod_clk     => sys_clk,
 			clk         => ctlr_clk,
 			clk_shift   => ctlr_clk90,
 			clkx2       => ctlr_clkx2,
@@ -1064,11 +1064,11 @@ begin
 		end process;
 	end generate;
 
-	tp_cntr_p : process (gclk100)
+	tp_cntr_p : process (sys_clk)
 		constant n : natural := 0;
 		variable cntr : unsigned(0 to 22-1);
 	begin
-		if rising_edge(gclk100) then
+		if rising_edge(sys_clk) then
 			(jd(9), jd(8), jd(7), jc(1), jd(10), jd(4), jd(3), jd(2), jd(1)) <= std_logic_vector(cntr(0+n to 9+n-1));
 			cntr := cntr + 1;
 		end if;

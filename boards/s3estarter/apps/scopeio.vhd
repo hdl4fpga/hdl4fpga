@@ -95,7 +95,7 @@ architecture scopeio of s3estarter is
 			-- "cl:"        & "'010'}}";
 			"}";
 
-	constant io_link : string := "io_ipoe";
+	constant io_link : string := ""; -- "io_ipoe";
 	constant baudrate : natural := 115200;
 
 	signal sys_rst       : std_logic;
@@ -103,7 +103,7 @@ architecture scopeio of s3estarter is
 
 	signal video_clk     : std_logic;
 	signal video_vton    : std_logic;
-	signal video_pixel   : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	signal video_pixel   : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
 
 	constant inputs      : natural := hdo(settings)**".inputs";
 	signal input_sample  : std_logic_vector(14-1 downto 0);
