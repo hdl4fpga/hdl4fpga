@@ -23,12 +23,13 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 
 package alt_profiles is
 
 	function video_dcm (
-		constant video_id : video_modes;
+		constant video_id : string;
 		constant videoio_freq : real)
 		return string;
 
@@ -42,7 +43,7 @@ package body alt_profiles is
 			"'40mhz':{m: 16, c1: 2, n: 1, c0:" & natural'image(video_ratio*2)  & ", c2: 10}}"; -- ((m => 16, c1 => 2, n => 1, c0 => video_ratio*2, c2 => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60);
 
 	function video_dcm (
-		constant video_id : video_modes;
+		constant video_id : string;
 		constant videoio_freq : real)
 		return string is
 		constant dcm : string  := dcm_db**(video_id&"={}");
