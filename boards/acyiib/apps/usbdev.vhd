@@ -80,7 +80,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
+use hdl4fpga.ep2c_profiles.all;
 
 library altera_mf;
 use altera_mf.altera_mf_components.all;
@@ -101,19 +103,17 @@ architecture usbdev of acyiib is
 	signal tp   : std_logic_vector(1 to 32);
 
 begin
-
 	sys_rst <= '0';
 
-	videopll_e : entity hdl4fpga.alt_videopll
+	videopll_e : entity hdl4fpga.ep2c_videopll
 	generic map (
-		clkio_freq   => 12.0e6*real(usb_oversampling),
-		clkref_freq  => osc50mhz_freq)
+		dcm => video_dcm(".'50mhz'.'40mhz'", 12.0e6*real(usb_oversampling)))
 	port map (
-		clk_ref     => osc_50mhz,
+		clk    => osc_50mhz,
 		video_clk   => video_clk,
 		videoio_clk => videoio_clk,
 		video_shift_clk => video_shift_clk,
-		video_lck   => video_lck);
+		locked   => video_lck);
 
 		usb_fpga_dp    <= 'Z';-- when up='0' else '0';
 		usb_fpga_dn    <= 'Z';-- when up='0' else '0';

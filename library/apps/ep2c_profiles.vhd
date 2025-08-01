@@ -21,12 +21,13 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.math_real.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 
-package alt_profiles is
+package ep2c_profiles is
 
 	function video_dcm (
 		constant video_id : string;
@@ -35,21 +36,37 @@ package alt_profiles is
 
 end package;
 
-package body alt_profiles is
+package body ep2c_profiles is
 
 	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 	constant dcm_db : string := '{' &
 		"'50mhz':{" &
-			"'40mhz':{m: 16, c1: 2, n: 1, c0:" & natural'image(video_ratio*2)  & ", c2: 10}}"; -- ((m => 16, c1 => 2, n => 1, c0 => video_ratio*2, c2 => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60);
+			"'40mhz':{m: 16, n: 1, c0:" & natural'image(video_ratio*2) & ", c1: 2, freq_in: 50.0e6}}}"; 
+			-- ((m => 16, c1 => 2, n => 1, c0 => video_ratio*2, c2 => 10), gear => 2, pixel => rgb888, timing => pclk40_00m800x600at60);
 
 	function video_dcm (
 		constant video_id : string;
 		constant videoio_freq : real)
 		return string is
 		constant dcm : string  := dcm_db**(video_id&"={}");
+		variable c2  : natural;
 	begin
+		if dcm /= "{}" then
+			if videoio_freq /=0.0 then
+				c2 := natural(round(real'(hdo(dcm)**".freq_in")*real'(hdo(dcm)**".m")/(2.0*real'(hdo(dcm)**".n")*videoio_freq)));
+			else
+				c2 := 1;
+			end if;
+			return "{" &
+				"m:"  & string'(dcm**".m")  & ',' & 
+				"n:"  & string'(dcm**".n")  & ',' & 
+				"c0:" & string'(dcm**".c0") & ',' & 
+				"c1:" & string'(dcm**".c1") & ',' &
+				"c2:" & natural'image(c2)   & ',' & 
+				"freq_in:" & string'(dcm**".freq_in") & "}";
+		end if;
 		assert dcm /= "{}"
-			report "xc3s_profiles.video_dcm() : video_id " & video_id & " not valid"
+			report "ep2_profiles.video_dcm() : video_id " & video_id & " not valid"
 			severity failure;
 		return dcm;
 	end;
