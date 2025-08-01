@@ -605,8 +605,8 @@ begin
 
 		video_clk     => video_clk,
 		video_pixel   => video_pixel,
-		video_hsync   => video_hzsync,
-		video_vsync   => video_vsync,
+		video_hzsync   => video_hzsync,
+		video_vtsync   => video_vtsync,
 		video_vton    => video_vton,
 		video_blank   => video_blank,
 

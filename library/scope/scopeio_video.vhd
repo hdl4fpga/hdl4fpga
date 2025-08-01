@@ -57,8 +57,8 @@ entity scopeio_video is
 		extern_videohzsync : in std_logic := '-';
 		extern_videovtsync : in std_logic := '-';
 		extern_videoblankn : in std_logic := '-';
-		video_hsync        : out std_logic;
-		video_vsync        : out std_logic;
+		video_hzsync        : out std_logic;
+		video_vtsync        : out std_logic;
 
 		video_vton         : buffer std_logic;
 		video_hzon         : buffer std_logic;
@@ -622,8 +622,8 @@ begin
 	video_color <= scope_color;
 	video_pixel <= (video_pixel'range => video_io(2)) and video_color;
 	video_blank <= not video_io(2);
-	video_hsync <= video_io(0);
-	video_vsync <= video_io(1);
+	video_hzsync <= video_io(0);
+	video_vtsync <= video_io(1);
 	video_sync  <= not video_io(1) and not video_io(0);
 
 end;

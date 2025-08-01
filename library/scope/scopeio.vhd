@@ -104,8 +104,8 @@ entity scopeio is
 		video_clk     : in  std_logic;
 		video_shift_clk :  in std_logic := '-';
 		video_pixel   : buffer std_logic_vector;
-		video_hsync   : buffer std_logic;
-		video_vsync   : buffer std_logic;
+		video_hzsync   : buffer std_logic;
+		video_vtsync   : buffer std_logic;
 		video_vton    : buffer std_logic;
 		video_hzon    : out std_logic;
 		video_blank   : buffer std_logic;
@@ -426,8 +426,8 @@ begin
 			extern_videohzsync => extern_videohzsync,
 			extern_videovtsync => extern_videovtsync,
 			extern_videoblankn => extern_videoblankn,
-			video_hsync    => video_hsync,
-			video_vsync    => video_vsync,
+			video_hzsync    => video_hzsync,
+			video_vtsync    => video_vtsync,
 			video_vton     => video_vton,
 			video_hzon     => video_hzon,
 			video_blank    => video_blank,
@@ -468,8 +468,8 @@ begin
 			port map (
 				clk   => video_clk,
 				rgb   => rgb,
-				hsync => video_hsync,
-				vsync => video_vsync,
+				hsync => video_hzsync,
+				vsync => video_vtsync,
 				blank => dvid_blank,
 				cclk  => video_shift_clk,
 				chnc  => dvid_crgb(video_gear*4-1 downto video_gear*3),
