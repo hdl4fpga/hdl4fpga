@@ -27,10 +27,6 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
-use hdl4fpga.ecp5_profiles.all;
-
-library ecp5u;
-use ecp5u.components.all;
 
 entity link_mii is
 	generic (

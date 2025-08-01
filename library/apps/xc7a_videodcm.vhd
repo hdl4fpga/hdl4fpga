@@ -36,11 +36,11 @@ entity xc7a_videodcm is
 		video_shift_clk : out std_logic;
 		locked      : buffer std_logic);
 
-	constant gear           : natural := settings**".gear";
-	constant freq_in        : real    := settings**".dcm.freq_in";
-	constant clkfbout_mult  : natural := settings**".dcm.clkfbout_mult=0";
-	constant clkout0_divide : natural := settings**".dcm.clkout0_divide=1";
-	constant clkout1_divide : natural := settings**".dcm.clkout1_divide=1";
+	constant gear           : natural := settings**".gear=1";
+	constant freq_in        : real    := settings**".freq_in";
+	constant clkfbout_mult  : natural := settings**".clkfbout_mult=1";
+	constant clkout0_divide : natural := settings**".clkout0_divide=1";
+	constant clkout1_divide : natural := settings**".clkout1_divide=1";
 
 end;
 
@@ -62,7 +62,7 @@ begin
 		clkfbout_mult  => clkfbout_mult,
 		clkout0_divide => clkout0_divide,
 		clkout1_divide => clkout1_divide,
-		clkout2_divide => clkout1_divide*2)
+		clkout2_divide => clkout1_divide*gear)
 	port map (
 		pwrdwn   => '0',
 		rst      => rst,
@@ -74,7 +74,11 @@ begin
 		clkout2  => clkout2,
 		locked   => locked);
 
-	gbx2_g : if gear=2 generate
+ 	gbx1_g : if gear=1 generate
+		video_clk       <= clkout0;
+	end generate;
+
+ 	gbx2_g : if gear=2 generate
 		video_clk       <= clkout0;
 		video_clkx2     <= clkout1;
 		video_shift_clk <= clkout1;
@@ -82,10 +86,7 @@ begin
 
 	gbx4_g : if gear=4 generate
 		video_clk       <= clkout0;
+		video_clkx2     <= clkout1;
 		video_shift_clk <= clkout2;
-		buf_i : bufg
-		port map (
-			i => clkout1,
-			o => video_clkx2);
 	end generate;
 end;

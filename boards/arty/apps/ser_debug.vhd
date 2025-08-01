@@ -35,10 +35,13 @@ use unisim.vcomponents.all;
 
 architecture ser_debug of arty is
 
-	constant settings : string := '{'                                                      &
-		"video:{"                                                                          &
-			"dcm:"     & string'(hdl4fpga.xc7a_profiles.video_dcm(".'100mhz'.'40mhz'"))    & ',' &
-			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+	constant settings : string := '{'  &
+		"video:{"                      &
+			"dcm:{"                    & 
+				"clkfbout_mult: 12,"  &
+				"clkout0_divide: 8,"   &
+				"freq_in: 100.0e6},"   &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
 			"pixel:"   & "{R:1,G:1,B:1}}}";
 
 	alias sys_clk is gclk100;
@@ -82,7 +85,7 @@ begin
 
 	videodcm_i : entity hdl4fpga.xc7a_videodcm
 	generic map(
-		settings => hdo(settings)**".dcm")
+		settings => hdo(settings)**".video.dcm")
 	port map(
 		clk       => sys_clk,
 		video_clk => video_clk);
@@ -116,7 +119,7 @@ begin
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
-		video_timings => hdo(settings)**".video.timings")
+		settings => hdo(settings)**".video")
 	port map (
 		ser_clk      => ser_clk, 
 		ser_frm      => ser_frm, 
