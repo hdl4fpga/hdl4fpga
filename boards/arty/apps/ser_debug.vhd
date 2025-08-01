@@ -117,6 +117,11 @@ begin
 		mii_rxdv   => eth_rx_dv, 
 		mii_rxd    => eth_rxd);   
 
+	ser_clk  <= eth_rx_clk;
+	ser_frm  <= eth_rx_dv;
+	ser_irdy <= '1';
+	ser_data <= eth_rxd;
+
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
 		settings => hdo(settings)**".video")
