@@ -91,25 +91,25 @@ architecture beh of scopeio_video is
 	constant vgaio_latency        : natural := input_latency+mainrgtrio_latency+sgmntrgtrio_latency+segmment_latency+palette_latency;
 	constant hztick_bits          : natural := unsigned_num_bits(8*axis_fontsize-1);
 
-	signal video_hzsync  : std_logic;
-	signal video_vtsync  : std_logic;
-	signal video_vld     : std_logic;
-	signal video_vtcntr  : std_logic_vector(11-1 downto 0);
-	signal video_hzcntr  : std_logic_vector(11-1 downto 0);
-	signal video_color   : std_logic_vector(video_pixel'length-1 downto 0);
-	signal video_io      : std_logic_vector(0 to 3-1);
+	signal video_hs     : std_logic;
+	signal video_vs     : std_logic;
+	signal video_vld    : std_logic;
+	signal video_vtcntr : std_logic_vector(11-1 downto 0);
+	signal video_hzcntr : std_logic_vector(11-1 downto 0);
+	signal video_color  : std_logic_vector(video_pixel'length-1 downto 0);
+	signal video_io     : std_logic_vector(0 to 3-1);
 
-	signal scope_color   : std_logic_vector(video_pixel'length-1 downto 0);
+	signal scope_color  : std_logic_vector(video_pixel'length-1 downto 0);
 
-	signal hz_ena        : std_logic;
-	signal hz_dv         : std_logic;
-	signal hz_scale      : std_logic_vector(4-1 downto 0);
-	signal hz_slider     : std_logic_vector(time_offset'range);
-	signal hz_segment    : std_logic_vector(video_addr'range);
-	constant max_delay : natural := 2**hz_slider'length;
+	signal hz_ena       : std_logic;
+	signal hz_dv        : std_logic;
+	signal hz_scale     : std_logic_vector(4-1 downto 0);
+	signal hz_slider    : std_logic_vector(time_offset'range);
+	signal hz_segment   : std_logic_vector(video_addr'range);
+	constant max_delay  : natural := 2**hz_slider'length;
 
-	constant sgmnt_id : natural := 0;
-	constant text_id  : natural := 1;
+	constant sgmnt_id   : natural := 0;
+	constant text_id    : natural := 1;
 
 	constant mainwidth_bits  : natural  := unsigned_num_bits(main_width-1);
 	constant mainheight_bits : natural := unsigned_num_bits(main_height-1);
@@ -174,8 +174,8 @@ begin
 		extern_hzsync => extern_videohzsync,
 		extern_vtsync => extern_videovtsync,
 		extern_blankn => extern_videoblankn,
-		video_hzsync  => video_hzsync,
-		video_vtsync  => video_vtsync,
+		video_hzsync  => video_hs,
+		video_vtsync  => video_vs,
 		video_hzcntr  => video_hzcntr,
 		video_vtcntr  => video_vtcntr,
 		video_hzon    => video_hzon,
@@ -189,8 +189,8 @@ begin
 		d => (video_io'range => vgaio_latency))
 	port map (
 		clk   => video_clk,
-		di(0) => video_hzsync,
-		di(1) => video_vtsync,
+		di(0) => video_hs,
+		di(1) => video_vs,
 		di(2) => video_vld,
 		do    => video_io);
 

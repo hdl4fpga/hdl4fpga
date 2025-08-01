@@ -35,14 +35,13 @@ use unisim.vcomponents.all;
 
 architecture ser_debug of arty is
 
-	constant sys_freq : real := 100.0e6;
-
 	constant settings : string := '{'                                                      &
 		"video:{"                                                                          &
 			"dcm:"     & string'(hdl4fpga.xc7a_profiles.video_dcm(".'100mhz'.'40mhz'"))    & ',' &
 			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
 			"pixel:"   & "{R:1,G:1,B:1}}}";
 
+	alias sys_clk is gclk100;
 
 	signal videoio_clk     : std_logic;
 	signal video_clk       : std_logic;
@@ -53,27 +52,22 @@ architecture ser_debug of arty is
 	signal dvid_crgb       : std_logic_vector(7 downto 0);
 	signal video_pixel     : std_logic_vector(3-1 downto 0);
 
-	signal so_frm      : std_logic;
-	signal so_irdy     : std_logic;
-	signal so_trdy     : std_logic;
-	signal so_data     : std_logic_vector(0 to 8-1);
-	signal si_frm      : std_logic;
-	signal si_irdy     : std_logic;
-	signal si_trdy     : std_logic;
-	signal si_end      : std_logic;
-	signal si_data     : std_logic_vector(0 to 8-1);
+	signal so_frm          : std_logic;
+	signal so_irdy         : std_logic;
+	signal so_trdy         : std_logic;
+	signal so_data         : std_logic_vector(0 to 8-1);
+	signal si_frm          : std_logic;
+	signal si_irdy         : std_logic;
+	signal si_trdy         : std_logic;
+	signal si_end          : std_logic;
+	signal si_data         : std_logic_vector(0 to 8-1);
 
-	signal ser_clk     : std_logic;
-	signal ser_frm     : std_logic;
-	signal ser_irdy    : std_logic;
-	signal ser_data    : std_logic_vector(0 to eth_rxd'length-1);
+	signal ser_clk         : std_logic;
+	signal ser_frm         : std_logic;
+	signal ser_irdy        : std_logic;
+	signal ser_data        : std_logic_vector(0 to eth_rxd'length-1);
 
 	signal tp  : std_logic_vector(1 to 32);
-
-	constant mem_size  : natural := 8*(1024*8);
-
-	alias sys_clk is gclk100;
-	signal sys_rst : std_logic;
 
 begin
 
@@ -90,7 +84,6 @@ begin
 	generic map(
 		settings => hdo(settings)**".dcm")
 	port map(
-		rst       => sys_rst,
 		clk       => sys_clk,
 		video_clk => video_clk);
 
@@ -121,21 +114,20 @@ begin
 		mii_rxdv   => eth_rx_dv, 
 		mii_rxd    => eth_rxd);   
 
-	
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
 		video_timings => hdo(settings)**".video.timings")
 	port map (
-		ser_clk         => ser_clk, 
-		ser_frm         => ser_frm, 
-		ser_irdy        => ser_irdy, 
-		ser_data        => ser_data, 
+		ser_clk      => ser_clk, 
+		ser_frm      => ser_frm, 
+		ser_irdy     => ser_irdy, 
+		ser_data     => ser_data, 
 		
-		video_clk       => video_clk,
-		video_hzsync    => video_hzsync,
-		video_vtsync    => video_vtsync,
-		video_pixel     => video_pixel,
-		dvid_crgb       => dvid_crgb);
+		video_clk    => video_clk,
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
+		video_pixel  => video_pixel,
+		dvid_crgb    => dvid_crgb);
 
 	process (video_clk)
 	begin
