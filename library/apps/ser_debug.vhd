@@ -48,10 +48,6 @@ entity ser_debug is
 		video_pixel   : buffer std_logic_vector;
 		dvid_crgb     : out std_logic_vector(7 downto 0));
 
-	assert false
-		report "wntity ser_debug : settings : " & settings
-		severity note;
-
 	constant video_gear   : natural := hdo(settings)**".gear=2";
 	constant red_length   : natural := hdo(settings)**".pixel.R=8";
 	constant green_length : natural := hdo(settings)**".pixel.G=8";
@@ -65,6 +61,10 @@ architecture def of ser_debug is
 	signal dvid_blank : std_logic;
 	signal rgb        : std_logic_vector(0 to 3*8-1) := (others => '0');
 begin
+
+	assert false
+		report "entity ser_debug : settings : " & settings
+		severity note;
 
 	ser_display_e : entity hdl4fpga.ser_display
 	generic map (

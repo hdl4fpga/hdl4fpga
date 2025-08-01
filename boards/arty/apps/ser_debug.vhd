@@ -38,7 +38,7 @@ architecture ser_debug of arty is
 	constant settings : string := '{'  &
 		"video:{"                      &
 			"dcm:{"                    & 
-				"clkfbout_mult: 12,"  &
+				"clkfbout_mult: 12,"   &
 				"clkout0_divide: 8,"   &
 				"freq_in: 100.0e6},"   &
 			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
@@ -142,6 +142,25 @@ begin
 			ja(10) <= video_vtsync;
 		end if;
 	end process;
+
+	ddrck_obufds : obufds
+	generic map (
+		iostandard => "DIFF_SSTL135")
+	port map (
+		i  => '0',
+		o  => ddr3_clk_p,
+		ob => ddr3_clk_n);
+
+	ddrdqs_g : for i in ddr3_dqs_p'range generate
+		iobuf_i : obufds
+		generic map (
+			iostandard => "DIFF_SSTL135")
+		port map (
+			i   => 'Z',
+			o  => ddr3_dqs_p(i),
+			ob => ddr3_dqs_n(i));
+	end generate;
+
 
 	eth_rstn <= '1';
 	eth_mdc  <= '0';
