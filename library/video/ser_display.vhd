@@ -35,7 +35,7 @@ entity ser_display is
 		font_width    : natural := 8;
 		font_height   : natural := 16;
 
-		video_timings : string;
+		timings       : string;
 		code_spce     : std_logic_vector;
 		code_digits   : std_logic_vector;
 		cga_bitrom    : std_logic_vector := (1 to 0 => '-'));
@@ -48,8 +48,8 @@ entity ser_display is
 		video_clk     : in  std_logic;
 		video_dot     : out std_logic;
 		video_on      : buffer std_logic;
-		video_hs      : out std_logic;
-		video_vs      : out std_logic);
+		video_hzsync  : out std_logic;
+		video_vtsync  : out std_logic);
 end;
 
 architecture def of ser_display is
@@ -59,8 +59,8 @@ architecture def of ser_display is
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
 	constant fontheight_bits : natural := unsigned_num_bits(font_height-1);
-	constant display_width   : natural := hdo(video_timings)**".hz.active"/font_width;
-	constant display_height  : natural := hdo(video_timings)**".vt.active"/font_height;
+	constant display_width   : natural := hdo(timings)**".hz.active"/font_width;
+	constant display_height  : natural := hdo(timings)**".vt.active"/font_height;
 
 	signal video_von         : std_logic;
 	signal video_hon         : std_logic;
@@ -84,7 +84,7 @@ begin
 
 	video_e : entity hdl4fpga.video_sync
 	generic map (
-		timings      => video_timings)
+		timings      => timings)
 	port map (
 		video_clk    => video_clk,
 		video_hzsync => hzsync,
@@ -169,7 +169,7 @@ begin
 		di(1) => hzsync,
 		di(2) => vtsync,
 		do(0) => video_on,
-		do(1) => video_hs,
-		do(2) => video_vs);
+		do(1) => video_hzsync,
+		do(2) => video_vtsync);
 
 end;

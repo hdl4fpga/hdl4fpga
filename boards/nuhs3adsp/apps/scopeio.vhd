@@ -88,8 +88,8 @@ architecture scopeio of nuhs3adsp is
 
 	signal video_clk   : std_logic;
 	signal videoclk_n  : std_logic;
-	signal video_hsync : std_logic;
-	signal video_vsync : std_logic;
+	signal video_hzsync : std_logic;
+	signal video_vtsync : std_logic;
 	signal video_vton  : std_logic;
 	signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
 	signal video_blank : std_logic;
@@ -420,8 +420,8 @@ begin
 		ctlrphy_sti  => ctlrphy_sti,
 		video_clk    => video_clk,
 		video_pixel  => video_pixel,
-		video_hsync  => video_hsync,
-		video_vsync  => video_vsync,
+		video_hzsync  => video_hzsync,
+		video_vtsync  => video_vtsync,
 		video_vton   => video_vton,
 		video_blank  => video_blank);
 
@@ -550,8 +550,8 @@ begin
 			vsync      <= video_vsync1;
 			sync       <= not video_hsync1 and not video_vsync1;
 			video_rgb1   := video_pixel;
-			video_hsync1 := video_hsync;
-			video_vsync1 := video_vsync;
+			video_hsync1 := video_hzsync;
+			video_vsync1 := video_vtsync;
 			video_blank1 := video_blank;
 		end if;
 	end process;

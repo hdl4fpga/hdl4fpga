@@ -25,6 +25,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 
 library ieee;
@@ -32,11 +33,7 @@ use ieee.std_logic_1164.all;
 
 entity ser_debug is
 	generic (
-		video_timings : string;
-		video_gear    : natural := 2;
-		red_length    : natural := 5;
-		green_length  : natural := 6;
-		blue_length   : natural := 5);
+		settings      : string);
 	port (
 		ser_clk       : in  std_logic;
 		ser_frm       : in  std_logic;
@@ -50,6 +47,12 @@ entity ser_debug is
 		video_blank   : buffer std_logic;
 		video_pixel   : buffer std_logic_vector;
 		dvid_crgb     : out std_logic_vector(7 downto 0));
+
+	constant video_gear   : natural := hdo(settings)**".gear=2";
+	constant red_length   : natural := hdo(settings)**".pixel.R=8";
+	constant green_length : natural := hdo(settings)**".pixel.G=8";
+	constant blue_length  : natural := hdo(settings)**".pixel.B=8";
+
 end;
 
 architecture def of ser_debug is
@@ -59,12 +62,16 @@ architecture def of ser_debug is
 	signal rgb        : std_logic_vector(0 to 3*8-1) := (others => '0');
 begin
 
+	assert false
+		report "entity ser_debug : settings : " & settings
+		severity note;
+
 	ser_display_e : entity hdl4fpga.ser_display
 	generic map (
-		code_spce     => to_ascii(" "),
-		code_digits   => to_ascii("0123456789abcdef"),
-		cga_bitrom    => to_ascii("Ready Steady GO!"),
-		video_timings => video_timings)
+		code_spce   => to_ascii(" "),
+		code_digits => to_ascii("0123456789abcdef"),
+		cga_bitrom  => to_ascii("Ready Steady GO!"),
+		timings =>  hdo(settings)**".timings")
 	port map (
 		phy_clk     => ser_clk,
 		phy_frm     => ser_frm,
@@ -74,8 +81,8 @@ begin
 		video_clk   => video_clk, 
 		video_dot   => video_dot,
 		video_on    => video_on,
-		video_hs    => video_hzsync,
-		video_vs    => video_vtsync);
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync);
 
 	video_blank <= not video_on;
 

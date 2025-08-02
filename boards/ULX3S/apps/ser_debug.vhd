@@ -358,7 +358,7 @@ begin
 	video_g : if monitor generate
 		ser_debug_e : entity hdl4fpga.ser_debug
 		generic map (
-			video_timings => hdo(settings)**".video.timings")
+			settings        => hdo(settings)**".video")
 		port map (
 			ser_clk         => ser_clk, 
 			ser_frm         => ser_frm, 

@@ -677,7 +677,7 @@ begin
 
 	ddrio_b : block
 	begin
-    	ddr_clk_g : for i in ddr3_clk'range generate
+    	clk_g : for i in ddr3_clk'range generate
     		ddr_ck_obufds : obufds
     		generic map (
     			iostandard => "DIFF_SSTL135")
@@ -687,8 +687,8 @@ begin
     			ob => ddr3_clk_n);
     	end generate;
 
-    	ddr_dqs_g : for i in ddr3_dqs_p'range generate
-    		dqsiobuf_i : iobufds
+    	dqs_g : for i in ddr3_dqs_p'range generate
+    		iobuf_i : iobufds
     		generic map (
     			iostandard => "DIFF_SSTL135")
     		port map (

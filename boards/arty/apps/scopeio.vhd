@@ -112,8 +112,8 @@ architecture scopeio of arty is
 	alias sys_clk is gclk100;
 
 	signal video_clk       : std_logic;
-	signal video_hsync     : std_logic;
-	signal video_vsync     : std_logic;
+	signal video_hzsync    : std_logic;
+	signal video_vtsync    : std_logic;
 	signal video_vton      : std_logic;
 	signal video_blank     : std_logic;
 	signal video_pixel     : std_logic_vector(24-1 downto 0);
@@ -605,8 +605,8 @@ begin
 
 		video_clk     => video_clk,
 		video_pixel   => video_pixel,
-		video_hsync   => video_hsync,
-		video_vsync   => video_vsync,
+		video_hzsync   => video_hzsync,
+		video_vtsync   => video_vtsync,
 		video_vton    => video_vton,
 		video_blank   => video_blank,
 
@@ -856,8 +856,8 @@ begin
 			ja(1)  <= video_pixel(3*8-1);
 			ja(2)  <= video_pixel(2*8-1);
 			ja(3)  <= video_pixel(1*8-1);
-			ja(4)  <= not video_hsync;
-			ja(10) <= not video_vsync;
+			ja(4)  <= not video_hzsync;
+			ja(10) <= not video_vtsync;
 		end if;
 	end process;
   

@@ -25,74 +25,54 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.cgafonts.all;
+use hdl4fpga.ipoepkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture ser_debug of arty is
 
-	constant sys_freq : real := 100.0e6;
+	constant settings : string := '{'  &
+		"video:{"                      &
+			"dcm:{"                    & 
+				"clkfbout_mult: 12,"   &
+				"clkout0_divide: 8,"   &
+				"freq_in: 100.0e6},"   &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
+			"pixel:"   & "{R:1,G:1,B:1}}}";
 
-	type video_params is record
-		timing_id : videotiming_ids;
-		dcm_mul   : natural;
-		dcm_div   : natural;
-	end record;
+	alias sys_clk is gclk100;
 
-	type video_modes is (
-		mode480p,
-		mode600p, 
-		mode1080p);
+	signal videoio_clk     : std_logic;
+	signal video_clk       : std_logic;
+	signal video_shift_clk : std_logic;
+	signal video_lck       : std_logic;
+	signal video_hzsync    : std_logic;
+	signal video_vtsync    : std_logic;
+	signal dvid_crgb       : std_logic_vector(7 downto 0);
+	signal video_pixel     : std_logic_vector(3-1 downto 0);
 
-	type videoparams_vector is array (video_modes) of video_params;
-	constant video_tab : videoparams_vector := (
-		mode480p  => (timing_id => pclk25_00m640x480at60,    dcm_mul =>  6, dcm_div => 24),
-		mode600p  => (timing_id => pclk40_00m800x600at60,    dcm_mul =>  6, dcm_div => 15),
-		mode1080p => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 12, dcm_div => 8));
+	signal so_frm          : std_logic;
+	signal so_irdy         : std_logic;
+	signal so_trdy         : std_logic;
+	signal so_data         : std_logic_vector(0 to 8-1);
+	signal si_frm          : std_logic;
+	signal si_irdy         : std_logic;
+	signal si_trdy         : std_logic;
+	signal si_end          : std_logic;
+	signal si_data         : std_logic_vector(0 to 8-1);
 
-	constant video_mode    : video_modes := mode600p;
-	constant videodot_freq : natural := (video_tab(video_mode).dcm_mul*natural(sys_freq))/(video_tab(video_mode).dcm_div);
-
-	signal sys_clk        : std_logic;
-	signal dhcp_req       : std_logic;
-	signal eth_txclk_bufg : std_logic;
-	signal eth_rxclk_bufg : std_logic;
-	signal video_clk      : std_logic;
-	signal video_hs       : std_logic;
-	signal video_vs       : std_logic;
-	signal video_pixel    : std_logic_vector(3-1 downto 0);
-
-	signal sio_clk        : std_logic;
-	signal sin_frm        : std_logic;
-	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(0 to 8-1);
-	signal sout_frm       : std_logic;
-	signal sout_irdy      : std_logic;
-	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(0 to 8-1);
+	signal ser_clk         : std_logic;
+	signal ser_frm         : std_logic;
+	signal ser_irdy        : std_logic;
+	signal ser_data        : std_logic_vector(0 to eth_rxd'length-1);
 
 	signal tp  : std_logic_vector(1 to 32);
-	alias data : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
-
-	-----------------
-	-- Select link --
-	-----------------
-
-	constant io_hdlc : natural := 0;
-	constant io_ipoe : natural := 1;
-
-	constant io_link : natural := io_hdlc;
-
-	constant mem_size  : natural := 8*(1024*8);
 
 begin
-
-	clkin_ibufg : ibufg
-	port map (
-		I => gclk100,
-		O => sys_clk);
 
 	process (sys_clk)
 		variable div : unsigned(0 to 1) := (others => '0');
@@ -103,199 +83,59 @@ begin
 		end if;
 	end process;
 
-	eth_rx_clk_ibufg : ibufg
+	videodcm_i : entity hdl4fpga.xc7a_videodcm
+	generic map(
+		settings => hdo(settings)**".video.dcm")
+	port map(
+		clk       => sys_clk,
+		video_clk => video_clk);
+
+	mii_e : entity hdl4fpga.link_mii
+	generic map (
+		rmii          => false,
+		default_mac   => x"00_40_00_01_02_03",
+		default_ipv4a => aton("192.168.0.14"),
+		n             => eth_rxd'length)
 	port map (
-		I => eth_rx_clk,
-		O => eth_rxclk_bufg);
-
-	eth_tx_clk_ibufg : ibufg
-	port map (
-		I => eth_tx_clk,
-		O => eth_txclk_bufg);
-
-	dcm_b : block
-		signal video_clkfb : std_logic;
-	begin
-		video_dcm_i : mmcme2_base
-		generic map (
-			clkin1_period    => 10.0,
-			clkfbout_mult_f  => real(video_tab(video_mode).dcm_mul),
-			clkout0_divide_f => real(video_tab(video_mode).dcm_div),
-			bandwidth        => "LOW")
-		port map (
-			pwrdwn   => '0',
-			rst      => '0',
-			clkin1   => sys_clk,
-			clkfbin  => video_clkfb,
-			clkfbout => video_clkfb,
-			clkout0  => video_clk);
-	end block;
-
-	hdlc_g : if io_link=io_hdlc generate
-
-	--	constant uart_xtal : natural := natural(sys_freq);
-	--	alias uart_clk     : std_logic is clk_25mhz;
-
-		constant uart_xtal : natural := natural(videodot_freq);
-		signal uart_clk    : std_logic;
-
-		constant baudrate  : natural := 3000000;
-	--	constant baudrate  : natural := 115200;
-
-		signal uart_rxdv   : std_logic;
-		signal uart_rxd    : std_logic_vector(0 to 8-1);
-		signal uart_idle   : std_logic;
-		signal uart_txen   : std_logic;
-		signal uart_txd    : std_logic_vector(uart_rxd'range);
-
-		signal tp          : std_logic_vector(1 to 32);
-
-	begin
-
-		uart_clk   <= video_clk;
-		sio_clk    <= video_clk;
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => uart_txd_in,
-			uart_rxdv => uart_rxdv,
-			uart_rxd  => uart_rxd);
-
-		uarttx_e : entity hdl4fpga.uart_tx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_xtal)
-		port map (
-			uart_txc  => uart_clk,
-			uart_sout => uart_rxd_out,
-			uart_idle => uart_idle,
-			uart_txen => uart_txen,
-			uart_txd  => uart_txd);
-
-		siodaahdlc_e : entity hdl4fpga.sio_dayhdlc
-		generic map (
-			mem_size  => mem_size)
-		port map (
-			uart_clk  => uart_clk,
-			uart_rxdv => uart_rxdv,
-			uart_rxd  => uart_rxd,
-			uart_idle => uart_idle,
-			uart_txd  => uart_txd,
-			uart_txen => uart_txen,
-			sio_clk   => sio_clk,
-			so_frm    => sin_frm,
-			so_irdy   => sin_irdy,
-			so_data   => sin_data,
-
-			si_frm    => sout_frm,
-			si_irdy   => sout_irdy,
-			si_trdy   => sout_trdy,
-			si_data   => sout_data,
-			tp        => tp);
-
-		process (sio_clk)
-			variable t : std_logic;
-			variable e : std_logic;
-			variable i : std_logic;
-		begin
-			if rising_edge(sio_clk) then
-				if i='1' and e='0' then
-					t := not t;
-				end if;
-				e := i;
-				i := tp(1);
-
-				led(0) <= t;
-				led(1) <= not t;
-			end if;
-		end process;
-	end generate;
-
-	ipoe_e : if io_link=io_ipoe generate
-		signal ipv4acfg_req  : std_logic := '0';
-	begin
+		tp         => tp,
+		si_frm     => si_frm,
+		si_irdy    => si_irdy,
+		si_trdy    => si_trdy,
+		si_end     => si_end,
+		si_data    => si_data,
 	
-		sio_clk <= eth_txclk_bufg;
+		so_frm     => so_frm,
+		so_irdy    => so_irdy,
+		so_trdy    => so_trdy,
+		so_data    => so_data,
+		dhcp_btn   => btn0,
+		mii_txc    => eth_tx_clk,
+		mii_txen   => eth_tx_en,
+		mii_txd    => eth_txd,
 
-		ipv4acfg_req <= btn(0);
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			default_ipv4a => x"c0_a8_00_0e")
-		port map (
-			ipv4acfg_req => ipv4acfg_req,
+		mii_rxc    => eth_rx_clk,
+		mii_rxdv   => eth_rx_dv, 
+		mii_rxd    => eth_rxd);   
 
-			phy_rxc   => eth_rxclk_bufg,
-			phy_rx_dv => eth_rx_dv,
-			phy_rx_d  => eth_rxd,
+	ser_clk  <= eth_tx_clk;
+	ser_frm  <= tp(2);
+	ser_irdy <= eth_tx_en;
+	ser_data <= eth_txd;
 
-			phy_txc   => eth_txclk_bufg,
-			phy_tx_en => eth_tx_en,
-			phy_tx_d  => eth_txd,
-		
-			sio_clk   => sio_clk,
-			si_frm    => sout_frm,
-			si_irdy   => sout_irdy,
-			si_trdy   => sout_trdy,
-			si_data   => sout_data,
-
-			so_frm    => sin_frm,
-			so_irdy   => sin_irdy,
-			so_trdy   => '1',
-			so_data   => sin_data);
-
-		process (sio_clk)
-			variable t : std_logic;
-			variable e : std_logic;
-			variable i : std_logic;
-		begin
-			if rising_edge(sio_clk) then
-				if i='1' and e='0' then
-					t := not t;
-				end if;
-				e := i;
-				i := eth_rx_dv;
-
-				led(0) <= t;
-				led(1) <= not t;
-			end if;
-		end process;
-
-	end generate;
-	
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
-		timing_id    => video_tab(video_mode).timing_id,
-		red_length   => 1,
-		green_length => 1,
-		blue_length  => 1)
+		settings => hdo(settings)**".video")
 	port map (
-		ser_clk      => sio_clk,
-		ser_frm      => sin_frm,
-		ser_irdy     => sin_irdy,
-		ser_data     => sin_data,
-
+		ser_clk      => ser_clk, 
+		ser_frm      => ser_frm, 
+		ser_irdy     => ser_irdy, 
+		ser_data     => ser_data, 
+		
 		video_clk    => video_clk,
-		video_hzsync => video_hs,
-		video_vtsync => video_vs,
-		video_pixel  => video_pixel);
-
-	process (eth_txclk_bufg)
-	begin
-		if rising_edge(eth_txclk_bufg) then
-			if btn(0)='1' then
-				if eth_tx_en='0' then
-					dhcp_req <= '1';
-				end if;
-			elsif eth_tx_en='0' then
-				dhcp_req <= '0';
-			end if;
-		end if;
-	end process;
-	led(0) <= tp(3);
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
+		video_pixel  => video_pixel,
+		dvid_crgb    => dvid_crgb);
 
 	process (video_clk)
 	begin
@@ -303,10 +143,29 @@ begin
 			ja(1)  <= video_pixel(2);
 			ja(2)  <= video_pixel(1);
 			ja(3)  <= video_pixel(0);
-			ja(4)  <= video_hs;
-			ja(10) <= video_vs;
+			ja(4)  <= video_hzsync;
+			ja(10) <= video_vtsync;
 		end if;
 	end process;
+
+	ddrck_obufds : obufds
+	generic map (
+		iostandard => "DIFF_SSTL135")
+	port map (
+		i  => '0',
+		o  => ddr3_clk_p,
+		ob => ddr3_clk_n);
+
+	ddrdqs_g : for i in ddr3_dqs_p'range generate
+		iobuf_i : obufds
+		generic map (
+			iostandard => "DIFF_SSTL135")
+		port map (
+			i   => 'Z',
+			o  => ddr3_dqs_p(i),
+			ob => ddr3_dqs_n(i));
+	end generate;
+
 
 	eth_rstn <= '1';
 	eth_mdc  <= '0';

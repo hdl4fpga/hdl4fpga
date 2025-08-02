@@ -717,8 +717,8 @@ begin
 		ctlrphy_sti  => ctlrphy_sti,
 		video_clk   => video_clk,
 		video_pixel => video_pixel,
-		video_hsync => vga_hsync,
-		video_vsync => vga_vsync,
+		video_hzsync => vga_hsync,
+		video_vtsync => vga_vsync,
 		video_vton  => video_vton);
 
 	-- vga_hsync <= '0';
