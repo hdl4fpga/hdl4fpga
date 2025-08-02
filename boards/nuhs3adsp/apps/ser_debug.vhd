@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.cgafonts.all;
@@ -33,34 +34,22 @@ use unisim.vcomponents.all;
 
 architecture ser_debug of nuhs3adsp is
 
-	signal clk_bufg   : std_logic;
+	constant settings : string := "{"                                                         &
+		"io_link: io_ipoe,"                                                                   &
+		"video:{"                                                                             &
+			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'20mhz'.'150mhz'"))       & ',' &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
+			"pixel:"   & "{R:8,G:8,B:8}}}";
+
+	signal sys_rst       : std_logic;
+	alias sys_clk is clk;
+
 	signal mii_req   : std_logic;
 	signal vga_dot   : std_logic;
 	signal vga_on    : std_logic;
 	signal vga_clk   : std_logic;
 	signal vga_hsync : std_logic;
 	signal vga_vsync : std_logic;
-
-	type video_params is record
-		timing_id : videotiming_ids;
-		dcm_mul   : natural;
-		dcm_div   : natural;
-	end record;
-
-	type video_modes is (
-		mode480p,
-		mode600p, 
-		mode1080p);
-
-	type videoparams_vector is array (video_modes) of video_params;
-	constant video_tab : videoparams_vector := (
-		mode480p  => (timing_id => pclk25_00m640x480at60,    dcm_mul =>  3, dcm_div => 2),
-		mode600p  => (timing_id => pclk40_00m800x600at60,    dcm_mul =>  2, dcm_div => 1),
-		mode1080p => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
-
-	constant video_mode : video_modes := mode600p;
-    signal vga_pixel    : std_logic_vector(0 to 32-1);
-    signal vga_blank    : std_logic;
 
 	signal mii_clk  : std_logic;
 
@@ -79,20 +68,13 @@ architecture ser_debug of nuhs3adsp is
 	alias data : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
 begin
 
-	clkin_ibufg : ibufg
-	port map (
-		I => clk,
-		O => clk_bufg);
-
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => video_tab(video_mode).dcm_mul,
-		dfs_div => video_tab(video_mode).dcm_div)
+	videodcm_i : entity hdl4fpga.xc3s_videodcm
+	generic map(
+		settings => hdo(settings)**".dcm")
 	port map(
-		dcm_rst => '0',
-		dcm_clk => clk_bufg,
-		dfs_clk => vga_clk);
+		rst       => sys_rst,
+		clk       => sys_clk,
+		video_clk => video_clk);
 
 	mii_dfs_e : entity hdl4fpga.dfs
 	generic map (
@@ -101,7 +83,7 @@ begin
 		dfs_div => 4)
 	port map (
 		dcm_rst => '0',
-		dcm_clk => clk_bufg,
+		dcm_clk => sys_clk,
 		dfs_clk => mii_clk);
 	mii_refclk <= not mii_clk;
 

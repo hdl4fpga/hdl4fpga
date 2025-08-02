@@ -55,9 +55,9 @@ architecture graphics of nuhs3adsp is
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
     signal video_blank   : std_logic;
-	signal video_pixel    : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	signal video_pixel    : std_logic_vector(hdo(settings)**".video.pixel.R=8"+hdo(settings)**".video.pixel.G=8"+hdo(settings)**".video.pixel.B=8"-1 downto 0);
 
-	constant sdram_freq   : real := sdram_freq(settings**".sdram.dcm");
+	constant sdram_freq   : real := sdram_freq(hdo(settings)**".sdram.dcm");
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 
 	signal ctlr_rst       : std_logic;

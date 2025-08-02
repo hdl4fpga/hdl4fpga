@@ -37,7 +37,6 @@ use unisim.vcomponents.all;
 
 architecture graphics of arty is
 
-
 	constant settings : string := "{"                                                      &
 		"io_link: io_ipoe,"                                                                &
 		"video:{"                                                                          &
@@ -112,9 +111,8 @@ architecture graphics of arty is
 	signal video_lckd     : std_logic := '0';
 	signal video_clkx2    : std_logic;
 	signal video_shift_clk : std_logic;
-	signal video_pixel    : std_logic_vector(0 to 32-1);
-	constant video_gear  : natural := 4; --video_params.gear;
-	signal dvid_crgb      : std_logic_vector(4*video_gear-1 downto 0);
+	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear=4" downto 0);
 	signal videoio_clk    : std_logic;
 
 	signal dd_hs          : std_logic;

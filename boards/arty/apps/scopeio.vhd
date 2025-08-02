@@ -116,7 +116,8 @@ architecture scopeio of arty is
 	signal video_vtsync    : std_logic;
 	signal video_vton      : std_logic;
 	signal video_blank     : std_logic;
-	signal video_pixel     : std_logic_vector(24-1 downto 0);
+	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear=1" downto 0);
 
 	constant inputs        : natural := hdo(settings)**".inputs";
 	signal input_clk       : std_logic;
