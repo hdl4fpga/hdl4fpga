@@ -29,10 +29,10 @@ entity xc3s_dcm is
 	generic (
 		settings : string);
 	port (
-		rst      : in std_logic := '0';
-		clkin    : in std_logic;
-		clkfx    : out video_clk,
-		locked   : buffer std_logic);
+		rst      : in  std_logic := '0';
+		clkin    : in  std_logic;
+		clkfx    : out std_logic;
+		locked   : out std_logic);
 end;
 
 library hdl4fpga;
@@ -78,7 +78,7 @@ begin
 		psen     => '0',
 		psincdec => '0',
 		clkfb    => clkfb,
-		clkin    => clkin
+		clkin    => clkin,
 		clkfx    => clkfx,
 		clkfx180 => open,
 		clk0     => clk0,

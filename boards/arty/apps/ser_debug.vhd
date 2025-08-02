@@ -24,11 +24,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
+use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.cgafonts.all;
-use hdl4fpga.ipoepkg.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -53,7 +53,7 @@ architecture ser_debug of arty is
 	signal video_hzsync    : std_logic;
 	signal video_vtsync    : std_logic;
 	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
-	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear=1" downto 0);
+	signal dvid_crgb       : std_logic_vector(4*hdo(settings)**".video.gear=1" downto 0);
 
 	signal so_frm          : std_logic;
 	signal so_irdy         : std_logic;
