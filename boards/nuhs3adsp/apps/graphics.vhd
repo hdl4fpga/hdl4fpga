@@ -48,7 +48,7 @@ architecture graphics of nuhs3adsp is
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                                & ',' &
 			"cl:"        & "'010'}}";
 
-	signal sys_rst       : std_logic;
+	signal sys_rst       : std_logic := '0';
 	alias sys_clk is clk;
 
 	signal video_clk     : std_logic;
@@ -113,13 +113,6 @@ architecture graphics of nuhs3adsp is
 	signal mii_tp         : std_logic_vector(1 to 32);
 
 begin
-
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			sys_rst <= not sw1;
-		end if;
-	end process;
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm
 	generic map(
@@ -261,7 +254,7 @@ begin
 		begin
 			if rising_edge(mii_txc) then
 				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-			--		dhcpcd_req <= dhcpcd_rdy xor not sw1;
+					dhcpcd_req <= dhcpcd_rdy xor not sw1;
 				end if;
 			end if;
 		end process;
