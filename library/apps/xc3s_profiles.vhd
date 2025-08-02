@@ -69,6 +69,10 @@ package body xc3s_profiles is
 
 		constant dcm : string  := dcm_db**(video_id&"={}");
 	begin
+		assert false
+			report "xc3s_profiles.video_dcm() : dcm => > " & dcm
+			severity note;
+
 		assert dcm /= "{}"
 			report "xc3s_profiles.video_dcm() : video_id " & video_id & " not valid"
 			severity failure;

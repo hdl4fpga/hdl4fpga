@@ -36,9 +36,6 @@ entity xc3s_videodcm is
 
 end;
 
-library hdl4fpga;
-use hdl4fpga.xc3s_profiles.all;
-
 library unisim;
 use unisim.vcomponents.all;
 
@@ -51,6 +48,10 @@ architecture def of xc3s_videodcm is
 	signal dcm_clk0  : std_logic;
 
 begin
+
+	assert false
+		report "entity video_dcm() : settings => " & settings
+		severity note;
 
 	bug_i : bufg
 	port map (

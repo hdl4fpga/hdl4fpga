@@ -35,9 +35,6 @@ entity xc3s_dcm is
 		locked   : out std_logic);
 end;
 
-library hdl4fpga;
-use hdl4fpga.xc3s_profiles.all;
-
 library unisim;
 use unisim.vcomponents.all;
 

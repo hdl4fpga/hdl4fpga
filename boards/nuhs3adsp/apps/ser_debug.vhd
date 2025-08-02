@@ -29,6 +29,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.cgafonts.all;
+use hdl4fpga.xc3s_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
@@ -50,7 +51,7 @@ architecture ser_debug of nuhs3adsp is
 	signal video_hzsync : std_logic;
 	signal video_vtsync : std_logic;
 	signal video_pixel  : std_logic_vector(hdo(settings)**".video.pixel.R=8"+hdo(settings)**".video.pixel.G=8"+hdo(settings)**".video.pixel.B=8"-1 downto 0);
-	signal dvid_crgb    : std_logic_vector(4*hdo(settings)**".video.gear=1" downto 0);
+	signal dvid_crgb    : std_logic_vector(4*hdo(settings)**".video.gear=2"-1 downto 0);
 
 	signal mii_clk  : std_logic;
 	signal mii_req  : std_logic;
@@ -77,7 +78,7 @@ begin
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm
 	generic map(
-		settings => hdo(settings)**".dcm")
+		settings => hdo(settings)**".video.dcm")
 	port map(
 		rst       => sys_rst,
 		clk       => sys_clk,

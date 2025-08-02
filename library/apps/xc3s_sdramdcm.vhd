@@ -41,9 +41,6 @@ entity xc3s_sdramdcm is
 
 end;
 
-library hdl4fpga;
-use hdl4fpga.xc3s_profiles.all;
-
 library unisim;
 use unisim.vcomponents.all;
 

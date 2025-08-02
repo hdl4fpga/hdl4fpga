@@ -46,7 +46,7 @@ entity ser_debug is
 		video_vtsync  : buffer std_logic;
 		video_blank   : buffer std_logic;
 		video_pixel   : buffer std_logic_vector;
-		dvid_crgb     : out std_logic_vector(7 downto 0));
+		dvid_crgb     : out std_logic_vector(4*hdo(settings)**".gear=2"-1 downto 0));
 
 	constant video_gear   : natural := hdo(settings)**".gear=2";
 	constant red_length   : natural := hdo(settings)**".pixel.R=8";
