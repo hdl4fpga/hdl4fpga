@@ -296,147 +296,31 @@ begin
 	end generate;
 
 	ipoe_g : if io_link="io_ipoe" generate
+    	mii_e : entity hdl4fpga.link_mii
+    	generic map (
+    		rmii          => false,
+    		default_mac   => x"00_40_00_01_02_03",
+    		default_ipv4a => aton("192.168.0.14"),
+    		n             => eth_rxd'length)
+    	port map (
+    		si_frm     => si_frm,
+    		si_irdy    => si_irdy,
+    		si_trdy    => si_trdy,
+    		si_end     => si_end,
+    		si_data    => si_data,
+    	
+    		so_frm     => so_frm,
+    		so_irdy    => so_irdy,
+    		so_trdy    => so_trdy,
+    		so_data    => so_data,
+    		dhcp_btn   => btn0,
+    		mii_txc    => eth_tx_clk,
+    		mii_txen   => eth_tx_en,
+    		mii_txd    => eth_txd,
 
-		alias  mii_rxc    : std_logic is eth_rx_clk;
-		alias  mii_rxdv   : std_logic is eth_rx_dv;
-		alias  mii_rxd    : std_logic_vector(eth_rxd'range) is eth_rxd;
-
-		signal mii_txd    : std_logic_vector(eth_txd'range);
-		signal mii_txen   : std_logic;
-		signal dhcpcd_req : std_logic := '0';
-		signal dhcpcd_rdy : std_logic := '0';
-
-		signal miirx_frm  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_data : std_logic_vector(mii_rxd'range);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(si_data'range);
-
-	begin
-
-		dhcp_p : process(mii_txc)
-			type states is (s_request, s_wait);
-			variable state : states;
-		begin
-			if rising_edge(mii_txc) then
-				case state is
-				when s_request =>
-					if btn1='1' then
-						dhcpcd_req <= not dhcpcd_rdy;
-						state := s_wait;
-					end if;
-				when s_wait =>
-					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-						if btn1='0' then
-							state := s_request;
-						end if;
-					end if;
-				end case;
-			end if;
-		end process;
-
-		sync_b : block
-
-			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal dst_irdy  : std_logic;
-			signal dst_trdy  : std_logic;
-
-		begin
-
-			process (mii_rxc)
-			begin
-				if rising_edge(mii_rxc) then
-					rxc_rxbus <= mii_rxdv & mii_rxd;
-				end if;
-			end process;
-
-			rxc2txc_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth  => 4,
-				latency    => 0,
-				dst_offset => 0,
-				src_offset => 2,
-				check_sov  => false,
-				check_dov  => true)
-			port map (
-				src_clk  => mii_rxc,
-				src_data => rxc_rxbus,
-				dst_clk  => mii_txc,
-				dst_irdy => dst_irdy,
-				dst_trdy => dst_trdy,
-				dst_data => txc_rxbus);
-
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					miirx_frm  <= txc_rxbus(0);
-					miirx_irdy <= txc_rxbus(0);
-					miirx_data <= txc_rxbus(1 to mii_rxd'length);
-				end if;
-			end process;
-		end block;
-
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			debug         => debug,
-			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.0.14"))
-		port map (
-			tp         => open,
-
-			mii_clk    => sio_clk,
-			dhcpcd_req => dhcpcd_req,
-			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => miirx_frm,
-			miirx_irdy => miirx_irdy,
-			miirx_trdy => open,
-			miirx_data => miirx_data,
-
-			miitx_frm  => miitx_frm,
-			miitx_irdy => miitx_irdy,
-			miitx_trdy => miitx_trdy,
-			miitx_end  => miitx_end,
-			miitx_data => miitx_data,
-
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
-
-			so_clk     => sio_clk,
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data);
-
-		desser_e: entity hdl4fpga.desser
-		port map (
-			desser_clk => mii_txc,
-
-			des_frm    => miitx_frm,
-			des_irdy   => miitx_irdy,
-			des_trdy   => miitx_trdy,
-			des_data   => miitx_data,
-
-			ser_irdy   => open,
-			ser_data   => mii_txd);
-
-		mii_txen <= miitx_frm and not miitx_end;
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				eth_tx_en <= mii_txen;
-				eth_txd   <= mii_txd;
-			end if;
-		end process;
-
+    		mii_rxc    => eth_rx_clk,
+    		mii_rxdv   => eth_rx_dv, 
+    		mii_rxd    => eth_rxd);   
 	end generate;
 
 	graphics_e : entity hdl4fpga.app_graphics
