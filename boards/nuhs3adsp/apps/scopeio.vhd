@@ -537,8 +537,8 @@ begin
 
 	process (video_clk)
 		variable video_rgb1   : std_logic_vector(video_pixel'range);
-		variable video_hsync1 : std_logic;
-		variable video_vsync1 : std_logic;
+		variable video_hzsync1 : std_logic;
+		variable video_vtsync1 : std_logic;
 		variable video_blank1 : std_logic;
 	begin
 		if rising_edge(video_clk) then
@@ -546,12 +546,12 @@ begin
 			green      <= multiplex(video_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
 			blue       <= multiplex(video_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
 			blankn     <= not video_blank1;
-			hsync      <= video_hsync1;
-			vsync      <= video_vsync1;
-			sync       <= not video_hsync1 and not video_vsync1;
+			hsync      <= video_hzsync1;
+			vsync      <= video_vtsync1;
+			sync       <= not video_hzsync1 and not video_vtsync1;
 			video_rgb1   := video_pixel;
-			video_hsync1 := video_hzsync;
-			video_vsync1 := video_vtsync;
+			video_hzsync1 := video_hzsync;
+			video_vtsync1 := video_vtsync;
 			video_blank1 := video_blank;
 		end if;
 	end process;
