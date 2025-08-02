@@ -43,15 +43,8 @@ architecture ser_debug of nuhs3adsp is
 			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
 			"pixel:"   & "{R:8,G:8,B:8}}}";
 
-	signal sys_rst       : std_logic;
+	signal sys_rst  : std_logic;
 	alias sys_clk is clk;
-
-	signal video_on     : std_logic;
-	signal video_clk    : std_logic;
-	signal video_hzsync : std_logic;
-	signal video_vtsync : std_logic;
-	signal video_blank  : std_logic;
-	signal video_pixel  : std_logic_vector(hdo(settings)**".video.pixel.R=8"+hdo(settings)**".video.pixel.G=8"+hdo(settings)**".video.pixel.B=8"-1 downto 0);
 
 	signal mii_clk  : std_logic;
 	signal mii_req  : std_logic;
@@ -65,13 +58,20 @@ architecture ser_debug of nuhs3adsp is
 	signal si_trdy  : std_logic;
 	signal si_end   : std_logic;
 	signal si_data  : std_logic_vector(0 to 8-1);
+	signal dhcp_btn : std_logic;
 
 	signal ser_clk  : std_logic;
 	signal ser_frm  : std_logic;
 	signal ser_irdy : std_logic;
 	signal ser_data : std_logic_vector(0 to mii_rxd'length-1);
 
-	signal dhcp_btn : std_logic;
+	signal video_on     : std_logic;
+	signal video_clk    : std_logic;
+	signal video_hzsync : std_logic;
+	signal video_vtsync : std_logic;
+	signal video_blank  : std_logic;
+	signal video_pixel  : std_logic_vector(hdo(settings)**".video.pixel.R=8"+hdo(settings)**".video.pixel.G=8"+hdo(settings)**".video.pixel.B=8"-1 downto 0);
+
 	signal tp : std_logic_vector(1 to 32);
 
 begin

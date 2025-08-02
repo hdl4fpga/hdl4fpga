@@ -46,15 +46,6 @@ architecture ser_debug of arty is
 
 	alias sys_clk is gclk100;
 
-	signal videoio_clk     : std_logic;
-	signal video_clk       : std_logic;
-	signal video_shift_clk : std_logic;
-	signal video_lck       : std_logic;
-	signal video_hzsync    : std_logic;
-	signal video_vtsync    : std_logic;
-	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
-	signal dvid_crgb       : std_logic_vector(4*hdo(settings)**".video.gear=1" downto 0);
-
 	signal so_frm          : std_logic;
 	signal so_irdy         : std_logic;
 	signal so_trdy         : std_logic;
@@ -64,6 +55,15 @@ architecture ser_debug of arty is
 	signal si_trdy         : std_logic;
 	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(0 to 8-1);
+
+	signal videoio_clk     : std_logic;
+	signal video_clk       : std_logic;
+	signal video_shift_clk : std_logic;
+	signal video_lck       : std_logic;
+	signal video_hzsync    : std_logic;
+	signal video_vtsync    : std_logic;
+	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb       : std_logic_vector(4*hdo(settings)**".video.gear=1" downto 0);
 
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;

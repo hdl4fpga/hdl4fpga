@@ -51,6 +51,19 @@ architecture graphics of nuhs3adsp is
 	signal sys_rst       : std_logic := '0';
 	alias sys_clk is clk;
 
+	constant mem_size    : natural := 8*(1024*8);
+	alias sio_clk        : std_logic is mii_txc;
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
+	signal si_end        : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
+	signal dhcp_btn      : std_logic;
+
 	signal video_clk     : std_logic;
 	signal video_hzsync  : std_logic;
 	signal video_vtsync  : std_logic;
@@ -97,19 +110,6 @@ architecture graphics of nuhs3adsp is
 	signal sdram_cs      : std_logic_vector(0 to 0);
 	signal ddr_lp_ck     : std_logic;
 	signal st_dqs_open   : std_logic;
-
-	constant mem_size    : natural := 8*(1024*8);
-	alias sio_clk        : std_logic is mii_txc;
-	signal si_frm        : std_logic;
-	signal si_irdy       : std_logic;
-	signal si_trdy       : std_logic;
-	signal si_end        : std_logic;
-	signal si_data       : std_logic_vector(0 to 8-1);
-	signal so_frm        : std_logic;
-	signal so_irdy       : std_logic;
-	signal so_trdy       : std_logic;
-	signal so_data       : std_logic_vector(0 to 8-1);
-	signal dhcp_btn      : std_logic;
 
 begin
 

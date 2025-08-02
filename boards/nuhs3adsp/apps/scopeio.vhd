@@ -86,14 +86,6 @@ architecture scopeio of nuhs3adsp is
 	signal sys_rst      : std_logic;
 	signal sys_clk      : std_logic;
 
-	signal video_clk    : std_logic;
-	signal videoclk_n   : std_logic;
-	signal video_hzsync : std_logic;
-	signal video_vtsync : std_logic;
-	signal video_vton   : std_logic;
-	signal video_blank  : std_logic;
-	signal video_pixel  : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
-
 	constant inputs      : natural := hdo(settings)**".inputs";
 	alias  input_sample is adc_da;
 	signal input_samples : std_logic_vector(inputs*input_sample'length-1 downto 0);
@@ -104,12 +96,22 @@ architecture scopeio of nuhs3adsp is
 	alias  sio_clk is mii_txc;
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
+	signal si_end        : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 	signal so_frm        : std_logic;
 	signal so_irdy       : std_logic;
 	signal so_trdy       : std_logic;
-	signal so_end        : std_logic;
 	signal so_data       : std_logic_vector(0 to 8-1);
+	signal dhcp_btn      : std_logic;
+
+	signal video_clk    : std_logic;
+	signal videoclk_n   : std_logic;
+	signal video_hzsync : std_logic;
+	signal video_vtsync : std_logic;
+	signal video_vton   : std_logic;
+	signal video_blank  : std_logic;
+	signal video_pixel  : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
 
 	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
 	constant bank_length : natural := hdo(settings)**".sdram.chip_data.orgz.addr.ba=1";
@@ -247,134 +249,32 @@ begin
 		end if;
 	end process;
 
-	ipoe_g : if io_link="io_ipoe" generate
-		signal dhcpcd_req : std_logic := '0';
-		signal dhcpcd_rdy : std_logic := '0';
+	dhcp_btn <= not sw1;
+	mii_e : entity hdl4fpga.link_mii
+	generic map (
+		rmii          => false,
+		default_mac   => x"00_40_00_01_02_03",
+		default_ipv4a => aton("192.168.0.14"),
+		n             => mii_rxd'length)
+	port map (
+		si_frm     => si_frm,
+		si_irdy    => si_irdy,
+		si_trdy    => si_trdy,
+		si_end     => si_end,
+		si_data    => si_data,
+	
+		so_frm     => so_frm,
+		so_irdy    => so_irdy,
+		so_trdy    => so_trdy,
+		so_data    => so_data,
+		dhcp_btn   => dhcp_btn,
+		mii_txc    => mii_txc,
+		mii_txen   => mii_txen,
+		mii_txd    => mii_txd,
 
-		signal miirx_frm  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_data : std_logic_vector(mii_rxd'range);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(si_data'range);
-
-	begin
-
-		sync_b : block
-
-			signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
-			signal dst_irdy  : std_logic;
-			signal dst_trdy  : std_logic;
-
-		begin
-
-			process (mii_rxc)
-			begin
-				if rising_edge(mii_rxc) then
-					rxc_rxbus <= mii_rxdv & mii_rxd;
-				end if;
-			end process;
-
-			rxc2txc_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth  => 4,
-				latency    => 0,
-				dst_offset => 0,
-				src_offset => 2,
-				check_sov  => false,
-				check_dov  => true)
-			port map (
-				src_clk  => mii_rxc,
-				src_data => rxc_rxbus,
-				dst_clk  => mii_txc,
-				dst_irdy => dst_irdy,
-				dst_trdy => dst_trdy,
-				dst_data => txc_rxbus);
-
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					miirx_frm  <= txc_rxbus(0);
-					miirx_irdy <= txc_rxbus(0);
-					miirx_data <= txc_rxbus(1 to mii_rxd'length);
-				end if;
-			end process;
-		end block;
-
-		dhcp_p : process(mii_txc)
-			type states is (s_request, s_wait);
-			variable state : states;
-		begin
-			if rising_edge(mii_txc) then
-				case state is
-				when s_request =>
-					if sw1='0' then
-						dhcpcd_req <= not dhcpcd_rdy;
-						state := s_wait;
-					end if;
-				when s_wait =>
-					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-						if sw1='1' then
-							state := s_request;
-						end if;
-					end if;
-				end case;
-				dhcpcd_req <= dhcpcd_rdy;
-			end if;
-		end process;
-
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			debug         => debug,
-			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.0.14"))
-		port map (
-			tp         => open,
-
-			mii_clk    => sio_clk,
-			dhcpcd_req => dhcpcd_req,
-			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => miirx_frm,
-			miirx_irdy => miirx_irdy,
-			miirx_trdy => open,
-			miirx_data => miirx_data,
-
-			miitx_frm  => miitx_frm,
-			miitx_irdy => miitx_irdy,
-			miitx_trdy => miitx_trdy,
-			miitx_end  => miitx_end,
-			miitx_data => miitx_data,
-
-			si_frm     => so_frm,
-			si_irdy    => so_irdy,
-			si_trdy    => so_trdy,
-			si_end     => so_end,
-			si_data    => so_data,
-
-			so_clk     => sio_clk,
-			so_frm     => si_frm,
-			so_irdy    => si_irdy,
-			so_data    => si_data);
-
-		desser_e: entity hdl4fpga.desser
-		port map (
-			desser_clk => mii_txc,
-
-			des_frm    => miitx_frm,
-			des_irdy   => miitx_irdy,
-			des_trdy   => miitx_trdy,
-			des_data   => miitx_data,
-
-			ser_irdy   => open,
-			ser_data   => mii_txd);
-		mii_txen  <= miitx_frm and not miitx_end;
-
-	end generate;
+		mii_rxc    => mii_rxc,
+		mii_rxdv   => mii_rxdv,
+		mii_rxd    => mii_rxd);   
 
 	scopeio_e : entity hdl4fpga.scopeio
 	generic map (
@@ -384,14 +284,14 @@ begin
 		settings    => settings)
 	port map (
 		sio_clk     => sio_clk,
-		si_frm      => si_frm,
-		si_irdy     => si_irdy,
-		si_data     => si_data,
-		so_frm      => so_frm,
-		so_irdy     => so_irdy,
-		so_trdy     => so_trdy,
-		so_end      => so_end,
-		so_data     => so_data,
+		si_frm      => so_frm,
+		si_irdy     => so_irdy,
+		si_data     => so_data,
+		so_frm      => si_frm,
+		so_irdy     => si_irdy,
+		so_trdy     => si_trdy,
+		so_end      => si_end,
+		so_data     => si_data,
 		input_clk   => input_clk,
 		input_data  => input_samples,
 
