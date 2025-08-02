@@ -150,9 +150,9 @@ begin
 
 	psave <= '1';
 	sync  <= 'Z';
-	red   <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8);
-	green <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8);
-	blue  <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8);
+	red   <= multiplex(video_pixel, 0, red'length);
+	green <= multiplex(video_pixel, 1, green'length);
+	blue  <= multiplex(video_pixel, 2, blue'length);
 
 	videodac_b : block
 		signal clk_n : std_logic;
@@ -181,35 +181,21 @@ begin
 --	led8  <= tp(3);
 --	led7  <= tp(2);
 
-	process (mii_txc)
-		variable q1 : bit;
-		variable q2 : bit;
-	begin
-		if rising_edge(mii_txc) then
-			if q1='1' and tp(1)='0' then
-				q2 := not q2;
-			end if;
-			led7 <= to_stdulogic(q2);
-			led8 <= not to_stdulogic(q2);
-			q1 := to_bit(tp(1));
-		end if;
-	end process;
-
-	led18 <= '0';
-	led16 <= '0';
-	led15 <= '0';
-	led13 <= '0';
-	led11 <= '0';
-	led9  <= '0';
---	led8  <= '0';
---	led7  <= '0';
+	led18 <= 'Z';
+	led16 <= 'Z';
+	led15 <= 'Z';
+	led13 <= 'Z';
+	led11 <= 'Z';
+	led9  <= 'Z';
+	led8  <= 'Z';
+	led7  <= 'Z';
 
 	-- RS232 Transceiver --
 	-----------------------
 
-	rs232_rts <= '0';
-	rs232_td  <= '0';
-	rs232_dtr <= '0';
+	rs232_rts <= 'Z';
+	rs232_td  <= 'Z';
+	rs232_dtr <= 'Z';
 
 	-- Ethernet Transceiver --
 	--------------------------

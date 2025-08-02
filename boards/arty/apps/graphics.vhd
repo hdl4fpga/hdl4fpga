@@ -651,8 +651,8 @@ begin
 		oddr_i : entity hdl4fpga.ogbx
 		generic map (
 			device => hdo(settings)**".sdram.phy_data.device",
-			size => 4,
-			gear => video_gear)
+			size   => 4,
+			gear   => hdo(settings)**".video.gear=4")
 		port map (
 			clk   => video_shift_clk,
 			clkx2 => video_clkx2,
