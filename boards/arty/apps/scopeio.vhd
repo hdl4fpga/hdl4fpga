@@ -305,31 +305,31 @@ begin
 	end process;
 
 	ipoe_g : if io_link="io_ipoe" generate
-    	mii_e : entity hdl4fpga.link_mii
-    	generic map (
-    		rmii          => false,
-    		default_mac   => x"00_40_00_01_02_03",
-    		default_ipv4a => aton("192.168.0.14"),
-    		n             => eth_rxd'length)
-    	port map (
-    		si_frm     => si_frm,
-    		si_irdy    => si_irdy,
-    		si_trdy    => si_trdy,
-    		si_end     => si_end,
-    		si_data    => si_data,
-    	
-    		so_frm     => iolink_frm,
-    		so_irdy    => iolink_irdy,
-    		so_trdy    => iolink_trdy,
-    		so_data    => iolink_data,
-    		dhcp_btn   => btn0,
-    		mii_txc    => eth_tx_clk,
-    		mii_txen   => eth_tx_en,
-    		mii_txd    => eth_txd,
+		mii_e : entity hdl4fpga.link_mii
+		generic map (
+			rmii          => false,
+			default_mac   => x"00_40_00_01_02_03",
+			default_ipv4a => aton("192.168.0.14"),
+			n             => eth_rxd'length)
+		port map (
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_end     => si_end,
+			si_data    => si_data,
+		
+			so_frm     => iolink_frm,
+			so_irdy    => iolink_irdy,
+			so_trdy    => iolink_trdy,
+			so_data    => iolink_data,
+			dhcp_btn   => btn0,
+			mii_txc    => eth_tx_clk,
+			mii_txen   => eth_tx_en,
+			mii_txd    => eth_txd,
 
-    		mii_rxc    => eth_rx_clk,
-    		mii_rxdv   => eth_rx_dv, 
-    		mii_rxd    => eth_rxd);   
+			mii_rxc    => eth_rx_clk,
+			mii_rxdv   => eth_rx_dv, 
+			mii_rxd    => eth_rxd);   
 	end generate;
 
 	stactlr_g : if io_link="" generate
@@ -562,25 +562,25 @@ begin
 			end loop;
 		end process;
 
-    	iodctrl_b : block
-    		signal clkfb  : std_logic;
-    		signal locked : std_logic;
-    	begin
-    		pll_i :  plle2_base
-    		generic map (
-    			clkin1_period  => gclk100_per*1.0e9,
-    			clkfbout_mult  => 12,
-    			clkout0_divide => 6)
-    		port map (
-    			pwrdwn   => '0',
-    			rst      => sys_rst,
-    			clkin1   => sys_clk,
-    			clkfbin  => clkfb,
-    			clkfbout => clkfb,
-    			clkout0  => iodctrl_clk,
-    			locked   => locked);
-    		iodctrl_rst <= not locked;
-    	end block;
+		iodctrl_b : block
+			signal clkfb  : std_logic;
+			signal locked : std_logic;
+		begin
+			pll_i :  plle2_base
+			generic map (
+				clkin1_period  => gclk100_per*1.0e9,
+				clkfbout_mult  => 12,
+				clkout0_divide => 6)
+			port map (
+				pwrdwn   => '0',
+				rst      => sys_rst,
+				clkin1   => sys_clk,
+				clkfbin  => clkfb,
+				clkfbout => clkfb,
+				clkout0  => iodctrl_clk,
+				locked   => locked);
+			iodctrl_rst <= not locked;
+		end block;
 
 		idelayctrl_i : idelayctrl
 		port map (
