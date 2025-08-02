@@ -113,10 +113,10 @@ entity app_graphics is
 	constant coln_size      : natural := hdo(chip_data)**".orgz.addr.col=1";
 	constant gear           : natural := hdo(phy_data)**".orgz.gear=1";
 
-	constant red_length     : natural := hdo(video_settings)**".video.pixel.R=8";
-	constant green_length   : natural := hdo(video_settings)**".video.pixel.G=8";
-	constant blue_length    : natural := hdo(video_settings)**".video.pixel.B=8";
-	constant video_gear     : natural := hdo(video_settings)**(".video.gear=" & natural'image(dvid_crgb'length/4));
+	constant red_length     : natural := hdo(video_settings)**".pixel.R=8";
+	constant green_length   : natural := hdo(video_settings)**".pixel.G=8";
+	constant blue_length    : natural := hdo(video_settings)**".pixel.B=8";
+	constant video_gear     : natural := hdo(video_settings)**(".gear=" & natural'image(dvid_crgb'length/4));
 end;
 
 architecture mix of app_graphics is
@@ -772,7 +772,7 @@ begin
 
 		dvi_b : block
 			signal dvid_blank : std_logic;
-			signal dvid_rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
+			signal dvid_rgb : std_logic_vector(0 to 3*8-1);
 
 		begin
 
@@ -781,6 +781,7 @@ begin
 				variable urgb  : unsigned(dvid_rgb'range);
 				variable pixel : unsigned(0 to video_pixel'length-1);
 			begin
+				urgb := (others => '0');
 				pixel := unsigned(video_pixel);
 
 				urgb(0 to red_length-1) := pixel(0 to red_length-1);
