@@ -417,9 +417,9 @@ begin
 	videoio_p : process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			vga_red    <= multiplex(video_pixel, std_logic_vector(to_unsigned(0,2)), 8)(0);
-			vga_green  <= multiplex(video_pixel, std_logic_vector(to_unsigned(1,2)), 8)(0);
-			vga_blue   <= multiplex(video_pixel, std_logic_vector(to_unsigned(2,2)), 8)(0);
+			vga_red    <= multiplex(video_pixel, 0, 1)(0);
+			vga_green  <= multiplex(video_pixel, 1, 1)(0);
+			vga_blue   <= multiplex(video_pixel, 2, 1)(0);
 			vga_hsync  <= video_hzsync;
 			vga_vsync  <= video_vtsync;
 		end if;
