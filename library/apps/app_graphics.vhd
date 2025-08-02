@@ -58,7 +58,7 @@ entity app_graphics is
 		video_hzsync  : buffer std_logic;
 		video_vtsync  : buffer std_logic;
 		video_blank   : buffer std_logic;
-		video_pixel   : buffer std_logic_vector;
+		video_pixel   : buffer std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
 		dvid_crgb     : out std_logic_vector(4*settings**".video.gear=1"-1 downto 0);
 
 		ctlr_clk      : in  std_logic;
@@ -772,18 +772,18 @@ begin
 
 		dvi_b : block
 			signal dvid_blank : std_logic;
-			signal rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
+			signal dvid_rgb : std_logic_vector(0 to 3*8-1) := (others => '0');
 
 		begin
 
 			dvid_blank <= video_blank;
 			process (video_pixel)
-				variable urgb  : unsigned(0 to 3*8-1);
+				variable urgb  : unsigned(dvid_rgb'range);
 				variable pixel : unsigned(0 to video_pixel'length-1);
 			begin
 				pixel := unsigned(video_pixel);
 
-				urgb(0 to red_length-1)  := pixel(0 to red_length-1);
+				urgb(0 to red_length-1) := pixel(0 to red_length-1);
 				urgb  := urgb rol 8;
 				pixel := pixel sll red_length;
 
@@ -795,7 +795,7 @@ begin
 				urgb  := urgb rol 8;
 				pixel := pixel sll blue_length;
 
-				rgb <= std_logic_vector(urgb);
+				dvid_rgb <= std_logic_vector(urgb);
 			end process;
 
 			dvi_e : entity hdl4fpga.dvi
@@ -804,7 +804,7 @@ begin
 				gear  => video_gear)
 			port map (
 				clk   => video_clk,
-				rgb   => rgb,
+				rgb   => dvid_rgb,
 				hsync => video_hzsync,
 				vsync => video_vtsync,
 				blank => dvid_blank,
