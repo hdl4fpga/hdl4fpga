@@ -97,6 +97,10 @@ package body xc3s_profiles is
 
 		constant dcm : string := dcm_db**(sdram_id&"={}");
 	begin
+		assert false
+			report "xc3s_profiles.sdram_dcm() : dcm => > " & dcm
+			severity note;
+
 		assert dcm/="{}"
 			report "xc3s_profiles.sdram_dcm() : sdram speed_id " & sdram_id & " not valid"
 			severity failure;

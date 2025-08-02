@@ -43,7 +43,7 @@ architecture graphics of nuhs3adsp is
 			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'")             & ',' &
 			"pixel:"   & "{R:8,G:8,B:8}}"                                                                 & ',' &
 		"sdram:{"                                                                                         &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'133mhz'"))                 & ',' &
+			"dcm:"       & string'(hdl4fpga.xc3s_profiles.sdram_dcm(".'20mhz'.'133mhz'"))                 & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                                      & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                                & ',' &
 			"cl:"        & "'010'}}";
@@ -123,7 +123,7 @@ begin
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm
 	generic map(
-		settings => hdo(settings)**".dcm")
+		settings => hdo(settings)**".video.dcm")
 	port map(
 		rst       => sys_rst,
 		clk       => sys_clk,
@@ -139,7 +139,7 @@ begin
 
 	sdramdcm_i : entity hdl4fpga.xc3s_sdramdcm
 	generic map (
-		settings  => settings**".dcm")
+		settings  => settings**".sdram.dcm")
 	port map (
 		clk        => sys_clk,
 		ctlr_clk   => ctlr_clk,

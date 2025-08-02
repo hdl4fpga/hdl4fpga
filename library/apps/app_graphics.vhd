@@ -116,7 +116,7 @@ entity app_graphics is
 	constant red_length     : natural := hdo(video_settings)**".video.pixel.R=8";
 	constant green_length   : natural := hdo(video_settings)**".video.pixel.G=8";
 	constant blue_length    : natural := hdo(video_settings)**".video.pixel.B=8";
-	constant video_gear     : natural := hdo(video_settings)**".video.gear=2";
+	constant video_gear     : natural := hdo(video_settings)**(".video.gear=" & natural'image(dvid_crgb'length/4));
 end;
 
 architecture mix of app_graphics is
