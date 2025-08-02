@@ -82,17 +82,17 @@ architecture scopeio of nuhs3adsp is
 
 	constant io_link   : string := "io_ipoe";
 
-	constant sys_per   : real := 50.0;
-	signal sys_rst     : std_logic;
-	signal sys_clk     : std_logic;
+	constant sys_per    : real := 50.0;
+	signal sys_rst      : std_logic;
+	signal sys_clk      : std_logic;
 
-	signal video_clk   : std_logic;
-	signal videoclk_n  : std_logic;
+	signal video_clk    : std_logic;
+	signal videoclk_n   : std_logic;
 	signal video_hzsync : std_logic;
 	signal video_vtsync : std_logic;
-	signal video_vton  : std_logic;
-	signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
-	signal video_blank : std_logic;
+	signal video_vton   : std_logic;
+	signal video_blank  : std_logic;
+	signal video_pixel  : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
 
 	constant inputs      : natural := hdo(settings)**".inputs";
 	alias  input_sample is adc_da;
@@ -536,23 +536,23 @@ begin
 	end generate;
 
 	process (video_clk)
-		variable video_rgb1   : std_logic_vector(video_pixel'range);
 		variable video_hzsync1 : std_logic;
 		variable video_vtsync1 : std_logic;
-		variable video_blank1 : std_logic;
+		variable video_blank1  : std_logic;
+		variable video_pixel1  : std_logic_vector(video_pixel'range);
 	begin
 		if rising_edge(video_clk) then
-			red        <= multiplex(video_rgb1, std_logic_vector(to_unsigned(0,2)), 8);
-			green      <= multiplex(video_rgb1, std_logic_vector(to_unsigned(1,2)), 8);
-			blue       <= multiplex(video_rgb1, std_logic_vector(to_unsigned(2,2)), 8);
-			blankn     <= not video_blank1;
-			hsync      <= video_hzsync1;
-			vsync      <= video_vtsync1;
-			sync       <= not video_hzsync1 and not video_vtsync1;
-			video_rgb1   := video_pixel;
+			red    <= multiplex(video_pixel1, 0, red'length);
+			green  <= multiplex(video_pixel1, 1, green'length);
+			blue   <= multiplex(video_pixel1, 2, blue'length);
+			blankn <= not video_blank1;
+			hsync  <= video_hzsync1;
+			vsync  <= video_vtsync1;
+			sync   <= not video_hzsync1 and not video_vtsync1;
+			video_pixel1  := video_pixel;
 			video_hzsync1 := video_hzsync;
 			video_vtsync1 := video_vtsync;
-			video_blank1 := video_blank;
+			video_blank1  := video_blank;
 		end if;
 	end process;
 	psave <= '1';

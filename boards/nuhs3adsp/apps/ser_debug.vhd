@@ -50,9 +50,8 @@ architecture ser_debug of nuhs3adsp is
 	signal video_clk    : std_logic;
 	signal video_hzsync : std_logic;
 	signal video_vtsync : std_logic;
+	signal video_blank  : std_logic;
 	signal video_pixel  : std_logic_vector(hdo(settings)**".video.pixel.R=8"+hdo(settings)**".video.pixel.G=8"+hdo(settings)**".video.pixel.B=8"-1 downto 0);
-	signal dvid_crgb    : std_logic_vector(4*hdo(settings)**".video.gear=2"-1 downto 0);
-	signal video_blank : std_logic;
 
 	signal mii_clk  : std_logic;
 	signal mii_req  : std_logic;
@@ -148,8 +147,7 @@ begin
 		video_hzsync => video_hzsync,
 		video_vtsync => video_vtsync,
 		video_blank  => video_blank,
-		video_pixel  => video_pixel,
-		dvid_crgb    => dvid_crgb);
+		video_pixel  => video_pixel);
 
 	psave <= '1';
 	sync  <= 'Z';
