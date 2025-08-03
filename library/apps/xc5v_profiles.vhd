@@ -64,7 +64,7 @@ package body xc5v_profiles is
 		assert dcm /= "{}"
 			report "xc5v_profiles.video_dcm() : video_id " & video_id & " not valid"
 			severity failure;
-		return "{}";
+		return dcm;
 	end;
 
 	function sdram_dcm (

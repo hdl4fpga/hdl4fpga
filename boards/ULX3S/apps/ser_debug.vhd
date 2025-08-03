@@ -83,7 +83,7 @@ architecture ser_debug of ulx3s is
 	constant hdplx         : std_logic := setif(debug, '0', '1');
 begin
 
-	videopll_e : entity hdl4fpga.ecp5_videopll
+	videodcm_e : entity hdl4fpga.ecp5_videodcm
 	generic map (
 		settings    => settings**".video")
 	port map (

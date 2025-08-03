@@ -30,7 +30,7 @@ use hdl4fpga.ecp5_profiles.all;
 library ecp5u;
 use ecp5u.components.all;
 
-entity ecp5_sdrampll is
+entity ecp5_sdramdcm is
 	generic (
 		settings     : string);
 	port (
@@ -54,7 +54,7 @@ entity ecp5_sdrampll is
 
 end;
 
-architecture def of ecp5_sdrampll is
+architecture def of ecp5_sdramdcm is
 
 	constant clkos_freq : real := real(clkfb_div)*freq_in/real(clki_div);
 	constant sdram_freq : real := hdl4fpga.ecp5_profiles.sdram_freq(settings**".dcm"); -- GHDL annoyance

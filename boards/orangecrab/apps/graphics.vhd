@@ -60,12 +60,42 @@ architecture graphics of orangecrab is
 	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
 	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
 
-	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
-	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
-
 	signal sys_rst       : std_logic;
 
+	constant mem_size    : natural := 8*(1024*8);
+	signal sio_clk       : std_logic;
+	signal so_frm        : std_logic;
+	signal so_irdy       : std_logic;
+	signal so_trdy       : std_logic;
+	signal so_data       : std_logic_vector(0 to 8-1);
+	signal si_frm        : std_logic;
+	signal si_irdy       : std_logic;
+	signal si_trdy       : std_logic;
+	signal si_end        : std_logic;
+	signal si_data       : std_logic_vector(0 to 8-1);
+
+	signal video_clk     : std_logic;
+	signal videoio_clk   : std_logic;
+	signal video_lck     : std_logic;
+	signal video_shift_clk : std_logic;
+	signal video_eclk    : std_logic;
+	signal video_phyrst  : std_logic;
+	constant video_gear  : natural := 4; --video_params.gear;
+	signal video_pixel   : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
+
+	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
+	constant ba_latency : natural := 1;
+	constant byte_size   : natural := ddram_dq'length/ddram_dqs'length;
+
 	signal ctlr_rst      : std_logic;
+	signal ctlr_sclk     : std_logic;
+	signal ctlr_eclk     : std_logic;
+	signal sdrphy_rst    : std_logic;
+	signal ms_pause      : std_logic;
+	signal ddrdel        : std_logic;
+	signal sdrphy_locked : std_logic;
+
 
 	signal ctlrphy_frm   : std_logic;
 	signal ctlrphy_trdy  : std_logic;
@@ -99,46 +129,14 @@ architecture graphics of orangecrab is
 	signal sdr_b         : std_logic_vector(ddram_ba'range);
 	signal sdr_a         : std_logic_vector(ddram_a'length-1 downto 0);
 
-	signal video_clk     : std_logic;
-	signal videoio_clk   : std_logic;
-	signal video_lck     : std_logic;
-	signal video_shift_clk : std_logic;
-	signal video_eclk    : std_logic;
-	signal video_phyrst  : std_logic;
-	constant video_gear  : natural := 4; --video_params.gear;
-	signal dvid_crgb     : std_logic_vector(4*video_gear-1 downto 0);
-
-	constant mem_size    : natural := 8*(1024*8);
-	signal so_frm        : std_logic;
-	signal so_irdy       : std_logic;
-	signal so_trdy       : std_logic;
-	signal so_data       : std_logic_vector(0 to 8-1);
-	signal si_frm        : std_logic;
-	signal si_irdy       : std_logic;
-	signal si_trdy       : std_logic;
-	signal si_end        : std_logic;
-	signal si_data       : std_logic_vector(0 to 8-1);
-
-	signal sio_clk       : std_logic;
-
-	signal ctlr_sclk          : std_logic;
-	signal ctlr_eclk          : std_logic;
-
-	signal video_pixel   : std_logic_vector(0 to 32-1);
 
 	signal tp            : std_logic_vector(1 to 32);
 	signal tp_phy        : std_logic_vector(1 to 32);
-	signal sdrphy_locked : std_logic;
 
-	signal sdrphy_rst    : std_logic;
-	signal ms_pause      : std_logic;
-	signal ddrdel        : std_logic;
-
-	constant ba_latency : natural := 1;
 begin
 
 	sys_rst <= not rst_n;
-	videopll_e : entity hdl4fpga.ecp5_videopll
+	videodcm_e : entity hdl4fpga.ecp5_videodcm
 	generic map (
 		settings     => settings**".video")
 	port map (
@@ -149,7 +147,7 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
-	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
+	sdramdcm_e  : entity hdl4fpga.ecp5_sdramdcm
 	generic map (
 		settings => "{" & 
 			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &

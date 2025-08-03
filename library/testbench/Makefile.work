@@ -69,8 +69,8 @@ HDL4FPGA__sdrampkg = $(LIB_HDL4FPGA)/sdrampkg/_primary.dat
 IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
 HDL4FPGA__ecp5_profiles = $(LIB_HDL4FPGA)/ecp5_profiles/_primary.dat
-HDL4FPGA__ecp5_videopll = $(LIB_HDL4FPGA)/ecp5_videopll/_primary.dat
-HDL4FPGA__ecp5_sdrampll = $(LIB_HDL4FPGA)/ecp5_sdrampll/_primary.dat
+HDL4FPGA__ecp5_videodcm = $(LIB_HDL4FPGA)/ecp5_videodcm/_primary.dat
+HDL4FPGA__ecp5_sdramdcm = $(LIB_HDL4FPGA)/ecp5_sdramdcm/_primary.dat
 HDL4FPGA__link_hdlc = $(LIB_HDL4FPGA)/link_hdlc/_primary.dat
 HDL4FPGA__sio_dayusb = $(LIB_HDL4FPGA)/sio_dayusb/_primary.dat
 HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
@@ -578,8 +578,8 @@ $(WORK__orangecrab__graphics) : ../../boards/orangecrab/apps/graphics.vhd \
 		$(HDL4FPGA__app_graphics) \
 		$(HDL4FPGA__sio_dayusb) \
 		$(HDL4FPGA__link_hdlc) \
-		$(HDL4FPGA__ecp5_sdrampll) \
-		$(HDL4FPGA__ecp5_videopll) \
+		$(HDL4FPGA__ecp5_sdramdcm) \
+		$(HDL4FPGA__ecp5_videodcm) \
 		$(WORK__orangecrab) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
@@ -924,7 +924,7 @@ $(WORK__ulx3s__scopeio) : ../../boards/ULX3S/apps/scopeio.vhd \
 		$(HDL4FPGA__scopeio_stactlr) \
 		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__sio_dayusb) \
-		$(HDL4FPGA__ecp5_videopll) \
+		$(HDL4FPGA__ecp5_videodcm) \
 		$(WORK__ulx3s) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
@@ -948,8 +948,8 @@ $(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
 		$(HDL4FPGA__link_mii) \
 		$(HDL4FPGA__sio_dayusb) \
 		$(HDL4FPGA__link_hdlc) \
-		$(HDL4FPGA__ecp5_sdrampll) \
-		$(HDL4FPGA__ecp5_videopll) \
+		$(HDL4FPGA__ecp5_sdramdcm) \
+		$(HDL4FPGA__ecp5_videodcm) \
 		$(HDL4FPGA__videopkg) \
 		$(WORK__ulx3s) \
 		$(IEEE__std_logic_arith) \
@@ -977,7 +977,7 @@ $(WORK__ulx3s__ser_debug) : ../../boards/ULX3S/apps/ser_debug.vhd \
 		$(HDL4FPGA__usbhostdvr) \
 		$(HDL4FPGA__usbpkg) \
 		$(HDL4FPGA__usbdev) \
-		$(HDL4FPGA__ecp5_videopll) \
+		$(HDL4FPGA__ecp5_videodcm) \
 		$(WORK__ulx3s) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
@@ -1043,8 +1043,8 @@ $(WORK__ulx4m_ld__graphics) : ../../boards/ULX4M_LD/apps/graphics.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__sio_dayusb) \
 		$(HDL4FPGA__link_hdlc) \
-		$(HDL4FPGA__ecp5_sdrampll) \
-		$(HDL4FPGA__ecp5_videopll) \
+		$(HDL4FPGA__ecp5_sdramdcm) \
+		$(HDL4FPGA__ecp5_videodcm) \
 		$(WORK__ulx4m_ld) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \
@@ -1074,8 +1074,8 @@ $(WORK__ulx4m_ls__graphics) : ../../boards/ULX4M_LS/apps/graphics.vhd \
 		$(HDL4FPGA__link_mii) \
 		$(HDL4FPGA__sio_dayusb) \
 		$(HDL4FPGA__link_hdlc) \
-		$(HDL4FPGA__ecp5_sdrampll) \
-		$(HDL4FPGA__ecp5_videopll) \
+		$(HDL4FPGA__ecp5_sdramdcm) \
+		$(HDL4FPGA__ecp5_videodcm) \
 		$(WORK__ulx4m_ls) \
 		$(IEEE__std_logic_arith) \
 		$(ECP5U__components) \

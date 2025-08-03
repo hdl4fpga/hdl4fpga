@@ -102,7 +102,7 @@ architecture graphics of ulx4m_ls is
 
 begin
 
-	videopll_e : entity hdl4fpga.ecp5_videopll
+	videodcm_e : entity hdl4fpga.ecp5_videodcm
 	generic map (
 		settings     => settings**".video")
 	port map (
@@ -113,7 +113,7 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
-	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
+	sdramdcm_e  : entity hdl4fpga.ecp5_sdramdcm
 	generic map (
 		settings => "{" & 
 			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &

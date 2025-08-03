@@ -64,7 +64,7 @@ architecture graphics of ulx4m_ld is
 	signal video_shift_clk : std_logic;
 	signal video_eclk      : std_logic;
 	constant video_gear    : natural := 4; --video_params.gear;
-	signal video_pixel     : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
 	signal dvid_crgb       : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk     : std_logic;
 
@@ -127,7 +127,7 @@ architecture graphics of ulx4m_ld is
 
 begin
 
-	videopll_e : entity hdl4fpga.ecp5_videopll
+	videodcm_e : entity hdl4fpga.ecp5_videodcm
 	generic map (
 		settings     => settings**".video")
 	port map (
@@ -138,7 +138,7 @@ begin
 		video_eclk  => video_eclk,
 		video_lck   => video_lck);
 
-	sdrampll_e  : entity hdl4fpga.ecp5_sdrampll
+	sdramdcm_e  : entity hdl4fpga.ecp5_sdramdcm
 	generic map (
 		settings => "{" & 
 			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
