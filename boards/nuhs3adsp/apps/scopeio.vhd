@@ -286,6 +286,7 @@ begin
 		sio_clk     => sio_clk,
 		si_frm      => so_frm,
 		si_irdy     => so_irdy,
+		si_trdy     => so_trdy,
 		si_data     => so_data,
 		so_frm      => si_frm,
 		so_irdy     => si_irdy,

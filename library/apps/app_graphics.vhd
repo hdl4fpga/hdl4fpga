@@ -43,13 +43,13 @@ entity app_graphics is
 	port (
 		sin_clk       : in  std_logic;
 		sin_frm       : in  std_logic;
-		sin_irdy      : in  std_logic;
+		sin_irdy      : in  std_logic := '1';
 		sin_trdy      : out std_logic := '1';
 		sin_data      : in  std_logic_vector;
 		sout_clk      : in  std_logic;
 		sout_frm      : buffer std_logic;
 		sout_irdy     : buffer std_logic;
-		sout_trdy     : in  std_logic;
+		sout_trdy     : in  std_logic := '1';
 		sout_end      : buffer std_logic;
 		sout_data     : out std_logic_vector;
 
