@@ -95,12 +95,12 @@ architecture scopeio of nuhs3adsp is
 
 	alias  sio_clk is mii_txc;
 	signal so_frm        : std_logic;
-	signal so_irdy       : std_logic;
-	signal so_trdy       : std_logic;
+	signal so_irdy       : std_logic := '1';
+	signal so_trdy       : std_logic := '1';
 	signal so_data       : std_logic_vector(0 to 8-1);
 	signal si_frm        : std_logic;
-	signal si_irdy       : std_logic;
-	signal si_trdy       : std_logic;
+	signal si_irdy       : std_logic := '1';
+	signal si_trdy       : std_logic := '1';
 	signal si_end        : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 	signal dhcp_btn      : std_logic;
