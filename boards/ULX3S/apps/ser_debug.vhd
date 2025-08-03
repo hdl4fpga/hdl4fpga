@@ -51,13 +51,10 @@ architecture ser_debug of ulx3s is
 				"G:8,"                                                                                    &
 				"B:8}}}";
 
-	constant io_link      : string := settings**".io_link";
-	constant baudrate     : natural      := 3000000;
+	constant io_link      : string := hdo(settings)**".io_link";
 
-	signal video_pixel   : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
-
-	signal sys_rst         : std_logic;
-	signal sys_clk         : std_logic;
+	alias sys_rst is right;
+	alias sys_clk is clk_25mhz;
 
 	signal videoio_clk     : std_logic;
 	signal video_clk       : std_logic;
@@ -65,6 +62,7 @@ architecture ser_debug of ulx3s is
 	signal video_lck       : std_logic;
 	signal video_hzsync    : std_logic;
 	signal video_vtsync    : std_logic;
+	signal video_pixel     : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
 	signal dvid_crgb       : std_logic_vector(7 downto 0);
 
 	signal so_frm          : std_logic;
@@ -85,14 +83,12 @@ architecture ser_debug of ulx3s is
 	constant hdplx         : std_logic := setif(debug, '0', '1');
 begin
 
-	sys_rst <= '0';
-
 	videopll_e : entity hdl4fpga.ecp5_videopll
 	generic map (
-		settings     => settings**".video")
+		settings    => settings**".video")
 	port map (
-		rst         => right,
-		clk         => clk_25mhz,
+		rst         => sys_rst,
+		clk         => sys_clk,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -232,34 +228,6 @@ begin
 		-- led(4) <= tp(4);
 		-- led(3) <= tp(5);
 		-- led(2) <= cfgd;
-	end generate;
-
-	hdlc_g : if io_link="io_hdlc" generate
-		constant uart_freq : real := 30.0e6;
-		signal uart_clk : std_logic;
-		signal uart_frm    : std_logic;
-		signal uart_rxdv   : std_logic;
-		signal uart_rxd    : std_logic_vector(0 to 0);
-	begin
-		uart_clk <= videoio_clk;
-
-		uartrx_e : entity hdl4fpga.uart_rx
-		generic map (
-			baudrate => baudrate,
-			clk_rate => uart_freq)
-		port map (
-			uart_rxc  => uart_clk,
-			uart_sin  => ftdi_txd,
-			uart_frm  => uart_frm,
-			uart_rxd  => uart_rxd(0),
-			uart_rxdv => uart_rxdv);
-
-		ser_clk  <= uart_clk;
-		ser_frm  <= uart_frm;
-		ser_irdy <= uart_rxdv;
-		ser_data <= uart_rxd;
-
-		ftdi_txden <= '1';
 	end generate;
 
 	ipoe_g : if io_link="io_ipoe" generate
