@@ -66,8 +66,8 @@ architecture graphics of arty is
 	signal video_lckd     : std_logic := '0';
 	signal video_clkx2    : std_logic;
 	signal video_shift_clk : std_logic;
-	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
-	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear=4" downto 0);
+	signal video_pixel    : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb      : std_logic_vector(4*settings**".video.gear=4" downto 0);
 	signal videoio_clk    : std_logic;
 
 	signal ctlr_clk       : std_logic;
