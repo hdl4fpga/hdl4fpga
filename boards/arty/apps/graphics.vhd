@@ -51,6 +51,25 @@ architecture graphics of arty is
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	constant io_link      : string  := settings**".io_link";
 
+	constant mem_size     : natural := 8*(1024*8);
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_trdy        : std_logic;
+	signal si_end         : std_logic;
+	signal si_data        : std_logic_vector(0 to 8-1);
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic;
+	signal so_trdy        : std_logic;
+	signal so_data        : std_logic_vector(0 to 8-1);
+
+	signal video_clk      : std_logic := '0';
+	signal video_lckd     : std_logic := '0';
+	signal video_clkx2    : std_logic;
+	signal video_shift_clk : std_logic;
+	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear=4" downto 0);
+	signal videoio_clk    : std_logic;
+
 	signal ctlr_clk       : std_logic;
 	signal ctlr_clkx2     : std_logic;
 	signal ctlr_clk90     : std_logic;
@@ -58,10 +77,6 @@ architecture graphics of arty is
 	signal sdrsys_rst     : std_logic;
 	signal sdrphy_rst0    : std_logic;
 	signal sdrphy_rst90   : std_logic;
-
-	signal iodctrl_rst    : std_logic;
-	signal iodctrl_clk    : std_logic;
-	signal iodctrl_rdy    : std_logic;
 
 	signal ctlrphy_frm    : std_logic;
 	signal ctlrphy_trdy   : std_logic;
@@ -107,13 +122,9 @@ architecture graphics of arty is
 	signal ddr3_dqo       : std_logic_vector(ddr3_dq'length-1 downto 0);
 	signal ddr3_dqt       : std_logic_vector(ddr3_dq'length-1 downto 0);
 
-	signal video_clk      : std_logic := '0';
-	signal video_lckd     : std_logic := '0';
-	signal video_clkx2    : std_logic;
-	signal video_shift_clk : std_logic;
-	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
-	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear=4" downto 0);
-	signal videoio_clk    : std_logic;
+	signal iodctrl_rst    : std_logic;
+	signal iodctrl_clk    : std_logic;
+	signal iodctrl_rdy    : std_logic;
 
 	signal dd_hs          : std_logic;
 	signal dd_vs          : std_logic;
@@ -124,17 +135,6 @@ architecture graphics of arty is
 	alias blue            : std_logic is ja(3);
 	alias vs              : std_logic is ja(10);
 	alias hs              : std_logic is ja(4);
-
-	constant mem_size     : natural := 8*(1024*8);
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_trdy        : std_logic;
-	signal si_end         : std_logic;
-	signal si_data        : std_logic_vector(0 to 8-1);
-	signal so_frm         : std_logic;
-	signal so_irdy        : std_logic;
-	signal so_trdy        : std_logic;
-	signal so_data        : std_logic_vector(0 to 8-1);
 
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;

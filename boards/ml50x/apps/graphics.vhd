@@ -52,6 +52,21 @@ architecture graphics of ml50x is
 	signal sys_rst        : std_logic;
 	signal sys_clk        : std_logic;
 
+	signal gtx_rst        : std_logic;
+	signal gtx_clk        : std_logic;
+
+	constant mem_size     : natural := 8*(1024*8);
+	alias  sio_clk        : std_logic is gtx_clk;
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic;
+	signal so_trdy        : std_logic;
+	signal so_data        : std_logic_vector(0 to 8-1);
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic;
+	signal si_trdy        : std_logic;
+	signal si_end         : std_logic;
+	signal si_data        : std_logic_vector(0 to 8-1);
+
 	signal video_clk      : std_logic;
 	signal video_lckd     : std_logic;
 	signal video_shift_clk : std_logic;
@@ -117,27 +132,11 @@ architecture graphics of ml50x is
 	signal iodctrl_clk    : std_logic;
 	signal iodctrl_rdy    : std_logic;
 
-	constant mem_size     : natural := 8*(1024*8);
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_trdy        : std_logic;
-	signal si_end         : std_logic;
-	signal si_data        : std_logic_vector(0 to 8-1);
-	signal so_frm         : std_logic;
-	signal so_irdy        : std_logic;
-	signal so_trdy        : std_logic;
-	signal so_data        : std_logic_vector(0 to 8-1);
-
-	signal gtx_rst        : std_logic;
-	signal gtx_clk        : std_logic;
-
-	alias  mii_txc        : std_logic is gtx_clk;
-	alias  sio_clk        : std_logic is gtx_clk;
 	alias  dmacfg_clk     : std_logic is gtx_clk;
 
 	signal tp_sel         : std_logic_vector(1 downto 0);
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
-	signal mii_tp         : std_logic_vector(1 to 32);
+
 begin
 
 	clkin_ibufg : ibufg

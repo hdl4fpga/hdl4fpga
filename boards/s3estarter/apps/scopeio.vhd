@@ -112,15 +112,15 @@ architecture scopeio of s3estarter is
 	signal input_ena     : std_logic;
 
 	alias  sio_clk is e_tx_clk;
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic;
+	signal so_trdy        : std_logic;
+	signal so_data        : std_logic_vector(0 to 8-1);
 	signal si_frm         : std_logic;
 	signal si_irdy        : std_logic;
 	signal si_trdy        : std_logic;
 	signal si_end         : std_logic;
 	signal si_data        : std_logic_vector(0 to 8-1);
-	signal so_frm         : std_logic;
-	signal so_irdy        : std_logic;
-	signal so_trdy        : std_logic;
-	signal so_data        : std_logic_vector(0 to 8-1);
 	alias dhcp_btn is btn_north;
 
 	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm={}");
