@@ -48,8 +48,10 @@ architecture graphics of arty is
 			"chip_data:" & string'(hdo(sdram_db)**"..MT41K128M16-125")                     & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".xc7vg4")                                 & ',' &
 			"cl:"        & "'010'}}";
-	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	constant io_link      : string  := settings**".io_link";
+
+	signal sys_rst        : std_logic;
+	alias sys_clk is gclk100;
 
 	constant mem_size     : natural := 8*(1024*8);
 	signal si_frm         : std_logic;
@@ -70,6 +72,7 @@ architecture graphics of arty is
 	signal dvid_crgb      : std_logic_vector(4*settings**".video.gear=4" downto 0);
 	signal videoio_clk    : std_logic;
 
+	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	signal ctlr_clk       : std_logic;
 	signal ctlr_clkx2     : std_logic;
 	signal ctlr_clk90     : std_logic;
@@ -139,8 +142,6 @@ architecture graphics of arty is
 	alias  mii_txc        : std_logic is eth_tx_clk;
 	alias  sio_clk        : std_logic is mii_txc;
 
-	signal sys_rst        : std_logic;
-	alias sys_clk is gclk100;
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
 
 	-----------------
