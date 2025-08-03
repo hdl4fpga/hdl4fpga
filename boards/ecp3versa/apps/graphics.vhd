@@ -40,7 +40,7 @@ architecture graphics of ecp3versa is
 	constant settings : string := "{"                                                                     &
 		"io_link: io_usb,"                                                                                &
 		"video:{"                                                                                         &
-			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
+			"dcm:"          & string'(hdl4fpga.ecp3_profiles.video_dcm(".'25mhz'.'40mhz'")) & ',' &
 			"videoio_freq:" & "36.0e6,"                                                                   &
 			"gear:"         & "4,"                                                                        &
 			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
@@ -49,10 +49,11 @@ architecture graphics of ecp3versa is
 				"G:8,"                                                                                    &
 				"B:8}},"                                                                                  &
 		"sdram:{"                                                                                         &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
+			"dcm:"       & string'(hdl4fpga.ecp3_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT41J64M16-15E")                                & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
-			"cl:"        & "'010'}}";
+			"cwl:"       & "'001'}"                                                                 & ',' &                             
+			"cl:"        & "'0010'}}";
 
 	constant io_link      : string  := settings**".io_link";
 
@@ -262,8 +263,8 @@ begin
 	process (ddr_b)
 	begin
 		for i in ddr_b'range loop
-			for j in 0 to sdram_gear-1 loop
-				ctlrphy_b(i*sdram_gear+j) <= ddr_b(i);
+			for j in 0 to sdram_gear/2-1 loop
+				ctlrphy_b(j*ddr_b'length+i) <= ddr_b(i);
 			end loop;
 		end loop;
 	end process;
@@ -271,8 +272,8 @@ begin
 	process (ddr_a)
 	begin
 		for i in ddr_a'range loop
-			for j in 0 to sdram_gear-1 loop
-				ctlrphy_a(i*sdram_gear+j) <= ddr_a(i);
+			for j in 0 to sdram_gear/2-1 loop
+				ctlrphy_a(j*ddr_a'length+i) <= ddr_a(i);
 			end loop;
 		end loop;
 	end process;
@@ -399,11 +400,11 @@ begin
     	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
     	generic map (
     		taps      => natural(floor(26.0e12/sdram_freq)),
-    		gear      => gear,
+    		gear      => sdram_gear,
     		bank_size => ddr3_b'length,
     		addr_size => ddr3_a'length,
-    		word_size => word_size,
-    		byte_size => byte_size)
+			word_size  => ddr3_dq'length,
+			byte_size  => ddr3_dq'length/ddr3_dm'length)
     	port map (
 			rst       => dqsbuf_rst,
     		sclk      => ctlrdcm_clkok,
