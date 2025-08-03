@@ -44,9 +44,6 @@ entity xc7a_videodcm is
 
 end;
 
-library hdl4fpga;
-use hdl4fpga.xc7a_profiles.all;
-
 library unisim;
 use unisim.vcomponents.all;
 

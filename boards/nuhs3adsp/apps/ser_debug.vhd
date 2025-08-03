@@ -24,153 +24,153 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 use hdl4fpga.videopkg.all;
 use hdl4fpga.cgafonts.all;
+use hdl4fpga.xc3s_profiles.all;
 
 library unisim;
 use unisim.vcomponents.all;
 
 architecture ser_debug of nuhs3adsp is
 
-	signal clk_bufg   : std_logic;
-	signal mii_req   : std_logic;
-	signal vga_dot   : std_logic;
-	signal vga_on    : std_logic;
-	signal vga_clk   : std_logic;
-	signal vga_hsync : std_logic;
-	signal vga_vsync : std_logic;
+	constant settings : string := "{"                                                         &
+		"io_link: io_ipoe,"                                                                   &
+		"video:{"                                                                             &
+			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'20mhz'.'150mhz'"))       & ',' &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
+			"pixel:"   & "{R:8,G:8,B:8}}}";
 
-	type video_params is record
-		timing_id : videotiming_ids;
-		dcm_mul   : natural;
-		dcm_div   : natural;
-	end record;
-
-	type video_modes is (
-		mode480p,
-		mode600p, 
-		mode1080p);
-
-	type videoparams_vector is array (video_modes) of video_params;
-	constant video_tab : videoparams_vector := (
-		mode480p  => (timing_id => pclk25_00m640x480at60,    dcm_mul =>  3, dcm_div => 2),
-		mode600p  => (timing_id => pclk40_00m800x600at60,    dcm_mul =>  2, dcm_div => 1),
-		mode1080p => (timing_id => pclk140_00m1920x1080at60, dcm_mul => 15, dcm_div => 2));
-
-	constant video_mode : video_modes := mode600p;
-    signal vga_pixel    : std_logic_vector(0 to 32-1);
-    signal vga_blank    : std_logic;
+	signal sys_rst  : std_logic;
+	alias sys_clk is clk;
 
 	signal mii_clk  : std_logic;
+	signal mii_req  : std_logic;
 
-	signal sin_frm        : std_logic;
-	signal sin_irdy       : std_logic;
-	signal sin_data       : std_logic_vector(8-1 downto 0);
-	signal sout_frm       : std_logic;
-	signal sout_irdy      : std_logic;
-	signal sout_trdy      : std_logic;
-	signal sout_data      : std_logic_vector(8-1 downto 0);
+	signal so_frm   : std_logic;
+	signal so_irdy  : std_logic := '1';
+	signal so_trdy  : std_logic := '1';
+	signal so_data  : std_logic_vector(0 to 8-1);
+	signal si_frm   : std_logic;
+	signal si_irdy  : std_logic := '1';
+	signal si_trdy  : std_logic := '1';
+	signal si_end   : std_logic;
+	signal si_data  : std_logic_vector(0 to 8-1);
+	signal dhcp_btn : std_logic;
 
-	signal txc_rxdv : std_logic;
-	signal ipv4acfg_req  : std_logic;
-	alias sio_clk : std_logic is mii_txc;
+	signal ser_clk  : std_logic;
+	signal ser_frm  : std_logic;
+	signal ser_irdy : std_logic;
+	signal ser_data : std_logic_vector(0 to mii_rxd'length-1);
+
+	signal video_on     : std_logic;
+	signal video_clk    : std_logic;
+	signal video_hzsync : std_logic;
+	signal video_vtsync : std_logic;
+	signal video_blank  : std_logic;
+	signal video_pixel  : std_logic_vector(hdo(settings)**".video.pixel.R=8"+hdo(settings)**".video.pixel.G=8"+hdo(settings)**".video.pixel.B=8"-1 downto 0);
+
 	signal tp : std_logic_vector(1 to 32);
-	alias data : std_logic_vector(0 to 4-1) is tp(3 to 3+4-1);
+
 begin
 
-	clkin_ibufg : ibufg
-	port map (
-		I => clk,
-		O => clk_bufg);
-
-	videodcm_e : entity hdl4fpga.dfs
-	generic map (
-		dcm_per => 50.0,
-		dfs_mul => video_tab(video_mode).dcm_mul,
-		dfs_div => video_tab(video_mode).dcm_div)
+	videodcm_i : entity hdl4fpga.xc3s_videodcm
+	generic map(
+		settings => hdo(settings)**".video.dcm")
 	port map(
-		dcm_rst => '0',
-		dcm_clk => clk_bufg,
-		dfs_clk => vga_clk);
+		rst       => sys_rst,
+		clk       => sys_clk,
+		video_clk => video_clk);
 
-	mii_dfs_e : entity hdl4fpga.dfs
+	miidcm_i : entity hdl4fpga.xc3s_dcm
 	generic map (
-		dcm_per => 50.0,
-		dfs_mul => 5,
-		dfs_div => 4)
+		settings => "{"                 &
+			"freq_in        : 20.0e6,"  & 
+			"clkfx_multiply : 5,"       & 
+			"clkfx_divide   : 4}")
 	port map (
-		dcm_rst => '0',
-		dcm_clk => clk_bufg,
-		dfs_clk => mii_clk);
+		clkin => sys_clk,
+		clkfx => mii_clk);
 	mii_refclk <= not mii_clk;
 
 	process (mii_txc)
 	begin
 		if rising_edge(mii_txc) then
-			ipv4acfg_req <= not sw1;
+			dhcp_btn <= not sw1;
 		end if;
 	end process;
 
-	udpdaisy_e : entity hdl4fpga.sio_dayudp
+	mii_e : entity hdl4fpga.link_mii
 	generic map (
-		default_ipv4a => x"c0_a8_00_0e")
+		rmii          => false,
+		default_mac   => x"00_40_00_01_02_03",
+		default_ipv4a => aton("192.168.0.14"),
+		n             => mii_rxd'length)
 	port map (
-		ipv4acfg_req => ipv4acfg_req,
-
-		phy_rxc   => mii_rxc,
-		phy_rx_dv => mii_rxdv,
-		phy_rx_d  => mii_rxd,
-
-		phy_txc   => mii_txc,
-		phy_col   => mii_col,
-		phy_crs   => mii_crs,
-		phy_tx_en => mii_txen,
-		phy_tx_d  => mii_txd,
-		txc_rxdv  => txc_rxdv,
+		tp         => tp,
+		si_frm     => si_frm,
+		si_irdy    => si_irdy,
+		si_trdy    => si_trdy,
+		si_end     => si_end,
+		si_data    => si_data,
 	
-		sio_clk   => sio_clk,
-		si_frm    => sout_frm,
-		si_irdy   => sout_irdy,
-		si_trdy   => sout_trdy,
-		si_data   => sout_data,
+		so_frm     => so_frm,
+		so_irdy    => so_irdy,
+		so_trdy    => so_trdy,
+		so_data    => so_data,
+		dhcp_btn   => dhcp_btn,
+		mii_txc    => mii_txc,
+		mii_txen   => mii_txen,
+		mii_txd    => mii_txd,
 
-		so_frm    => sin_frm,
-		so_irdy   => sin_irdy,
-		so_trdy   => '1',
-		so_data   => sin_data,
-		tp        => tp);
-	
+		mii_rxc    => mii_rxc,
+		mii_rxdv   => mii_rxdv,
+		mii_rxd    => mii_rxd);   
+
+	ser_clk  <= mii_txc;
+	ser_frm  <= tp(2);
+	ser_irdy <= mii_txen;
+	ser_data <= mii_txd;
+
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
-		timing_id    => video_tab(video_mode).timing_id,
-		red_length   => 8,
-		green_length => 8,
-		blue_length  => 8)
+		settings => hdo(settings)**".video")
 	port map (
-		ser_clk      => mii_txc, 
-		ser_frm      => tp(1),
-		ser_irdy     => tp(2),
-		ser_data     => data,
+		ser_clk      => ser_clk, 
+		ser_frm      => ser_frm, 
+		ser_irdy     => ser_irdy, 
+		ser_data     => ser_data, 
 		
-		video_clk    => vga_clk,
-		video_hzsync => vga_hsync,
-		video_vtsync => vga_vsync,
-		video_blank  => vga_blank,
-		video_pixel  => vga_pixel);
+		video_clk    => video_clk,
+		video_hzsync => video_hzsync,
+		video_vtsync => video_vtsync,
+		video_blank  => video_blank,
+		video_pixel  => video_pixel);
 
 	psave <= '1';
 	sync  <= 'Z';
-	red   <= multiplex(vga_pixel, std_logic_vector(to_unsigned(0,2)), 8);
-	green <= multiplex(vga_pixel, std_logic_vector(to_unsigned(1,2)), 8);
-	blue  <= multiplex(vga_pixel, std_logic_vector(to_unsigned(2,2)), 8);
+	hsync <= video_hzsync;
+	vsync <= video_vtsync;
+	red   <= multiplex(video_pixel, 0, red'length);
+	green <= multiplex(video_pixel, 1, green'length);
+	blue  <= multiplex(video_pixel, 2, blue'length);
+	sync  <= not video_hzsync and not video_vtsync;
+	blankn  <= not video_blank;
 
-	clk_videodac_e : entity hdl4fpga.ddro
-	port map (
-		clk => vga_clk,
-		dr => '0',
-		df => '1',
-		q => clk_videodac);
+	videodac_b : block
+		signal clk_n : std_logic;
+	begin
+		clk_n <= not video_clk;
+		clk_videodac_e : oddr2
+		port map (
+			c0 => video_clk,
+			c1 => clk_n,
+			d0 => '1',
+			d1 => '0',
+			q  => clk_videodac);
+	end block;
 
 	hd_t_data <= 'Z';
 
@@ -186,35 +186,21 @@ begin
 --	led8  <= tp(3);
 --	led7  <= tp(2);
 
-	process (mii_txc)
-		variable q1 : bit;
-		variable q2 : bit;
-	begin
-		if rising_edge(mii_txc) then
-			if q1='1' and tp(1)='0' then
-				q2 := not q2;
-			end if;
-			led7 <= to_stdulogic(q2);
-			led8 <= not to_stdulogic(q2);
-			q1 := to_bit(tp(1));
-		end if;
-	end process;
-
-	led18 <= '0';
-	led16 <= '0';
-	led15 <= '0';
-	led13 <= '0';
-	led11 <= '0';
-	led9  <= '0';
---	led8  <= '0';
---	led7  <= '0';
+	led18 <= 'Z';
+	led16 <= 'Z';
+	led15 <= 'Z';
+	led13 <= 'Z';
+	led11 <= 'Z';
+	led9  <= 'Z';
+	led8  <= 'Z';
+	led7  <= 'Z';
 
 	-- RS232 Transceiver --
 	-----------------------
 
-	rs232_rts <= '0';
-	rs232_td  <= '0';
-	rs232_dtr <= '0';
+	rs232_rts <= 'Z';
+	rs232_td  <= 'Z';
+	rs232_dtr <= 'Z';
 
 	-- Ethernet Transceiver --
 	--------------------------

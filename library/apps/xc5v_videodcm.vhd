@@ -40,9 +40,6 @@ entity xc5v_videodcm is
 
 end;
 
-library hdl4fpga;
-use hdl4fpga.xc5v_profiles.all;
-
 library unisim;
 use unisim.vcomponents.all;
 

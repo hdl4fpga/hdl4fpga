@@ -25,38 +25,33 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 
-entity xc3s_videodcm is
+entity xc3s_dcm is
 	generic (
-		settings  : string);
+		settings : string);
 	port (
-		rst       : in std_logic := '0';
-		clk       : in std_logic;
-		video_clk : out std_logic;
-		locked    : buffer std_logic);
-
+		rst      : in  std_logic := '0';
+		clkin    : in  std_logic;
+		clkfx    : out std_logic;
+		locked   : out std_logic);
 end;
 
 library unisim;
 use unisim.vcomponents.all;
 
-architecture def of xc3s_videodcm is
+architecture def of xc3s_dcm is
     constant freq_in        : real    := settings**".freq_in";
-	constant clkfx_multiply : natural := settings**".clkfx_multiply=0";
+	constant clkfx_multiply : natural := settings**".clkfx_multiply=2";
 	constant clkfx_divide   : natural := settings**".clkfx_divide=1";
 
-	signal dcm_clkfb : std_logic;
-	signal dcm_clk0  : std_logic;
+	signal clkfb : std_logic;
+	signal clk0  : std_logic;
 
 begin
 
-	assert false
-		report "entity video_dcm() : settings => " & settings
-		severity note;
-
 	bug_i : bufg
 	port map (
-		I => dcm_clk0,
-		O => dcm_clkfb);
+		I => clk0,
+		O => clkfb);
 
 	dcm_i : dcm
 	generic map(
@@ -74,17 +69,17 @@ begin
 		phase_shift  => 0,
 		startup_wait => false)
 	port map (
-		rst      => rst ,
+		rst      => rst,
 		dssen    => '0',
 		psclk    => '0',
 		psen     => '0',
 		psincdec => '0',
-		clkfb    => dcm_clkfb,
-		clkin    => clk,
-		clkfx    => video_clk,
+		clkfb    => clkfb,
+		clkin    => clkin,
+		clkfx    => clkfx,
 		clkfx180 => open,
-		clk0     => dcm_clk0,
-		locked   => open,
+		clk0     => clk0,
+		locked   => locked,
 		psdone   => open,
 		status   => open);
 end;

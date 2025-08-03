@@ -68,6 +68,8 @@ architecture struct of cga_adapter is
 
 	signal lat_fontcol : std_logic_vector(font_col'range);
 	signal lat_fontrow : std_logic_vector(font_row'range);
+	constant charaddr_length : natural := char_addr'length; -- Xilinx ISE 14.7 result of operator > is not static.
+	constant cgaaddr_length  : natural := cga_addr'length;  -- Xilinx ISE 14.7 result of operator > is not static.
 begin
 
 	cga_sweep_b : block
@@ -174,16 +176,18 @@ begin
     		rd_data => cga_codes);
 	end block;
 
-	muxcode_g : if char_addr'length > cga_addr'length generate
-		signal sel : std_logic_vector(char_addr'length-cga_addr'length-1 downto 0);
+	-- muxcode_g : if char_addr'length > cga_addr'length generate -- Xilinx ISE 14.7 result of operator > is not static
+	muxcode_g : if charaddr_length > cgaaddr_length generate
+		signal di  : std_logic_vector(char_addr'length-1 downto cga_addr'length);
+		signal sel : std_logic_vector(char_addr'length-1 downto cga_addr'length);
 	begin
 		lat_e : entity hdl4fpga.latency
 		generic map (
-			n => char_addr'length-cga_addr'length,
-			d => (0 to char_addr'length-cga_addr'length => 2))
+			n => charaddr_length-cgaaddr_length, -- Xilinx ISE 14.7 globally static expression complain
+			d => (0 to charaddr_length-cgaaddr_length-1 => 2)) -- Xilinx ISE 14.7 globally static expression complain
 		port map (
 			clk => video_clk,
-			di  => std_logic_vector(char_addr(char_addr'length-cga_addr'length-1 downto 0)),
+			di  => std_logic_vector(char_addr(charaddr_length-cgaaddr_length-1 downto 0)), -- Xilinx ISE 14.7 result of operator > is not static
 			do  => sel);
 
 		mux_code <= multiplex(cga_codes, sel, mux_code'length);

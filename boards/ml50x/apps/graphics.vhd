@@ -52,13 +52,28 @@ architecture graphics of ml50x is
 	signal sys_rst        : std_logic;
 	signal sys_clk        : std_logic;
 
+	signal gtx_rst        : std_logic;
+	signal gtx_clk        : std_logic;
+
+	constant mem_size     : natural := 8*(1024*8);
+	alias  sio_clk        : std_logic is gtx_clk;
+	signal so_frm         : std_logic;
+	signal so_irdy        : std_logic := '1';
+	signal so_trdy        : std_logic := '1';
+	signal so_data        : std_logic_vector(0 to 8-1);
+	signal si_frm         : std_logic;
+	signal si_irdy        : std_logic := '1';
+	signal si_trdy        : std_logic := '1';
+	signal si_end         : std_logic;
+	signal si_data        : std_logic_vector(0 to 8-1);
+
 	signal video_clk      : std_logic;
 	signal video_lckd     : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_hzsync   : std_logic;
 	signal video_vtsync   : std_logic;
-    signal video_blank    : std_logic;
-    signal video_pixel    : std_logic_vector(0 to 32-1);
+	signal video_blank    : std_logic;
+	signal video_pixel    : std_logic_vector(0 to 32-1);
 	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
 	signal videoio_clk    : std_logic;
 
@@ -117,30 +132,11 @@ architecture graphics of ml50x is
 	signal iodctrl_clk    : std_logic;
 	signal iodctrl_rdy    : std_logic;
 
-	constant mem_size     : natural := 8*(1024*8);
-	signal si_frm         : std_logic;
-	signal si_irdy        : std_logic;
-	signal si_trdy        : std_logic;
-	signal si_end         : std_logic;
-	signal si_data        : std_logic_vector(0 to 8-1);
-	signal so_frm         : std_logic;
-	signal so_irdy        : std_logic;
-	signal so_trdy        : std_logic;
-	signal so_data        : std_logic_vector(0 to 8-1);
-
-	signal gtx_rst        : std_logic;
-	signal gtx_clk        : std_logic;
-
-	alias  mii_txc        : std_logic is gtx_clk;
-	alias  sio_clk        : std_logic is gtx_clk;
 	alias  dmacfg_clk     : std_logic is gtx_clk;
-
-	signal phyrxclk_bufg  : std_logic;
-	signal phytxclk_bufg  : std_logic;
 
 	signal tp_sel         : std_logic_vector(1 downto 0);
 	signal tp_sdrphy      : std_logic_vector(1 to 32);
-	signal mii_tp         : std_logic_vector(1 to 32);
+
 begin
 
 	clkin_ibufg : ibufg
@@ -221,170 +217,31 @@ begin
 
 	end block;
 
-	phy_rxclk_bufg_i : bufg
+	gmii_e : entity hdl4fpga.link_mii
+	generic map (
+		rmii          => false,
+		default_mac   => x"00_40_00_01_02_03",
+		default_ipv4a => aton("192.168.0.14"),
+		n             => phy_rxd'length)
 	port map (
-		i => phy_rxclk,
-		o => phyrxclk_bufg);
+		si_frm     => si_frm,
+		si_irdy    => si_irdy,
+		si_trdy    => si_trdy,
+		si_end     => si_end,
+		si_data    => si_data,
+	
+		so_frm     => so_frm,
+		so_irdy    => so_irdy,
+		so_trdy    => so_trdy,
+		so_data    => so_data,
+		dhcp_btn   => gpio_sw_s,
+		mii_txc    => phy_txclk,
+		mii_txen   => phy_txctl_txen,
+		mii_txd    => phy_txd,
 
-	phy_txclk_bufg_i : bufg
-	port map (
-		i => phy_txclk,
-		o => phytxclk_bufg);
-
-	ipoe_b : block
-
-		signal mii_rxc    : std_logic;
-		alias  mii_rxdv   : std_logic is phy_rxctl_rxdv;
-		alias  mii_rxd    : std_logic_vector(phy_rxd'range) is phy_rxd;
-
-		signal dhcpcd_req : std_logic := '0';
-		signal dhcpcd_rdy : std_logic := '0';
-
-		signal mii_txen   : std_logic;
-		signal mii_txd    : std_logic_vector(mii_rxd'range);
-		signal miirx_frm  : std_logic;
-		signal miirx_irdy : std_logic;
-		signal miirx_data : std_logic_vector(mii_rxd'range);
-
-		signal miitx_frm  : std_logic;
-		signal miitx_irdy : std_logic;
-		signal miitx_trdy : std_logic;
-		signal miitx_end  : std_logic;
-		signal miitx_data : std_logic_vector(si_data'range);
-
-		signal mii_txcrxd : std_logic_vector(mii_rxd'range);
-
-	begin
-
-		mii_rxc  <= gtx_clk;
-		sync_b : block
-
-			signal rxc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
-			signal txc_rxbus : std_logic_vector(0 to mii_txcrxd'length);
-			signal dst_irdy  : std_logic;
-			signal dst_trdy  : std_logic;
-
-		begin
-
-			rxd_g : for i in mii_rxd'range generate 
-				iddr_i : iddr 
-				port map (
-					c  => phyrxclk_bufg,
-					ce => '1',
-					d  => phy_rxd(i),
-					q1 => rxc_rxbus(i+1));
-			end generate;
-
-			rxdv_i : iddr 
-			port map (
-				c  => phy_rxclk,
-				ce => '1',
-				d  => mii_rxdv,
-				q1 => rxc_rxbus(0));
-
-			rxc2txc_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth  => 4,
-				latency    => 0,
-				dst_offset => 0,
-				src_offset => 2,
-				check_sov  => false,
-				check_dov  => true)
-			port map (
-				src_clk  => mii_rxc,
-				src_data => rxc_rxbus,
-				dst_clk  => mii_txc,
-				dst_irdy => dst_irdy,
-				dst_trdy => dst_trdy,
-				dst_data => txc_rxbus);
-
-			process (mii_txc)
-			begin
-				if rising_edge(mii_txc) then
-					dst_trdy   <= to_stdulogic(to_bit(dst_irdy));
-					miirx_frm  <= txc_rxbus(0);
-					miirx_data <= txc_rxbus(1 to mii_txcrxd'length);
-				end if;
-			end process;
-		end block;
-
-		dhcp_p : process(mii_txc)
-			type states is (s_request, s_wait);
-			variable state : states;
-		begin
-			if rising_edge(mii_txc) then
-				case state is
-				when s_request =>
-					if gpio_sw_n='1' then
-						dhcpcd_req <= not dhcpcd_rdy;
-						state := s_wait;
-					end if;
-				when s_wait =>
-					if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
-						if gpio_sw_n='0' then
-							state := s_request;
-						end if;
-					end if;
-				end case;
-			end if;
-		end process;
-
-		udpdaisy_e : entity hdl4fpga.sio_dayudp
-		generic map (
-			debug         => false,
-			my_mac        => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.0.14"))
-		port map (
-			tp         => mii_tp,
-
-			mii_clk    => sio_clk,
-			dhcpcd_req => dhcpcd_req,
-			dhcpcd_rdy => dhcpcd_rdy,
-			miirx_frm  => miirx_frm,
-			miirx_irdy => '1', --miirx_irdy,
-			miirx_trdy => open,
-			miirx_data => miirx_data,
-
-			miitx_frm  => miitx_frm,
-			miitx_irdy => miitx_irdy,
-			miitx_trdy => miitx_trdy,
-			miitx_end  => miitx_end,
-			miitx_data => miitx_data,
-
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_end     => si_end,
-			si_data    => si_data,
-
-			so_clk     => sio_clk,
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data);
-
-		desser_e: entity hdl4fpga.desser
-		port map (
-			desser_clk => mii_txc,
-
-			des_frm    => miitx_frm,
-			des_irdy   => miitx_irdy,
-			des_trdy   => miitx_trdy,
-			des_data   => miitx_data,
-
-			ser_irdy   => open,
-			ser_data   => mii_txd);
-
-		mii_txen <= miitx_frm and not miitx_end;
-		process (mii_txc)
-		begin
-			if rising_edge(mii_txc) then
-				phy_txctl_txen<= mii_txen;
-				phy_txd(mii_rxd'range) <= mii_txd;
-			end if;
-		end process;
-
-	end block;
+		mii_rxc    => phy_rxclk,
+		mii_rxdv   => phy_rxctl_rxdv, 
+		mii_rxd    => phy_rxd);   
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (

@@ -51,6 +51,8 @@ HDL4FPGA__xc3s_profiles__body = $(LIB_HDL4FPGA)/xc3s_profiles/body.dat
 HDL4FPGA__xc3s_profiles = $(LIB_HDL4FPGA)/xc3s_profiles/_primary.dat
 HDL4FPGA__xc3s_dqsdelay__xilinx = $(LIB_HDL4FPGA)/xc3s_dqsdelay/xilinx.dat
 HDL4FPGA__xc3s_dqsdelay = $(LIB_HDL4FPGA)/xc3s_dqsdelay/_primary.dat
+HDL4FPGA__xc3s_dcm__def = $(LIB_HDL4FPGA)/xc3s_dcm/def.dat
+HDL4FPGA__xc3s_dcm = $(LIB_HDL4FPGA)/xc3s_dcm/_primary.dat
 HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
 HDL4FPGA__videobox_layout__def = $(LIB_HDL4FPGA)/videobox_layout/def.dat
 HDL4FPGA__videobox_layout = $(LIB_HDL4FPGA)/videobox_layout/_primary.dat
@@ -447,6 +449,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__xc3s_profiles) \
     $(HDL4FPGA__xc3s_dqsdelay__xilinx) \
     $(HDL4FPGA__xc3s_dqsdelay) \
+    $(HDL4FPGA__xc3s_dcm__def) \
+    $(HDL4FPGA__xc3s_dcm) \
     $(HDL4FPGA__videopkg) \
     $(HDL4FPGA__videobox_layout__def) \
     $(HDL4FPGA__videobox_layout) \
@@ -1543,9 +1547,6 @@ $(HDL4FPGA__link_mii) \
 $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_dayudp) \
-		$(IEEE__std_logic_arith) \
-		$(ECP5U__components) \
-		$(HDL4FPGA__ecp5_profiles) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
@@ -2169,8 +2170,8 @@ $(HDL4FPGA__ser_debug__def) : ../apps/ser_debug.vhd \
 		$(HDL4FPGA__cp850x8x8x0to127) \
 		$(HDL4FPGA__cgafonts) \
 		$(HDL4FPGA__ser_display) \
-		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__videopkg) \
+		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -2653,6 +2654,16 @@ $(HDL4FPGA__videopkg) : ../video/videopkg.vhd \
 		$(STD__textio) \
 		$(HDL4FPGA__hdo)
 	$(VCOM) -2002 -work hdl4fpga ../video/videopkg.vhd
+
+$(HDL4FPGA__xc3s_dcm) \
+$(HDL4FPGA__xc3s_dcm__def) : ../xilinx/xc3s_dcm.vhd \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__hdo) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(UNISIM__vcomponents) \
+		$(HDL4FPGA__xc3s_profiles)
+	$(VCOM) -2002 -work hdl4fpga ../xilinx/xc3s_dcm.vhd
 
 $(HDL4FPGA__xc3s_dqsdelay) \
 $(HDL4FPGA__xc3s_dqsdelay__xilinx) : ../xilinx/xc3s_dqsdelay.vhd \
