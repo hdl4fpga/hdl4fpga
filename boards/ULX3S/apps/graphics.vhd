@@ -61,8 +61,8 @@ architecture graphics of ulx3s is
 	signal video_lck       : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_eclk      : std_logic;
-	signal video_pixel     : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
-	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear"-1 downto 0);
+	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear=2"-1 downto 0);
 	signal videoio_clk     : std_logic;
 
 	constant sdram_gear    : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
@@ -128,7 +128,7 @@ begin
 		if debug then
 			sdram_dqs <= (others => ctlr_clk);
 		else
-			if string'(settings**".sdram.dcm")="133mhz" then
+			if sdram_freq(hdo(settings)**".sdram.dcm") <= 134.0e6 then
 				sdram_dqs <= (others => ctlr_clk);
 			else
 				sdram_dqs <= (others => not ctlr_clk);
@@ -380,61 +380,59 @@ begin
 	-- VGA --
 	---------
 
-	no_serdebug_g : if false generate
-		hdmibrd_g : if settings**".video.gear"=2 generate 
-			signal crgb : std_logic_vector(dvid_crgb'range);
-		begin
-			reg_e : entity hdl4fpga.latency
-			generic map (
-				n => dvid_crgb'length,
-				d => (dvid_crgb'range => 1))
-			port map (
-				clk => video_shift_clk,
-				di  => dvid_crgb,
-				do  => crgb);
-	
-			gbx_g : entity hdl4fpga.ecp5_ogbx
-			generic map (
-				mem_mode  => false,
-				lfbt_frst => false,
-				interlace => true,
-				size      => gpdi_d'length,
-				gear      => settings**".video.gear")
-			port map (
-				sclk      => video_shift_clk,
-				eclk      => video_eclk,
-				d         => crgb,
-				q         => gpdi_d);
+	hdmibrd_g : if settings**".video.gear"=2 generate 
+		signal crgb : std_logic_vector(dvid_crgb'range);
+	begin
+		reg_e : entity hdl4fpga.latency
+		generic map (
+			n => dvid_crgb'length,
+			d => (dvid_crgb'range => 1))
+		port map (
+			clk => video_shift_clk,
+			di  => dvid_crgb,
+			do  => crgb);
 
-		end generate;
+		gbx_g : entity hdl4fpga.ecp5_ogbx
+		generic map (
+			mem_mode  => false,
+			lfbt_frst => false,
+			interlace => true,
+			size      => gpdi_d'length,
+			gear      => settings**".video.gear")
+		port map (
+			sclk      => video_shift_clk,
+			eclk      => video_eclk,
+			d         => crgb,
+			q         => gpdi_d);
 
-		hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
-			signal crgb : std_logic_vector(dvid_crgb'range);
-		begin
-			reg_e : entity hdl4fpga.latency
-			generic map (
-				n => dvid_crgb'length,
-				d => (dvid_crgb'range => 1))
-			port map (
-				clk => video_shift_clk,
-				di  => dvid_crgb,
-				do  => crgb);
+	end generate;
 
-			hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
-		   	generic map (
-				mem_mode  => false,
-				lfbt_frst => false,
-				interlace => true,
-				size      => gpdi_d'length,
-				gear      => settings**".video.gear")
-		   	port map (
-				eclk      => video_eclk,
-				sclk      => video_shift_clk,
-				d         => crgb,
-				q         => gp(13-1 downto 9));
+	hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
+		signal crgb : std_logic_vector(dvid_crgb'range);
+	begin
+		reg_e : entity hdl4fpga.latency
+		generic map (
+			n => dvid_crgb'length,
+			d => (dvid_crgb'range => 1))
+		port map (
+			clk => video_shift_clk,
+			di  => dvid_crgb,
+			do  => crgb);
 
-			wifi_en   <= '0';
-		end generate;
+		hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
+	   	generic map (
+			mem_mode  => false,
+			lfbt_frst => false,
+			interlace => true,
+			size      => gpdi_d'length,
+			gear      => settings**".video.gear")
+	   	port map (
+			eclk      => video_eclk,
+			sclk      => video_shift_clk,
+			d         => crgb,
+			q         => gp(13-1 downto 9));
+
+		wifi_en   <= '0';
 	end generate;
 
 	-- SDRAM-clk-divided-by-2 monitor
