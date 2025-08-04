@@ -52,10 +52,10 @@ architecture graphics of ulx4m_ld is
 			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT41K256M16-125")                               & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
-			"cl:"        & "'010'}}";
+			"cwl:"       & "'001'"                                                                  & ',' &                             
+			"cl:"        & "'0010'}}";    	 
 
 	constant io_link      : string  := settings**".io_link";
-	constant baudrate     : natural := 3000000;
 
 	alias sys_clk is clk_25mhz;
 
@@ -68,6 +68,7 @@ architecture graphics of ulx4m_ld is
 	signal dvid_crgb       : std_logic_vector(4*video_gear-1 downto 0);
 	signal videoio_clk     : std_logic;
 
+	constant sdram_freq    : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear    : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	constant ba_latency    : natural := 1;
 
@@ -154,6 +155,7 @@ begin
 
 	hdlc_g : if io_link="io_hdlc" generate
 		constant uart_freq : real := 30.0e6;
+		constant baudrate     : natural := 3000000;
 		signal uart_clk : std_logic;
 	begin
 
@@ -341,7 +343,7 @@ begin
 		debug        => debug, -- true,
 		profile      => 2,
 		burst_length => 8,
-		sdram_freq   => sdram_freq(settings**".sdram.dcm")/2.0,
+		sdram_freq   => sdram_freq/2.0,
 		settings     => settings,
 		fifo_size    => mem_size)
 	port map (
@@ -468,7 +470,7 @@ begin
 		rd_fifo    => false,
 		wr_fifo    => true,
 		bypass     => false,
-		taps       => natural(ceil((1.0/sdram_freq(settings**".sdram.dcm")-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
+		taps       => natural(ceil((1.0/sdram_freq-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (
 		tpin       => btn(1),
 

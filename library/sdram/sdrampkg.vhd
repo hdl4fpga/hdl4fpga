@@ -36,8 +36,8 @@ package sdrampkg is
 		"MT41K128M16-125   : {generation : ddr3, orgz : {addr : { ba : 3, row : 14, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 360.00e-9, tREFI : 7.8125e-6, tXPR  : 370.00e-9}}," &  -- tMin : tRFC + 10 ns
 		"MT4HTF12864HZ     : {generation : ddr2, orgz : {addr : { ba : 3, row : 14, col :  9}, data : { dm : 8, dq : 64}}, tmng : {tWR : 15.0e-9, tRCD : 15.0e-9,  tRP : 15.00e-9, tRPA : 15.0e-9,  tRFC : 130.0e-9,  tREFI : 7.8125e-6, tXPR  : 400.0e-6}}," &
 		"MT41J64M16-15E    : {generation : ddr3, orgz : {addr : { ba : 3, row : 13, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 15.00e-9, tRFC : 110.00e-9, tREFI : 7.8125e-6, tXPR  : 120.00e-9)}}," &  -- tMin : tRFC + 10 ns
-		"MT41K256M16-107   : {generation : ddr3, orgz : {addr : { ba : 3, row : 15, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : 7.8125e-6, tXPR  : 270.00e-9)}}," &  -- tMin : tRFC + 10 ns
-		"MT41K256M16-125   : {generation : ddr3, orgz : {addr : { ba : 3, row : 15, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : 7.8125e-6, tXPR  : 360.00e-9)}}," &  -- tMin : tRFC + 10 ns
+		"MT41K256M16-107   : {generation : ddr3, orgz : {addr : { ba : 3, row : 16, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.91e-9, tRP : 13.91e-9, tMRD : 20.00e-9, tRFC : 260.00e-9, tREFI : 7.8125e-6, tXPR  : 270.00e-9)}}," &  -- tMin : tRFC + 10 ns
+		"MT41K256M16-125   : {generation : ddr3, orgz : {addr : { ba : 3, row : 16, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 20.00e-9, tRFC : 350.00e-9, tREFI : 7.8125e-6, tXPR  : 360.00e-9)}}," &  -- tMin : tRFC + 10 ns
 		"AS4C256M16D3LC-12 : {generation : ddr3, orgz : {addr : { ba : 3, row : 15, col : 10}, data : { dm : 2, dq : 16}}, tmng : {tWR : 15.0e-9, tRCD : 13.75e-9, tRP : 13.75e-9, tMRD : 15.00e-9, tRFC : 260.00e-9, tREFI : 7.8125e-6; tXPR  : 270.00e-9)}}}");  -- tMin : tRFC + 10 ns
 
 	constant generation_db : string := compact("{" &
@@ -77,8 +77,8 @@ package sdrampkg is
 		"ecp3g4 : { device : ecp5, orgz : { gear : 4}, tmng : {STRL :  0, DQSL :  0, DQSZL :  0, DQZL :  2, WWNL :  2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2}}," &
 		"xc5vg4 : { device : xc5v, orgz : { gear : 4}, tmng : {STRL :  9, DQSL :  2, DQSZL :  2, DQZL : -1, WWNL : -3, STRXL : 0, DQSZXL : 1, DQSXL : 0, DQZXL : 0, WWNXL : 0}}," &
 		"xc7vg4 : { device : xc7a, orgz : { gear : 4}, tmng : {STRL :  9, DQSL :  1, DQSZL :  1, DQZL : -1, WWNL : -1, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 0}}," &
-		"ulx4ld_ecp5g4     : { device : ecp5, orgz : { gear : 4}, tmng : { STRL : 0, DQSL : 4*1-2+2, DQSZL : 4*1+0+2, DQZL : 4*1+0+2, WWNL : 4*1-4+2, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2}}," &
-		"orangecrab_ecp5g4 : { device : ecp5, orgz : { gear : 4}, tmng : { STRL : 0, DQSL : 4*1-2+0, DQSZL : 4*1+0+0, DQZL : 4*1+0+0, WWNL : 4*1-4+0, STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2}}]");
+		"ulx4ld_ecp5g4     : { device : ecp5, orgz : { gear : 4}, tmng : { STRL : 0, DQSL :" & natural'image(4*1-2+2) & ", DQSZL :" & natural'image(4*1+0+2) & ", DQZL :" & natural'image(4*1+0+2) & ", WWNL :" & natural'image(4*1-4+2) & ", STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2}}," &
+		"orangecrab_ecp5g4 : { device : ecp5, orgz : { gear : 4}, tmng : { STRL : 0, DQSL :" & natural'image(4*1-2+0) & ", DQSZL :" & natural'image(4*1+0+0) & ", DQZL :" & natural'image(4*1+0+0) & ", WWNL :" & natural'image(4*1-4+0) & ", STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2}}]");
 
 	constant mpu_nop   : std_logic_vector(0 to 2) := "111";
 	constant mpu_act   : std_logic_vector(0 to 2) := "011";
