@@ -108,7 +108,6 @@ architecture graphics of ecp3versa is
 	signal ctlrphy_cmd     : std_logic_vector(0 to 3-1);
 	signal ctlrphy_b       : std_logic_vector(sdram_gear/2*ddr3_b'length-1 downto 0);
 	signal ctlrphy_a       : std_logic_vector(sdram_gear/2*ddr3_a'length-1 downto 0);
-	signal ctlrphy_dqsi    : std_logic_vector(sdram_gear*ddr3_dqs'length-1 downto 0);
 	signal ctlrphy_dqst    : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_dqso    : std_logic_vector(sdram_gear-1 downto 0);
 	signal ctlrphy_dmi     : std_logic_vector(sdram_gear*ddr3_dm'length-1 downto 0);
@@ -431,7 +430,6 @@ begin
 			sys_a     => ctlrphy_a,
 			sys_dqsi  => ctlrphy_dqso,
 			sys_dqst  => ctlrphy_dqst,
-			sys_dqso  => ctlrphy_dqsi,
 			sys_dmi   => ctlrphy_dmo,
 			sys_dmo   => ctlrphy_dmi,
 			sys_dqi   => ctlrphy_dqo,

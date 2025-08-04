@@ -74,9 +74,9 @@ entity ecp3_sdrphy is
 		sys_dqt   : in  std_logic_vector(gear-1 downto 0);
 		sys_dqo   : out std_logic_vector(gear*word_size-1 downto 0);
 		sys_dqi   : in  std_logic_vector(gear*word_size-1 downto 0);
-		sys_dqso  : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		sys_dqst  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		sys_dqsi  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '-');
+
+		sys_dqst  : in  std_logic_vector(gear-1 downto 0) := (others => '1');
+		sys_dqsi  : in  std_logic_vector(gear-1 downto 0) := (others => '0');
 
 		sdram_rst   : out std_logic;
 		sdram_ck    : out std_logic;
