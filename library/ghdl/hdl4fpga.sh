@@ -14,6 +14,7 @@ for file in \
 "../basic/cntrcs.vhd" \
 "../basic/timer.vhd" \
 "../basic/bcd_adder.vhd" \
+"../basic/lifo.vhd" \
 "../basic/dbdbbl.vhd" \
 "../basic/btof.vhd" \
 "../sdram/sdrampkg.vhd" \

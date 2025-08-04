@@ -49,7 +49,7 @@ architecture def of dbdbbl_srlfix is
 	constant binrev_left : natural := bin_rev'left; -- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
 	constant b_length : natural := digit_word'length;-- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
 	constant b : std_logic_vector(0 to b_length-1) := (others => '0');-- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
-	signal   a : digit_word;
+	signal   a : std_logic_vector(digit_word'range);
 begin
 
 	digits_g : for k in bin'range generate
