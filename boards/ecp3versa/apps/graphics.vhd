@@ -37,26 +37,26 @@ use hdl4fpga.ecp3_profiles.all;
 
 architecture graphics of ecp3versa is
 
-	constant settings : string := "{"                                                              &
-		"io_link: io_usb,"                                                                         &
-		"video:{"                                                                                  &
-			"dcm:"          & string'(hdl4fpga.ecp3_profiles.video_dcm(".'100mhz'.'40mhz'")) & ',' &
-			"gear:"         & "4"                                                                  & ',' &
-			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")    & ',' &
-			"pixel:{"                                                                              &
-				"R:8,"                                                                             &
-				"G:8,"                                                                             &
-				"B:8}},"                                                                           &
-		"sdram:{"                                                                                  &
-			"dcm:"       & string'(hdl4fpga.ecp3_profiles.sdram_dcm(".'100mhz'.'400mhz'"))         & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**".MT41J64M16-15E")                               & ',' &
-			"phy_data:"  & string'(hdo(phy_db)**".ecp3g4")                                         & ',' &
-			"cwl:"       & "'001'"                                                                 & ',' &                             
+	constant settings : string := "{"                                                           &
+		"io_link: io_usb,"                                                                      &
+		"video:{"                                                                               &
+			"dcm:"       & string'(hdl4fpga.ecp3_profiles.video_dcm(".'100mhz'.'40mhz'")) & ',' &
+			"gear:"      & "4"                                                                  & ',' &
+			"timings:"   & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")    & ',' &
+			"pixel:{"                                                                           &
+				"R:8,"                                                                          &
+				"G:8,"                                                                          &
+				"B:8}},"                                                                        &
+		"sdram:{"                                                                               &
+			"dcm:"       & string'(hdl4fpga.ecp3_profiles.sdram_dcm(".'100mhz'.'400mhz'"))      & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT41J64M16-15E")                            & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".ecp3g4")                                      & ',' &
+			"cwl:"       & "'001'"                                                              & ',' &                             
 			"cl:"        & "'0010'}}";
 
-	constant io_link      : string  := settings**".io_link";
+	constant io_link : string  := settings**".io_link";
 
-	signal sys_rst       : std_logic;
+	signal sys_rst   : std_logic;
 	alias sys_clk is clk;
 
 	constant mem_size : natural := 8*(1024*8);
@@ -82,7 +82,6 @@ architecture graphics of ecp3versa is
 
 	constant sdram_freq    : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear    : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
-	constant ba_latency    : natural := 1;
 
 	signal ctlrdcm_clkok   : std_logic;
 	signal ctlrdcm_clkop   : std_logic;
@@ -129,13 +128,8 @@ architecture graphics of ecp3versa is
 	signal ctlrphy_rlrdy   : std_logic;
 	signal sdrphy_rst      : std_logic;
 
-	signal physys_clk    : std_logic;
-
-	signal ddr_b        : std_logic_vector(ddr3_b'length-1 downto 0);
-	signal ddr_a         : std_logic_vector(ddr3_a'length-1 downto 0);
-
-	signal tp             : std_logic_vector(1 to 32);
-	alias  sin_clk        : std_logic is phy1_125clk;
+	signal ddr_b           : std_logic_vector(ddr3_b'length-1 downto 0);
+	signal ddr_a           : std_logic_vector(ddr3_a'length-1 downto 0);
 
 	attribute oddrapps : string;
 	attribute oddrapps of phy1_gtxclk_i : label is "SCLK_ALIGNED";
@@ -199,7 +193,6 @@ begin
 		settings     => settings,
 		fifo_size    => mem_size)
 	port map (
-		tp => tp,
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
@@ -253,10 +246,6 @@ begin
 		ctlrphy_dqv  => ctlrphy_dqv,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
-
-	tp(2) <= (ctlrphy_wlreq xor ctlrphy_wlrdy);
-	tp(3) <= (ctlrphy_rlreq xor ctlrphy_rlrdy);
-	tp(4) <= ctlrphy_ini;
 
 	process (ddr_b)
 	begin
