@@ -231,9 +231,6 @@
         <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/basic/sync_transfer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -258,16 +255,10 @@
         <Source name="../../../library/sdram/sdram_ctlr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdram/sdram_db.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/sdram_init.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sdram/sdram_mpu.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sdram/sdram_param.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sdram/sdram_pgm.vhd" type="VHDL" type_short="VHDL">
@@ -358,6 +349,12 @@
             <Options/>
         </Source>
         <Source name="../../../library/apps/ecp5_sdramdcm.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdrampkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/hdo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="orangecrab.lpf" type="Logic Preference" type_short="LPF">

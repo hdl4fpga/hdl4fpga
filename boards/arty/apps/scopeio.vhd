@@ -473,7 +473,6 @@ begin
 		burst_length => 8,
 		settings    => settings)
 	port map (
-		-- tp => tp,
 		sio_clk       => sio_clk,
 		si_frm        => so_frm,
 		si_irdy       => so_irdy,

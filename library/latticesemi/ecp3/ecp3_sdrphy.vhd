@@ -45,9 +45,8 @@ entity ecp3_sdrphy is
 		sclk2x    : in  std_logic;
 		eclk      : in  std_logic;
 		dqsdel    : in  std_logic;
-		phy_locked    : out std_logic_vector(word_size/byte_size-1 downto 0);
+		phy_locked    : out std_logic;
 
-		phy_rst   : in  std_logic_vector((gear+1)/2-1 downto 0);
 		phy_frm   : buffer std_logic;
 		phy_trdy  : in  std_logic;
 		phy_rw    : out std_logic := '1';
@@ -58,6 +57,7 @@ entity ecp3_sdrphy is
 		phy_rlreq : in  std_logic := '0';
 		phy_rlrdy : buffer std_logic;
 
+		sys_rst   : in  std_logic_vector((gear+1)/2-1 downto 0);
 		sys_cs    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '0');
 		sys_sti   : in  std_logic_vector(gear-1 downto 0);
 		sys_sto   : buffer std_logic_vector(gear*word_size/byte_size-1 downto 0);
@@ -74,9 +74,9 @@ entity ecp3_sdrphy is
 		sys_dqt   : in  std_logic_vector(gear-1 downto 0);
 		sys_dqo   : out std_logic_vector(gear*word_size-1 downto 0);
 		sys_dqi   : in  std_logic_vector(gear*word_size-1 downto 0);
-		sys_dqso  : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		sys_dqst  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		sys_dqsi  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '-');
+
+		sys_dqst  : in  std_logic_vector(gear-1 downto 0) := (others => '1');
+		sys_dqsi  : in  std_logic_vector(gear-1 downto 0) := (others => '0');
 
 		sdram_rst   : out std_logic;
 		sdram_ck    : out std_logic;
@@ -130,7 +130,7 @@ begin
 		sclk    => sclk,
 		sclk2x  => sclk2x,
           
-		sys_rst => phy_rst,
+		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
 		sys_b   => sdrphy_b,
@@ -264,32 +264,29 @@ begin
 	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
-		signal sto : std_logic;
-	begin
-		sys_sto(gear*(i+1)-1 downto gear*i) <= (others => sto);
 		sdr3phy_i : entity hdl4fpga.ecp3_sdrdqphy
 		generic map (
 			taps      => taps,
-			data_gear => gear,
+			gear => gear,
 			byte_size => byte_size)
 		port map (
 			rst       => rst,
 			sclk      => sclk,
 			eclk      => eclk,
 			dqsdel    => dqsdel,
-
 			pause     => ms_pause,
-			phy_locked  => phy_locked(i),
-			read_req  => read_req(i),
-			read_rdy  => read_rdy(i),
+
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wl_rdy(i),
 			phy_rlreq => rl_req(i),
 			phy_rlrdy => rl_rdy(i),
+			read_req  => read_req(i),
+			read_rdy  => read_rdy(i),
+			phy_locked => dqs_locked(i),
 
-			-- sys_sti   => sys_sti,
-			-- sys_sto   => sys_sto((i+1)*gear-1 downto i*gear),
-			-- sys_dmt   => sys_dmt,
+			sys_sti   => sys_sti,
+			sys_sto   => sys_sto((i+1)*gear-1 downto i*gear),
+			sys_dmt   => sys_dmt,
 			sys_dmi   => dmi((i+1)*gear-1 downto i*gear),
 
 			sys_dmo   => sys_dmo((i+1)*gear-1 downto i*gear),
@@ -301,19 +298,18 @@ begin
 			sys_dqsi  => sys_dqsi,
 			sys_dqst  => sys_dqst,
 
-			sdram_dqt   => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqo   => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqi   => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqi  => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
 
-			sdram_dmi   => sdram_dm(i),
-			-- sdram_dmt   => sdram_dmt(i),
-			sdram_dmo   => sdram_dmo(i),
+			sdram_dm   => sdram_dm(i),
+			sdram_dmo  => sdram_dmo(i),
 
-			sdram_dqsi  => sdram_dqs(i),
-			sdram_dqst  => sdram_dqst(i),
-			sdram_dqso  => sdram_dqso(i));
+			sdram_dqs  => sdram_dqs(i),
+			sdram_dqst => sdram_dqst(i),
+			sdram_dqso => sdram_dqso(i));
 			sdram_dqs(i) <= sdram_dqso(i) when sdram_dqst(i)='0' else 'Z';
-			-- sdram_dm(i)  <= sdram_dmo(i)  when sdram_dmt(i)='0'  else 'Z';
 	end generate;
-
+	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
+	sys_dqo <= unshuffle_vector(dqo, gear => gear, size => byte_size);
 end;

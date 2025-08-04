@@ -84,8 +84,8 @@ entity ecp5_sdrphy is
 		sys_dqi    : in  std_logic_vector(gear*word_size-1 downto 0);
 		sys_dqo    : out std_logic_vector(gear*word_size-1 downto 0);
 
-		sys_dqsi   : in  std_logic_vector(gear-1 downto 0) := (others => '0');
 		sys_dqst   : in  std_logic_vector(gear-1 downto 0) := (others => '1');
+		sys_dqsi   : in  std_logic_vector(gear-1 downto 0) := (others => '0');
 
 		sys_dqc    : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
 		sys_sti    : in  std_logic_vector(gear-1 downto 0) := (others => '0');
@@ -316,7 +316,6 @@ begin
 	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
 
 	tp <= multiplex(tp_dq, tpin);
-	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		sdrphy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
@@ -350,25 +349,27 @@ begin
 			sys_dmi    => dmi((i+1)*gear-1 downto i*gear),
 
 			sys_dqv    => sys_dqv,
-			sys_dqi    => dqi((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 			sys_dqt    => sys_dqt,
+			sys_dqi    => dqi((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 			sys_dqo    => dqo((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 
 			sys_dqst   => sys_dqst,
 			sys_dqsi   => sys_dqsi,
 
-			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqi  => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dq   => sdram_dq((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dm   => sdram_dm(i),
-			sdram_dmo  => sdram_dmo(i),
-
 			sdram_dqs  => sdram_dqs(i),
 			sdram_dqst => sdram_dqst(i),
 			sdram_dqso => sdram_dqso(i),
+
+			sdram_dm   => sdram_dm(i),
+			sdram_dmo  => sdram_dmo(i),
+
+			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqi  => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dq   => sdram_dq((i+1)*byte_size-1 downto i*byte_size),
+
 			tp         => tp_dq(i*32+1 to (i+1)*32));
 	end generate;
-
+	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
 	sys_dqo <= unshuffle_vector(dqo, gear => gear, size => byte_size);
 end;

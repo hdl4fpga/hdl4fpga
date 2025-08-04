@@ -73,7 +73,7 @@ package body ecp5_profiles is
 				" '98mhz' : { clkos_div :  39, clkop_div : 1, clki_div : 2, freq_in : 25.0e6},"  &
 				"'150mhz' : { clkos_div :  30, clkop_div : 1, clki_div : 1, freq_in : 25.0e6},"  &
 				"'116mhz' : { clkos_div :  23, clkop_div : 1, clki_div : 1, freq_in : 25.0e6}}," &
-			"'48mhz':{"                                                         &
+			"'48mhz':{"                                                                          &
 				" '40mhz' : { clkos_div :  25, clkop_div : 2, clki_div : 3, freq_in : 48.0e6},"  &
 				" '75mhz' : { clkos_div :  47, clkop_div : 2, clki_div : 3, freq_in : 48.0e6},"  &
 				"'116mhz' : { clkos_div :  12, clkop_div : 1, clki_div : 1, freq_in : 48.0e6}}}");
@@ -86,10 +86,11 @@ package body ecp5_profiles is
 	begin
 		if dcm /= "{}" then
 			if videoio_freq /=0.0 then
-				clkos3_div := natural(round((real'(dcm**".freq_in")*real'(dcm**".clkos_div"))/(videoio_freq)));
+				clkos3_div := natural(round((real'(dcm**".freq_in")*real'(dcm**".clkos_div"))/(videoio_freq*real'(dcm**".clki_div"))));
 			else
 				clkos3_div := 1;
 			end if;
+			report "******************** " & natural'image(clkos3_div);
 			return "{" &
 				"clkos_div:"  & string'(dcm**".clkos_div") & "," & 
 				"clkop_div:"  & string'(dcm**".clkop_div") & "," & 
