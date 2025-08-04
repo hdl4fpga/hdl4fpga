@@ -49,10 +49,11 @@ architecture graphics of orangecrab is
 				"G:8"                                                                               & ',' &
 				"B:8}}"                                                                             & ',' &
 		"sdram:{"                                                                                   &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
+			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'48mhz'.'400mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT41K256M16-125")                               & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".orangecrab_ecp5g4")                               & ',' &
-			"cl:"        & "'010'}}";
+			"cwl:"       & "'001'"                                                                  & ',' &                             
+			"cl:"        & "'0010'}}";
 
 	constant io_link      : string  := settings**".io_link";
 	constant baudrate     : natural := 115200;
@@ -261,7 +262,7 @@ begin
 
 		ctlr_clk     => ctlr_sclk,
 		ctlr_rst     => ctlr_rst,
-		ctlr_bl      => "000",
+		ctlr_bl      => "00",
 		ctlr_cl      => settings**".sdram.cl",
 		ctlr_cwl     => settings**".sdram.cwl",
 		ctlr_rtt     => "001",

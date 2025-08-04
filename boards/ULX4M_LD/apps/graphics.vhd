@@ -196,6 +196,7 @@ begin
 
 	usb_g : if io_link="io_usb" generate
 		constant usb_oversampling : natural := 3;
+	begin
 		usb_fpga_pu_dp <= '1'; -- D+ pullup for USB1.1 device mode
 		usb_fpga_pu_dn <= 'Z'; -- D- no pullup for USB1.1 device mode
 		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
