@@ -270,26 +270,26 @@ begin
 		sdr3phy_i : entity hdl4fpga.ecp3_sdrdqphy
 		generic map (
 			taps      => taps,
-			data_gear => gear,
+			gear => gear,
 			byte_size => byte_size)
 		port map (
 			rst       => rst,
 			sclk      => sclk,
 			eclk      => eclk,
 			dqsdel    => dqsdel,
-
 			pause     => ms_pause,
-			phy_locked  => phy_locked(i),
-			read_req  => read_req(i),
-			read_rdy  => read_rdy(i),
+
 			phy_wlreq => phy_wlreq,
 			phy_wlrdy => wl_rdy(i),
 			phy_rlreq => rl_req(i),
 			phy_rlrdy => rl_rdy(i),
+			read_req  => read_req(i),
+			read_rdy  => read_rdy(i),
+			phy_locked  => phy_locked(i),
 
-			-- sys_sti   => sys_sti,
-			-- sys_sto   => sys_sto((i+1)*gear-1 downto i*gear),
-			-- sys_dmt   => sys_dmt,
+			sys_sti   => sys_sti,
+			sys_sto   => sys_sto((i+1)*gear-1 downto i*gear),
+			sys_dmt   => sys_dmt,
 			sys_dmi   => dmi((i+1)*gear-1 downto i*gear),
 
 			sys_dmo   => sys_dmo((i+1)*gear-1 downto i*gear),
@@ -301,19 +301,17 @@ begin
 			sys_dqsi  => sys_dqsi,
 			sys_dqst  => sys_dqst,
 
-			sdram_dqt   => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqo   => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqi   => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqi  => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
 
-			sdram_dmi   => sdram_dm(i),
-			-- sdram_dmt   => sdram_dmt(i),
-			sdram_dmo   => sdram_dmo(i),
+			sdram_dm   => sdram_dm(i),
+			sdram_dmo  => sdram_dmo(i),
 
-			sdram_dqsi  => sdram_dqs(i),
-			sdram_dqst  => sdram_dqst(i),
-			sdram_dqso  => sdram_dqso(i));
+			sdram_dqs  => sdram_dqs(i),
+			sdram_dqst => sdram_dqst(i),
+			sdram_dqso => sdram_dqso(i));
 			sdram_dqs(i) <= sdram_dqso(i) when sdram_dqst(i)='0' else 'Z';
-			-- sdram_dm(i)  <= sdram_dmo(i)  when sdram_dmt(i)='0'  else 'Z';
 	end generate;
 
 end;

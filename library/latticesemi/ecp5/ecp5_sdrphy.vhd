@@ -350,23 +350,25 @@ begin
 			sys_dmi    => dmi((i+1)*gear-1 downto i*gear),
 
 			sys_dqv    => sys_dqv,
-			sys_dqi    => dqi((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 			sys_dqt    => sys_dqt,
+			sys_dqi    => dqi((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 			sys_dqo    => dqo((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 
 			sys_dqst   => sys_dqst,
 			sys_dqsi   => sys_dqsi,
 
-			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dqi  => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dq   => sdram_dq((i+1)*byte_size-1 downto i*byte_size),
-			sdram_dm   => sdram_dm(i),
-			sdram_dmo  => sdram_dmo(i),
-
 			sdram_dqs  => sdram_dqs(i),
 			sdram_dqst => sdram_dqst(i),
 			sdram_dqso => sdram_dqso(i),
+
+			sdram_dm   => sdram_dm(i),
+			sdram_dmo  => sdram_dmo(i),
+
+			sdram_dqt  => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqi  => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqo  => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dq   => sdram_dq((i+1)*byte_size-1 downto i*byte_size),
+
 			tp         => tp_dq(i*32+1 to (i+1)*32));
 	end generate;
 
