@@ -45,7 +45,7 @@ entity ecp3_sdrphy is
 		sclk2x    : in  std_logic;
 		eclk      : in  std_logic;
 		dqsdel    : in  std_logic;
-		locked    : out std_logic_vector(word_size/byte_size-1 downto 0);
+		phy_locked    : out std_logic_vector(word_size/byte_size-1 downto 0);
 
 		phy_rst   : in  std_logic_vector((gear+1)/2-1 downto 0);
 		phy_frm   : buffer std_logic;
@@ -57,196 +57,67 @@ entity ecp3_sdrphy is
 		phy_wlrdy : buffer std_logic;
 		phy_rlreq : in  std_logic := '0';
 		phy_rlrdy : buffer std_logic;
-		phy_cs    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '0');
-		phy_sti   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		phy_sto   : buffer std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		phy_b     : in  std_logic_vector((gear+1)/2*bank_size-1 downto 0);
-		phy_a     : in  std_logic_vector((gear+1)/2*addr_size-1 downto 0);
-		phy_cke   : in  std_logic_vector((gear+1)/2-1 downto 0);
-		phy_ras   : in  std_logic_vector((gear+1)/2-1 downto 0);
-		phy_cas   : in  std_logic_vector((gear+1)/2-1 downto 0);
-		phy_we    : in  std_logic_vector((gear+1)/2-1 downto 0);
-		phy_odt   : in  std_logic_vector((gear+1)/2-1 downto 0);
-		phy_dmi   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		phy_dmo   : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		phy_dqt   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		phy_dqo   : out std_logic_vector(gear*word_size-1 downto 0);
-		phy_dqi   : in  std_logic_vector(gear*word_size-1 downto 0);
-		phy_dqso  : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		phy_dqst  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
-		phy_dqsi  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '-');
 
-		sdr_rst   : out std_logic;
-		sdr_ck    : out std_logic;
-		sdr_cke   : out std_logic := '1';
-		sdr_cs    : out std_logic := '0';
-		sdr_ras   : out std_logic;
-		sdr_cas   : out std_logic;
-		sdr_we    : out std_logic;
-		sdr_b     : out std_logic_vector(bank_size-1 downto 0);
-		sdr_a     : out std_logic_vector(addr_size-1 downto 0);
-		sdr_odt   : out std_logic;
+		sys_cs    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '0');
+		sys_sti   : in  std_logic_vector(gear-1 downto 0);
+		sys_sto   : buffer std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		sys_b     : in  std_logic_vector((gear+1)/2*bank_size-1 downto 0);
+		sys_a     : in  std_logic_vector((gear+1)/2*addr_size-1 downto 0);
+		sys_cke   : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_ras   : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_cas   : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_we    : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_odt   : in  std_logic_vector((gear+1)/2-1 downto 0);
+		sys_dmt    : in  std_logic_vector(gear-1 downto 0) := (others => '0');
+		sys_dmi   : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		sys_dmo   : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		sys_dqt   : in  std_logic_vector(gear-1 downto 0);
+		sys_dqo   : out std_logic_vector(gear*word_size-1 downto 0);
+		sys_dqi   : in  std_logic_vector(gear*word_size-1 downto 0);
+		sys_dqso  : out std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		sys_dqst  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0);
+		sys_dqsi  : in  std_logic_vector(gear*word_size/byte_size-1 downto 0) := (others => '-');
 
-		sdr_dm    : inout std_logic_vector(word_size/byte_size-1 downto 0);
-		sdr_dq    : inout std_logic_vector(word_size-1 downto 0);
-		sdr_dqs   : inout std_logic_vector(word_size/byte_size-1 downto 0));
+		sdram_rst   : out std_logic;
+		sdram_ck    : out std_logic;
+		sdram_cke   : out std_logic := '1';
+		sdram_cs    : out std_logic := '0';
+		sdram_ras   : out std_logic;
+		sdram_cas   : out std_logic;
+		sdram_we    : out std_logic;
+		sdram_b     : out std_logic_vector(bank_size-1 downto 0);
+		sdram_a     : out std_logic_vector(addr_size-1 downto 0);
+		sdram_odt   : out std_logic;
+
+		sdram_dm    : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dmo  : buffer std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqt  : buffer std_logic_vector(word_size-1 downto 0);
+		sdram_dq    : inout std_logic_vector(word_size-1 downto 0);
+		sdram_dqi  : in std_logic_vector(word_size-1 downto 0) := (others => '-');
+		sdram_dqo  : buffer std_logic_vector(word_size-1 downto 0);
+		sdram_dqs   : inout std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqst : buffer std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqso : buffer std_logic_vector(word_size/byte_size-1 downto 0));
 end;
 
 architecture ecp3 of ecp3_sdrphy is
-	subtype byte is std_logic_vector(byte_size-1 downto 0);
-	type byte_vector is array (natural range <>) of byte;
-
-	subtype dline_word is std_logic_vector(byte_size*gear*word_size/word_size-1 downto 0);
-	type dline_vector is array (natural range <>) of dline_word;
-
-	subtype bline_word is std_logic_vector(gear*word_size/word_size-1 downto 0);
-	type bline_vector is array (natural range <>) of bline_word;
-
-	function to_bytevector (
-		constant arg : std_logic_vector) 
-		return byte_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : byte_vector(arg'length/byte'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(byte'range));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_blinevector (
-		constant arg : std_logic_vector) 
-		return bline_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : bline_vector(arg'length/bline_word'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_dlinevector (
-		constant arg : std_logic_vector) 
-		return dline_vector is
-		variable dat : unsigned(arg'length-1 downto 0);
-		variable val : dline_vector(arg'length/dline_word'length-1 downto 0);
-	begin	
-		dat := unsigned(arg);
-		for i in val'reverse_range loop
-			val(i) := std_logic_vector(dat(val(val'left)'length-1 downto 0));
-			dat := dat srl val(val'left)'length;
-		end loop;
-		return val;
-	end;
-
-	function to_stdlogicvector (
-		constant arg : byte_vector)
-		return std_logic_vector is
-		variable dat : byte_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
-	function to_stdlogicvector (
-		constant arg : dline_vector)
-		return std_logic_vector is
-		variable dat : dline_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
-	function to_stdlogicvector (
-		constant arg : bline_vector)
-		return std_logic_vector is
-		variable dat : bline_vector(arg'length-1 downto 0);
-		variable val : std_logic_vector(arg'length*arg(arg'left)'length-1 downto 0);
-	begin
-		dat := arg;
-		for i in dat'range loop
-			val := std_logic_vector(unsigned(val) sll arg(arg'left)'length);
-			val(arg(arg'left)'range) := dat(i);
-		end loop;
-		return val;
-	end;
-
-	function shuffle_dlinevector (
-		constant arg : std_logic_vector) 
-		return dline_vector is
-		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
-		variable val : byte_vector(dat'range);
-	begin	
-		dat := to_bytevector(arg);
-		for i in word_size/byte_size-1 downto 0 loop
-			for j in gear*word_size/word_size-1 downto 0 loop
-				val(i*gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
-			end loop;
-		end loop;
-		return to_dlinevector(to_stdlogicvector(val));
-	end;
-
---	function unshuffle_dlinevector (
---		constant arg : dline_vector) 
---		return std_logic_vectoris
---		variable dat : byte_vector(arg'length/byte'length-1 downto 0);
---		variable val : byte_vector(dat'range);
---	begin	
---		dat := to_bytevector(arg);
---		for i in word_size/byte_size-1 downto 0 loop
---			for j in gear*word_size/word_size-1 downto 0 loop
---				val(i*gear*word_size/word_size+j) := dat(j*word_size/byte_size+i);
---			end loop;
---		end loop;
---		return to_dlinevector(to_stdlogicvector(val));
---	end;
-
-	signal sdmi      : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdmo      : bline_vector(word_size/byte_size-1 downto 0);
-
-	signal sdqt      : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqi      : dline_vector(word_size/byte_size-1 downto 0);
-	signal sdqo      : dline_vector(word_size/byte_size-1 downto 0);
-
-	signal sdqsi     : bline_vector(word_size/byte_size-1 downto 0);
-	signal sdqst     : bline_vector(word_size/byte_size-1 downto 0);
-
-	signal ddmo      : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddmt      : std_logic_vector(word_size/byte_size-1 downto 0);
-
-	signal ddqst     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqsi     : std_logic_vector(word_size/byte_size-1 downto 0);
-	signal ddqi      : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqt      : byte_vector(word_size/byte_size-1 downto 0);
-	signal ddqo      : byte_vector(word_size/byte_size-1 downto 0);
-
 	signal ddrdel    : std_logic;
 
-	signal rl_req    : std_logic_vector(sdr_dqs'range);
-	signal rl_rdy    : std_logic_vector(sdr_dqs'range);
+	signal rl_req    : std_logic_vector(sdram_dqs'range);
+	signal rl_rdy    : std_logic_vector(sdram_dqs'range);
 	signal wl_rdy    : std_logic_vector(0 to word_size/byte_size-1);
 
-	signal ddrphy_b  : std_logic_vector(phy_b'range);
-	signal ddrphy_a  : std_logic_vector(phy_a'range);
+	signal sdrphy_b  : std_logic_vector(sys_b'range);
+	signal sdrphy_a  : std_logic_vector(sys_a'range);
 	signal ms_pause  : std_logic;
 
-	signal read_req  : std_logic_vector(sdr_dqs'range);
-	signal read_rdy  : std_logic_vector(sdr_dqs'range);
+	signal read_req  : std_logic_vector(sdram_dqs'range);
+	signal read_rdy  : std_logic_vector(sdram_dqs'range);
+
+	signal dmi : std_logic_vector(sys_dmi'range);
+	signal dqi : std_logic_vector(sys_dqi'range);
+	signal dqo : std_logic_vector(sys_dqo'range);
+	signal dqs_locked : std_logic_vector(sdram_dqs'range);
 
 begin
 
@@ -259,53 +130,53 @@ begin
 		sclk    => sclk,
 		sclk2x  => sclk2x,
           
-		phy_rst => phy_rst,
-		phy_cs  => phy_cs,
-		phy_cke => phy_cke,
-		phy_b   => ddrphy_b,
-		phy_a   => ddrphy_a,
-		phy_ras => phy_ras,
-		phy_cas => phy_cas,
-		phy_we  => phy_we,
-		phy_odt => phy_odt,
+		sys_rst => phy_rst,
+		sys_cs  => sys_cs,
+		sys_cke => sys_cke,
+		sys_b   => sdrphy_b,
+		sys_a   => sdrphy_a,
+		sys_ras => sys_ras,
+		sys_cas => sys_cas,
+		sys_we  => sys_we,
+		sys_odt => sys_odt,
         
-		sdr_rst => sdr_rst,
-		sdr_ck  => sdr_ck,
-		sdr_cke => sdr_cke,
-		sdr_odt => sdr_odt,
-		sdr_cs  => sdr_cs,
-		sdr_ras => sdr_ras,
-		sdr_cas => sdr_cas,
-		sdr_we  => sdr_we,
-		sdr_b   => sdr_b,
-		sdr_a   => sdr_a);
+		sdram_rst => sdram_rst,
+		sdram_ck  => sdram_ck,
+		sdram_cke => sdram_cke,
+		sdram_odt => sdram_odt,
+		sdram_cs  => sdram_cs,
+		sdram_ras => sdram_ras,
+		sdram_cas => sdram_cas,
+		sdram_we  => sdram_we,
+		sdram_b   => sdram_b,
+		sdram_a   => sdram_a);
 
 	read_leveling_l_b : block
 		signal leveling : std_logic;
 
-		signal sdr_act  : std_logic;
-		signal sdr_idle : std_logic;
+		signal sdram_act  : std_logic;
+		signal sdram_idle : std_logic;
 
 	begin
 
-		ddrphy_b <= phy_b when leveling='0' else (others => '0');
-		ddrphy_a <= phy_a when leveling='0' else (others => '0');
+		sdrphy_b <= sys_b when leveling='0' else (others => '0');
+		sdrphy_a <= sys_a when leveling='0' else (others => '0');
 
 		process (phy_trdy, sclk)
 			variable s_pre : std_logic;
 		begin
 			if rising_edge(sclk) then
 				if phy_trdy='1' then
-					sdr_idle <= s_pre;
+					sdram_idle <= s_pre;
 					case phy_cmd is
 					when mpu_pre =>
-						sdr_act <= '0';
+						sdram_act <= '0';
 						s_pre := '1';
 					when mpu_act =>
-						sdr_act <= '1';
+						sdram_act <= '1';
 						s_pre := '0';
 					when others =>
-						sdr_act <= '0';
+						sdram_act <= '0';
 						s_pre := '0';
 					end case;
 				end if;
@@ -329,12 +200,12 @@ begin
 				when s_start =>
 					phy_frm  <= '1';
 					leveling <= '1';
-					if sdr_act='1' then
+					if sdram_act='1' then
 						phy_frm <= '0';
 						state   := s_stop;
 					end if;
 				when s_stop =>
-					if sdr_idle='1' then
+					if sdram_idle='1' then
 						phy_frm  <= '0';
 						leveling <= '0';
 						read_rdy <= read_req;
@@ -389,17 +260,13 @@ begin
 		phy_wlrdy <= z xor to_stdulogic(to_bit(phy_wlreq));
 	end process;
 
-	sdmi  <= to_blinevector(phy_dmi);
-	sdqt  <= to_blinevector(not phy_dqt);
-	sdqi  <= shuffle_dlinevector(phy_dqi);
-	ddqi  <= to_bytevector(sdr_dq);
-	sdqsi <= to_blinevector(phy_dqsi);
-	sdqst <= to_blinevector(phy_dqst);
+	dmi <= shuffle_vector(sys_dmi, gear => gear, size => 1);
+	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
 		signal sto : std_logic;
 	begin
-		phy_sto(gear*(i+1)-1 downto gear*i) <= (others => sto);
+		sys_sto(gear*(i+1)-1 downto gear*i) <= (others => sto);
 		sdr3phy_i : entity hdl4fpga.ecp3_sdrdqphy
 		generic map (
 			taps      => taps,
@@ -412,7 +279,7 @@ begin
 			dqsdel    => dqsdel,
 
 			pause     => ms_pause,
-			locked    => locked(i),
+			phy_locked  => phy_locked(i),
 			read_req  => read_req(i),
 			read_rdy  => read_rdy(i),
 			phy_wlreq => phy_wlreq,
@@ -420,67 +287,33 @@ begin
 			phy_rlreq => rl_req(i),
 			phy_rlrdy => rl_rdy(i),
 
-			phy_sti   => phy_sti(0),
-			phy_sto   => sto,
-			phy_dmi   => sdmi(i),
-			phy_dmo   => sdmo(i),
-			phy_dqi   => sdqi(i),
-			phy_dqt   => sdqt(i),
-			phy_dqo   => sdqo(i),
-			phy_dqso  => sdqsi(i),
-			phy_dqst  => sdqst(i),
+			-- sys_sti   => sys_sti,
+			-- sys_sto   => sys_sto((i+1)*gear-1 downto i*gear),
+			-- sys_dmt   => sys_dmt,
+			sys_dmi   => dmi((i+1)*gear-1 downto i*gear),
 
-			sdr_dqi   => ddqi(i),
-			sdr_dqt   => ddqt(i),
-			sdr_dqo   => ddqo(i),
+			sys_dmo   => sys_dmo((i+1)*gear-1 downto i*gear),
 
-			sdr_dmi   => sdr_dm(i),
-			sdr_dmt   => ddmt(i),
-			sdr_dmo   => ddmo(i),
+			sys_dqi   => dqi((i+1)*byte_size*gear-1 downto i*byte_size*gear),
+			sys_dqt   => sys_dqt,
+			sys_dqo   => dqo((i+1)*byte_size*gear-1 downto i*byte_size*gear),
 
-			sdr_dqsi  => sdr_dqs(i),
-			sdr_dqst  => ddqst(i),
-			sdr_dqso  => ddqsi(i));
+			sys_dqsi  => sys_dqsi,
+			sys_dqst  => sys_dqst,
+
+			sdram_dqt   => sdram_dqt((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqo   => sdram_dqo((i+1)*byte_size-1 downto i*byte_size),
+			sdram_dqi   => sdram_dqi((i+1)*byte_size-1 downto i*byte_size),
+
+			sdram_dmi   => sdram_dm(i),
+			-- sdram_dmt   => sdram_dmt(i),
+			sdram_dmo   => sdram_dmo(i),
+
+			sdram_dqsi  => sdram_dqs(i),
+			sdram_dqst  => sdram_dqst(i),
+			sdram_dqso  => sdram_dqso(i));
+			sdram_dqs(i) <= sdram_dqso(i) when sdram_dqst(i)='0' else 'Z';
+			-- sdram_dm(i)  <= sdram_dmo(i)  when sdram_dmt(i)='0'  else 'Z';
 	end generate;
 
-	process (ddqsi, ddqst)
-	begin
-		for i in ddqsi'range loop
-			if ddqst(i)='1' then
-				sdr_dqs(i) <= 'Z';
-			else
-				sdr_dqs(i) <= ddqsi(i);
-			end if;
-		end loop;
-	end process;
-
-	process (ddqo, ddqt)
-		variable dqt : std_logic_vector(sdr_dq'range);
-		variable dqo : std_logic_vector(sdr_dq'range);
-	begin
-		dqt := to_stdlogicvector(ddqt);
-		dqo := to_stdlogicvector(ddqo);
-		for i in dqo'range loop
-			if dqt(i)='0' then
-				sdr_dq(i) <= 'Z';
-			else
-				sdr_dq(i) <= dqo(i);
-			end if;
-		end loop;
-	end process;
-
-	process (ddmo, ddmt)
-	begin
-		for i in ddmo'range loop
-			if ddmt(i)='0' then
-				sdr_dm(i) <= 'Z';
-			else
-				sdr_dm(i) <= ddmo(i);
-			end if;
-		end loop;
-	end process;
-
-	phy_dqso <= (others => sclk);
-	phy_dmo  <= to_stdlogicvector(sdmo);
-	phy_dqo  <= to_stdlogicvector(sdqo);
 end;

@@ -58,7 +58,7 @@ package body ecp3_profiles is
 
 		constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 		constant dcm_db : string := compact("{"                                 &
-			"'25mhz':{"                                                         &
+			"'100mhz':{"                                                         &
 				" '25mhz' : { clkos_div :  25, clkop_div => 25, clki_div : 1, clkok_div => " & natural'image(video_ratio) & ", clkfb_div : " & natural'image(1) & ", freq_in : 100.0e6},"  &
 				" '40mhz' : { clkos_div :  16, clkop_div => 16, clki_div : 1, clkok_div => " & natural'image(video_ratio) & ", clkfb_div : " & natural'image(1) & ", freq_in : 100.0e6},"  &
 				"'108mhz' : { clkos_div :  16, clkop_div => 22, clki_div : 1, clkok_div => " & natural'image(video_ratio) & ", clkfb_div : " & natural'image(1) & ", freq_in : 100.0e6},"  &
@@ -76,7 +76,7 @@ package body ecp3_profiles is
 		return string is
 		-- SDRAM CLK=clk_ref*clkos_div/clkop_div
     	constant dcm_db : string := compact("{" &
-    		"'25mhz':{"                                                                                                     &
+    		"'100mhz':{"                                                                                                     &
     			"'325mhz' : {clkok_div : 2, clkop_div : 1, clkfb_div : 13, clki_div : 4, freq_in : 100.0e6},"  & -- cl => "010", cwl => "000", wrl => "010"),
     			"'350mhz' : {clkok_div : 2, clkop_div : 1, clkfb_div :  7, clki_div : 2, freq_in : 100.0e6},"  & -- cl => "010", cwl => "000", wrl => "010"),
     			"'375mhz' : {clkok_div : 2, clkop_div : 1, clkfb_div : 15, clki_div : 4, freq_in : 100.0e6},"  & -- cl => "010", cwl => "000", wrl => "010"),

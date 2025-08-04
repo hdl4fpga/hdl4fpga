@@ -37,22 +37,21 @@ use hdl4fpga.ecp3_profiles.all;
 
 architecture graphics of ecp3versa is
 
-	constant settings : string := "{"                                                                     &
-		"io_link: io_usb,"                                                                                &
-		"video:{"                                                                                         &
-			"dcm:"          & string'(hdl4fpga.ecp3_profiles.video_dcm(".'25mhz'.'40mhz'")) & ',' &
-			"videoio_freq:" & "36.0e6,"                                                                   &
-			"gear:"         & "4,"                                                                        &
-			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")     & ',' &
-			"pixel:{"                                                                                     &
-				"R:8,"                                                                                    &
-				"G:8,"                                                                                    &
-				"B:8}},"                                                                                  &
-		"sdram:{"                                                                                         &
-			"dcm:"       & string'(hdl4fpga.ecp3_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**".MT41J64M16-15E")                                & ',' &
-			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
-			"cwl:"       & "'001'}"                                                                 & ',' &                             
+	constant settings : string := "{"                                                              &
+		"io_link: io_usb,"                                                                         &
+		"video:{"                                                                                  &
+			"dcm:"          & string'(hdl4fpga.ecp3_profiles.video_dcm(".'100mhz'.'40mhz'")) & ',' &
+			"gear:"         & "4"                                                                  & ',' &
+			"timings:"      & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'")    & ',' &
+			"pixel:{"                                                                              &
+				"R:8,"                                                                             &
+				"G:8,"                                                                             &
+				"B:8}},"                                                                           &
+		"sdram:{"                                                                                  &
+			"dcm:"       & string'(hdl4fpga.ecp3_profiles.sdram_dcm(".'100mhz'.'400mhz'"))         & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT41J64M16-15E")                               & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".ecp3g4")                                         & ',' &
+			"cwl:"       & "'001'"                                                                 & ',' &                             
 			"cl:"        & "'0010'}}";
 
 	constant io_link      : string  := settings**".io_link";
@@ -160,9 +159,9 @@ begin
 		settings => "{dcm:" & string'(settings**".sdram.dcm") & '}')
 	port map (
 		clk   => clk,
-        clkop => ctlrdcm_clkop,
-        clkos => ctlrdcm_clkos,
-        clkok => ctlrdcm_clkok,
+		clkop => ctlrdcm_clkop,
+		clkos => ctlrdcm_clkos,
+		clkok => ctlrdcm_clkok,
 		phase => ctlrdcm_phase,
 		lock  => ctlrdcm_lock);
 
@@ -303,11 +302,11 @@ begin
 			sclk2x : in  std_logic;
 			eclk   : in  std_logic);
 		port map (
-    		rst    => sdrphy_rst,
-    		sclk   => ctlrdcm_clkok,
-    		sclk2x => ctlrdcm_clkop,
-    		eclk   => ctlrdcm_clkos);
-    	signal eclksynca_clk  : std_logic;
+			rst    => sdrphy_rst,
+			sclk   => ctlrdcm_clkok,
+			sclk2x => ctlrdcm_clkop,
+			eclk   => ctlrdcm_clkos);
+		signal eclksynca_clk  : std_logic;
 
 		signal dqsbuf_rst : std_logic;
 		signal dqsdel     : std_logic;
@@ -317,58 +316,58 @@ begin
 		signal reset : std_logic;
 		signal reset_datapath : std_logic := '0';
 
-        component ecp3_csa
-        	generic (
-        		period_eclk        : real);
-            port  (
-                reset              : in  std_logic;
-                reset_datapath     : in  std_logic;
-                refclk             : in  std_logic;
-                clkop              : in  std_logic;
-                clkos              : in  std_logic;
-                clkok              : in  std_logic;
-                uddcntln           : in  std_logic;
-                pll_phase          : out std_logic_vector(4-1 downto 0);
-                pll_lock           : in std_logic;
-                eclk               : out std_logic;
-                sclk               : out std_logic;
-                sclk2x             : out std_logic;
-                reset_datapath_out : out std_logic;
-                dqsdel             : out std_logic;
-                all_lock           : out std_logic;
-                align_status       : out std_logic_vector(2-1 downto 0);
-                good               : out std_logic;
-                err                : out std_logic);
-        end component;
+		component ecp3_csa
+			generic (
+				period_eclk        : real);
+			port  (
+				reset              : in  std_logic;
+				reset_datapath     : in  std_logic;
+				refclk             : in  std_logic;
+				clkop              : in  std_logic;
+				clkos              : in  std_logic;
+				clkok              : in  std_logic;
+				uddcntln           : in  std_logic;
+				pll_phase          : out std_logic_vector(4-1 downto 0);
+				pll_lock           : in std_logic;
+				eclk               : out std_logic;
+				sclk               : out std_logic;
+				sclk2x             : out std_logic;
+				reset_datapath_out : out std_logic;
+				dqsdel             : out std_logic;
+				all_lock           : out std_logic;
+				align_status       : out std_logic_vector(2-1 downto 0);
+				good               : out std_logic;
+				err                : out std_logic);
+		end component;
 
 		signal locked : std_logic_vector(ddr3_dqs'range);
 	begin
 
-    	dqsdll_uddcntln_b : block
-        	signal update : std_logic;
-    	begin
-        	process (sclk)
-        		variable q : std_logic_vector(0 to 4-1);
-        	begin
-        		if rising_edge(sclk) then
-        			if rst='1' then
-        				q := (others => '0');
-        			elsif q(0)='0' then
-        				if all_lock='1' then
-        					q := std_logic_vector((unsigned(gray2bin(q))+1));
-        				end if;
-        			end if;
-        			update <= not q(0);
-        		end if;
-        	end process;
+		dqsdll_uddcntln_b : block
+			signal update : std_logic;
+		begin
+			process (sclk)
+				variable q : std_logic_vector(0 to 4-1);
+			begin
+				if rising_edge(sclk) then
+					if rst='1' then
+						q := (others => '0');
+					elsif q(0)='0' then
+						if all_lock='1' then
+							q := std_logic_vector((unsigned(gray2bin(q))+1));
+						end if;
+					end if;
+					update <= not q(0);
+				end if;
+			end process;
 
-        	process (sclk2x)
-        	begin
-        		if rising_edge(sclk2x) then
-        			uddcntln <= update;
-        		end if;
-        	end process;
-    	end block;
+			process (sclk2x)
+			begin
+				if rising_edge(sclk2x) then
+					uddcntln <= update;
+				end if;
+			end process;
+		end block;
 
 		reset <= not ctlrdcm_lock;
 		ecp3_csa_e : ecp3_csa
@@ -394,70 +393,67 @@ begin
 			good               => ctlr_lck, 
 			err                => open);
 
-		-- seg_a <= not setif(locked=(locked'range => '1'));
-		-- seg_b <= not locked(0);
-		-- seg_c <= not locked(1);
-    	sdrphy_e : entity hdl4fpga.ecp3_sdrphy
-    	generic map (
-    		taps      => natural(floor(26.0e12/sdram_freq)),
-    		gear      => sdram_gear,
-    		bank_size => ddr3_b'length,
-    		addr_size => ddr3_a'length,
+		sdrphy_e : entity hdl4fpga.ecp3_sdrphy
+		generic map (
+			taps      => natural(floor(26.0e12/sdram_freq)),
+			gear      => sdram_gear,
+			bank_size => ddr3_b'length,
+			addr_size => ddr3_a'length,
 			word_size  => ddr3_dq'length,
 			byte_size  => ddr3_dq'length/ddr3_dm'length)
-    	port map (
+		port map (
 			rst       => dqsbuf_rst,
-    		sclk      => ctlrdcm_clkok,
-    		sclk2x    => ctlrdcm_clkop,
-    		eclk      => ctlrdcm_eclk,
+			sclk      => ctlrdcm_clkok,
+			sclk2x    => ctlrdcm_clkop,
+			eclk      => ctlrdcm_eclk,
 			dqsdel    => dqsdel,
 			locked    => locked,
-    		phy_frm   => ctlrphy_frm,
-    		phy_trdy  => ctlrphy_trdy,
-    		phy_cmd   => ctlrphy_cmd,
-    		phy_rw    => ctlrphy_rw,
-    		phy_ini   => ctlrphy_ini,
+			phy_frm   => ctlrphy_frm,
+			phy_trdy  => ctlrphy_trdy,
+			phy_cmd   => ctlrphy_cmd,
+			phy_rw    => ctlrphy_rw,
+			phy_ini   => ctlrphy_ini,
 
-    		phy_wlreq => ctlrphy_wlreq,
-    		phy_wlrdy => ctlrphy_wlrdy,
+			phy_wlreq => ctlrphy_wlreq,
+			phy_wlrdy => ctlrphy_wlrdy,
 
-    		phy_rlreq => ctlrphy_rlreq,
-    		phy_rlrdy => ctlrphy_rlrdy,
+			phy_rlreq => ctlrphy_rlreq,
+			phy_rlrdy => ctlrphy_rlrdy,
 
-    		phy_rst   => ctlrphy_rst,
-    		phy_cs    => ctlrphy_cs,
-    		phy_cke   => ctlrphy_cke,
-    		phy_ras   => ctlrphy_ras,
-    		phy_cas   => ctlrphy_cas,
-    		phy_we    => ctlrphy_we,
-    		phy_odt   => ctlrphy_odt,
-    		phy_b     => ctlrphy_b,
-    		phy_a     => ctlrphy_a,
-    		phy_dqsi  => ctlrphy_dqso,
-    		phy_dqst  => ctlrphy_dqst,
-    		phy_dqso  => ctlrphy_dqsi,
-    		phy_dmi   => ctlrphy_dmo,
-    		phy_dmo   => ctlrphy_dmi,
-    		phy_dqi   => ctlrphy_dqo,
-    		phy_dqt   => ctlrphy_dqt,
-    		phy_dqo   => ctlrphy_dqi,
-    		phy_sti   => ctlrphy_sto,
-    		phy_sto   => ctlrphy_sti,
+			phy_rst   => ctlrphy_rst,
+			phy_cs    => ctlrphy_cs,
+			phy_cke   => ctlrphy_cke,
+			phy_ras   => ctlrphy_ras,
+			phy_cas   => ctlrphy_cas,
+			phy_we    => ctlrphy_we,
+			phy_odt   => ctlrphy_odt,
+			phy_b     => ctlrphy_b,
+			phy_a     => ctlrphy_a,
+			phy_dqsi  => ctlrphy_dqso,
+			phy_dqst  => ctlrphy_dqst,
+			phy_dqso  => ctlrphy_dqsi,
+			phy_dmi   => ctlrphy_dmo,
+			phy_dmo   => ctlrphy_dmi,
+			phy_dqi   => ctlrphy_dqo,
+			phy_dqt   => ctlrphy_dqt,
+			phy_dqo   => ctlrphy_dqi,
+			phy_sti   => ctlrphy_sto,
+			phy_sto   => ctlrphy_sti,
 
-    		sdr_rst   => ddr3_rst,
-    		sdr_ck    => ddr3_clk,
-    		sdr_cke   => ddr3_cke,
-    		sdr_cs    => ddr3_cs,
-    		sdr_ras   => ddr3_ras,
-    		sdr_cas   => ddr3_cas,
-    		sdr_we    => ddr3_we,
-    		sdr_odt   => ddr3_odt,
-    		sdr_b     => ddr3_b,
-    		sdr_a     => ddr3_a,
+			sdr_rst   => ddr3_rst,
+			sdr_ck    => ddr3_clk,
+			sdr_cke   => ddr3_cke,
+			sdr_cs    => ddr3_cs,
+			sdr_ras   => ddr3_ras,
+			sdr_cas   => ddr3_cas,
+			sdr_we    => ddr3_we,
+			sdr_odt   => ddr3_odt,
+			sdr_b     => ddr3_b,
+			sdr_a     => ddr3_a,
 
-    		sdr_dm    => ddr3_dm,
-    		sdr_dq    => ddr3_dq,
-    		sdr_dqs   => ddr3_dqs);
+			sdr_dm    => ddr3_dm,
+			sdr_dq    => ddr3_dq,
+			sdr_dqs   => ddr3_dqs);
 
 	end block;
 

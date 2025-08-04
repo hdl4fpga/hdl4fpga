@@ -102,9 +102,9 @@ entity ecp5_sdrphy is
 		sdram_b    : out std_logic_vector(bank_size-1 downto 0);
 		sdram_a    : out std_logic_vector(addr_size-1 downto 0);
 
-		sdram_dqt  : buffer std_logic_vector(word_size-1 downto 0);
 		sdram_dm   : inout std_logic_vector(word_size/byte_size-1 downto 0);
 		sdram_dmo  : buffer std_logic_vector(word_size/byte_size-1 downto 0);
+		sdram_dqt  : buffer std_logic_vector(word_size-1 downto 0);
 		sdram_dq   : inout std_logic_vector(word_size-1 downto 0);
 		sdram_dqi  : in std_logic_vector(word_size-1 downto 0) := (others => '-');
 		sdram_dqo  : buffer std_logic_vector(word_size-1 downto 0);

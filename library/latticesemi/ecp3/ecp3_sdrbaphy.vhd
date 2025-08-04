@@ -34,26 +34,26 @@ entity ecp3_sdrbaphy is
 		sclk       : in  std_logic;
 		sclk2x     : in  std_logic;
 
-		phy_rst    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_cs     : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_cke    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_b      : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
-		phy_a      : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
-		phy_ras    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_cas    : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_we     : in  std_logic_vector(cmmd_gear-1 downto 0);
-		phy_odt    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_rst    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cs     : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cke    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_b      : in  std_logic_vector(cmmd_gear*bank_size-1 downto 0);
+		sys_a      : in  std_logic_vector(cmmd_gear*addr_size-1 downto 0);
+		sys_ras    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_cas    : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_we     : in  std_logic_vector(cmmd_gear-1 downto 0);
+		sys_odt    : in  std_logic_vector(cmmd_gear-1 downto 0);
 
-		sdr_rst    : out std_logic;
-		sdr_cs     : out std_logic;
-		sdr_ck     : out std_logic;
-		sdr_cke    : out std_logic;
-		sdr_odt    : out std_logic;
-		sdr_ras    : out std_logic;
-		sdr_cas    : out std_logic;
-		sdr_we     : out std_logic;
-		sdr_b      : out std_logic_vector(bank_size-1 downto 0);
-		sdr_a      : out std_logic_vector(addr_size-1 downto 0));
+		sdram_rst    : out std_logic;
+		sdram_cs     : out std_logic;
+		sdram_ck     : out std_logic;
+		sdram_cke    : out std_logic;
+		sdram_odt    : out std_logic;
+		sdram_ras    : out std_logic;
+		sdram_cas    : out std_logic;
+		sdram_we     : out std_logic;
+		sdram_b      : out std_logic_vector(bank_size-1 downto 0);
+		sdram_a      : out std_logic_vector(addr_size-1 downto 0));
 end;
 
 architecture ecp3 of ecp3_sdrbaphy is
@@ -69,7 +69,7 @@ begin
 		sclk => sclk2x,
 		da   => '0',
 		db   => '1',
-		q    => sdr_ck);
+		q    => sdram_ck);
 
 	b_g : for i in 0 to bank_size-1 generate
 		attribute oddrapps of oddr_i: label is "SCLK_ALIGNED";
@@ -77,9 +77,9 @@ begin
 		oddr_i : oddrxd1
 		port map (
 			sclk => sclk,
-			da   => phy_b(cmmd_gear*i+0),
-			db   => phy_b(cmmd_gear*i+1),
-			q    => sdr_b(i));
+			da   => sys_b(cmmd_gear*i+0),
+			db   => sys_b(cmmd_gear*i+1),
+			q    => sdram_b(i));
 	end generate;
 
 	a_g : for i in 0 to addr_size-1 generate
@@ -88,58 +88,58 @@ begin
 		oddr_i : oddrxd1
 		port map (
 			sclk => sclk,
-			da   => phy_a(cmmd_gear*i+0),
-			db   => phy_a(cmmd_gear*i+1),
-			q    => sdr_a(i));
+			da   => sys_a(cmmd_gear*i+0),
+			db   => sys_a(cmmd_gear*i+1),
+			q    => sdram_a(i));
 	end generate;
 
 	ras_i : oddrxd1
 	port map (
 		sclk => sclk,
-		da   => phy_ras(0),
-		db   => phy_ras(1),
-		q    => sdr_ras);
+		da   => sys_ras(0),
+		db   => sys_ras(1),
+		q    => sdram_ras);
 
 	cas_i :oddrxd1
 	port map (
 		sclk => sclk,
-		da   => phy_cas(0),
-		db   => phy_cas(1),
-		q    => sdr_cas);
+		da   => sys_cas(0),
+		db   => sys_cas(1),
+		q    => sdram_cas);
 
 	we_i : oddrxd1
 	port map (
 		sclk => sclk,
-		da   => phy_we(0),
-		db   => phy_we(1),
-		q    => sdr_we);
+		da   => sys_we(0),
+		db   => sys_we(1),
+		q    => sdram_we);
 
 	cs_i : oddrxd1
 	port map (
 		sclk => sclk,
-		da   => phy_cs(0),
-		db   => phy_cs(1),
-		q    => sdr_cs);
+		da   => sys_cs(0),
+		db   => sys_cs(1),
+		q    => sdram_cs);
 
 	cke_i : oddrxd1
 	port map (
 		sclk => sclk,
-		da   => phy_cke(0),
-		db   => phy_cke(1),
-		q    => sdr_cke);
+		da   => sys_cke(0),
+		db   => sys_cke(1),
+		q    => sdram_cke);
 
 	odt_i : oddrxd1
 	port map (
 		sclk => sclk,
-		da   => phy_odt(0),
-		db   => phy_odt(1),
-		q    => sdr_odt);
+		da   => sys_odt(0),
+		db   => sys_odt(1),
+		q    => sdram_odt);
 
 	rst_i : oddrxd1
 	port map (
 		sclk => sclk,
-		da   => phy_rst(0),
-		db   => phy_rst(1),
-		q    => sdr_rst);
+		da   => sys_rst(0),
+		db   => sys_rst(1),
+		q    => sdram_rst);
 
 end;
