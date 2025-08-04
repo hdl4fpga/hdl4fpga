@@ -194,7 +194,7 @@ architecture scopeio of ulx3s is
 
 begin
 
-	videopll_e : entity hdl4fpga.ecp5_videopll
+	videodcm_e : entity hdl4fpga.ecp5_videodcm
 	generic map (
 		settings     => settings**".waveform.video")
 	port map (

@@ -40,8 +40,8 @@ entity xc5v_sdramdcm is
 		ctlr_rst90   : out std_logic;
 		locked       : buffer std_logic);
 
-    constant freq_in       : real    := settings**".dcm.freq_in";
-	constant clkfbout_mult : natural := settings**".clkfbout_mult=0";
+    constant freq_in       : real    := settings**".freq_in";
+	constant clkfbout_mult : natural := settings**".clkfbout_mult=1";
 	constant divclk_divide : natural := settings**".divclk_divide=1";
 	constant gear : natural := 4;
 

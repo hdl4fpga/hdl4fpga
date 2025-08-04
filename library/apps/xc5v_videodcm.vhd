@@ -34,9 +34,9 @@ entity xc5v_videodcm is
 		video_clk : out std_logic;
 		locked    : buffer std_logic);
 
-    constant freq_in        : real    := settings**".freq_in";
-	constant clkfx_multiply : natural := settings**".clkfx_multiply=1";
-	constant clkfx_divide   : natural := settings**".clkfx_divide=1";
+	constant freq_in        : real    := hdo(settings)**".freq_in";
+	constant clkfx_multiply : natural := hdo(settings)**".clkfx_multiply=1";
+	constant clkfx_divide   : natural := hdo(settings)**".clkfx_divide=1";
 
 end;
 

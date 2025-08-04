@@ -27,7 +27,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 
-entity ep2c_videopll is
+entity ep2c_videodcm is
 	generic (
 		dcm : string);
 	port (
@@ -39,7 +39,7 @@ entity ep2c_videopll is
 		locked      : buffer std_logic);
 end;
 
-architecture def of ep2c_videopll is
+architecture def of ep2c_videodcm is
 	constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 
 	component altpll

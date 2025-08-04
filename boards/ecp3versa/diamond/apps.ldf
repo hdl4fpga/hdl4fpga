@@ -4,7 +4,7 @@
         <Option name="HDL type" value="VHDL"/>
     </Options>
     <Implementation title="graphics" dir="graphics" description="graphics" synthesis="synplify" default_strategy="strategy1">
-        <Options def_top="hdl4fpga.adjdqs" lib="hdl4fpga" top="ecp3versa"/>
+        <Options def_top="hdl4fpga.sdram_stream" lib="hdl4fpga" top="ecp3versa"/>
         <Source name="../common/ecp3versa.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ecp3versa"/>
         </Source>
@@ -29,12 +29,6 @@
         <Source name="../../../library/basic/arbiter.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/latticesemi/dbuf.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/ecp3/dbram.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/basic/cntrcs.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -48,9 +42,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/video/videopkg.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/video/modeline_calculator.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/video/fonts/bcdfonts.vhd" type="VHDL" type_short="VHDL">
@@ -75,9 +66,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/video/video.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/video/vga2dvid.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/video/cgafonts.vhd" type="VHDL" type_short="VHDL">
@@ -122,7 +110,7 @@
         <Source name="../../../library/sio/sio_dmahdsk.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-		<Source name="../../../library/apps/app_graphics.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../../library/apps/app_graphics.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/hdlc/hdlcdll_rx.vhd" type="VHDL" type_short="VHDL">
@@ -239,9 +227,6 @@
         <Source name="../../../library/mii/dll_rx.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/basic/sync_transfer.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/xilinx/adjpha.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -266,43 +251,16 @@
         <Source name="../../../library/sdram/sdram_ctlr.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdram/sdram_db.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/sdram_init.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sdram/sdram_iofifo.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/sdram/sdram_mpu.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdram/sdram_param.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/sdram_pgm.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/sdram/sdram_ph.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sdram/sdram_rdfifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/sdram/sdram_sch.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/sdram/sdram_wrfifo.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/basic/profiles.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/apps/app_profiles.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/ff.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/mii/mii_buffer.vhd" type="VHDL" type_short="VHDL">
@@ -315,9 +273,6 @@
             <Options/>
         </Source>
         <Source name="../../../library/latticesemi/ecp3/ecp3_sdrphy.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/latticesemi/ecp3/adjdqs.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/basic/ff.vhd" type="VHDL" type_short="VHDL">
@@ -339,6 +294,36 @@
             <Options/>
         </Source>
         <Source name="../../../library/mii/ipv4_adjlen.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdram_stream.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/sdrampkg.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/sdram/phy_iofifo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/hdo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/video/dvi.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/basic/serlzr.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp3_profiles.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp3_sdramdcm.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp3_videodcm.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/link_mii.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ecp3versa.lpf" type="Logic Preference" type_short="LPF">

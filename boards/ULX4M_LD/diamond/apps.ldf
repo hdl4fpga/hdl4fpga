@@ -272,12 +272,6 @@
         <Source name="../../../library/latticesemi/ecp5/ecp5_sdrphy.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/basic/profiles.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/apps/app_profiles.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/mii/mii_buffer.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -305,13 +299,7 @@
         <Source name="../../../library/latticesemi/ecp5/gddr_sync.v" type="Verilog" type_short="Verilog">
             <Options/>
         </Source>
-        <Source name="../../../library/apps/ecp5_videopll.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/apps/link_hdlc.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
-        <Source name="../../../library/apps/ecp5_sdrampll.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../../../library/apps/link_mii.vhd" type="VHDL" type_short="VHDL">
@@ -360,6 +348,12 @@
             <Options/>
         </Source>
         <Source name="../../../library/basic/hdo.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp5_sdramdcm.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../library/apps/ecp5_videodcm.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="ulx4m_ld.lpf" type="Logic Preference" type_short="LPF">

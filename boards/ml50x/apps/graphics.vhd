@@ -40,17 +40,18 @@ architecture graphics of ml50x is
 	constant settings : string := "{"                                                      &
 		"io_link: io_ipoe,"                                                                &
 		"video:{"                                                                          &
-			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'100mhz'.'40mhz'"))    & ',' &
+			"dcm:"     & string'(hdl4fpga.xc5v_profiles.video_dcm(".'100mhz'.'40mhz'"))    & ',' &
 			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+			"gear:"    & "2"                                                               & ',' &
 			"pixel:"   & "{R:8,G:8,B:8}}"                                                  & ',' &
 		"sdram:{"                                                                          &
 			"dcm:"       & string'(hdl4fpga.xc5v_profiles.sdram_dcm(".'100mhz'.'400mhz'")) & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**".MT46V16M16M-6T")                       & ',' &
-			"phy_data:"  & string'(hdo(phy_db)**".xc3sg2")                                 & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT4HTF12864HZ")                       & ',' &
+			"phy_data:"  & string'(hdo(phy_db)**".xc5vg4")                                 & ',' &
 			"cl:"        & "'010'}}";
 
 	signal sys_rst        : std_logic;
-	signal sys_clk        : std_logic;
+	alias  sys_clk is user_clk;
 
 	signal gtx_rst        : std_logic;
 	signal gtx_clk        : std_logic;
@@ -73,12 +74,12 @@ architecture graphics of ml50x is
 	signal video_hzsync   : std_logic;
 	signal video_vtsync   : std_logic;
 	signal video_blank    : std_logic;
-	signal video_pixel    : std_logic_vector(0 to 32-1);
-	signal dvid_crgb      : std_logic_vector(8-1 downto 0);
+	signal video_pixel    : std_logic_vector(hdo(settings)**".video.pixel.R=8"+hdo(settings)**".video.pixel.G=8"+hdo(settings)**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb      : std_logic_vector(4*hdo(settings)**".video.gear=2"-1 downto 0);
 	signal videoio_clk    : std_logic;
 
+	constant sdram_freq  : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
-
 	signal ctlr_rst       : std_logic;
 	signal ctlr_rst90     : std_logic;
 	signal ctlr_clk       : std_logic;
@@ -139,11 +140,6 @@ architecture graphics of ml50x is
 
 begin
 
-	clkin_ibufg : ibufg
-	port map (
-		I => user_clk,
-		O => sys_clk);
-
 	process (sys_clk)
 		variable tmr : unsigned(0 to 8-1) := (others => '0');
 	begin
@@ -157,7 +153,7 @@ begin
 	
 	videodcm_i : entity hdl4fpga.xc5v_videodcm
 	generic map(
-		settings => hdo(settings)**".dcm")
+		settings => hdo(settings)**".video.dcm")
 	port map(
 		rst       => sys_rst,
 		clk       => sys_clk,
@@ -165,7 +161,7 @@ begin
 
 	sdramdcm_i : entity hdl4fpga.xc5v_sdramdcm
 	generic map (
-		settings  => settings**".dcm")
+		settings  => hdo(settings)**".sdram.dcm")
 	port map (
 		rst          => sys_rst,
 		clk          => sys_clk,
@@ -247,7 +243,7 @@ begin
 	generic map (
 		debug => debug,
 		profile      => 1,
-		sdram_freq   => sdram_freq(settings**".sdram.dcm")/2.0,
+		sdram_freq   => sdram_freq/2.0,
 		burst_length => 8,
 		settings     => settings,
 		fifo_size    => mem_size)
@@ -354,7 +350,7 @@ begin
 		ba_latency => 1,
 		loopback   => false,
 		bypass     => false,
-		taps       => natural(floor((64.0*200.0e6)/sdram_freq(settings**".sdram.dcm")))-1,
+		taps       => natural(floor((64.0*200.0e6)/sdram_freq))-1,
 		dqs_highz  => false)
 	port map (
 		tp_sel     => tp_sel,

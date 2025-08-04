@@ -30,7 +30,7 @@ use hdl4fpga.ecp5_profiles.all;
 library ecp5u;
 use ecp5u.components.all;
 
-entity ecp5_videopll is
+entity ecp5_videodcm is
 	generic (
 		settings     : string);
 	port (
@@ -55,7 +55,7 @@ entity ecp5_videopll is
 
 end;
 
-architecture def of ecp5_videopll is
+architecture def of ecp5_videodcm is
 	attribute FREQUENCY_PIN_CLKOS  : string;
 	attribute FREQUENCY_PIN_CLKOS2 : string;
 	attribute FREQUENCY_PIN_CLKOS3 : string;
