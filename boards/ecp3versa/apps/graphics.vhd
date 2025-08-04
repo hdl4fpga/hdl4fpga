@@ -38,7 +38,7 @@ use hdl4fpga.ecp3_profiles.all;
 architecture graphics of ecp3versa is
 
 	constant settings : string := "{"                                                           &
-		"io_link: io_usb,"                                                                      &
+		"io_link: io_ipoe,"                                                                      &
 		"video:{"                                                                               &
 			"dcm:"       & string'(hdl4fpga.ecp3_profiles.video_dcm(".'100mhz'.'40mhz'")) & ',' &
 			"gear:"      & "4"                                                                  & ',' &
