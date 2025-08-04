@@ -169,7 +169,6 @@ for file in \
 "../sio/sio_dayhdlc.vhd" \
 "../uart/uart_rx.vhd" \
 "../uart/uart_tx.vhd" \
-"../apps/app_profiles.vhd" \
 ; do 
 	if ghdl -a --std=02 --workdir=hdl4fpga --work=hdl4fpga $file ; then
 		echo $file
@@ -219,8 +218,8 @@ for file in \
 done
 
 for file in \
-"../apps/ecp5_sdrampll.vhd" \
-"../apps/ecp5_videopll.vhd" \
+"../apps/ecp5_sdramdcm.vhd" \
+"../apps/ecp5_videodcm.vhd" \
 "../apps/link_mii.vhd"  \
 "../sio/sio_dayusb.vhd" \
 "../apps/ser_debug.vhd" \
