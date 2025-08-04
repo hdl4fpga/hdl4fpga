@@ -102,8 +102,8 @@ architecture def of scopeio_axis is
 	signal v_pos      : std_logic_vector(vtheight_bits-1 downto gridunit_bits);
 begin
 
-	h_pos <= std_logic_vector(hz_pos(hzwidth_bits-1  downto gridunit_bits+1));
-	v_pos <= std_logic_vector(vt_pos(vtheight_bits-1 downto gridunit_bits));
+	h_pos <= std_logic_vector(hz_pos(hzwidth_bits-1  downto gridunit_bits+1)); -- ghdl complains :type of actual conversion must be fully constrained
+	v_pos <= std_logic_vector(vt_pos(vtheight_bits-1 downto gridunit_bits)); -- ghdl complains :type of actual conversion must be fully constrained
 	marks_e : entity hdl4fpga.scopeio_marks
 	generic map (
 		inputs   => inputs,
