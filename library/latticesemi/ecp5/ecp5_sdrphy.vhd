@@ -316,7 +316,6 @@ begin
 	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
 
 	tp <= multiplex(tp_dq, tpin);
-	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
 	byte_g : for i in word_size/byte_size-1 downto 0 generate
 		sdrphy_i : entity hdl4fpga.ecp5_sdrdqphy
 		generic map (
@@ -371,6 +370,6 @@ begin
 
 			tp         => tp_dq(i*32+1 to (i+1)*32));
 	end generate;
-
+	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
 	sys_dqo <= unshuffle_vector(dqo, gear => gear, size => byte_size);
 end;
