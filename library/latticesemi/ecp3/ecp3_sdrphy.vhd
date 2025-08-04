@@ -47,7 +47,6 @@ entity ecp3_sdrphy is
 		dqsdel    : in  std_logic;
 		phy_locked    : out std_logic_vector(word_size/byte_size-1 downto 0);
 
-		phy_rst   : in  std_logic_vector((gear+1)/2-1 downto 0);
 		phy_frm   : buffer std_logic;
 		phy_trdy  : in  std_logic;
 		phy_rw    : out std_logic := '1';
@@ -58,6 +57,7 @@ entity ecp3_sdrphy is
 		phy_rlreq : in  std_logic := '0';
 		phy_rlrdy : buffer std_logic;
 
+		sys_rst   : in  std_logic_vector((gear+1)/2-1 downto 0);
 		sys_cs    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '0');
 		sys_sti   : in  std_logic_vector(gear-1 downto 0);
 		sys_sto   : buffer std_logic_vector(gear*word_size/byte_size-1 downto 0);
@@ -130,7 +130,7 @@ begin
 		sclk    => sclk,
 		sclk2x  => sclk2x,
           
-		sys_rst => phy_rst,
+		sys_rst => sys_rst,
 		sys_cs  => sys_cs,
 		sys_cke => sys_cke,
 		sys_b   => sdrphy_b,
