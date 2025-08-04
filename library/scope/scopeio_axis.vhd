@@ -102,8 +102,8 @@ architecture def of scopeio_axis is
 	signal v_pos      : std_logic_vector(vtheight_bits-1 downto gridunit_bits);
 begin
 
-	hz_pos <= std_logic_vector(hz_pos(hzwidth_bits-1  downto gridunit_bits+1));
-	vt_pos <= std_logic_vector(vt_pos(vtheight_bits-1 downto gridunit_bits));
+	h_pos <= std_logic_vector(hz_pos(hzwidth_bits-1  downto gridunit_bits+1));
+	v_pos <= std_logic_vector(vt_pos(vtheight_bits-1 downto gridunit_bits));
 	marks_e : entity hdl4fpga.scopeio_marks
 	generic map (
 		inputs   => inputs,
