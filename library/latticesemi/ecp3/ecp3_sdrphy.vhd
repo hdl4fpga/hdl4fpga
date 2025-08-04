@@ -45,7 +45,7 @@ entity ecp3_sdrphy is
 		sclk2x    : in  std_logic;
 		eclk      : in  std_logic;
 		dqsdel    : in  std_logic;
-		phy_locked    : out std_logic_vector(word_size/byte_size-1 downto 0);
+		phy_locked    : out std_logic;
 
 		phy_frm   : buffer std_logic;
 		phy_trdy  : in  std_logic;
@@ -264,9 +264,6 @@ begin
 	dqi <= shuffle_vector(sys_dqi, gear => gear, size => byte_size);
 
 	byte_g : for i in 0 to word_size/byte_size-1 generate
-		signal sto : std_logic;
-	begin
-		sys_sto(gear*(i+1)-1 downto gear*i) <= (others => sto);
 		sdr3phy_i : entity hdl4fpga.ecp3_sdrdqphy
 		generic map (
 			taps      => taps,
@@ -285,7 +282,7 @@ begin
 			phy_rlrdy => rl_rdy(i),
 			read_req  => read_req(i),
 			read_rdy  => read_rdy(i),
-			phy_locked  => phy_locked(i),
+			phy_locked => dqs_locked(i),
 
 			sys_sti   => sys_sti,
 			sys_sto   => sys_sto((i+1)*gear-1 downto i*gear),
@@ -313,5 +310,6 @@ begin
 			sdram_dqso => sdram_dqso(i));
 			sdram_dqs(i) <= sdram_dqso(i) when sdram_dqst(i)='0' else 'Z';
 	end generate;
-
+	phy_locked <= '1' when dqs_locked=(dqs_locked'range => '1') else '0';
+	sys_dqo <= unshuffle_vector(dqo, gear => gear, size => byte_size);
 end;

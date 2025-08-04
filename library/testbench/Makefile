@@ -231,7 +231,6 @@ HDL4FPGA__rom7seg__mixed = $(LIB_HDL4FPGA)/rom7seg/mixed.dat
 HDL4FPGA__rom7seg = $(LIB_HDL4FPGA)/rom7seg/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
-HDL4FPGA__pll_control = $(LIB_HDL4FPGA)/pll_control/_primary.dat
 HDL4FPGA__phy_iofifo__mix = $(LIB_HDL4FPGA)/phy_iofifo/mix.dat
 HDL4FPGA__phy_iofifo = $(LIB_HDL4FPGA)/phy_iofifo/_primary.dat
 HDL4FPGA__phdata__inference = $(LIB_HDL4FPGA)/phdata/inference.dat
@@ -258,7 +257,6 @@ HDL4FPGA__lifo__def = $(LIB_HDL4FPGA)/lifo/def.dat
 HDL4FPGA__lifo = $(LIB_HDL4FPGA)/lifo/_primary.dat
 HDL4FPGA__latency__def = $(LIB_HDL4FPGA)/latency/def.dat
 HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
-HDL4FPGA__jitter_filter = $(LIB_HDL4FPGA)/jitter_filter/_primary.dat
 HDL4FPGA__ipv4_tx__def = $(LIB_HDL4FPGA)/ipv4_tx/def.dat
 HDL4FPGA__ipv4_tx = $(LIB_HDL4FPGA)/ipv4_tx/_primary.dat
 HDL4FPGA__ipv4_rx__def = $(LIB_HDL4FPGA)/ipv4_rx/def.dat
@@ -333,7 +331,6 @@ HDL4FPGA__ecp3_sdramdcm__def = $(LIB_HDL4FPGA)/ecp3_sdramdcm/def.dat
 HDL4FPGA__ecp3_sdramdcm = $(LIB_HDL4FPGA)/ecp3_sdramdcm/_primary.dat
 HDL4FPGA__ecp3_profiles__body = $(LIB_HDL4FPGA)/ecp3_profiles/body.dat
 HDL4FPGA__ecp3_profiles = $(LIB_HDL4FPGA)/ecp3_profiles/_primary.dat
-HDL4FPGA__ecp3_csa = $(LIB_HDL4FPGA)/ecp3_csa/_primary.dat
 HDL4FPGA__dvi_subpxl__def = $(LIB_HDL4FPGA)/dvi_subpxl/def.dat
 HDL4FPGA__dvi_subpxl = $(LIB_HDL4FPGA)/dvi_subpxl/_primary.dat
 HDL4FPGA__dvi__def = $(LIB_HDL4FPGA)/dvi/def.dat
@@ -384,8 +381,6 @@ HDL4FPGA__cp850x8x16x128to255 = $(LIB_HDL4FPGA)/cp850x8x16x128to255/_primary.dat
 HDL4FPGA__cp850x8x16x0to127 = $(LIB_HDL4FPGA)/cp850x8x16x0to127/_primary.dat
 HDL4FPGA__cntrcs__def = $(LIB_HDL4FPGA)/cntrcs/def.dat
 HDL4FPGA__cntrcs = $(LIB_HDL4FPGA)/cntrcs/_primary.dat
-HDL4FPGA__clk_stop = $(LIB_HDL4FPGA)/clk_stop/_primary.dat
-HDL4FPGA__clk_phase = $(LIB_HDL4FPGA)/clk_phase/_primary.dat
 HDL4FPGA__cgaram__struct = $(LIB_HDL4FPGA)/cgaram/struct.dat
 HDL4FPGA__cgaram = $(LIB_HDL4FPGA)/cgaram/_primary.dat
 HDL4FPGA__cgafonts__body = $(LIB_HDL4FPGA)/cgafonts/body.dat
@@ -646,7 +641,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__rom7seg) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
-    $(HDL4FPGA__pll_control) \
     $(HDL4FPGA__phy_iofifo__mix) \
     $(HDL4FPGA__phy_iofifo) \
     $(HDL4FPGA__phdata__inference) \
@@ -673,7 +667,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__lifo) \
     $(HDL4FPGA__latency__def) \
     $(HDL4FPGA__latency) \
-    $(HDL4FPGA__jitter_filter) \
     $(HDL4FPGA__ipv4_tx__def) \
     $(HDL4FPGA__ipv4_tx) \
     $(HDL4FPGA__ipv4_rx__def) \
@@ -748,7 +741,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ecp3_sdramdcm) \
     $(HDL4FPGA__ecp3_profiles__body) \
     $(HDL4FPGA__ecp3_profiles) \
-    $(HDL4FPGA__ecp3_csa) \
     $(HDL4FPGA__dvi_subpxl__def) \
     $(HDL4FPGA__dvi_subpxl) \
     $(HDL4FPGA__dvi__def) \
@@ -799,8 +791,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__cp850x8x16x0to127) \
     $(HDL4FPGA__cntrcs__def) \
     $(HDL4FPGA__cntrcs) \
-    $(HDL4FPGA__clk_stop) \
-    $(HDL4FPGA__clk_phase) \
     $(HDL4FPGA__cgaram__struct) \
     $(HDL4FPGA__cgaram) \
     $(HDL4FPGA__cgafonts__body) \
@@ -1742,18 +1732,6 @@ $(HDL4FPGA__phy_iofifo__mix) : ../sdram/phy_iofifo.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/phy_iofifo.vhd
-
-$(HDL4FPGA__clk_phase) \
-$(HDL4FPGA__clk_stop) \
-$(HDL4FPGA__ecp3_csa) \
-$(HDL4FPGA__jitter_filter) \
-$(HDL4FPGA__pll_control) : ../latticesemi/ecp3/pll_control.v ../latticesemi/ecp3/jitter_filter.v \
-		 ../latticesemi/ecp3/ecp3_csa.v ../latticesemi/ecp3/clk_stop.v \
-		 ../latticesemi/ecp3/clk_phase.v
-	$(VLOG) -work hdl4fpga -L mtiAvm -L \
-		 mtiOvm -L mtiUvm -L mtiUPF ../latticesemi/ecp3/pll_control.v \
-		 ../latticesemi/ecp3/jitter_filter.v ../latticesemi/ecp3/ecp3_csa.v \
-		 ../latticesemi/ecp3/clk_stop.v ../latticesemi/ecp3/clk_phase.v
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../basic/rom.vhd \

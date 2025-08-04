@@ -339,7 +339,7 @@ begin
 				err                : out std_logic);
 		end component;
 
-		signal locked : std_logic_vector(ddr3_dqs'range);
+		signal locked : std_logic;
 	begin
 
 		dqsdll_uddcntln_b : block
@@ -406,7 +406,7 @@ begin
 			sclk2x    => ctlrdcm_clkop,
 			eclk      => ctlrdcm_eclk,
 			dqsdel    => dqsdel,
-			phy_locked    => locked,
+			phy_locked => locked,
 			phy_frm   => ctlrphy_frm,
 			phy_trdy  => ctlrphy_trdy,
 			phy_cmd   => ctlrphy_cmd,
