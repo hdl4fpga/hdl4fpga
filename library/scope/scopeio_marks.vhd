@@ -304,22 +304,34 @@ begin
 		end if;
 	end process;
 
-	btod_e : entity hdl4fpga.btof
-	generic map (
-		tab      => x"0123456789fbcdef")
-	port map (
-		clk      => rgtr_clk,
-		btof_req => btod_req,
-		btof_rdy => btod_rdy,
-		left     => btod_left,
-		width    => btod_width,
-		sht      => std_logic_vector(btod_sht),
-		dec      => std_logic_vector(btod_dec),
-		exp      => b"000",
-		neg      => btod_bin(btod_bin'left),
-		bin      => std_logic_vector(btod_bin(1 to btod_bin'right)),
-		code_frm => code_frm,
-		code     => code_data);
+	btod_b : block
+		signal sht : std_logic_vector(btod_sht'range);
+		signal dec : std_logic_vector(btod_dec'range);
+		signal bin : std_logic_vector(1 to btod_bin'right);
+	begin
+		sht <= std_logic_vector(btod_sht);
+		dec <= std_logic_vector(btod_dec);
+		bin <= std_logic_vector(btod_bin(1 to btod_bin'right));
+		btod_e : entity hdl4fpga.btof
+		generic map (
+			tab      => x"0123456789fbcdef")
+		port map (
+			clk      => rgtr_clk,
+			btof_req => btod_req,
+			btof_rdy => btod_rdy,
+			left     => btod_left,
+			width    => btod_width,
+			-- sht      => std_logic_vector(btod_sht), -- ghdl complains :type of actual conversion must be fully constrained 
+			-- dec      => std_logic_vector(btod_dec), -- ghdl complains :type of actual conversion must be fully constrained 
+			sht      => sht,
+			dec      => dec,
+			exp      => b"000",
+			neg      => btod_bin(btod_bin'left),
+			-- bin      => std_logic_vector(btod_bin(1 to btod_bin'right)),	 -- ghdl complains :type of actual conversion must be fully constrained 
+			bin      => bin,
+			code_frm => code_frm,
+			code     => code_data);
+	end block;
 
 	process (rgtr_clk, btod_req)
 		variable shr : unsigned(mark_data'length-1 downto 0);

@@ -112,7 +112,7 @@ begin
 		ci => bin_rev(binrev_left),
 		b  => b,
 		a  => a,
-		-- a  => std_logic_vector(digits_out(digitsout_right)),
+		-- a  => std_logic_vector(digits_out(digitsout_right)), -- ghdl complains
 		s  => s);
 	bin <= bin_rev;
 	bcd <= 
