@@ -90,7 +90,6 @@ package body ecp5_profiles is
 			else
 				clkos3_div := 1;
 			end if;
-			report "******************** " & natural'image(clkos3_div);
 			return "{" &
 				"clkos_div:"  & string'(dcm**".clkos_div") & "," & 
 				"clkop_div:"  & string'(dcm**".clkop_div") & "," & 

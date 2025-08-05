@@ -57,7 +57,7 @@ package body xc7a_profiles is
 		constant video_ratio : natural := 10/2; -- 10 bits / 2 DDR video ratio
 		constant dcm_db : string := "{"                                               &
 			"'100mhz':{"                                                              &
-				" '64mhz': {clkfbout_mult_f: 6.4, clkout0_divide_f:" & natural'image(2*video_ratio) & ", clkout1_divide: 2, freq_in: 100.0e6}}}";
+				" '64mhz': {clkfbout_mult_f: 6.375, clkout0_divide_f:" & natural'image(2*video_ratio) & ", clkout1_divide: 2, freq_in: 100.0e6}}}";
 
 		constant dcm : string  := dcm_db**(video_id&"={}");
 	begin
