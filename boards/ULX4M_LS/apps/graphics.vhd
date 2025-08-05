@@ -53,7 +53,7 @@ architecture graphics of ulx4m_ls is
 			"phy_data:"  & string'(hdo(phy_db)**".ecp5g1")                                          & ',' &
 			"cl:"        & "'010'}}";
 
-	constant io_link      : string := settings**".io_link";
+	constant io_link      : string := hdo(settings)**".io_link";
 	constant baudrate     : natural := 3000000;
 
 	alias sys_clk is clk_25mhz;
@@ -62,8 +62,8 @@ architecture graphics of ulx4m_ls is
 	signal video_lck     : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_eclk    : std_logic;
-	signal video_pixel   : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
-	signal dvid_crgb     : std_logic_vector(4*settings**".video.gear"-1 downto 0);
+	signal video_pixel   : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
+	signal dvid_crgb     : std_logic_vector(4*settings**".video.gear=2"-1 downto 0);
 	signal videoio_clk   : std_logic;
 
 	constant sdram_gear  : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
@@ -128,7 +128,7 @@ begin
 		if debug then
 			sdram_dqs <= (others => ctlr_clk);
 		else
-			if string'(settings**".sdram.dcm")="133mhz" then
+			if sdram_freq(hdo(settings)**".sdram.dcm") <= 134.0e6 then
 				sdram_dqs <= (others => ctlr_clk);
 			else
 				sdram_dqs <= (others => not ctlr_clk);
@@ -217,7 +217,6 @@ begin
 		generic map (
 			rmii          => true,
 			default_mac   => x"00_40_00_01_02_03",
-			-- default_ipv4a => aton("10.31.175.150"),
 			default_ipv4a => aton("192.168.100.210"),
 			n             => 2)
 		port map (

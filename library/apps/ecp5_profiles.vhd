@@ -112,15 +112,15 @@ package body ecp5_profiles is
 		-- SDRAM CLK=clk_ref*clkos_div/clkop_div
     	constant dcm_db : string := compact("{" &
     		"'25mhz':{"                                                                                                     &
-    			"'133mhz' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'150mhz' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'166mhz' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'200mhz' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'225mhz' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'233mhz' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'250mhz' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'262mhz' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'275mhz' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
+    			"'133mhz' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "010",
+    			"'150mhz' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'166mhz' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'200mhz' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'225mhz' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'233mhz' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'250mhz' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'262mhz' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'275mhz' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
     			"'325mhz' : {clkos_div : 13, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
     			"'350mhz' : {clkos_div : 14, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
     			"'375mhz' : {clkos_div : 15, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
