@@ -52,7 +52,8 @@ architecture graphics of ulx4m_ld is
 			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT41K256M16-125")                               & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
-			"cwl:"       & "'001'"                                                                  & ',' &                             
+			"wrl:"       & "'010'"                                                                  & ',' &                             
+			"cwl:"       & "'000'"                                                                  & ',' &                             
 			"cl:"        & "'0010'}}";    	 
 
 	constant io_link      : string  := settings**".io_link";
