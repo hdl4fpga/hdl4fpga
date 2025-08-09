@@ -116,7 +116,7 @@ package hdo is
 		constant value : string)
 		return std_logic_vector;
 
-	function hdo_length(
+	function length(
 		constant object : string)
 		return natural;
 
@@ -1355,7 +1355,7 @@ package body hdo is
 		end if;
 	end;
 
-	function hdo_length(
+	function length(
 		constant object : string)
 		return natural is
 

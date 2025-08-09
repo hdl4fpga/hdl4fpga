@@ -557,7 +557,7 @@ begin
 			bypass     => false)
 		port map (
 			sclk       => ctlr_clk,
-			rst        => ctlr_rst,
+			ctlr_rst   => ctlr_rst,
 
 			sys_cs(0)  => ctlrphy_cs,
 			sys_cke(0) => ctlrphy_cke,

@@ -129,7 +129,7 @@ package hdo is
 		return std_logic_vector;
 
 	impure --|note
-	function hdo_length(
+	function length(
 		constant object : string)
 		return natural;
 
@@ -1630,7 +1630,7 @@ package body hdo is
 	end;
 
 	impure --|note
-	function hdo_length(
+	function length(
 		constant object : string)
 		return natural is
 
