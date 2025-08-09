@@ -41,7 +41,8 @@ entity ecp5_sdrdqphy is
 
 		taps       : natural);
 	port (
-		rst        : in  std_logic;
+		ctlr_rst   : in  std_logic;
+		phy_rst    : in  std_logic;
 		sclk       : in  std_logic;
 		eclk       : in  std_logic;
 		ddrdel     : in  std_logic;
@@ -90,8 +91,6 @@ use hdl4fpga.base.all;
 
 architecture ecp5 of ecp5_sdrdqphy is
 
-	signal srst         : std_logic;
-
 	signal dqsr90       : std_logic;
 	signal dqsw         : std_logic;
 	signal dqsw270      : std_logic;
@@ -136,15 +135,6 @@ architecture ecp5 of ecp5_sdrdqphy is
 
 begin
 
-	process (rst, sclk)
-	begin
-		if rst='1' then
-			srst <= '1';
-		elsif rising_edge(sclk) then
-			srst <= '0';
-		end if;
-	end process;
-
 	rl_b : block
 		signal step_req : std_logic;
 		signal step_rdy : std_logic;
@@ -170,6 +160,7 @@ begin
     			debug      => debug)
     		port map (
     			sclk       => sclk,
+				rst        => ctlr_rst,
     			adj_req    => adj_req,
     			adj_rdy    => adj_rdy,
     			pause_req  => rlpause_req,
@@ -183,32 +174,29 @@ begin
     			lat        => lat,
     			readclksel => rdclksel);
 
-    		lat_b : block
-    			signal q : std_logic_vector(0 to 5-1);
-    		begin
-    			q(0) <= sys_sti(sys_sti'right);
-    			process(sclk)
-    			begin
-    				if rising_edge(sclk) then
-    					q(1 to q'right) <= q(0 to q'right-1);
-    				end if;
-    			end process;
-    			rd <= multiplex(q(0 to q'right-1), lat, 1)(0);
-    		end block;
+    		lat_b : process(sys_sti, lat, sclk)
+				variable q : unsigned(0 to 2**(lat'length-1)-1);
+   			begin
+   				if rising_edge(sclk) then
+					q := shift_right(q,1);
+   				end if;
+				q(0) := sys_sti(sys_sti'right);
+				rd <= multiplex(std_logic_vector(q), lat, 1, '-')(0);
+   			end process;
 
 			sto <= (others => datavalid);
-			tp(1 to 7) <= lat & rdclksel & phy_locked;
+			-- tp(1 to 8) <= phy_locked & lat & rdclksel & '0';
+			tp(1 to 8) <= phy_locked & adj_req & adj_rdy & b"00000";
 		end generate;
 
-		adjust_p : process (srst, sclk, read_req)
+		adjust_p : process (sclk, read_req)
 			type states is (s_start, s_adj, s_paused);
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if srst='1' then
+				if ctlr_rst='1' then
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					state     := s_start;
-					adj_req <= '0';
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
 					case state is
 					when s_start =>
@@ -237,7 +225,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if srst='1' then
+				if ctlr_rst='1' then
 					state := s_start;
 					step_rdy <= to_stdulogic(to_bit(step_req));
 				elsif (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
@@ -274,7 +262,7 @@ begin
 		port map (
 			edge     => std_logic'('0'),
 			clk      => sclk,
-			rst      => srst,
+			rst      => ctlr_rst,
 			req      => phy_wlreq,
 			rdy      => phy_wlrdy,
 			step_req => wlstep_req,
@@ -301,11 +289,11 @@ begin
 		begin
 
 			pause_req <= to_bit(rlpause_req) xor to_bit(rlpause1_req) xor to_bit(wlpause_req);
-			process (srst, sclk)
+			process (ctlr_rst, sclk)
 				variable cntr : unsigned(0 to 4);
 			begin
 				if rising_edge(sclk) then
-					if srst='1' then
+					if ctlr_rst='1' then
 						pause_rdy <= pause_req;
 					elsif (pause_rdy xor pause_req)='0' then
 						lv_pause <= '0';
@@ -329,10 +317,10 @@ begin
 				end if;
 			end process;
 	
-			process (srst, sclk, pause_rdy )
+			process (sclk, pause_rdy )
 			begin
 				if rising_edge(sclk) then
-					if srst='1' then
+					if ctlr_rst='1' then
 						wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
 						rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
 						rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
@@ -359,7 +347,7 @@ begin
 		dqs_pause <= pause or lv_pause;
 		dqsbufm_i : dqsbufm 
 		port map (
-			rst       => rst,
+			rst       => phy_rst,
 			sclk      => sclk,
 			eclk      => eclk,
 
@@ -438,7 +426,7 @@ begin
 				generic map (
 					gear => gear)
 				port map (
-					rst  => rst,
+					rst  => phy_rst,
 					sclk => sdram_dqs,
 					d(0) => d,
 					q    => q);
@@ -447,7 +435,7 @@ begin
 			gear4_g : if gear=4 generate
 				iddrx2_i : iddrx2dqa
 				port map (
-					rst     => rst,
+					rst     => phy_rst,
 					sclk    => sclk,
 					eclk    => eclk,
 					dqsr90  => dqsr90,
@@ -531,7 +519,7 @@ begin
 			generic map (
 				gear => gear)
 			port map (
-				rst  => rst,
+				rst  => phy_rst,
 				sclk => sdram_dqs,
 				d(0) => sdram_dm,
 				q    => sys_dmo);
@@ -547,7 +535,7 @@ begin
 
 			iddrx2_i : iddrx2dqa
 			port map (
-				rst     => rst,
+				rst     => phy_rst,
 				sclk    => sclk,
 				eclk    => eclk,
 				dqsr90  => dqsr90,
@@ -639,7 +627,7 @@ begin
 			generic map (
 				gear => gear)
 			port map (
-				rst     => rst,
+				rst     => phy_rst,
 				sclk    => sclk,
 				eclk    => eclk,
 				dqsw270 => dqsw270,
@@ -658,7 +646,7 @@ begin
 			generic map (
 				gear => gear)
 			port map (
-				rst     => rst,
+				rst     => phy_rst,
 				sclk    => sclk,
 				eclk    => eclk,
 				dqsw270 => dqsw270,
@@ -684,7 +672,7 @@ begin
 
 			tshx2dqsa_i : tshx2dqsa
 			port map (
-				rst  => rst,
+				rst  => phy_rst,
 				sclk => sclk,
 				eclk => eclk,
 				dqsw => dqsw,
@@ -694,7 +682,7 @@ begin
 	
 			oddrx2dqsb_i : oddrx2dqsb
 			port map (
-				rst  => rst,
+				rst  => phy_rst,
 				sclk => sclk,
 				eclk => eclk,
 				dqsw => dqsw,

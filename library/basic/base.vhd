@@ -299,7 +299,8 @@ package base is
 	function multiplex (
 		constant word  : std_logic_vector;
 		constant addr  : std_logic_vector;
-		constant size  : natural)
+		constant size  : natural;
+		constant value : std_logic := '0')
 		return std_logic_vector;
 
 	function multiplex (
@@ -1295,13 +1296,14 @@ package body base is
 	function multiplex (
 		constant word  : std_logic_vector;
 		constant addr  : std_logic_vector;
-		constant size  : natural)
+		constant size  : natural;
+		constant value : std_logic := '0')
 		return std_logic_vector is
 	begin
 		assert word'length mod size = 0
 			report "multiplex mod"
 			severity failure;
-		return multiplex(fill(data => word, size => size*(2**addr'length), right => true, value => '0'), addr);
+		return multiplex(fill(data => word, size => size*(2**addr'length), right => true, value => value), addr);
 	end;
 
 	function multiplex (

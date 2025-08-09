@@ -61,7 +61,8 @@ architecture graphics of orangecrab is
 	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
 	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
 
-	signal sys_rst       : std_logic;
+	signal sys_rst : std_logic;
+	alias sys_clk is clk_48MHz;
 
 	constant mem_size    : natural := 8*(1024*8);
 	signal sio_clk       : std_logic;
@@ -141,7 +142,7 @@ begin
 	generic map (
 		settings     => settings**".video")
 	port map (
-		clk         => clk_48mhz,
+		clk         => sys_clk,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
 		video_shift_clk => video_shift_clk,
@@ -154,10 +155,10 @@ begin
 			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
 			"gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	port map (
-		ctlr_rst     => ctlr_rst,
-		clk          => clk_48MHz,
+		clk          => sys_clk,
 		sclk         => ctlr_sclk,
 		eclk         => ctlr_eclk,
+		ctlr_rst     => ctlr_rst,
 		phy_rst      => sdrphy_rst,
 		phy_mspause  => ms_pause,
 		phy_ddrdel   => ddrdel);
@@ -167,8 +168,8 @@ begin
 		signal uart_clk : std_logic;
 	begin
 		nodebug_g : if not debug generate
-			uart_clk <= clk_48MHz;
-			sio_clk  <= clk_48MHz;
+			uart_clk <= sys_clk;
+			sio_clk  <= sys_clk;
 		end generate;
 
 		debug_g : if debug generate
@@ -308,9 +309,9 @@ begin
 		ctlrphy_odt(i) <= ctlrphy_odt(0);
 	end generate;
 
-	process (clk_48MHz)
+	process (sys_clk)
 	begin
-		if rising_edge(clk_48MHz) then
+		if rising_edge(sys_clk) then
 			-- rgb_led <= (others => '1');
 			rgb_led0_b <= not sdrphy_locked;
 		end if;
@@ -370,8 +371,9 @@ begin
 	port map (
 		-- tpin       => btn(1),
 
-		rst          => sdrphy_rst,
+		phy_rst      => sdrphy_rst,
 		sclk         => ctlr_sclk,
+		ctlr_rst     => ctlr_rst,
 		eclk         => ctlr_eclk,
 		ms_pause     => ms_pause,
 		ddrdel       => ddrdel,

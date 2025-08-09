@@ -155,6 +155,7 @@ architecture ulx4mld_graphics of testbench is
 	signal sda        : std_logic;
 	signal tdqs_n     : std_logic_vector(dqs'range);
 
+	signal btn : std_logic_vector(1 to 3);
 	signal gmii_rxc  : std_logic := '0';
 	signal rgmii_rxc  : std_logic := '0';
 	signal rgmii_rxdv : std_logic;
@@ -249,14 +250,14 @@ begin
 		end if;
 	end process;
 
+	btn(2) <= '0', '0' after 1 us; --, '1' after 53 us, '0' after 54 us, '1' after 103 us, '0' after 104 us;
 	du_e : ulx4m_ld
 	generic map (
 		-- debug => debug)
 		debug => true)
 	port map (
 		clk_25mhz    => xtal,
-		btn(1)       => '0',
-		btn(2 to 3)  => (others => '-'),
+		btn => btn,
 
 		usb_fpga_dp => usb_fpga_dp,
 		usb_fpga_dn => usb_fpga_dn,

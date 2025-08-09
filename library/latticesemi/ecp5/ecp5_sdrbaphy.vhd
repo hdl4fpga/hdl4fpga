@@ -33,7 +33,7 @@ entity ecp5_sdrbaphy is
 		addr_size  : natural := 13;
 		ba_latency : natural);
 	port (
-		grst       : in  std_logic;
+		phy_rst    : in  std_logic;
 		sclk       : in  std_logic;
 		eclk       : in  std_logic;
 
@@ -62,7 +62,6 @@ library hdl4fpga;
 
 architecture ecp5 of ecp5_sdrbaphy is
 
-	signal rst : std_logic_vector(gear-1 downto 0) := (others => '-');
 	signal cs  : std_logic_vector(gear-1 downto 0);
 	signal cke : std_logic_vector(gear-1 downto 0);
 	signal b   : std_logic_vector(gear*bank_size-1 downto 0);
@@ -95,6 +94,7 @@ begin
 
 	latency_b : block
 	begin
+
     	b_e : entity hdl4fpga.latency
     	generic map (
     		n => sys_b'length,
@@ -112,15 +112,6 @@ begin
     		clk => sclk,
     		di  => sys_a,
     		do  => a);
-
-    	sysrst_e : entity hdl4fpga.latency
-    	generic map (
-    		n => gear,
-    		d => (0 to gear-1=> ba_latency))
-    	port map (
-    		clk   => sclk,
-    		di => sys_rst,
-    		do => rst);
 
     	cs_e : entity hdl4fpga.latency
     	generic map (
@@ -182,7 +173,7 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => grst,
+		rst  => phy_rst,
 		sclk => sclk,
 		d    => sys_rst,
 		q(0) => nodelay_sdram_rst);
@@ -196,7 +187,7 @@ begin
         		size => 1,
         		gear => gear)
         	port map (
-        		rst  => grst,
+        		rst  => phy_rst,
         		sclk => sclk,
         		d    => cs,
         		q(0) => nodelay_sdram_cs);
@@ -207,7 +198,7 @@ begin
 		begin
 			cs_i : oshx2a
 			port map (
-				rst  => grst,
+				rst  => phy_rst,
 				sclk => sclk,
 				eclk => eclk, 
 				d0   => cs(0),
@@ -216,7 +207,8 @@ begin
 	
 			delay_i : delayg
 			generic map (
-				del_mode => "DQS_ALIGNED_X2")
+				-- del_mode => "DQS_ALIGNED_X2")
+				del_mode => "DQS_CMD_X2")
 			port map (
 				a => gear2_cs,
 				z => nodelay_sdram_cs);
@@ -229,7 +221,7 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => grst,
+		rst  => phy_rst,
 		sclk => sclk,
 		d    => cke,
 		q(0) => nodelay_sdram_cke);
@@ -239,7 +231,7 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => grst,
+		rst  => phy_rst,
 		sclk => sclk,
 		d    => ras,
 		q(0) => nodelay_sdram_ras);
@@ -249,7 +241,7 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => grst,
+		rst  => phy_rst,
 		sclk => sclk,
 		d    => cas,
 		q(0) => nodelay_sdram_cas);
@@ -259,7 +251,7 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => grst,
+		rst  => phy_rst,
 		sclk => sclk,
 		d    => we,
 		q(0) => nodelay_sdram_we);
@@ -269,7 +261,7 @@ begin
 		size => 1,
 		gear => gear)
 	port map (
-		rst  => grst,
+		rst  => phy_rst,
 		sclk => sclk,
 		d    => odt,
 		q(0) => nodelay_sdram_odt);
@@ -288,7 +280,7 @@ begin
 		size => sdram_a'length,
 		gear => gear)
 	port map (
-		rst  => grst,
+		rst  => phy_rst,
 		sclk => sclk,
 		d    => a,
 		q    => nodelay_sdram_a);

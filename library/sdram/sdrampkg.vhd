@@ -69,7 +69,7 @@ package sdrampkg is
 		"    cwl  : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
 		"    wrl  : {  6 : '001',  8 : '001', 10 : '001', 12 : '010', 14 : '011', 16 : '100', 18 : '101', 20 : '101', 22 : '110', 24 : '110', 26: '111', 28 : '111', 30 : '000', 32 : '000'}," &
 		"    tmng : { tPreRST : 200.0e-6, tPstRST : 500.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25, tCAS : 13.125e-9}}}");
-		-- "    tmng : { tPreRST : 1.0e-6, tPstRST : 2.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 91, WLDQSEN : 25}}}");
+		-- "    tmng : { tPreRST : 1.0e-6, tPstRST : 2.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25, tCAS : 13.125e-9}}}");
 
 	constant phy_db : string := compact("[" &
 		"ecp5g1 : { device : ecp5, orgz : { gear : 1}, tmng : {STRL :  1, DQSL :  0, DQSZL :  0, DQZL :  0, WWNL :  0, STRXL : 0, DQSZXL : 0, DQSXL : 0, DQZXL : 0, WWNXL : 0}}," &
@@ -147,7 +147,7 @@ package body sdrampkg is
 		constant cwl_tab : natural_vector)
 		return natural_vector is
 
-		variable lat    : integer := hdo(phytmng_data)**("."&latency);
+		variable lat    : integer := hdo(phytmng_data)**("."&latency&"=*");
 		variable clval  : natural_vector(cl_tab'range);
 		variable cwlval : natural_vector(cwl_tab'range);
 		variable temp   : integer;

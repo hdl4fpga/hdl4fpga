@@ -80,18 +80,18 @@ entity sdram_init is
 	attribute fsm_encoding : string;
 	attribute fsm_encoding of sdram_init : entity is "compact";
 
-	constant fmlytmng_data : string := hdo(generation_data)**".tmng";
+	constant gentmng_data : string := hdo(generation_data)**".tmng";
 
-	constant PreRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPreRST=0.")/ctlr_tcp));
-	constant RP        : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0.")/ctlr_tcp));
-	constant PstRST    : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tPstRST=0.")/ctlr_tcp));
-	constant cDLL      : natural := hdo(fmlytmng_data)**".cDLL=0.";
-	constant RPA       : natural := natural(ceil(real'(hdo(fmlytmng_data)**".tRPA=0.")/ctlr_tcp));
-	constant ZQINIT    : natural := hdo(fmlytmng_data)**".ZQINIT=0.";
-	constant MRD       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tMRD=0.")/ctlr_tcp));
-	constant MODu      : natural := hdo(fmlytmng_data)**".MODu=0.";
-	constant XPR       : natural := hdo(fmlytmng_data)**".XPR=0.";
-	constant WLDQSEN   : natural := hdo(fmlytmng_data)**".WLDQSEN=0.";
+	constant PreRST    : natural := natural(ceil(real'(hdo(gentmng_data)**".tPreRST=0")/ctlr_tcp));
+	constant RP        : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRP=0")/ctlr_tcp));
+	constant PstRST    : natural := natural(ceil(real'(hdo(gentmng_data)**".tPstRST=0")/ctlr_tcp));
+	constant cDLL      : natural := hdo(gentmng_data)**".cDLL=0";
+	constant RPA       : natural := natural(ceil(real'(hdo(gentmng_data)**".tRPA=0")/ctlr_tcp));
+	constant ZQINIT    : natural := hdo(gentmng_data)**".ZQINIT=0.";
+	constant MRD       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tMRD=0")/ctlr_tcp));
+	constant MODu      : natural := hdo(gentmng_data)**".MODu=0";
+	constant XPR       : natural := hdo(gentmng_data)**".XPR=0";
+	constant WLDQSEN   : natural := hdo(gentmng_data)**".WLDQSEN=0";
 	constant REFi      : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tREFI")/ctlr_tcp));
 	constant RFC       : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tRFC")/ctlr_tcp));
 
@@ -363,6 +363,9 @@ begin
     			else
     				(sdram_init_ras, sdram_init_cas, sdram_init_we) <= nop;
     			end if;
+				if sdram_init_req='1' then
+					sdram_init_rdy <= '0';
+				end if;
 			end if;
 		end process;
 

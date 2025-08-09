@@ -108,7 +108,7 @@ entity sdram_ctlr is
 	constant al_tab         : natural_vector := lattab(hdo(generation_data)**(".al"), 2**ctlr_al'length);
 	constant bl_tab         : natural_vector := lattab(hdo(generation_data)**(".bl"), 2**ctlr_bl'length);
 	constant cl_tab         : natural_vector := lattab(hdo(generation_data)**(".cl"), 2**ctlr_cl'length);
-	constant cwl_tab        : natural_vector := lattab(hdo(generation_data)**(".cwl={}.)"), 2**ctlr_cwl'length);
+	constant cwl_tab        : natural_vector := lattab(hdo(generation_data)**(".cwl={})"), 2**ctlr_cwl'length);
 end;
 
 architecture mix of sdram_ctlr is
