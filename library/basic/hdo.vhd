@@ -291,8 +291,10 @@ package body hdo is
 	begin
 		if value='1' then
 			return '1';
-		else
+		elsif value= '0' then
 			return '0';
+		else
+			return '-';
 		end if;
 	end;
 
@@ -1252,8 +1254,10 @@ package body hdo is
 		if value'length > 0 then
 			if value(value'left)='1' then
 				return '1';
-			else
+			elsif value(value'left)='0' then
 				return '0';
+			else
+				return '-';
 			end if;
 		end if;
 		return 'X';

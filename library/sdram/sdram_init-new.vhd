@@ -199,13 +199,16 @@ begin
 					sdram_init_odt <= hdo(xxx(init_seq**step))**".xxx.odt='-'";
 					timer_sel <= std_logic_vector(to_unsigned(step, timer_sel'length));
 					timer_req <= not timer_rdy;
+				else
+					sdram_init_ras <= mpu_nop(0);
+					sdram_init_cas <= mpu_nop(1);
+					sdram_init_we  <= mpu_nop(2);
 				end if;
 			end if;
 		end process;
 
 
 	end block;
-	sdram_init_cs <= sdram_init_req;
 
 	-----------------
 	--- SDR_TIMERs --
