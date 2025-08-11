@@ -61,7 +61,7 @@ entity sdram_init is
 		sdram_init_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 
 		sdram_refi_rdy : in  std_logic := '-';
-		sdram_refi_req : out std_logic := '0';
+		sdram_refi_req : buffer std_logic := '0';
 		sdram_init_clk : in  std_logic := '-';
 		sdram_init_wlrdy : in  std_logic := '-';
 		sdram_init_wlreq : buffer std_logic;
@@ -86,13 +86,13 @@ architecture def of sdram_init is
 	signal timer_rdy : std_ulogic := '0';
 	signal timer_req : std_ulogic := '0';
 
-	constant mr  : string := "{mr0 :'000', mr1:'001', mr2:'010', mr3:'011'}";
 	constant cmd : string := "{nop :'111', mrs:'000', pre:'010', ref:'001', zqc:'110'}";
 
 	constant sdr_init_data : string := "{"                         &
 		"sdr:{"                                                    &
 			"seq:["                                                &
 				"{nop, PreRST,  {cs:1, cke:0}},"                   &
+				"{nop, XPR,     {cs:0, cke:1}},"                   &
 				"{pre, RP,      {cs:0, cke:1}},"                   &
 				"{ref, RFC,     {cs:0, cke:1}},"                   &
 				"{ref, RFC,     {cs:0, cke:1}},"                   &
@@ -161,9 +161,10 @@ begin
 			a : std_logic_vector(sdram_init_a'range);
 		end record;
 
-		impure function sdr (
+		impure function sdr_mr (
 			constant row : in string)
 			return ba_record is
+			constant mr  : string := "{mr0 :'00'}";
 			constant op  : string := hdo(row)**0;
 			constant reg : string := hdo(hdo(row)**2)**".a";
 			variable b   : std_logic_vector(sdram_init_b'range);
@@ -184,16 +185,17 @@ begin
 					a(9)          := '0';
 				else
 					assert false
-						report "sdr () : row => " & row & " invalid register"
+						report "sdr_mr () : row => " & row & " invalid register"
 						severity failure;
 				end if;
 			end if;
 			return (b, a);
 		end;
 
-		impure function ddr(
+		impure function ddr_mr(
 			constant row : in string)
 			return ba_record is
+			constant mr  : string := "{mr0 :'000', mr1:'001'}";
 			constant op  : string := hdo(row)**0;
 			constant reg : string := hdo(hdo(row)**2)**".a";
 			variable b : std_logic_vector(sdram_init_b'range);
@@ -223,16 +225,17 @@ begin
 					a := (others =>'0');
 				else
 					assert false
-						report "ddr () : row => " & row & " invalid register"
+						report "ddr_mr () : row => " & row & " invalid register"
 						severity failure;
 				end if;
 			end if;
 			return (b, a);
 		end;
 
-		impure function ddr2(
+		impure function ddr2_mr(
 			constant row : in string)
 			return ba_record is
+			constant mr  : string := "{mr0 :'000', mr1:'001', mr2:'010', mr3:'011'}";
 			constant op  : string := hdo(row)**0;
 			constant reg : string := hdo(hdo(row)**2)**".a";
 			variable b : std_logic_vector(sdram_init_b'range);
@@ -294,16 +297,17 @@ begin
 					a := (others => '0');
 				else
 					assert false
-						report "ddr2 () : row => " & row & " invalid register"
+						report "ddr2_mr () : row => " & row & " invalid register"
 						severity failure;
 				end if;
 			end if;
 			return (b,a);
 		end;
 
-		impure function ddr3(
+		impure function ddr3_mr(
 			constant row : in string)
 			return ba_record is
+			constant mr  : string := "{mr0 :'000', mr1:'001', mr2:'010', mr3:'011'}";
 			constant op  : string := hdo(row)**0;
 			constant reg : string := hdo(hdo(row)**2)**".a";
 			variable b : std_logic_vector(sdram_init_b'range);
@@ -388,7 +392,7 @@ begin
 					a(2) := sdram_init_mpr(0);
 				else
 					assert false
-						report "ddr3 () : row => " & '"' & row & '"' & " invalid register"
+						report "ddr3_mr () : row => " & '"' & row & '"' & " invalid register"
 						severity failure;
 				end if;
 			end if;
@@ -418,6 +422,9 @@ begin
 							end if;
 						end case;
 					else
+						if (sdram_refi_req xor sdram_refi_rdy)='0' then
+							sdram_refi_req <= not to_stdulogic(to_bit(sdram_refi_rdy));
+						end if;
 						state := s_init;
 					end if;
 					for i in 0 to init_seq_length-1 loop
@@ -428,13 +435,13 @@ begin
 							sdram_init_cke <= hdo(hdo(init_seq**i)**2)**".cke";
 							sdram_init_odt <= hdo(hdo(init_seq**i)**2)**".odt='0'";
 							if generation="sdr" then
-								(sdram_init_b, sdram_init_a)  <= sdr(init_seq**i);
+								(sdram_init_b, sdram_init_a)  <= sdr_mr(init_seq**i);
 							elsif generation="ddr" then
-								(sdram_init_b, sdram_init_a)  <= ddr(init_seq**i);
-							elsif generation="ddr2" then
-								(sdram_init_b, sdram_init_a)  <= ddr2(init_seq**i);
-							elsif generation="ddr3" then
-								(sdram_init_b, sdram_init_a)  <= ddr3(init_seq**i);
+								(sdram_init_b, sdram_init_a)  <= ddr_mr(init_seq**i);
+							elsif generation="ddr2_mr" then
+								(sdram_init_b, sdram_init_a)  <= ddr2_mr(init_seq**i);
+							elsif generation="ddr3_mr" then
+								(sdram_init_b, sdram_init_a)  <= ddr3_mr(init_seq**i);
 							else
 								assert false
 									report "sdram_init : generation => " & '"' & generation & '"' & " invalid"
@@ -455,7 +462,6 @@ begin
 	end block;
 
 	sdram_timer_b : block
-
 		constant gentmng_data : string := hdo(generation_data)**".tmng";
 
 		constant PreRST  : natural := max(natural(real'(hdo(gentmng_data)**".tPreRST=0")/ctlr_tcp),1);
@@ -478,7 +484,6 @@ begin
 			function get_timer (
 				constant id : string)
 				return natural is
-
 			begin
 				assert not debug
 					report "get_timer() : id => " & '"' & id & '"'
@@ -516,8 +521,9 @@ begin
 				end if;
 				return 0;
 			end;
+
 			variable timers : natural_vector(0 to 32-1);
-			variable n : natural;
+			variable n      : natural;
 		begin
 			n := 0;
 			for i in init_seq'range loop

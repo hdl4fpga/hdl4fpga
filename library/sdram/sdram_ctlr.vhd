@@ -210,7 +210,7 @@ begin
 		sdram_refi_req   => sdram_refi_req,
 		sdram_refi_rdy   => sdram_refi_rdy);
 
-	ctlr_cfgrdy   <= sdram_init_rdy;
+	ctlr_cfgrdy   <= (sdram_init_rdy xnor sdram_init_req) and not ctlr_rst;
 	sdram_mpu_rst <= not ctlr_cfgrdy;
 	sdram_pgm_e : entity hdl4fpga.sdram_pgm
 	port map (
