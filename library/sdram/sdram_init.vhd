@@ -109,7 +109,7 @@ architecture def of sdram_init is
 				"{ref, RFC,     {cs:0, cke:1}},"                   &
 				"{ref, RFC,     {cs:0, cke:1}},"                   &
 				"{mrs, MRD,     {cs:0, cke:1, a:mr0}},"            &
-				"{nop, DLL,     {cs:0, cke:1}},"                   &
+				"{nop, cDLL,    {cs:0, cke:1}},"                   &
 				"{nop, REFi,    {cs:0, cke:1}}]},"                 &
 		"ddr2:{"                                                   &
 			"seq:["                                                &
@@ -141,7 +141,7 @@ architecture def of sdram_init is
 				"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_on}},"   &
 				"{nop, WLDQSEN, {cs:0, cke:1, rst:1}},"            &
 				"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_off}},"  &
-				"{nop, DLL,     {cs:0, cke:1, rst:1}},"            &
+				"{nop, cDLL,    {cs:0, cke:1, rst:1}},"            &
 				"{nop, REFi,    {cs:0, cke:1, rst:1}}]}}";
 
 	constant init_data       : string  := hdo(sdr_init_data)**('.'&generation&"={}");
@@ -438,9 +438,9 @@ begin
 								(sdram_init_b, sdram_init_a)  <= sdr_mr(init_seq**i);
 							elsif generation="ddr" then
 								(sdram_init_b, sdram_init_a)  <= ddr_mr(init_seq**i);
-							elsif generation="ddr2_mr" then
+							elsif generation="ddr2" then
 								(sdram_init_b, sdram_init_a)  <= ddr2_mr(init_seq**i);
-							elsif generation="ddr3_mr" then
+							elsif generation="ddr3" then
 								(sdram_init_b, sdram_init_a)  <= ddr3_mr(init_seq**i);
 							else
 								assert false
@@ -467,60 +467,33 @@ begin
 		constant PreRST  : natural := max(natural(real'(hdo(gentmng_data)**".tPreRST=0")/ctlr_tcp),1);
 		constant RP      : natural := max(natural(real'(hdo(sdramtmng_data)**".tRP=0")/ctlr_tcp),1);
 		constant PstRST  : natural := max(natural(real'(hdo(gentmng_data)**".tPstRST=0")/ctlr_tcp),1);
-		constant cDLL    : natural := hdo(gentmng_data)**".cDLL=1";
 		constant RPA     : natural := max(natural(real'(hdo(gentmng_data)**".tRPA=0")/ctlr_tcp),1);
-		constant ZQINIT  : natural := hdo(gentmng_data)**".ZQINIT=1";
 		constant MRD     : natural := max(natural(real'(hdo(sdramtmng_data)**".tMRD=0")/ctlr_tcp),1);
+		constant REFi    : natural := max(natural(real'(hdo(sdramtmng_data)**".tREFI")/ctlr_tcp),1);
+		constant RFC     : natural := max(natural(real'(hdo(sdramtmng_data)**".tRFC")/ctlr_tcp),1);
+		constant cDLL    : natural := hdo(gentmng_data)**".cDLL=1";
+		constant ZQINIT  : natural := hdo(gentmng_data)**".ZQINIT=1";
 		constant MODu    : natural := hdo(gentmng_data)**".MODu=1";
 		constant XPR     : natural := hdo(gentmng_data)**".XPR=1";
 		constant WLDQSEN : natural := hdo(gentmng_data)**".WLDQSEN=1";
-		constant REFi    : natural := max(natural(real'(hdo(sdramtmng_data)**".tREFI")/ctlr_tcp),1);
-		constant RFC     : natural := max(natural(real'(hdo(sdramtmng_data)**".tRFC")/ctlr_tcp),1);
+
+		constant sdram_timers : string := '{' &
+			"PreRST  : " & natural'image(PreRST) & ',' &
+			"RP      : " & natural'image(RP)     & ',' &
+			"PstRST  : " & natural'image(PstRST) & ',' &
+			"cDLL    : " & natural'image(cDLL)   & ',' &
+			"RPA     : " & natural'image(RPA)    & ',' &
+			"ZQINIT  : " & natural'image(ZQINIT) & ',' &
+			"MRD     : " & natural'image(MRD)    & ',' &
+			"MODu    : " & natural'image(MODu)   & ',' &
+			"XPR     : " & natural'image(XPR)    & ',' &
+			"WLDQSEN : " & natural'image(WLDQSEN)& ',' &
+			"REFi    : " & natural'image(REFi)   & ',' &
+			"RFC     : " & natural'image(RFC)    & '}';
 
 		function get_timers (
 			constant init_seq : string)
 			return natural_vector is
-
-			function get_timer (
-				constant id : string)
-				return natural is
-			begin
-				assert not debug
-					report "get_timer() : id => " & '"' & id & '"'
-					severity note;
-				if id="PreRST" then 
-					return PreRST;
-				elsif id="RP" then 
-					return RP;
-				elsif id="PstRST" then 
-					return PstRST;
-				elsif id="cDLL" then 
-					return cDLL;
-				elsif id="RPA" then 
-					return RPA;
-				elsif id="ZQINIT" then 
-					return ZQINIT;
-				elsif id="MRD" then 
-					return MRD;
-				elsif id="MODu" then 
-					return MODu;
-				elsif id="XPR" then 
-					return XPR;
-				elsif id="WLDQSEN" then 
-					return WLDQSEN;
-				elsif id="REFi" then 
-					return REFi;
-				elsif id="RFC" then 
-					return RFC;
-				elsif id="DLL" then 
-					return cDLL;
-				else
-					assert id'length /= 0
-						report "get_timer() : id => "&'"'& id & '"' & " invalid id"
-						severity failure;
-				end if;
-				return 0;
-			end;
 
 			variable timers : natural_vector(0 to 32-1);
 			variable n      : natural;
@@ -530,7 +503,10 @@ begin
 				assert n < timers'length
 					report "get_timers () : n => " & natural'image(n) & " greater than timers length " & natural'image(timers'length)
 					severity failure;
-				timers(n) := get_timer(hdo(hdo(init_seq)**n)**1);
+				assert not debug
+					report  "get_timers () : timer id => " & string'((hdo(init_seq)**('['&natural'image(n)&"]=[]"))**"[1]=none")
+					severity note;
+				timers(n) := hdo(sdram_timers)**('.' & string'((hdo(init_seq)**('['&natural'image(n)&"]=[]"))**"[1]=none"));
 				exit when timers(n)=0;
 				n := n + 1;
 			end loop;
