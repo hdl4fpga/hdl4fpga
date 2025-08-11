@@ -89,58 +89,63 @@ architecture def of sdram_init is
 	constant mr  : string := "{mr0 :'000', mr1:'001', mr2:'010', mr3:'011'}";
 	constant cmd : string := "{nop :'111', mrs:'000', pre:'010', ref:'001', zqc:'110'}";
 
-	constant sdr_init_seq : string := "{"                      &
-		"sdr:["                                                &
-			"{nop, PreRST,  {cs:1, cke:0}},"                   &
-			"{pre, RP,      {cs:0, cke:1}},"                   &
-			"{ref, RFC,     {cs:0, cke:1}},"                   &
-			"{ref, RFC,     {cs:0, cke:1}},"                   &
-			"{mrs, MRD,     {cs:0, cke:1, a:mr0}},"            &
-			"{nop, REFi,    {cs:0, cke:1}}],"                  &
-		"ddr:["                                                &
-			"{nop, PreRST,  {cs:0, cke:0}},"                   &
-			"{nop, XPR,     {cs:0, cke:1}},"                   &
-			"{pre, RP,      {cs:0, cke:1}},"                   &
-			"{mrs, MRD,     {cs:0, cke:1, a:mr1}},"            &
-			"{mrs, MRD,     {cs:0, cke:1, a:rst_dll}},"        &
-			"{pre, RPA,     {cs:0, cke:1}},"                   &
-			"{ref, RFC,     {cs:0, cke:1}},"                   &
-			"{ref, RFC,     {cs:0, cke:1}},"                   &
-			"{mrs, MRD,     {cs:0, cke:1, a:mr0}},"            &
-			"{nop, DLL,     {cs:0, cke:1}},"                   &
-			"{nop, REFi,    {cs:0, cke:1}}],"                  &
-		"ddr2:["                                               &
-			"{nop, PreRST,  {cs:0, cke:0}},"                   &
-			"{nop, XPR,     {cs:1, cke:1}},"                   &
-			"{pre, RPA,     {cs:1, cke:1}},"                   &
-			"{mrs, MRD,     {cs:1, cke:1, a:mr2}},"            &
-			"{mrs, MRD,     {cs:1, cke:1, a:mr3}},"            &
-			"{mrs, MRD,     {cs:1, cke:1, a:ena_dll}},"        &
-			"{mrs, MRD,     {cs:1, cke:1, a:rst_dll}},"        &
-			"{pre, RPA,     {cs:1, cke:1}},"                   &
-			"{ref, RFC,     {cs:1, cke:1}},"                   &
-			"{ref, RFC,     {cs:1, cke:1}},"                   &
-			"{mrs, MRD,     {cs:1, cke:1, a:mr0}},"            &
-			"{mrs, MRD,     {cs:1, cke:1, a:ena_ocd}},"        &
-			"{mrs, MRD,     {cs:1, cke:1, a:mr1}},"            &
-			"{pre, RPA,     {cs:1, cke:1}},"                   &
-			"{nop, REFi,    {cs:1, cke:1}}],"                  &
-		"ddr3:["                                               &
-			"{nop, PreRST,  {cs:1, cke:0, rst:0}},"            &
-			"{nop, PstRST,  {cs:1, cke:0, rst:1}},"            &
-			"{nop, XPR,     {cs:0, cke:1, rst:1}},"            &
-			"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr2}},"     &
-			"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr3}},"     &
-			"{mrs, MRD,     {cs:0, cke:1, rst:1, a:dll_dis}}," &
-			"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr0}},"     &
-			"{zqc, ZQINIT,  {cs:0, cke:1, rst:1}},"            &
-			"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_on}},"   &
-			"{nop, WLDQSEN, {cs:0, cke:1, rst:1}},"            &
-			"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_off}},"  &
-			"{nop, DLL,     {cs:0, cke:1, rst:1}},"            &
-			"{nop, REFi,    {cs:0, cke:1, rst:1}}]}";
+	constant sdr_init_data : string := "{"                         &
+		"sdr:{"                                                    &
+			"seq:["                                                &
+				"{nop, PreRST,  {cs:1, cke:0}},"                   &
+				"{pre, RP,      {cs:0, cke:1}},"                   &
+				"{ref, RFC,     {cs:0, cke:1}},"                   &
+				"{ref, RFC,     {cs:0, cke:1}},"                   &
+				"{mrs, MRD,     {cs:0, cke:1, a:mr0}},"            &
+				"{nop, REFi,    {cs:0, cke:1}}]},"                 &
+		"ddr:{"                                                    &
+			"seq:["                                                &
+				"{nop, PreRST,  {cs:0, cke:0}},"                   &
+				"{nop, XPR,     {cs:0, cke:1}},"                   &
+				"{pre, RP,      {cs:0, cke:1}},"                   &
+				"{mrs, MRD,     {cs:0, cke:1, a:mr1}},"            &
+				"{mrs, MRD,     {cs:0, cke:1, a:rst_dll, ba:mr0}}," &
+				"{pre, RPA,     {cs:0, cke:1}},"                   &
+				"{ref, RFC,     {cs:0, cke:1}},"                   &
+				"{ref, RFC,     {cs:0, cke:1}},"                   &
+				"{mrs, MRD,     {cs:0, cke:1, a:mr0}},"            &
+				"{nop, DLL,     {cs:0, cke:1}},"                   &
+				"{nop, REFi,    {cs:0, cke:1}}]},"                 &
+		"ddr2:{"                                                   &
+			"seq:["                                                &
+				"{nop, PreRST,  {cs:0, cke:0}},"                   &
+				"{nop, XPR,     {cs:1, cke:1}},"                   &
+				"{pre, RPA,     {cs:1, cke:1}},"                   &
+				"{mrs, MRD,     {cs:1, cke:1, a:mr2}},"            &
+				"{mrs, MRD,     {cs:1, cke:1, a:mr3}},"            &
+				"{mrs, MRD,     {cs:1, cke:1, a:ena_dll,ba:mr1}}," &
+				"{mrs, MRD,     {cs:1, cke:1, a:rst_dll,ba:mr0}}," &
+				"{pre, RPA,     {cs:1, cke:1}},"                   &
+				"{ref, RFC,     {cs:1, cke:1}},"                   &
+				"{ref, RFC,     {cs:1, cke:1}},"                   &
+				"{mrs, MRD,     {cs:1, cke:1, a:mr0}},"            &
+				"{mrs, MRD,     {cs:1, cke:1, a:ena_ocd,ba:mr1}}," &
+				"{mrs, MRD,     {cs:1, cke:1, a:mr1}},"            &
+				"{pre, RPA,     {cs:1, cke:1}},"                   &
+				"{nop, REFi,    {cs:1, cke:1}}]},"                 &
+		"ddr3:{"                                                   &
+			"seq:["                                                &
+				"{nop, PreRST,  {cs:1, cke:0, rst:0}},"            &
+				"{nop, PstRST,  {cs:1, cke:0, rst:1}},"            &
+				"{nop, XPR,     {cs:0, cke:1, rst:1}},"            &
+				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr2}},"     &
+				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr3}},"     &
+				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:dll_dis,ba:mr1}}," &
+				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr0}},"     &
+				"{zqc, ZQINIT,  {cs:0, cke:1, rst:1}},"            &
+				"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_on,ba:mr1}}," &
+				"{nop, WLDQSEN, {cs:0, cke:1, rst:1}},"            &
+				"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_offba:mr1}}," &
+				"{nop, DLL,     {cs:0, cke:1, rst:1}},"            &
+				"{nop, REFi,    {cs:0, cke:1, rst:1}}]}}";
 
-	constant init_seq        : string  := hdo(sdr_init_seq)**('.'&generation&"=[]");
+	constant init_data       : string  := hdo(sdr_init_data)**('.'&generation&"={}");
+	constant init_seq        : string  := hdo(init_data)**".seq=[]";
 	constant init_seq_length : natural := hdl4fpga.hdo.length(init_seq);
 
 	signal timer_sel  : std_logic_vector(unsigned_num_bits(init_seq_length-1)-1 downto 0) := (others => '0');
@@ -171,6 +176,7 @@ begin
 					a(6 downto 4) := sdram_init_cl(3-1 downto 0);
 					a(8 downto 7) := "00";
 					a(9)          := '0';
+					report to_string(a);
 					return a;
 				end if;
 
@@ -427,7 +433,7 @@ begin
 					sdram_init_cs  <= hdo(hdo(init_seq**step)**2)**".cs";
 					sdram_init_cke <= hdo(hdo(init_seq**step)**2)**".cke";
 					sdram_init_odt <= hdo(hdo(init_seq**step)**2)**".odt='0'";
-					sdram_init_a   <= ddr3(init_seq**step);
+					sdram_init_a   <= sdr(init_seq**step);
 					timer_sel <= std_logic_vector(to_unsigned(step, timer_sel'length));
 					timer_req <= not timer_rdy;
 				else
