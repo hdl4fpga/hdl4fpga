@@ -394,7 +394,7 @@ begin
 				end if;
 
 				assert false
-					report "ddr3 () : row => " & row & " invalid register"
+					report "ddr3 () : row => " & '"' & row & '"' & " invalid register"
 					severity failure;
 			end if;
 			return a;
