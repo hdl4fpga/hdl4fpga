@@ -104,7 +104,7 @@ architecture def of sdram_init is
 				"{nop, XPR,     {cs:0, cke:1}},"                   &
 				"{pre, RP,      {cs:0, cke:1}},"                   &
 				"{mrs, MRD,     {cs:0, cke:1, a:mr1}},"            &
-				"{mrs, MRD,     {cs:0, cke:1, a:rst_dll, ba:mr0}}," &
+				"{mrs, MRD,     {cs:0, cke:1, a:rst_dll}},"        &
 				"{pre, RPA,     {cs:0, cke:1}},"                   &
 				"{ref, RFC,     {cs:0, cke:1}},"                   &
 				"{ref, RFC,     {cs:0, cke:1}},"                   &
@@ -118,13 +118,13 @@ architecture def of sdram_init is
 				"{pre, RPA,     {cs:1, cke:1}},"                   &
 				"{mrs, MRD,     {cs:1, cke:1, a:mr2}},"            &
 				"{mrs, MRD,     {cs:1, cke:1, a:mr3}},"            &
-				"{mrs, MRD,     {cs:1, cke:1, a:ena_dll,ba:mr1}}," &
-				"{mrs, MRD,     {cs:1, cke:1, a:rst_dll,ba:mr0}}," &
+				"{mrs, MRD,     {cs:1, cke:1, a:ena_dll}},"        &
+				"{mrs, MRD,     {cs:1, cke:1, a:rst_dll}},"        &
 				"{pre, RPA,     {cs:1, cke:1}},"                   &
 				"{ref, RFC,     {cs:1, cke:1}},"                   &
 				"{ref, RFC,     {cs:1, cke:1}},"                   &
 				"{mrs, MRD,     {cs:1, cke:1, a:mr0}},"            &
-				"{mrs, MRD,     {cs:1, cke:1, a:ena_ocd,ba:mr1}}," &
+				"{mrs, MRD,     {cs:1, cke:1, a:ena_ocd}},"        &
 				"{mrs, MRD,     {cs:1, cke:1, a:mr1}},"            &
 				"{pre, RPA,     {cs:1, cke:1}},"                   &
 				"{nop, REFi,    {cs:1, cke:1}}]},"                 &
@@ -135,18 +135,18 @@ architecture def of sdram_init is
 				"{nop, XPR,     {cs:0, cke:1, rst:1}},"            &
 				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr2}},"     &
 				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr3}},"     &
-				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:dll_dis,ba:mr1}}," &
+				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:dll_dis}}," &
 				"{mrs, MRD,     {cs:0, cke:1, rst:1, a:mr0}},"     &
 				"{zqc, ZQINIT,  {cs:0, cke:1, rst:1}},"            &
-				"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_on,ba:mr1}}," &
+				"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_on}},"   &
 				"{nop, WLDQSEN, {cs:0, cke:1, rst:1}},"            &
-				"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_offba:mr1}}," &
+				"{mrs, MODu,    {cs:0, cke:1, rst:1, a:wl_off}},"  &
 				"{nop, DLL,     {cs:0, cke:1, rst:1}},"            &
 				"{nop, REFi,    {cs:0, cke:1, rst:1}}]}}";
 
 	constant init_data       : string  := hdo(sdr_init_data)**('.'&generation&"={}");
 	constant init_seq        : string  := hdo(init_data)**".seq=[]";
-	constant init_seq_length : natural := hdl4fpga.hdo.length(init_seq);
+	constant init_seq_length : natural := length(init_seq);
 
 	signal timer_sel  : std_logic_vector(unsigned_num_bits(init_seq_length-1)-1 downto 0) := (others => '0');
 
@@ -156,102 +156,103 @@ begin
 		constant wrl      : natural          := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/ctlr_tcp))*gear;
 		constant init_wr  : std_logic_vector := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']='000'");
 
-		impure function sdr(
+		type ba_record is record
+			b : std_logic_vector(sdram_init_b'range);
+			a : std_logic_vector(sdram_init_a'range);
+		end record;
+
+		impure function sdr (
 			constant row : in string)
-			return std_logic_vector is
+			return ba_record is
 			constant op  : string := hdo(row)**0;
 			constant reg : string := hdo(hdo(row)**2)**".a";
-			variable a : std_logic_vector(sdram_init_a'range);
+			variable b   : std_logic_vector(sdram_init_b'range);
+			variable a   : std_logic_vector(sdram_init_a'range);
 		begin
+			b := (others => '-');
 			a := (others => '-');
 			if op ="pre" then
 				a(10) := '1';
-				return a;
-			end if;
-			if reg'length > 0  then
+			elsif reg'length > 0  then
 				if reg="mr0" then 
+					b := hdo(mr)**".mr0";
 					a := (others => '0');
 					a(2 downto 0) := sdram_init_bl(3-1 downto 0);
 					a(3)          := sdram_init_bt;
 					a(6 downto 4) := sdram_init_cl(3-1 downto 0);
 					a(8 downto 7) := "00";
 					a(9)          := '0';
-					report to_string(a);
-					return a;
+				else
+					assert false
+						report "sdr () : row => " & row & " invalid register"
+						severity failure;
 				end if;
-
-				assert false
-					report "sdr () : row => " & row & " invalid register"
-					severity failure;
 			end if;
-			return a;
+			return (b, a);
 		end;
 
 		impure function ddr(
 			constant row : in string)
-			return std_logic_vector is
+			return ba_record is
 			constant op  : string := hdo(row)**0;
 			constant reg : string := hdo(hdo(row)**2)**".a";
+			variable b : std_logic_vector(sdram_init_b'range);
 			variable a : std_logic_vector(sdram_init_a'range);
 		begin
+			b := (others => '-');
 			a := (others => '-');
 			if op ="pre" then
 				a(10) := '1';
-				return a;
-			end if;
-			if reg'length > 0  then
-				report reg;
+			elsif reg'length > 0  then
 				if reg="rst_dll" then
+					b := hdo(mr)**".mr0";
 					a := (others => '0');
 					a(2 downto 0) := sdram_init_bl(3-1 downto 0);
 					a(3)          := sdram_init_bt;
 					a(6 downto 4) := sdram_init_cl(3-1 downto 0);
 					a(8)          := '1';
-					return a;
-				end if;
-				if reg="mr0" then
+				elsif reg="mr0" then
+					b := hdo(mr)**".mr0";
 					a := (others => '0');
 					a(2 downto 0) := sdram_init_bl(3-1 downto 0);
 					a(3)          := sdram_init_bt;
 					a(6 downto 4) := sdram_init_cl(3-1 downto 0);
 					a(8)          := '0';
-					return a;
+				elsif reg="mr1" then
+					b := hdo(mr)**".mr1";
+					a := (others =>'0');
+				else
+					assert false
+						report "ddr () : row => " & row & " invalid register"
+						severity failure;
 				end if;
-				if reg="mr1" then
-					return (a'range => '0');
-				end if;
-
-				assert false
-					report "ddr () : row => " & row & " invalid register"
-					severity failure;
 			end if;
-			return a;
+			return (b, a);
 		end;
 
 		impure function ddr2(
 			constant row : in string)
-			return std_logic_vector is
+			return ba_record is
 			constant op  : string := hdo(row)**0;
 			constant reg : string := hdo(hdo(row)**2)**".a";
+			variable b : std_logic_vector(sdram_init_b'range);
 			variable a : std_logic_vector(sdram_init_a'range);
 		begin
+			b := (others => '-');
 			a := (others => '-');
 			if op ="pre" then
 				a(10) := '1';
-				return a;
-			end if;
-			if reg'length > 0  then
+			elsif reg'length > 0  then
 				report reg;
 				if reg="ena_dll" then
+					b := hdo(mr)**".mr1";
 					a := (others => '0');
-					return a;
-				end if;
-				if reg="rst_dll" then
+				elsif reg="rst_dll" then
+					b := hdo(mr)**".mr0";
 					a := (others => '0');
 					a(8) := '1';
-					return a;
-				end if;
-				if reg="ena_ocd" then
+				elsif reg="ena_ocd" then
+					b := hdo(mr)**".mr1";
 					a := (others => '0');
 					a(0)  := '0';
 					a(1)  := sdram_init_ods(0);
@@ -262,9 +263,8 @@ begin
 					a(10) := sdram_init_tdqs(0);
 					a(11) := sdram_init_rdqs(0);
 					a(12) := '0';
-					return a;
-				end if;
-				if reg="mr0" then
+				elsif reg="mr0" then
+					b := hdo(mr)**".mr0";
 					a := (others => '0');
 					a( 2 downto 0) := sdram_init_bl(3-1 downto 0);
 					a(3)  := sdram_init_bt;
@@ -273,9 +273,8 @@ begin
 					a(8)  := '0';
 					a(11 downto 9) := init_wr;
 					a(12) := sdram_init_pd(0);
-					return a;
-				end if;
-				if reg="mr1" then
+				elsif reg="mr1" then
+					b := hdo(mr)**".mr1";
 					a := (others => '0');
 					a(0)  := '0';
 					a(1)  := sdram_init_ods(0);
@@ -286,43 +285,39 @@ begin
 					a(10) := sdram_init_tdqs(0);
 					a(11) := sdram_init_rdqs(0);
 					a(12) := '0';
-					return a;
-				end if;
-				if reg="mr2" then
+				elsif reg="mr2" then
+					b := hdo(mr)**".mr2";
 					a := (others => '0');
 					a(7) := '1';
-					return a;
-				end if;
-				if reg="mr3" then
+				elsif reg="mr3" then
+					b := hdo(mr)**".mr3";
 					a := (others => '0');
-					return a;
+				else
+					assert false
+						report "ddr2 () : row => " & row & " invalid register"
+						severity failure;
 				end if;
-
-				assert false
-					report "ddr2 () : row => " & row & " invalid register"
-					severity failure;
 			end if;
-			return a;
+			return (b,a);
 		end;
 
 		impure function ddr3(
 			constant row : in string)
-			return std_logic_vector is
+			return ba_record is
 			constant op  : string := hdo(row)**0;
 			constant reg : string := hdo(hdo(row)**2)**".a";
+			variable b : std_logic_vector(sdram_init_b'range);
 			variable a : std_logic_vector(sdram_init_a'range);
 		begin
+			b := (others => '-');
 			a := (others => '-');
 			if op ="pre" then
 				a(10) := '1';
-				return a;
-			end if;
-			if op ="zqc" then
+			elsif op ="zqc" then
 				a(10) := '1';
-				return a;
-			end if;
-			if reg'length > 0  then
+			elsif reg'length > 0  then
 				if reg="mr0" then
+					b := hdo(mr)**".mr0";
 					a := (others => '0');
 					a(1 downto 0)  := sdram_init_bl(2-1 downto 0);
 					a(2)  := sdram_init_cl(0);
@@ -332,9 +327,8 @@ begin
 					a(8)  := '1'; -- DLL reset
 					a(11 downto 9) := init_wr;
 					a(12) := sdram_init_pd(0);
-					return a;
-				end if;
-				if reg="dll_dis" then
+				elsif reg="dll_dis" then
+					b := hdo(mr)**".mr1";
 					a := (others => '0');
 					a(0)  := '1';
 					a(1)  := sdram_init_ods(0);
@@ -348,9 +342,8 @@ begin
 					a(10) := '0';
 					a(11) := sdram_init_tdqs(0);
 					a(12) := sdram_init_rdqs(0);
-					return a;
-				end if;
-				if reg="wl_on" then
+				elsif reg="wl_on" then
+					b := hdo(mr)**".mr1";
 					a := (others => '0');
 					a(0)  := '0';
 					a(1)  := sdram_init_ods(0);
@@ -364,9 +357,8 @@ begin
 					a(10) := '0';
 					a(11) := sdram_init_tdqs(0);
 					a(12) := sdram_init_rdqs(0);
-					return a;
-				end if;
-				if reg="wl_off" then
+				elsif reg="wl_off" then
+					b := hdo(mr)**".mr1";
 					a := (others => '0');
 					a(0)  := '0';
 					a(1)  := sdram_init_ods(0);
@@ -380,9 +372,8 @@ begin
 					a(10) := '0';
 					a(11) := sdram_init_tdqs(0);
 					a(12) := sdram_init_rdqs(0);
-					return a;
-				end if;
-				if reg="mr2" then
+				elsif reg="mr2" then
+					b := hdo(mr)**".mr2";
 					a := (others => '0');
 					a(2 downto 0) := "000";
 					a(5 downto 3) := sdram_init_cwl;
@@ -390,26 +381,27 @@ begin
 					a(7) := '0'; -- self refresh temperature
 					a(8) := '0';
 					a(10 downto 9) := sdram_init_drtt;
-					return a;
-				end if;
-				if reg="mr3" then
+				elsif reg="mr3" then
+					b := hdo(mr)**".mr3";
 					a := (others => '0');
 					a(1 downto 0) := sdram_init_mprrf;
 					a(2) := sdram_init_mpr(0);
-					return a;
+				else
+					assert false
+						report "ddr3 () : row => " & '"' & row & '"' & " invalid register"
+						severity failure;
 				end if;
-
-				assert false
-					report "ddr3 () : row => " & '"' & row & '"' & " invalid register"
-					severity failure;
 			end if;
-			return a;
+			return (b, a);
 		end;
+
 	begin
+
 		process (sdram_init_clk)
 			variable step : natural range 0 to init_seq_length-1;
 			type states is (s_init, s_run);
 			variable state : states;
+			variable sdram_init_ba : ba_record;
 		begin
 			if rising_edge(sdram_init_clk) then
 				if (timer_req xor timer_rdy)='0' then
@@ -435,7 +427,19 @@ begin
 							sdram_init_cs  <= hdo(hdo(init_seq**i)**2)**".cs";
 							sdram_init_cke <= hdo(hdo(init_seq**i)**2)**".cke";
 							sdram_init_odt <= hdo(hdo(init_seq**i)**2)**".odt='0'";
-							sdram_init_a   <= sdr(init_seq**i);
+							if generation="sdr" then
+								(sdram_init_b, sdram_init_a)  <= sdr(init_seq**i);
+							elsif generation="ddr" then
+								(sdram_init_b, sdram_init_a)  <= ddr(init_seq**i);
+							elsif generation="ddr2" then
+								(sdram_init_b, sdram_init_a)  <= ddr2(init_seq**i);
+							elsif generation="ddr3" then
+								(sdram_init_b, sdram_init_a)  <= ddr3(init_seq**i);
+							else
+								assert false
+									report "sdram_init : generation => " & '"' & generation & '"' & " invalid"
+									severity failure;
+							end if;
 							timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
 							exit;
 						end if;
@@ -450,10 +454,6 @@ begin
 
 	end block;
 
-	-----------------
-	--- SDR_TIMERs --
-	-----------------
-
 	sdram_timer_b : block
 
 		constant gentmng_data : string := hdo(generation_data)**".tmng";
@@ -467,7 +467,7 @@ begin
 		constant MRD     : natural := max(natural(real'(hdo(sdramtmng_data)**".tMRD=0")/ctlr_tcp),1);
 		constant MODu    : natural := hdo(gentmng_data)**".MODu=1";
 		constant XPR     : natural := hdo(gentmng_data)**".XPR=1";
-		constant WLDQSEN : natural := hdo(gentmng_data)**".WLDQSEN=0";
+		constant WLDQSEN : natural := hdo(gentmng_data)**".WLDQSEN=1";
 		constant REFi    : natural := max(natural(real'(hdo(sdramtmng_data)**".tREFI")/ctlr_tcp),1);
 		constant RFC     : natural := max(natural(real'(hdo(sdramtmng_data)**".tRFC")/ctlr_tcp),1);
 
@@ -480,49 +480,40 @@ begin
 				return natural is
 
 			begin
-				report "get_timer() : id => " & '"' & id & '"';
+				assert not debug
+					report "get_timer() : id => " & '"' & id & '"'
+					severity note;
 				if id="PreRST" then 
 					return PreRST;
-				end if;
-				if id="RP" then 
+				elsif id="RP" then 
 					return RP;
-				end if;
-				if id="PstRST" then 
+				elsif id="PstRST" then 
 					return PstRST;
-				end if;
-				if id="cDLL" then 
+				elsif id="cDLL" then 
 					return cDLL;
-				end if;
-				if id="RPA" then 
+				elsif id="RPA" then 
 					return RPA;
-				end if;
-				if id="ZQINIT" then 
+				elsif id="ZQINIT" then 
 					return ZQINIT;
-				end if;
-				if id="MRD" then 
+				elsif id="MRD" then 
 					return MRD;
-				end if;
-				if id="MODu" then 
+				elsif id="MODu" then 
 					return MODu;
-				end if;
-				if id="XPR" then 
+				elsif id="XPR" then 
 					return XPR;
-				end if;
-				if id="WLDQSEN" then 
+				elsif id="WLDQSEN" then 
 					return WLDQSEN;
-				end if;
-				if id="REFi" then 
+				elsif id="REFi" then 
 					return REFi;
-				end if;
-				if id="RFC" then 
+				elsif id="RFC" then 
 					return RFC;
-				end if;
-				if id="DLL" then 
+				elsif id="DLL" then 
 					return cDLL;
+				else
+					assert id'length /= 0
+						report "get_timer() : id => "&'"'& id & '"' & " invalid id"
+						severity failure;
 				end if;
-				assert id'length /= 0
-					report "get_timer() : id => "&'"'& id & '"' & " invalid id"
-					severity failure;
 				return 0;
 			end;
 			variable timers : natural_vector(0 to 32-1);
@@ -544,7 +535,6 @@ begin
 		end;
 
 		constant timers     : natural_vector := get_timers(init_seq);
-		signal xxxx : natural_vector(timers'range) := timers;
 		constant stages     : natural := unsigned_num_bits(max(timers))/4;
 		constant timer_size : natural := unsigned_num_bits(max(timers))+stages;
 	
@@ -592,26 +582,26 @@ begin
 	begin
 
 	assert false
-		report LF &
-			"sdram_init : PreRST  : " & natural'image(PreRST)&LF&
-			"sdram_init : RP      : " & natural'image(RP)&LF&
-			"sdram_init : PstRST  : " & natural'image(PstRST)&LF&
-			"sdram_init : cDLL    : " & natural'image(cDLL)&LF&
-			"sdram_init : RPA     : " & natural'image(RPA)&LF&
-			"sdram_init : ZQINIT  : " & natural'image(ZQINIT)&LF&
-			"sdram_init : MRD     : " & natural'image(MRD)&LF&
-			"sdram_init : MODu    : " & natural'image(MODu)&LF&
-			"sdram_init : XPR     : " & natural'image(XPR)&LF&
-			"sdram_init : WLDQSEN : " & natural'image(WLDQSEN)&LF&
-			"sdram_init : REFi    : " & natural'image(REFi)&LF&
-			"sdram_init : RFC     : " & natural'image(RFC)&LF
+		report LF 
+			& "sdram_init : PreRST  : " & natural'image(PreRST)  & LF 
+			& "sdram_init : RP      : " & natural'image(RP)      & LF 
+			& "sdram_init : PstRST  : " & natural'image(PstRST)  & LF 
+			& "sdram_init : cDLL    : " & natural'image(cDLL)    & LF 
+			& "sdram_init : RPA     : " & natural'image(RPA)     & LF 
+			& "sdram_init : ZQINIT  : " & natural'image(ZQINIT)  & LF 
+			& "sdram_init : MRD     : " & natural'image(MRD)     & LF 
+			& "sdram_init : MODu    : " & natural'image(MODu)    & LF 
+			& "sdram_init : XPR     : " & natural'image(XPR)     & LF 
+			& "sdram_init : WLDQSEN : " & natural'image(WLDQSEN) & LF 
+			& "sdram_init : REFi    : " & natural'image(REFi)    & LF 
+			& "sdram_init : RFC     : " & natural'image(RFC)     & LF 
 		severity note;
 
-		assert false
+		assert not debug
 			report LF & "timer_size is value " & natural'image(timer_size)
 			severity note;
 
-		assert false
+		assert not debug
 			report LF & "stages is value " & natural'image(stages)
 			severity note;
 
