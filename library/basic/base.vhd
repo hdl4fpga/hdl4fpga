@@ -142,12 +142,12 @@ package base is
 		constant b : natural)
 		return natural;
 		
-	function min (
+	function mnm (
 		constant arg1 : integer;
 		constant arg2 : integer)
 		return integer;
 
-	function min (
+	function mnm (
 		constant arg1 : signed;
 		constant arg2 : signed)
 		return signed;
@@ -700,19 +700,22 @@ package body base is
 		constant base : natural := 2)
 		return string is
 		constant table  : string := "0123456789abcdef";
-		variable digit  : unsigned(0 to unsigned_num_bits(base-1)-1);
-		variable aux    : unsigned(0 to arg'length-1);
+		variable digit  : std_logic_vector(0 to unsigned_num_bits(base-1)-1);
+		variable aux    : std_logic_vector(0 to arg'length-1);
 		variable retval : string(1 to (arg'length+digit'length-1)/digit'length);
 	begin
-		aux := unsigned(arg);
+		aux := arg;
 		for i in retval'range loop
-			digit := aux(digit'range);
+			if (i-1)*digit'length < arg'length then 
+				digit := aux((i-1)*digit'length to i*digit'length-1);
+			else
+				digit := (others => '-');
+			end if;
 			if digit=(0 to digit'length-1 => '-') then
 				retval(i) := '-';
 			else
-				retval(i) := table(to_integer(digit)+1);
+				retval(i) := table(to_integer(unsigned(digit))+1);
 			end if;
-			aux := shift_left(aux, digit'length);
 		end loop;
 		return retval;
 	end;
@@ -933,7 +936,7 @@ package body base is
 		end if;
 	end;
 
-	function min (
+	function mnm (
 		constant arg1 : integer;
 		constant arg2 : integer)
 		return integer is
@@ -945,7 +948,7 @@ package body base is
 		end if;
 	end;
 
-	function min (
+	function mnm (
 		constant arg1 : signed;
 		constant arg2 : signed)
 		return signed is

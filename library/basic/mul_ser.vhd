@@ -84,9 +84,9 @@ begin
 					sp(uacc'range) := sacc;
 					if not lsb then
 						if comp='0' then
-							s <= std_logic_vector(resize(up(0 to hdl4fpga.base.min(s'length,up'length)-1), s'length));
+							s <= std_logic_vector(resize(up(0 to mnm(s'length,up'length)-1), s'length));
 						else
-							s <= std_logic_vector(resize(sp(0 to hdl4fpga.base.min(s'length,sp'length)-1), s'length));
+							s <= std_logic_vector(resize(sp(0 to mnm(s'length,sp'length)-1), s'length));
 						end if;
 					else
 						if comp='0' then

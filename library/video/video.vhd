@@ -391,7 +391,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 architecture def of draw_line is
-	constant min_len : natural := hdl4fpga.base.min(x'length, mask'length);
+	constant min_len : natural := mnm(x'length, mask'length);
 begin
 	dot <= ena when (resize(unsigned(x), min_len) and resize(unsigned(mask),min_len))=(0 to min_len-1 => '0') else '0';
 end;

@@ -399,13 +399,13 @@ begin
 		begin
 			case hz_scale is
 			when x"0" =>
-				no_inputs := hdl4fpga.base.min(inputs-1, 1-1);
+				no_inputs := mnm(inputs-1, 1-1);
 			when x"1" =>
-				no_inputs := hdl4fpga.base.min(inputs-1, 2-1);
+				no_inputs := mnm(inputs-1, 2-1);
 			when x"2" =>
-				no_inputs := hdl4fpga.base.min(inputs-1, 4-1);
+				no_inputs := mnm(inputs-1, 4-1);
 			when x"3" =>
-				no_inputs := hdl4fpga.base.min(inputs-1, 5-1);
+				no_inputs := mnm(inputs-1, 5-1);
 			when others =>
 				no_inputs := 10-1;
 			end case;
