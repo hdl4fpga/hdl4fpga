@@ -427,7 +427,7 @@ begin
 						end if;
 						state := s_init;
 					end if;
-					for i in 0 to init_seq_length-1 loop
+					for i in 0 to init_seq_length-1 loop -- Latticesemi Diamond work around
 						if i=step then
 							sdram_init_cmd <= hdo(cmd)**('.'&hdo(init_seq**i)**0);
 							sdram_init_rst <= hdo(hdo(init_seq**i)**2)**".rst='-'";
