@@ -118,8 +118,6 @@ architecture mix of sdram_ctlr is
 	signal sdram_init_rst : std_logic;
 	signal sdram_init_cke : std_logic;
 	signal sdram_init_cs  : std_logic;
-	signal sdram_init_req : std_logic;
-	signal sdram_init_rdy : std_logic;
 	signal sdram_init_ras : std_logic;
 	signal sdram_init_cas : std_logic;
 	signal sdram_init_we  : std_logic;
@@ -168,7 +166,6 @@ begin
 	sdram_pgm_frm  <= ctlr_frm when phy_inirdy='1' else phy_frm;
 	sdram_pgm_rw   <= ctlr_rw  when phy_inirdy='1' else phy_rw;
 	sdram_cwl      <= ctlr_cwl when generation="ddr3"    else ctlr_cl when generation="ddr2" else (others => '0');
-	sdram_init_req <= ctlr_rst;
 
 	sdram_init_al(ctlr_al'range)   <= ctlr_al;
 	sdram_init_bl(ctlr_bl'range)   <= ctlr_bl;
@@ -185,6 +182,9 @@ begin
 		generation_data  => generation_data,
 		ctlr_tcp         => ctlr_tcp)
 	port map (
+		init_rst   => ctlr_rst,
+		init_cfg   => ctlr_cfgrdy,
+
 		sdram_init_al    => sdram_init_al,
 		sdram_init_bl    => sdram_init_bl,
 		sdram_init_cl    => sdram_init_cl,
@@ -194,8 +194,6 @@ begin
 		sdram_init_rtt   => sdram_init_rtt,
 
 		sdram_init_clk   => ctlr_clk,
-		sdram_init_req   => sdram_init_req,
-		sdram_init_rdy   => sdram_init_rdy,
 		sdram_init_rst   => sdram_init_rst,
 		sdram_init_cke   => sdram_init_cke,
 		sdram_init_cs    => sdram_init_cs,
@@ -210,7 +208,6 @@ begin
 		sdram_refi_req   => sdram_refi_req,
 		sdram_refi_rdy   => sdram_refi_rdy);
 
-	ctlr_cfgrdy   <= (sdram_init_rdy xnor sdram_init_req) and not ctlr_rst;
 	sdram_mpu_rst <= not ctlr_cfgrdy;
 	sdram_pgm_e : entity hdl4fpga.sdram_pgm
 	port map (
