@@ -80,12 +80,14 @@ package sdrampkg is
 		"ulx4ld_ecp5g4     : { device : ecp5, orgz : { gear : 4}, tmng : { STRL : 0, DQSL :" & natural'image(4*1-2+2) & ", DQSZL :" & natural'image(4*1+0+2) & ", DQZL :" & natural'image(4*1+0+2) & ", WWNL :" & natural'image(4*1-4+2) & ", STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2}}," &
 		"orangecrab_ecp5g4 : { device : ecp5, orgz : { gear : 4}, tmng : { STRL : 0, DQSL :" & natural'image(4*1-2+0) & ", DQSZL :" & natural'image(4*1+0+0) & ", DQZL :" & natural'image(4*1+0+0) & ", WWNL :" & natural'image(4*1-4+0) & ", STRXL : 0, DQSZXL : 2, DQSXL : 2, DQZXL : 0, WWNXL : 2}}]");
 
-	constant mpu_nop   : std_logic_vector(0 to 2) := "111";
-	constant mpu_act   : std_logic_vector(0 to 2) := "011";
-	constant mpu_read  : std_logic_vector(0 to 2) := "101";
-	constant mpu_write : std_logic_vector(0 to 2) := "100";
-	constant mpu_pre   : std_logic_vector(0 to 2) := "010";
-	constant mpu_aut   : std_logic_vector(0 to 2) := "001";
+	constant cmd : string := "{nop :'111', mrs:'000', act:'011', read:'101', write:'100', pre:'010', aref:'001', zqc:'110'}";
+
+	constant mpu_nop   : std_logic_vector(0 to 2) := hdo(cmd)**".nop";
+	constant mpu_act   : std_logic_vector(0 to 2) := hdo(cmd)**".act";
+	constant mpu_read  : std_logic_vector(0 to 2) := hdo(cmd)**".read";
+	constant mpu_write : std_logic_vector(0 to 2) := hdo(cmd)**".write";
+	constant mpu_pre   : std_logic_vector(0 to 2) := hdo(cmd)**".pre";
+	constant mpu_aut   : std_logic_vector(0 to 2) := hdo(cmd)**".aref";
 	constant mpu_dcare : std_logic_vector(0 to 2) := "000";
 
 	function lattab (
