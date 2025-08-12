@@ -83,21 +83,20 @@ end;
 
 architecture def of sdram_init is
 
-	signal timer_rdy : std_ulogic := '0';
-	signal timer_req : std_ulogic := '0';
-
 	constant init_data       : string  := hdo(sdr_init_data)**('.'&generation&"={}");
 	constant init_seq        : string  := hdo(init_data)**".seq=[]";
 	constant init_seq_length : natural := length(init_seq);
 
-
-	constant wrl : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/ctlr_tcp))*gear;
-	constant sdram_init_wr : std_logic_vector := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']='000'");
-	signal timer_sel  : std_logic_vector(unsigned_num_bits(init_seq_length-1)-1 downto 0) := (others => '0');
+	signal timer_sel : std_logic_vector(unsigned_num_bits(init_seq_length-1)-1 downto 0) := (others => '0');
+	signal timer_rdy : std_ulogic := '0';
+	signal timer_req : std_ulogic := '0';
 
 begin
 
 	process (sdram_init_clk)
+		constant wrl : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/ctlr_tcp))*gear;
+		constant sdram_init_wr : std_logic_vector := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']='000'");
+
 		variable step : natural range 0 to init_seq_length-1;
 	begin
 		if rising_edge(sdram_init_clk) then
