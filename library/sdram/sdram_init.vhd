@@ -111,8 +111,8 @@ begin
 								sdram_init_cke <= hdo(init_seq)**("["&natural'image(i)&"].data.cke");
 								sdram_init_odt <= hdo(init_seq)**("["&natural'image(i)&"].data.odt='0'");
 								mr (
-									b     => sdram_init_b,
-									a     => sdram_init_a,
+									generation => generation,
+									row   => init_seq**i,
 									al    => sdram_init_al,
 									asr   => sdram_init_asr,
 									bl    => sdram_init_bl,
@@ -128,16 +128,16 @@ begin
 									rtt   => sdram_init_rtt,
 									tdqs  => sdram_init_tdqs,
 									wr    => sdram_init_wr,
-									generation => generation,
-									row   => init_seq**i);
+									b     => sdram_init_b,
+									a     => sdram_init_a);
 								timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
 								exit;
 							end if;
 						end loop;
-						if step >= init_seq_length-1 then
-							init_cfg <= not init_rst;
-						else
+						if step < init_seq_length-1 then
 							step := step + 1;
+						else
+							init_cfg <= not init_rst;
 						end if;
 					elsif (sdram_refi_req xor sdram_refi_rdy)='0' then
 						sdram_refi_req <= not sdram_refi_rdy;
@@ -149,7 +149,7 @@ begin
 			else
 				init_cfg  <= not init_rst;
 				timer_req <= timer_rdy;
-				step  := 0;
+				step := 0;
 			end if;
 		end if;
 	end process;
