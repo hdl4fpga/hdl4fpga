@@ -93,63 +93,60 @@ architecture def of sdram_init is
 
 begin
 
-	process (sdram_init_clk)
+	process (init_rst, sdram_init_clk)
 		constant wrl : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/ctlr_tcp))*gear;
 		constant sdram_init_wr : std_logic_vector := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']='000'");
 
 		variable step : natural range 0 to init_seq_length-1;
 	begin
-		if rising_edge(sdram_init_clk) then
-			if init_rst='0' then
-				if (timer_req xor timer_rdy)='0' then
-					if init_cfg='0' then
-						for i in 0 to init_seq_length-1 loop -- Latticesemi Diamond work around
-							if i=step then
-								sdram_init_cmd <= hdo(cmd)**('.'&string'(hdo(init_seq**i)**".cmd"));
-								sdram_init_rst <= hdo(init_seq)**("["&natural'image(i)&"].data.rst='-'");
-								sdram_init_cs  <= hdo(init_seq)**("["&natural'image(i)&"].data.cs");
-								sdram_init_cke <= hdo(init_seq)**("["&natural'image(i)&"].data.cke");
-								sdram_init_odt <= hdo(init_seq)**("["&natural'image(i)&"].data.odt='0'");
-								mr (
-									generation => generation,
-									row   => init_seq**i,
-									al    => sdram_init_al,
-									asr   => sdram_init_asr,
-									bl    => sdram_init_bl,
-									bt    => sdram_init_bt,
-									cl    => sdram_init_cl,
-									cwl   => sdram_init_cwl,
-									drtt  => sdram_init_drtt,
-									mpr   => sdram_init_mpr,
-									mprrf => sdram_init_mprrf,
-									ods   => sdram_init_ods,
-									pd    => sdram_init_pd,
-									rdqs  => sdram_init_rdqs,
-									rtt   => sdram_init_rtt,
-									tdqs  => sdram_init_tdqs,
-									wr    => sdram_init_wr,
-									b     => sdram_init_b,
-									a     => sdram_init_a);
-								timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
-								exit;
-							end if;
-						end loop;
-						if step < init_seq_length-1 then
-							step := step + 1;
-						else
-							init_cfg <= not init_rst;
+		if init_rst='1' then
+			init_cfg  <= '0';
+			timer_req <= timer_rdy;
+			step      := 0;
+		elsif rising_edge(sdram_init_clk) then
+			if (timer_req xor timer_rdy)='0' then
+				if init_cfg='0' then
+					for i in 0 to init_seq_length-1 loop -- Latticesemi Diamond work around
+						if i=step then
+							sdram_init_cmd <= hdo(cmd)**('.'&string'(hdo(init_seq**i)**".cmd"));
+							sdram_init_rst <= hdo(init_seq)**("["&natural'image(i)&"].data.rst='-'");
+							sdram_init_cs  <= hdo(init_seq)**("["&natural'image(i)&"].data.cs");
+							sdram_init_cke <= hdo(init_seq)**("["&natural'image(i)&"].data.cke");
+							sdram_init_odt <= hdo(init_seq)**("["&natural'image(i)&"].data.odt='0'");
+							mr (
+								generation => generation,
+								row   => init_seq**i,
+								al    => sdram_init_al,
+								asr   => sdram_init_asr,
+								bl    => sdram_init_bl,
+								bt    => sdram_init_bt,
+								cl    => sdram_init_cl,
+								cwl   => sdram_init_cwl,
+								drtt  => sdram_init_drtt,
+								mpr   => sdram_init_mpr,
+								mprrf => sdram_init_mprrf,
+								ods   => sdram_init_ods,
+								pd    => sdram_init_pd,
+								rdqs  => sdram_init_rdqs,
+								rtt   => sdram_init_rtt,
+								tdqs  => sdram_init_tdqs,
+								wr    => sdram_init_wr,
+								b     => sdram_init_b,
+								a     => sdram_init_a);
+							timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
 						end if;
-					elsif (sdram_refi_req xor sdram_refi_rdy)='0' then
-						sdram_refi_req <= not sdram_refi_rdy;
+					end loop;
+					if step < init_seq_length-1 then
+						step := step + 1;
+					else
+						init_cfg <= not init_rst;
 					end if;
-					timer_req <= not timer_rdy;
-				else
-					sdram_init_cmd <= hdo(cmd)**".nop";
+				elsif (sdram_refi_req xor sdram_refi_rdy)='0' then
+					sdram_refi_req <= not sdram_refi_rdy;
 				end if;
+				timer_req <= not timer_rdy;
 			else
-				init_cfg  <= not init_rst;
-				timer_req <= timer_rdy;
-				step := 0;
+				sdram_init_cmd <= hdo(cmd)**".nop";
 			end if;
 		end if;
 	end process;
