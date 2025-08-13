@@ -151,10 +151,10 @@ begin
 				elsif (sdram_refi_req xor sdram_refi_rdy)='0' then
 					sdram_refi_req <= not sdram_refi_rdy;
 				end if;
-				timer_req <= not timer_rdy;
 			else
 				sdram_init_cmd <= hdo(cmd)**".nop";
 			end if;
+			timer_req <= not timer_rdy;
 		end if;
 	end process;
 
