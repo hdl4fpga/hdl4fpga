@@ -106,6 +106,13 @@ begin
 		elsif rising_edge(sdram_init_clk) then
 			if (timer_req xor timer_rdy)='0' then
 				if init_cfg='0' then
+					sdram_init_cmd <= (others => '-');
+					sdram_init_rst <= '-';
+					sdram_init_cs  <= '-';
+					sdram_init_cke <= '-';
+					sdram_init_odt <= '-';
+					sdram_init_b   <= (sdram_init_b'range => '-');
+					sdram_init_a   <= (sdram_init_a'range => '-');
 					for i in 0 to init_seq_length-1 loop -- Latticesemi Diamond work around
 						if i=step then
 							sdram_init_cmd <= hdo(cmd)**('.'&string'(hdo(init_seq**i)**".cmd"));
