@@ -61,13 +61,13 @@ entity sdram_init is
 		sdram_init_rdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		sdram_init_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 
+		init_rst       : in  std_logic := '0';
 		sdram_init_clk : in  std_logic := '-';
-		init_rst : in  std_logic := '0';
-		init_cfg : buffer std_logic := '0';
+		init_cfg       : buffer std_logic := '0';
 		sdram_refi_rdy : in  std_logic := '0';
 		sdram_refi_req : buffer std_logic := '0';
-		sdram_init_wlrdy : in  std_logic := '-';
-		sdram_init_wlreq : buffer std_logic;
+		sdram_init_wlrdy : in  std_logic := '0';
+		sdram_init_wlreq : buffer std_logic := '0';
 		sdram_init_rst : out  std_logic := '0';
 		sdram_init_cke : out std_logic;
 		sdram_init_cs  : out std_logic;
@@ -97,7 +97,7 @@ begin
 		constant wrl : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/ctlr_tcp))*gear;
 		constant sdram_init_wr : std_logic_vector := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']='000'");
 
-		variable step : natural range 0 to init_seq_length-1;
+		variable step : natural range 0 to init_seq_length;
 	begin
 		if init_rst='1' then
 			init_cfg  <= '0';
@@ -113,6 +113,7 @@ begin
 					sdram_init_odt <= '-';
 					sdram_init_b   <= (sdram_init_b'range => '-');
 					sdram_init_a   <= (sdram_init_a'range => '-');
+					init_cfg <= not init_rst;
 					for i in 0 to init_seq_length-1 loop -- Latticesemi Diamond work around
 						if i=step then
 							sdram_init_cmd <= hdo(cmd)**('.'&string'(hdo(init_seq**i)**".cmd"));
@@ -141,13 +142,11 @@ begin
 								b     => sdram_init_b,
 								a     => sdram_init_a);
 							timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
+							init_cfg  <= init_rst;
+							step := step + 1;
+							exit;
 						end if;
 					end loop;
-					if step < init_seq_length-1 then
-						step := step + 1;
-					else
-						init_cfg <= not init_rst;
-					end if;
 				elsif (sdram_refi_req xor sdram_refi_rdy)='0' then
 					sdram_refi_req <= not sdram_refi_rdy;
 				end if;
@@ -171,7 +170,7 @@ begin
 		constant cDLL    : natural := hdo(gentmng_data)**".cDLL=1";
 		constant ZQINIT  : natural := hdo(gentmng_data)**".ZQINIT=1";
 		constant MODu    : natural := hdo(gentmng_data)**".MODu=1";
-		constant XPR     : natural := hdo(gentmng_data)**".XPR=1";
+		constant XPR     : natural := max(natural((real'(hdo(sdramtmng_data)**".tRFC")+10.0e-9)/ctlr_tcp),hdo(gentmng_data)**".XPR=1");
 		constant WLDQSEN : natural := hdo(gentmng_data)**".WLDQSEN=1";
 
 		constant sdram_timers : string := '{' &

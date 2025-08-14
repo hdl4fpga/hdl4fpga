@@ -48,10 +48,10 @@ entity ecp5_sdrdqphy is
 		ddrdel     : in  std_logic;
 		pause      : in  std_logic;
 
-		phy_wlreq  : in  std_logic;
-		phy_wlrdy  : buffer std_logic;
-		phy_rlreq  : in  std_logic := 'U';
-		phy_rlrdy  : buffer std_logic;
+		phy_wlreq  : in  std_logic := '0';
+		phy_wlrdy  : buffer std_logic := '0';
+		phy_rlreq  : in  std_logic := '0';
+		phy_rlrdy  : buffer std_logic := '0';
 		read_rdy   : in  std_logic;
 		read_req   : buffer std_logic;
 		phy_locked : buffer std_logic;

@@ -63,9 +63,9 @@ entity ecp5_sdrphy is
 		phy_locked : out std_logic;
 
 		phy_wlreq  : in  std_logic := '0';
-		phy_wlrdy  : buffer std_logic;
+		phy_wlrdy  : buffer std_logic := '0';
 		phy_rlreq  : in  std_logic := '0';
-		phy_rlrdy  : buffer std_logic;
+		phy_rlrdy  : buffer std_logic := '0';
 
 		sys_rst    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
 		sys_cs     : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
@@ -176,7 +176,7 @@ begin
 	end block;
 
 	write_leveling_p : process (phy_wlreq, wl_rdy)
-		variable z : std_logic;
+		variable z : std_logic := '1';
 	begin
 		z := '1';
 		for i in wl_rdy'range loop
