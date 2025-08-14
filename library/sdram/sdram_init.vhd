@@ -98,7 +98,7 @@ begin
 		constant wrl : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/ctlr_tcp))*gear;
 		constant sdram_init_wr : std_logic_vector := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']='000'");
 
-		variable step : natural range 0 to init_seq_length;
+		variable step : natural range 0 to 2**unsigned_num_bits(init_seq_length-1)-1;
 	begin
 		if init_rst='1' then
 			init_cfg  <= '0';
@@ -107,6 +107,7 @@ begin
 		elsif rising_edge(sdram_init_clk) then
 			if (timer_req xor timer_rdy)='0' then
 				if init_cfg='0' then
+					init_cfg <= not init_rst;
 					sdram_init_cmd <= (others => '-');
 					sdram_init_rst <= '-';
 					sdram_init_cs  <= '-';
@@ -114,7 +115,6 @@ begin
 					sdram_init_odt <= '-';
 					sdram_init_b   <= (sdram_init_b'range => '-');
 					sdram_init_a   <= (sdram_init_a'range => '-');
-					init_cfg <= not init_rst;
 					for i in 0 to init_seq_length-1 loop -- Latticesemi Diamond work around
 						if i=step then
 							sdram_init_cmd <= hdo(cmd)**('.'&string'(hdo(init_seq**i)**".cmd"));
@@ -144,12 +144,14 @@ begin
 								a     => sdram_init_a);
 							timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
 							init_cfg  <= init_rst;
+							if step=init_seq_length-1 then
+								init_cfg <= not init_rst;
+							end if;
 							if (sdram_init_wlreq xor sdram_init_wlrdy)='0' then
-								if (sdram_init_wlreq xor sdram_init_wlrdy)='0' then
 								if string'(hdo(init_seq)**("["&natural'image(i)&"].data.wl_req=off"))="on" then
 									sdram_init_wlreq <= not sdram_init_wlrdy;
 								end if;
-								step := step + 1;
+								step := (step + 1) mod 2**unsigned_num_bits(init_seq_length-1);
 							end if;
 							exit;
 						end if;
@@ -206,10 +208,9 @@ begin
 				assert n < timers'length
 					report "get_timers () : n => " & natural'image(n) & " greater than timers length " & natural'image(timers'length)
 					severity failure;
-				assert not true --debug
+				assert not debug
 					report  "get_timers () : timer id => " & string'(hdo(init_seq)**('['&natural'image(n)&"].timer"))
 					severity note;
-				report  "get_timers () : timer id => " & string'(hdo(init_seq)**('['&natural'image(n)&"].timer"));
 				timers(n) := hdo(sdram_timers)**('.' & string'(hdo(init_seq)**('['&natural'image(n)&"].timer")));
 				n := n + 1;
 			end loop;
@@ -283,11 +284,11 @@ begin
 		severity note;
 
 		assert not debug
-			report LF & "timer_size is value " & natural'image(timer_size)
+			report "sdram_init () : timer_size is value " & natural'image(timer_size)
 			severity note;
 
 		assert not debug
-			report LF & "stages is value " & natural'image(stages)
+			report "sdram_init () : stages is value " & natural'image(stages)
 			severity note;
 
 		mem_e : entity hdl4fpga.rom
