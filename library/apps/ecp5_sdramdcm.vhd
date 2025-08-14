@@ -34,14 +34,15 @@ entity ecp5_sdramdcm is
 	generic (
 		settings     : string);
 	port (
+		rst          : in  std_logic := '0';
 		clk          : in  std_logic;
 		sclk         : buffer std_logic;
 		eclk         : buffer std_logic;
+		locked       : buffer std_logic;
 		ctlr_rst     : out std_logic;
 		phy_rst      : buffer std_logic;
 		phy_mspause  : out std_logic;
-		phy_ddrdel   : out std_logic;
-		locked       : buffer std_logic);
+		phy_ddrdel   : out std_logic);
 
     constant gear       : natural := settings**".gear";
     constant freq_in    : real    := settings**".dcm.freq_in";
@@ -84,7 +85,7 @@ begin
 
 	pll_i : EHXPLLL
 	generic map (
-		PLLRST_ENA       => "DISABLED",
+		PLLRST_ENA       => "ENABLED",
 		INTFB_WAKE       => "DISABLED",
 		STDBY_ENABLE     => "DISABLED",
 		DPHASE_SOURCE    => "DISABLED",
@@ -106,7 +107,7 @@ begin
 		CLKFB_DIV        => clkfb_div,
 		CLKI_DIV         => clki_div)
 	port map (
-		rst       => '0',
+		rst       => rst,
 		clki      => clk,
 		CLKFB     => clkfb,
 		PHASESEL0 => '0', PHASESEL1 => '0',
@@ -129,6 +130,7 @@ begin
 	gear1_g : if gear=1 generate
 		sclk     <= clkop;
 		ctlr_rst <= not locked;
+		phy_rst  <= not locked;
 	end generate;
 
 	gear4_g : if gear=4 generate
@@ -157,7 +159,7 @@ begin
 		signal pll_lock : std_logic;
 		signal update   : std_logic;
 		signal ready    : std_logic;
-		alias ddr_rst is phy_rst;
+		alias  ddr_rst  is phy_rst;
 		alias eclko is eclk;   -- signal eclko    : std_logic;
 		alias cdivx is sclk;   -- signal cdivx    : std_logic;
 

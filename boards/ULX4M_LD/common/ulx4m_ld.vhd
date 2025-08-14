@@ -104,4 +104,26 @@ entity ulx4m_ld is
 	alias hdmi1_clock : std_logic is gpdi_d(7);
 	alias hdmi1_gpdi  : std_logic_vector(4-1 downto 0) is gpdi_d(8-1 downto 4);
 
+	alias btn1 is btn(1);
+	alias btn2 is btn(2);
+	alias btn3 is btn(3);
+	
+	alias d7 is led(7);
+	alias d6 is led(6);
+	alias d5 is led(5);
+	alias d4 is led(4);
+	alias d3 is led(3);
+	alias d2 is led(2);
+	alias d1 is led(1);
+	alias d0 is led(0);
+
+	alias led7 is led(7);
+	alias led6 is led(6);
+	alias led5 is led(5);
+	alias led4 is led(4);
+	alias led3 is led(3);
+	alias led2 is led(2);
+	alias led1 is led(1);
+	alias led0 is led(0);
+
 end;

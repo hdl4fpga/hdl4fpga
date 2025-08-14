@@ -52,11 +52,13 @@ architecture graphics of ulx4m_ld is
 			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT41K256M16-125")                               & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
-			"cwl:"       & "'001'"                                                                  & ',' &                             
-			"cl:"        & "'0010'}}";    	 
+			"wrl:"       & "'010'"                                                                  & ',' &                             
+			"cwl:"       & "'000'"                                                                  & ',' &                             
+			"cl:"        & "'0100'}}";    	 
 
 	constant io_link      : string  := settings**".io_link";
 
+	alias sys_rst is btn(2);
 	alias sys_clk is clk_25mhz;
 
 	signal video_clk       : std_logic;
@@ -71,6 +73,7 @@ architecture graphics of ulx4m_ld is
 	constant sdram_freq    : real := sdram_freq(settings**".sdram.dcm");
 	constant sdram_gear    : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
 	constant ba_latency    : natural := 1;
+	signal sdramdcm_locked : std_logic;
 
 	signal ctlr_rst        : std_logic;
 	signal ctlr_clk        : std_logic;
@@ -126,6 +129,7 @@ architecture graphics of ulx4m_ld is
 	signal tp            : std_logic_vector(1 to 32);
 	signal tp_phy        : std_logic_vector(1 to 32);
 
+	signal phy_locked   : std_logic;
 begin
 
 	videodcm_e : entity hdl4fpga.ecp5_videodcm
@@ -145,13 +149,16 @@ begin
 			"dcm:"  & string'(settings**".sdram.dcm")      & ',' &
 			"gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	port map (
+		rst          => sys_rst,
 		clk          => sys_clk,
 		sclk         => ctlr_clk,
 		eclk         => ctlr_eclk,
+		locked       => sdramdcm_locked,
 		ctlr_rst     => ctlr_rst,
-		phy_rst      => sdrphy_rst,
 		phy_mspause  => ms_pause,
-		phy_ddrdel   => ddrdel);
+		phy_ddrdel   => ddrdel,
+		phy_rst      => sdrphy_rst);
+	
 
 	hdlc_g : if io_link="io_hdlc" generate
 		constant uart_freq : real := 30.0e6;
@@ -168,7 +175,6 @@ begin
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 			sio_clk  <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
-		led(7) <= video_lck;
 
 		hdlc_e : entity hdl4fpga.link_hdlc
 		generic map (
@@ -284,7 +290,7 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
-			dhcp_btn   => btn(2),
+			dhcp_btn   => btn(1),
 
 			mii_rxc    => rgmii_rx_clk,
 			mii_rxdv   => rx_dv,
@@ -333,7 +339,7 @@ begin
 				q    => rgmii_txd(i));
 		end generate;
 
-		eth_resetn <= not btn(3);
+		eth_resetn <= '1';
 		eth_mdc    <= 'Z';
 		eth_mdio   <= 'Z';
 
@@ -341,14 +347,13 @@ begin
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
-		debug        => debug, -- true,
+		debug        => debug,
 		profile      => 2,
 		burst_length => 8,
 		sdram_freq   => sdram_freq/2.0,
 		settings     => settings,
 		fifo_size    => mem_size)
 	port map (
-		tp => tp,
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
@@ -413,14 +418,6 @@ begin
 		ctlrphy_odt(i) <= ctlrphy_odt(0);
 	end generate;
 
-	process (sys_clk)
-	begin
-		if rising_edge(sys_clk) then
-			
-			led <= reverse(tp(1 to 8));
-		end if;
-	end process;
-
 	process (sdr_b)
 	begin
 		for i in sdr_b'range loop
@@ -439,26 +436,6 @@ begin
 		end loop;
 	end process;
 
-	tp_b : block
-		signal tp_dv : std_logic;
-	begin
-		process (ctlr_clk)
-			variable q : std_logic;
-			variable q1 : std_logic := '0';
-		begin
-			if rising_edge(ctlr_clk) then
-				if ctlrphy_sti(0)='1' then
-					if q='0' then
-						q1 := not q1;
-					end if;
-				end if;
-				q := ctlrphy_sti(0);
-			tp_dv <= q1;
-			end if;
-		end process;
-		
-	end block;
-
 	sdrphy_e : entity hdl4fpga.ecp5_sdrphy
 	generic map (
 		debug      => debug,
@@ -473,9 +450,10 @@ begin
 		bypass     => false,
 		taps       => natural(ceil((1.0/sdram_freq-25.0e-12)/25.0e-12))) -- FPGA-TN-02035-1-3-ECP5-ECP5-5G-HighSpeed-IO-Interface/3.11. Input/Output DELAY page 13
 	port map (
-		tpin       => btn(1),
+		tpin       => btn(3),
 
-		rst        => sdrphy_rst,
+		phy_rst    => sdrphy_rst,
+		ctlr_rst   => ctlr_rst,
 		sclk       => ctlr_clk,
 		eclk       => ctlr_eclk,
 		ms_pause   => ms_pause,
@@ -491,6 +469,7 @@ begin
 
 		phy_rlreq  => ctlrphy_rlreq,
 		phy_rlrdy  => ctlrphy_rlrdy,
+		phy_locked => phy_locked,
 
 		sys_rst    => ctlrphy_rst,
 		sys_cs     => ctlrphy_cs,
@@ -526,6 +505,17 @@ begin
 		sdram_dq   => ddram_dq,
 		sdram_dqs  => ddram_dqs,
 		tp         => tp_phy);
+	process (sys_clk)
+	begin
+		if rising_edge(sys_clk) then
+			
+			led <= (others => '0');
+			led0 <= sdramdcm_locked;
+			led2 <= phy_locked;
+			led <= tp_phy(1 to led'length);
+		end if;
+	end process;
+
 	ddram_dm <= (others => '0');
 
 	-- VGA --

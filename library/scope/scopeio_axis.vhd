@@ -97,8 +97,13 @@ architecture def of scopeio_axis is
 	signal hz_bias : unsigned(hzwidth_bits-1 downto 0);
 	signal hz_scaleid : std_logic_vector(4-1 downto 0);
 	signal hz_offset  : std_logic_vector(hzoffset_bits-1 downto 0);
+
+	signal h_pos      : std_logic_vector(hzwidth_bits-1  downto gridunit_bits+1);
+	signal v_pos      : std_logic_vector(vtheight_bits-1 downto gridunit_bits);
 begin
 
+	h_pos <= std_logic_vector(hz_pos(hzwidth_bits-1  downto gridunit_bits+1)); -- ghdl complains :type of actual conversion must be fully constrained
+	v_pos <= std_logic_vector(vt_pos(vtheight_bits-1 downto gridunit_bits)); -- ghdl complains :type of actual conversion must be fully constrained
 	marks_e : entity hdl4fpga.scopeio_marks
 	generic map (
 		inputs   => inputs,
@@ -109,9 +114,11 @@ begin
 		rgtr_id   => rgtr_id,
 		rgtr_data => rgtr_data,
 		video_clk => video_clk,
-		hz_pos    => std_logic_vector(hz_pos(hzwidth_bits-1  downto gridunit_bits+1)),
+		-- hz_pos    => std_logic_vector(hz_pos(hzwidth_bits-1  downto gridunit_bits+1)), -- ghdl complains :type of actual conversion must be fully constrained
+		hz_pos    => h_pos,
 		hz_mark   => hz_mark,
-		vt_pos    => std_logic_vector(vt_pos(vtheight_bits-1 downto gridunit_bits)),
+		-- vt_pos    => std_logic_vector(vt_pos(vtheight_bits-1 downto gridunit_bits)), -- ghdl complains :type of actual conversion must be fully constrained
+		vt_pos    => v_pos,
 		vt_mark   => vt_mark,
 		export_vtoffset => vt_offset,
 		export_hzoffset => hz_offset);

@@ -21,9 +21,9 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
-NET "xtal" TNM_NET = xtal;
-TIMESPEC TS_xtal = PERIOD "xtal" 20 ns HIGH 50%;
-NET "xtal" CLOCK_DEDICATED_ROUTE = true;
+NET "clk_50mhz" TNM_NET = clk_50mhz;
+TIMESPEC TS_clk_50mhz = PERIOD "clk_50mhz" 20 ns HIGH 50%;
+NET "clk_50mhz" CLOCK_DEDICATED_ROUTE = true;
 
 NET "e_tx_clk" TNM_NET = e_tx_clk;
 TIMESPEC TS_mii_txc = PERIOD "e_tx_clk" 50 ns HIGH 50%;
@@ -82,8 +82,8 @@ OFFSET = IN 0.000 ns VALID 3.750 ns BEFORE sd_dqs[1] RISING;
 # Ignore crossclock time #
 # ###################### #
 
-NET sys_clk    TNM_NET = FFS  FFS_sysclk;
-NET sys_clk    TNM_NET = RAMS RAMS_sysclk;
+NET clk_50mhz    TNM_NET = FFS  FFS_sysclk;
+NET clk_50mhz    TNM_NET = RAMS RAMS_sysclk;
 NET video_clk  TNM_NET = FFS  FFS_videoclk;
 NET video_clk  TNM_NET = RAMS RAMS_videoclk;
 NET ctlr_clk   TNM_NET = FFS  FFS_clk0;

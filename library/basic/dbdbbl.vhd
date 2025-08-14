@@ -49,6 +49,7 @@ architecture def of dbdbbl_srlfix is
 	constant binrev_left : natural := bin_rev'left; -- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
 	constant b_length : natural := digit_word'length;-- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
 	constant b : std_logic_vector(0 to b_length-1) := (others => '0');-- Xilinx ISE 14.7 HDLParsers:852 Value of index is not static.
+	signal   a : std_logic_vector(digit_word'range);
 begin
 
 	digits_g : for k in bin'range generate
@@ -105,11 +106,13 @@ begin
 
 	end generate;
 
+	a <= std_logic_vector(digits_out(digitsout_right));
 	bcd_adder_e : entity hdl4fpga.bcd_adder
 	port map (
 		ci => bin_rev(binrev_left),
 		b  => b,
-		a  => std_logic_vector(digits_out(digitsout_right)),
+		a  => a,
+		-- a  => std_logic_vector(digits_out(digitsout_right)), -- ghdl complains
 		s  => s);
 	bin <= bin_rev;
 	bcd <= 

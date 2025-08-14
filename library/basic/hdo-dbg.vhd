@@ -129,7 +129,7 @@ package hdo is
 		return std_logic_vector;
 
 	impure --|note
-	function hdo_length(
+	function length(
 		constant object : string)
 		return natural;
 
@@ -304,8 +304,10 @@ package body hdo is
 	begin
 		if value='1' then
 			return '1';
-		else
+		elsif value= '0' then
 			return '0';
+		else
+			return '-';
 		end if;
 	end;
 
@@ -1521,8 +1523,10 @@ package body hdo is
 		if value'length > 0 then
 			if value(value'left)='1' then
 				return '1';
-			else
+			elsif value(value'left)='0' then
 				return '0';
+			else
+				return '-';
 			end if;
 		end if;
 		return 'X';
@@ -1630,7 +1634,7 @@ package body hdo is
 	end;
 
 	impure --|note
-	function hdo_length(
+	function length(
 		constant object : string)
 		return natural is
 

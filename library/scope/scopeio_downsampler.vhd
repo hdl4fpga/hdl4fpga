@@ -140,8 +140,8 @@ begin
    						maxx <= minn;
    						minn <= sample;
    					elsif init='1' then
-   						maxx <= hdl4fpga.base.max(min0, sample);
-   						minn <= hdl4fpga.base.min(max0, sample);
+   						maxx <= max(min0, sample);
+   						minn <= mnm(max0, sample);
    						max0 <= sample;
    						min0 <= sample;
    					else

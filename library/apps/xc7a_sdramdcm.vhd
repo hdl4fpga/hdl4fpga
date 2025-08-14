@@ -67,9 +67,9 @@ begin
 
 	pll_i : mmcme2_base
 	generic map (
+		clkin1_period   => 1.0e9/freq_in,
 		divclk_divide   => divclk_divide,
 		clkfbout_mult_f => 2.0*clkfbout_mult_f,
-		clkin1_period   => 1.0e9/freq_in,
 		clkout0_divide_f => real(gear/2),
 		clkout1_divide => gear/2,
 		clkout1_phase  => 90.0+180.0,

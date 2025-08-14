@@ -30,7 +30,7 @@ begin
 
 	process
 	begin
-		report natural'image(hdo_length(settings));
+		report natural'image(length(settings));
 		wait;
 	end process;
 

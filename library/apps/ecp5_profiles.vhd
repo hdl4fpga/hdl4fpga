@@ -90,7 +90,6 @@ package body ecp5_profiles is
 			else
 				clkos3_div := 1;
 			end if;
-			report "******************** " & natural'image(clkos3_div);
 			return "{" &
 				"clkos_div:"  & string'(dcm**".clkos_div") & "," & 
 				"clkop_div:"  & string'(dcm**".clkop_div") & "," & 
@@ -112,23 +111,23 @@ package body ecp5_profiles is
 		-- SDRAM CLK=clk_ref*clkos_div/clkop_div
     	constant dcm_db : string := compact("{" &
     		"'25mhz':{"                                                                                                     &
-    			"'133mhz' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'150mhz' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'166mhz' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'200mhz' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'225mhz' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'233mhz' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'250mhz' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'262mhz' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'275mhz' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'325mhz' : {clkos_div : 13, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'350mhz' : {clkos_div : 14, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'375mhz' : {clkos_div : 15, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'400mhz' : {clkos_div : 16, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'425mhz' : {clkos_div : 17, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'450mhz' : {clkos_div : 18, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'475mhz' : {clkos_div : 19, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  &
-    			"'500mhz' : {clkos_div : 20, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6}}," &
+    			"'133mhz' : {clkos_div : 16, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "010",
+    			"'150mhz' : {clkos_div : 18, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'166mhz' : {clkos_div : 20, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'200mhz' : {clkos_div : 16, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'225mhz' : {clkos_div : 27, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'233mhz' : {clkos_div : 28, clkop_div : 3, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'250mhz' : {clkos_div : 20, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'262mhz' : {clkos_div : 21, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'275mhz' : {clkos_div : 22, clkop_div : 2, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011",
+    			"'325mhz' : {clkos_div : 13, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "010", cwl => "000", wrl => "010"),
+    			"'350mhz' : {clkos_div : 14, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "010", cwl => "000", wrl => "010"),
+    			"'375mhz' : {clkos_div : 15, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "010", cwl => "000", wrl => "010"),
+    			"'400mhz' : {clkos_div : 16, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "010", cwl => "000", wrl => "010"),
+    			"'425mhz' : {clkos_div : 17, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011", cwl => "001", wrl => "011"),
+    			"'450mhz' : {clkos_div : 18, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011", cwl => "001", wrl => "011"),
+    			"'475mhz' : {clkos_div : 19, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6},"  & -- cl => "011", cwl => "001", wrl => "100"),
+    			"'500mhz' : {clkos_div : 20, clkop_div : 1, clkfb_div : 1, clki_div : 1, clkos2_div : 1, clkos3_div : 1, freq_in : 25.0e6}}," & -- cl => "011", cwl => "001", wrl => "100"));
     		"'48mhz':{"                                                                                                     &
     			"'300mhz' : {clkos_div : 38, clkop_div : 2, clkfb_div : 1, clki_div : 3, clkos2_div : 1, clkos3_div : 1, freq_in : 48.0e6},"  &
     			"'400mhz' : {clkos_div : 25, clkop_div : 1, clkfb_div : 1, clki_div : 3, clkos2_div : 1, clkos3_div : 1, freq_in : 48.0e6}}}");

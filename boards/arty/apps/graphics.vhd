@@ -40,14 +40,16 @@ architecture graphics of arty is
 	constant settings : string := "{"                                                      &
 		"io_link: io_ipoe,"                                                                &
 		"video:{"                                                                          &
-			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'100mhz'.'40mhz'"))    & ',' &
-			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+			"dcm:"     & string'(hdl4fpga.xc7a_profiles.video_dcm(".'100mhz'.'64mhz'"))    & ',' &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1280x720'.'@60'.'64mhz'") & ',' &
+			"gear:2," &
 			"pixel:"   & "{R:8,G:8,B:8}}"                                                  & ',' &
 		"sdram:{"                                                                          &
-			"dcm:"       & string'(hdl4fpga.xc5v_profiles.sdram_dcm(".'100mhz'.'400mhz'")) & ',' &
-			"chip_data:" & string'(hdo(sdram_db)**"..MT41K128M16-125")                     & ',' &
+			"dcm:"       & string'(hdl4fpga.xc7a_profiles.sdram_dcm(".'100mhz'.'400mhz'")) & ',' &
+			"chip_data:" & string'(hdo(sdram_db)**".MT41K128M16-125")                     & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".xc7vg4")                                 & ',' &
-			"cl:"        & "'010'}}";
+			"cwl:"       & "'000'"                                              & ',' &
+			"cl:"        & "'0010'}}";
 	constant io_link      : string  := settings**".io_link";
 
 	signal sys_rst        : std_logic;
@@ -69,7 +71,7 @@ architecture graphics of arty is
 	signal video_clkx2    : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_pixel    : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
-	signal dvid_crgb      : std_logic_vector(4*settings**".video.gear=4" downto 0);
+	signal dvid_crgb      : std_logic_vector(4*settings**".video.gear=4"-1 downto 0);
 	signal videoio_clk    : std_logic;
 
 	constant sdram_gear   : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
@@ -156,15 +158,18 @@ begin
 
 	videodcm_i : entity hdl4fpga.xc7a_videodcm
 	generic map(
-		settings => hdo(settings)**".dcm")
+		settings => hdo(settings)**".video")
 	port map(
 		rst       => sys_rst,
 		clk       => sys_clk,
 		video_clk => video_clk);
 
+		-- settings => "{" & 
+			-- "dcm:"  & string'(settings**".sdram.dcm")      & ',' &
+			-- "gear:" & string'(hdo(settings)**".sdram.phy_data.orgz.gear") & '}')
 	sdramdcm_i : entity hdl4fpga.xc7a_sdramdcm
 	generic map (
-		settings  => settings**".dcm")
+		settings  => settings**".sdram.dcm")
 	port map (
 		rst          => sys_rst,
 		clk          => sys_clk,
@@ -537,7 +542,7 @@ begin
 		generic map (
 			device => hdo(settings)**".sdram.phy_data.device",
 			size   => 4,
-			gear   => hdo(settings)**".video.gear=4")
+			gear   => hdo(settings)**".video.gear=2")
 		port map (
 			clk   => video_shift_clk,
 			clkx2 => video_clkx2,

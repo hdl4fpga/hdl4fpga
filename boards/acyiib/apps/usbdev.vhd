@@ -105,7 +105,7 @@ architecture usbdev of acyiib is
 begin
 	sys_rst <= '0';
 
-	videopll_e : entity hdl4fpga.ep2c_videopll
+	videopll_e : entity hdl4fpga.ep2c_videodcm
 	generic map (
 		dcm => video_dcm(".'50mhz'.'40mhz'", 12.0e6*real(usb_oversampling)))
 	port map (

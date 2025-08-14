@@ -33,7 +33,7 @@ entity timer is
 		data : in  std_logic_vector;
 		clk  : in  std_logic;
 		req  : in  std_logic;
-		rdy  : buffer std_logic);
+		rdy  : buffer std_logic := '0');
 end;
 
 architecture def of timer is
@@ -47,15 +47,15 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if (to_bit(req) xor to_bit(rdy))='0' then
-				cy <= (0 =>'1', others => '0');
-			else
+			if (rdy xor req)='1' then
 				for i in 0 to slices0'length-1 loop
 					if cy(cy'left)='0' then
 						cy(i+1) <= q(i) and cy(i);
 					end if;
 				end loop;
 				rdy <= cy(cy'left) xnor req;
+			else
+				cy <= (0 =>'1', others => '0');
 			end if;
 		end if;
 	end process;
@@ -77,18 +77,28 @@ begin
 
 	begin
 		cntr_p : process (clk)
+			type states is (s_init, s_run);
+			variable state : states;
 			variable csize : natural_vector(slices0'length downto 0) := (others => 0);
 		begin
 			if rising_edge(clk) then
 				csize(slices0'length downto 1) := slices0;
-				if (to_bit(req) xor to_bit(rdy))='0' then
-					cntr <= resize(shift_right(unsigned(data), csize(i)), size);
-				elsif en(i)='1' then
-					if cntr(0)='1' then
-						cntr <= to_unsigned((2**(size-1)-2), size);
-					else
-						cntr <= cntr - 1;
-					end if;
+				if (rdy xor req)='1' then
+					case state is
+					when s_init =>
+						cntr <= resize(shift_right(unsigned(data), csize(i)), size);
+						state := s_run;
+					when s_run =>
+						if en(i)='1' then
+							if cntr(0)='1' then
+								cntr <= to_unsigned((2**(size-1)-2), size);
+							else
+								cntr <= cntr - 1;
+							end if;
+						end if;
+					end case;
+				else
+					state := s_init;
 				end if;
 			end if;
 		end process;

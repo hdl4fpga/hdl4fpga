@@ -68,7 +68,7 @@ architecture inference of bram is
 		return retval;
 	end;
 
-	constant addr_size : natural := hdl4fpga.base.min(addra'length,addrb'length);
+	constant addr_size : natural := mnm(addra'length,addrb'length);
 
 	shared variable ram : word_vector(0 to 2**addr_size-1) := init_ram(bitrom, 2**addr_size);
 

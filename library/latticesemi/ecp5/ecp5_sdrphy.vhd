@@ -48,7 +48,8 @@ entity ecp5_sdrphy is
 		taps      : natural := 0);
 	port (
 		tpin      : in std_logic := '-';
-		rst       : in std_logic;
+		phy_rst   : in std_logic := '0';
+		ctlr_rst  : in std_logic := '0';
 		sclk      : in std_logic;
 		eclk      : in std_logic := '-';
 		ddrdel    : in std_logic := '-';
@@ -62,9 +63,9 @@ entity ecp5_sdrphy is
 		phy_locked : out std_logic;
 
 		phy_wlreq  : in  std_logic := '0';
-		phy_wlrdy  : buffer std_logic;
+		phy_wlrdy  : buffer std_logic := '0';
 		phy_rlreq  : in  std_logic := '0';
-		phy_rlrdy  : buffer std_logic;
+		phy_rlrdy  : buffer std_logic := '0';
 
 		sys_rst    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
 		sys_cs     : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
@@ -153,7 +154,7 @@ begin
 		begin
     		ck_i : oddrx2f
     		port map (
-    			rst  => rst,
+    			rst  => phy_rst,
     			sclk => sclk,
     			eclk => eclk,
     			d0   => '0',
@@ -175,7 +176,7 @@ begin
 	end block;
 
 	write_leveling_p : process (phy_wlreq, wl_rdy)
-		variable z : std_logic;
+		variable z : std_logic := '1';
 	begin
 		z := '1';
 		for i in wl_rdy'range loop
@@ -221,7 +222,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(sclk) then
-				if rst='1' then
+				if ctlr_rst='1' then
 					read_rdy <= to_stdlogicvector(to_bitvector(read_req));
 					state := s_idle;
 				else
@@ -256,11 +257,11 @@ begin
 			end if;
 		end process;
 
-		process (rst, sclk)
+		process (ctlr_rst, sclk)
 			variable z : std_logic;
 		begin
 			if rising_edge(sclk) then
-				if rst='1' then
+				if ctlr_rst='1' then
 					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
 					phy_ini <= '0';
 				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
@@ -288,7 +289,7 @@ begin
 		gear      => (gear+1)/2,
 		ba_latency => ba_latency)
 	port map (
-		grst    => rst,
+		phy_rst => phy_rst,
 		eclk    => eclk,
 		sclk    => sclk,
           
@@ -329,7 +330,8 @@ begin
 			bypass     => bypass,
 			byte_size  => byte_size)
 		port map (
-			rst        => rst,
+			phy_rst    => phy_rst,
+			ctlr_rst   => ctlr_rst,
 			sclk       => sclk,
 			eclk       => eclk,
 			ddrdel     => ddrdel,

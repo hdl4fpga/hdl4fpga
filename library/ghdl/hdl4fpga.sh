@@ -6,26 +6,23 @@ fi
 for file in \
 "../basic/hdo.vhd" \
 "../basic/base.vhd" \
-\
 "../basic/arbiter.vhd" \
-\
 "../basic/dpram.vhd" \
 "../basic/fifo.vhd" \
-\
 "../basic/rom.vhd" \
-\
 "../basic/barrel.vhd" \
-\
 "../basic/cntrcs.vhd" \
 "../basic/timer.vhd" \
-\
+"../basic/bcd_adder.vhd" \
+"../basic/lifo.vhd" \
+"../basic/dbdbbl.vhd" \
+"../basic/btof.vhd" \
 "../sdram/sdrampkg.vhd" \
 "../sdram/sdram_mpu.vhd" \
 "../sdram/sdram_pgm.vhd" \
 "../sdram/sdram_sch.vhd" \
 "../sdram/sdram_init.vhd" \
 "../sdram/sdram_ctlr.vhd" \
-\
 "../sdram/dmacntr.vhd" \
 "../sdram/dmatrans.vhd" \
 "../sdram/dmactlr.vhd" \
@@ -169,7 +166,6 @@ for file in \
 "../sio/sio_dayhdlc.vhd" \
 "../uart/uart_rx.vhd" \
 "../uart/uart_tx.vhd" \
-"../apps/app_profiles.vhd" \
 ; do 
 	if ghdl -a --std=02 --workdir=hdl4fpga --work=hdl4fpga $file ; then
 		echo $file
@@ -219,8 +215,8 @@ for file in \
 done
 
 for file in \
-"../apps/ecp5_sdrampll.vhd" \
-"../apps/ecp5_videopll.vhd" \
+"../apps/ecp5_sdramdcm.vhd" \
+"../apps/ecp5_videodcm.vhd" \
 "../apps/link_mii.vhd"  \
 "../sio/sio_dayusb.vhd" \
 "../apps/ser_debug.vhd" \
@@ -231,3 +227,40 @@ for file in \
 		exit
 	fi
 done
+
+#for file in \
+#../scope/scopeiopkg.vhd \
+#../scope/scopeio_amp.vhd \
+#../scope/scopeio_rgtrfocus.vhd \
+#../scope/scopeio_rgtrhzaxis.vhd \
+#../scope/scopeio_rgtrmyip.vhd \
+#../scope/scopeio_rgtrpalette.vhd \
+#../scope/scopeio_rgtrtrigger.vhd \
+#../scope/scopeio_rgtrvtoffset.vhd \
+#../scope/scopeio_rgtrvtscale.vhd \
+#../scope/scopeio_marks.vhd \
+#../scope/scopeio_axis.vhd \
+#../scope/scopeio_btnctlr.vhd \
+#../scope/scopeio_capture.vhd \
+#../scope/scopeio_downsampler.vhd \
+#../scope/scopeio_grid.vhd \
+#../scope/scopeio_layout.vhd \
+#../scope/scopeio_palette.vhd \
+#../scope/scopeio_reading.vhd \
+#../scope/scopeio_resize.vhd \
+#../scope/scopeio_segment.vhd \
+#../scope/scopeio_stactlr.vhd \
+#../scope/scopeio_state.vhd \
+#../scope/scopeio_storage.vhd \
+#../scope/scopeio_textbox.vhd \
+#../scope/scopeio_tracer.vhd \
+#../scope/scopeio_trigger.vhd \
+#../scope/scopeio_video.vhd \
+#../scope/scopeio.vhd \
+#; do 
+#	if ghdl -a --std=02 -P./ecp5u --workdir=hdl4fpga --work=hdl4fpga $file ; then
+#		echo $file
+#	else
+#		exit
+#	fi
+#done

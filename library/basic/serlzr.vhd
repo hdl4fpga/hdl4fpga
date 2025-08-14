@@ -146,7 +146,7 @@ architecture def of serlzr  is
 	end;
 
 	constant wide_size   : natural := max(src_data'length, dst_data'length);
-	constant narrow_size : natural := hdl4fpga.base.min(src_data'length, dst_data'length);
+	constant narrow_size : natural := mnm(src_data'length, dst_data'length);
 
 	constant debug_mm : boolean := false;
 	constant mm : natural_vector := max_and_mask(wide_size, narrow_size);

@@ -36,11 +36,11 @@ entity xc7a_videodcm is
 		video_shift_clk : out std_logic;
 		locked      : buffer std_logic);
 
-	constant gear           : natural := settings**".gear=1";
-	constant freq_in        : real    := settings**".freq_in";
-	constant clkfbout_mult  : natural := settings**".clkfbout_mult=1";
-	constant clkout0_divide : natural := settings**".clkout0_divide=1";
-	constant clkout1_divide : natural := settings**".clkout1_divide=1";
+	constant gear             : natural := settings**".gear=1";
+	constant freq_in          : real    := settings**".dcm.freq_in=1";
+	constant clkfbout_mult_f  : real    := settings**".dcm.clkfbout_mult_f=1.0";
+	constant clkout0_divide_f : real := settings**".dcm.clkout0_divide_f=1";
+	constant clkout1_divide   : natural := settings**".dcm.clkout1_divide=1";
 
 end;
 
@@ -53,11 +53,12 @@ architecture def of xc7a_videodcm is
 	signal clkout1 : std_logic;
 	signal clkout2 : std_logic;
 begin
-	pll_i :  plle2_base
+
+	pll_i :  mmcme2_base
 	generic map (
 		clkin1_period  => 1.0e9/freq_in,
-		clkfbout_mult  => clkfbout_mult,
-		clkout0_divide => clkout0_divide,
+		clkfbout_mult_f => clkfbout_mult_f,
+		clkout0_divide_f => clkout0_divide_f,
 		clkout1_divide => clkout1_divide,
 		clkout2_divide => clkout1_divide*gear)
 	port map (
