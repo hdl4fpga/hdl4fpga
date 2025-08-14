@@ -144,7 +144,13 @@ begin
 								a     => sdram_init_a);
 							timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
 							init_cfg  <= init_rst;
-							step := step + 1;
+							if (sdram_init_wlreq xor sdram_init_wlrdy)='0' then
+								if (sdram_init_wlreq xor sdram_init_wlrdy)='0' then
+								if string'(hdo(init_seq)**("["&natural'image(i)&"].data.wl_req=off"))="on" then
+									sdram_init_wlreq <= not sdram_init_wlrdy;
+								end if;
+								step := step + 1;
+							end if;
 							exit;
 						end if;
 					end loop;

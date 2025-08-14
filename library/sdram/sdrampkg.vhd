@@ -69,7 +69,7 @@ package sdrampkg is
 		"    cwl  : { '000' : 10, '001' : 12, '010' : 14, '011' : 16}" &
 		"    wrl  : {  6 : '001',  8 : '001', 10 : '001', 12 : '010', 14 : '011', 16 : '100', 18 : '101', 20 : '101', 22 : '110', 24 : '110', 26: '111', 28 : '111', 30 : '000', 32 : '000'}," &
 		-- "    tmng : { tPreRST : 200.0e-6, tPstRST : 500.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25, tCAS : 13.125e-9}}}");
-		"    tmng : { tPreRST : 1.0e-6, tPstRST : 2.0e-6, cDLL : 500, ZQINIT : 500, MRD : 4, MODu : 12, XPR : 5, WLDQSEN : 25, tCAS : 13.125e-9}}}");
+		"    tmng : { tPreRST:1.0e-6, tPstRST:2.0e-6, cDLL:500, ZQINIT:500, MRD:4, MODu:12, XPR:5, WLDQSEN:25, WLMRD:40, tCAS:13.125e-9}}}");
 
 	constant phy_db : string := compact("[" &
 		"ecp5g1 : { device : ecp5, orgz : { gear : 1}, tmng : {STRL :  1, DQSL :  0, DQSZL :  0, DQZL :  0, WWNL :  0, STRXL : 0, DQSZXL : 0, DQSXL : 0, DQZXL : 0, WWNXL : 0}}," &
@@ -124,20 +124,21 @@ package sdrampkg is
 				"{cmd:nop,  timer:REFi,    data:{cs:0, cke:1}}]},"                 &
 		"ddr3:{"                                                                   &
 			"seq:["                                                                &
-				"{cmd:nop,  timer:PreRST,  data:{cs:1, cke:0, rst:0}},"            &
-				"{cmd:nop,  timer:PstRST,  data:{cs:1, cke:0, rst:1}},"            &
-				"{cmd:nop,  timer:XPR,     data:{cs:0, cke:1, rst:1}},"            &
-				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr2}},"     &
-				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr3}},"     &
-				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:dll_dis}}," &
-				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr0}},"     &
-				"{cmd:zqc,  timer:ZQINIT,  data:{cs:0, cke:1, rst:1}},"            &
-				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, a:wl_on}},"   &
-				"{cmd:nop,  timer:WLDQSEN, data:{cs:0, cke:1, rst:1, odt:1}},"     &
-				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1, wl_req:on}}," &
-				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, a:wl_off}},"  &
-				"{cmd:nop,  timer:cDLL,    data:{cs:0, cke:1, rst:1}},"            &
-				"{cmd:nop,  timer:REFi,    data:{cs:0, cke:1, rst:1}}]}}";
+				"{cmd:nop,  timer:PreRST,  data:{cs:1, cke:0, rst:0}},"            &  -- 0
+				"{cmd:nop,  timer:PstRST,  data:{cs:1, cke:0, rst:1}},"            &  -- 1
+				"{cmd:nop,  timer:XPR,     data:{cs:0, cke:1, rst:1}},"            &  -- 2
+				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr2}},"     &  -- 3
+				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr3}},"     &  -- 4
+				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:dll_dis}}," &  -- 5
+				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr0}},"     &  -- 6
+				"{cmd:zqc,  timer:ZQINIT,  data:{cs:0, cke:1, rst:1}},"            &  -- 7
+				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, a:wl_on}},"   &  -- 8
+				"{cmd:nop,  timer:WLDQSEN, data:{cs:0, cke:1, rst:1, odt:1}},"     &  -- 9
+				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1, odt:1,wl_req:on}}," & -- 10
+				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1, odt:1}},"     &  -- 11
+				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, odt:0,a:wl_off}}," & -- 12
+				"{cmd:nop,  timer:cDLL,    data:{cs:0, cke:1, rst:1}},"            & -- 13
+				"{cmd:nop,  timer:REFi,    data:{cs:0, cke:1, rst:1}}]}}";           -- 14
 
 	procedure mr (
 		signal   b     : out std_logic_vector;

@@ -268,7 +268,7 @@ end;
 
 library micron;
 
-configuration nuhs3adsp_graphic_structure_md of testbench is
+configuration nuhs3adsp_graphics_structure_md of testbench is
 	for nuhs3adsp_graphics
 		for all : nuhs3adsp
 			use entity work.nuhs3adsp(structure);
