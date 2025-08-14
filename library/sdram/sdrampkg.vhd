@@ -136,7 +136,7 @@ package sdrampkg is
 				"{cmd:nop,  timer:WLDQSEN, data:{cs:0, cke:1, rst:1, odt:1}},"     &  -- 9 It should be WLDQSEN-MODu
 				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1, odt:1,wl_req:on}}," & -- 10
 				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1, odt:1}},"     &  -- 11
-				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1, odt:0}},"     &  -- 12
+				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1}},"            &  -- 12
 				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, a:wl_off}},"  &  -- 13
 				"{cmd:nop,  timer:cDLL,    data:{cs:0, cke:1, rst:1}},"            &  -- 14
 				"{cmd:nop,  timer:REFi,    data:{cs:0, cke:1, rst:1}}]}}";            -- 15

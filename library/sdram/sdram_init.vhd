@@ -147,10 +147,14 @@ begin
 							if step=init_seq_length-1 then
 								init_cfg <= not init_rst;
 							end if;
-							if (sdram_init_wlreq xor sdram_init_wlrdy)='0' then
-								if string'(hdo(init_seq)**("["&natural'image(i)&"].data.wl_req=off"))="on" then
-									sdram_init_wlreq <= not sdram_init_wlrdy;
+							if generation="ddr3" then
+								if (sdram_init_wlreq xor sdram_init_wlrdy)='0' then
+									if string'(hdo(init_seq)**("["&natural'image(i)&"].data.wl_req=off"))="on" then
+										sdram_init_wlreq <= not sdram_init_wlrdy;
+									end if;
+									step := (step + 1) mod 2**unsigned_num_bits(init_seq_length-1);
 								end if;
+							else
 								step := (step + 1) mod 2**unsigned_num_bits(init_seq_length-1);
 							end if;
 							exit;
