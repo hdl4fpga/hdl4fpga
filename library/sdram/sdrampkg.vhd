@@ -134,6 +134,7 @@ package sdrampkg is
 				"{cmd:zqc,  timer:ZQINIT,  data:{cs:0, cke:1, rst:1}},"            &
 				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, a:wl_on}},"   &
 				"{cmd:nop,  timer:WLDQSEN, data:{cs:0, cke:1, rst:1, odt:1}},"     &
+				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1, wl_req:on}}," &
 				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, a:wl_off}},"  &
 				"{cmd:nop,  timer:cDLL,    data:{cs:0, cke:1, rst:1}},"            &
 				"{cmd:nop,  timer:REFi,    data:{cs:0, cke:1, rst:1}}]}}";
