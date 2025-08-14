@@ -39,6 +39,14 @@ entity sdram_init is
 		generation_data : string);
 	port (
 
+		init_rst         : in  std_logic := '0';
+		sdram_init_clk   : in  std_logic := '-';
+		init_cfg         : buffer std_logic := '0';
+		sdram_refi_rdy   : in  std_logic := '0';
+		sdram_refi_req   : buffer std_logic := '0';
+		sdram_init_wlrdy : in  std_logic := '0';
+		sdram_init_wlreq : buffer std_logic := '0';
+
 		sdram_init_bl   : in  std_logic_vector(3-1 downto 0) := (others => '0');
 		sdram_init_bt   : in  std_logic := '0';
 		sdram_init_cl   : in  std_logic_vector(4-1 downto 0) := (others => '0');
@@ -61,13 +69,6 @@ entity sdram_init is
 		sdram_init_rdqs : in  std_logic_vector(1-1 downto 0) := (others => '0');
 		sdram_init_pd   : in  std_logic_vector(1-1 downto 0) := (others => '0');
 
-		init_rst       : in  std_logic := '0';
-		sdram_init_clk : in  std_logic := '-';
-		init_cfg       : buffer std_logic := '0';
-		sdram_refi_rdy : in  std_logic := '0';
-		sdram_refi_req : buffer std_logic := '0';
-		sdram_init_wlrdy : in  std_logic := '0';
-		sdram_init_wlreq : buffer std_logic := '0';
 		sdram_init_rst : out  std_logic := '0';
 		sdram_init_cke : out std_logic;
 		sdram_init_cs  : out std_logic;
