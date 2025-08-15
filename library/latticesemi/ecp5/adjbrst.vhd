@@ -31,9 +31,9 @@ entity adjbrst is
 		sclk       : in  std_logic;
 		adj_req    : in  std_logic;
 		adj_rdy    : buffer std_logic;
-		pause_req  : buffer std_logic;
+		pause_req  : buffer std_logic := '0';
 		pause_rdy  : in  std_logic;
-		step_req   : buffer std_logic;
+		step_req   : buffer std_logic := '0';
 		step_rdy   : in  std_logic;
 		read       : in  std_logic;
 		datavalid  : in  std_logic;
@@ -62,13 +62,13 @@ begin
 	begin
 		if rising_edge(sclk) then
 			if rst='1' then
-				adj_rdy <= to_stdulogic(to_bit(adj_req));
+				adj_rdy <= adj_req;
 				locked  <= '0';
 				state   := s_init;
-			elsif (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
+			elsif (adj_rdy xor adj_req)='1' then
 				case state is
 				when s_init =>
-					pause_req <= not to_stdulogic(to_bit(pause_rdy));
+					pause_req <= not pause_rdy;
 					phase     <= (others => '0');
 					state     := s_pause;
 					wlat      := (others => '0');
@@ -76,7 +76,7 @@ begin
 					locked    <= '0';
 				when s_pause =>
 					if (pause_rdy xor pause_req)='0' then
-						step_req  <= not to_stdulogic(to_bit(step_rdy));
+						step_req  <= not step_rdy;
 						cntr      := (others => '0');
 						dtec      := (others => '0');
 						state     := s_step;
@@ -106,7 +106,7 @@ begin
 								end if;
 								cntr     := cntr + 1;
 								input    <= '0';
-								step_req <= not to_stdulogic(to_bit(step_rdy));
+								step_req <= not step_rdy;
 								locked   <= '0';
 								state    := s_step;
 							end if;
@@ -122,7 +122,7 @@ begin
 					end if;
 				end case;
 			else
-				adj_rdy <= to_stdulogic(to_bit(adj_req));
+				adj_rdy <= adj_req;
 				state   := s_init;
 			end if;
 		end if;

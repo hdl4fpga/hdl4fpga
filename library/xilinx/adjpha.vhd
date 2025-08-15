@@ -38,7 +38,7 @@ entity adjpha is
 		rst      : in  std_logic := '0';
 		req      : in  std_logic;
 		rdy      : buffer std_logic;
-		step_req : buffer std_logic;
+		step_req : buffer std_logic := '0';
 		step_rdy : in  std_logic;
 		edge     : in  std_logic;
 		smp      : in  std_logic_vector;
@@ -50,13 +50,12 @@ end;
 architecture beh of adjpha is
 
 	subtype gap_word  is unsigned(0 to delay'length);
-	signal edge_req : std_logic;
-	signal edge_rdy : std_logic;
+	signal edge_req : std_logic := '0';
+	signal edge_rdy : std_logic := '0';
 	signal phase    : gap_word;
 	signal avrge    : gap_word;
 	signal sel      : std_logic;
 	signal trail    : std_logic;
-	signal sy_req   : std_logic;
 
 begin
 
@@ -85,18 +84,16 @@ begin
 
 		type states is (s_init, s_sweep);
 		variable state : states;
-		variable start : std_logic;
 		variable step  : unsigned(0 to unsigned_num_bits(num_of_steps-1));
 		variable gap   : gap_word;
 		variable saved : gap_word;
 
 		variable pattern : unsigned(0 to smp'length-1);
-		variable sy_step_rdy : std_logic;
 	begin
 
 		assert num_of_taps < 2**delay'length
-		report "num_of_steps " & integer'image(num_of_taps) & " greater or equal than 2**delay'length-1 "  & integer'image(2**delay'length-1)
-		severity WARNING;
+			report "num_of_steps " & integer'image(num_of_taps) & " greater or equal than 2**delay'length-1 "  & integer'image(2**delay'length-1)
+			severity warning;
 
 		pattern := (others => '-');
 		for i in pattern'range loop
@@ -110,18 +107,18 @@ begin
 
 		if rising_edge(clk) then
 			if rst='1' then
-				edge_rdy <= to_stdulogic(to_bit(edge_req));
-			elsif (rdy xor to_stdulogic(to_bit(sy_req)))='1' then
-				if (edge_rdy xor  to_stdulogic(to_bit(edge_req)))='1' then
+				edge_rdy <= edge_req;
+			elsif (rdy xor req)='1' then
+				if (edge_rdy xor  edge_req)='1' then
 					case state is
 					when s_init =>
 						saved := (others => '0');
 						phase <= to_unsigned(2**(gap_word'length-1), gap_word'length);
 						step  := to_unsigned(num_of_steps-1, step'length);
-						step_req <= not sy_step_rdy;
+						step_req <= not step_rdy;
 						state := s_sweep;
 					when s_sweep =>
-						if (sy_step_rdy xor to_stdulogic(to_bit(step_req)))='0' then
+						if (step_rdy xor step_req)='0' then
 							if step(0)='0' then
 								gap := gaptab(to_integer(step(1 to step'right)));
 							else
@@ -137,10 +134,10 @@ begin
 	
 							if step(0)='0' then
 								step    := step - 1;
-								step_req <= not sy_step_rdy;
+								step_req <= not step_rdy;
 							else
 								state    := s_init;
-								edge_rdy <= to_stdulogic(to_bit(edge_req));
+								edge_rdy <= edge_req;
 							end if;
 						end if;
 					end case;
@@ -149,10 +146,8 @@ begin
 				end if;
 			else
 				state := s_init;
-				edge_rdy <= to_stdulogic(to_bit(edge_req));
+				edge_rdy <= edge_req;
 			end if;
-			sy_step_rdy := to_stdulogic(to_bit(step_rdy));
-			sy_req      <= req;
 		end if;
 	end process;
 
@@ -165,18 +160,18 @@ begin
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
-					rdy   <=  to_stdulogic(to_bit(req));
+					rdy   <=  req;
 					trail <= '0';
 					state := s_init;
-				elsif (rdy xor to_stdulogic(to_bit(sy_req)))='1' then
+				elsif (rdy xor req)='1' then
 					case state is
 					when s_init =>
-						edge_req <= not to_stdulogic(to_bit(edge_rdy));
+						edge_req <= not edge_rdy;
 						trail <= '0';
 						state := s_lead;
 					when s_lead =>
 						ledge := phase;
-						if (edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
+						if (edge_req xor edge_rdy)='0' then
 							edge_req <= not edge_rdy;
 							trail <= '1';
 							state := s_trail;
@@ -191,8 +186,8 @@ begin
 							end if;
 						end if;
 						avrge <= sum;
-						if (edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
-							rdy <=  to_stdulogic(to_bit(sy_req));
+						if (edge_req xor edge_rdy)='0' then
+							rdy <=  req;
 							trail <= '0';
 							state := s_init;
 						end if;
@@ -210,18 +205,17 @@ begin
 			type states is (s_init, s_lead);
 			variable state  : states;
 			variable ledge  : gap_word;
-			variable start  : std_logic;
 			variable sum    : gap_word;
 		begin
 			if rising_edge(clk) then
 				if rst='1' then
-					rdy   <=  to_stdulogic(to_bit(req));
+					rdy   <=  req;
 					trail <= '-';
 					state := s_init;
-				elsif (rdy xor to_stdulogic(to_bit(sy_req)))='1' then
+				elsif (rdy xor req)='1' then
 					case state is
 					when s_init =>
-						edge_req <= not to_stdulogic(to_bit(edge_rdy));
+						edge_req <= not edge_rdy;
 						trail <= '0';
 						state := s_lead;
 					when s_lead =>
@@ -235,8 +229,8 @@ begin
 							sum := sum - (taps+1);
 						end if;
 						avrge <= sum;
-						if (edge_req xor to_stdulogic(to_bit(edge_rdy)))='0' then
-							rdy   <=  to_stdulogic(to_bit(sy_req));
+						if (edge_req xor edge_rdy)='0' then
+							rdy   <=  req;
 							edge_req <= not edge_rdy;
 							state := s_init;
 						end if;
@@ -254,7 +248,7 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			sel <= to_stdulogic(to_bit(rdy xor req));
+			sel <= rdy xor req;
 		end if;
 	end process;
 	delay <=

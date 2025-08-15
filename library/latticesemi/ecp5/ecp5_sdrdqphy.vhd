@@ -48,12 +48,12 @@ entity ecp5_sdrdqphy is
 		ddrdel     : in  std_logic;
 		pause      : in  std_logic;
 
-		phy_wlreq  : in  std_logic := '0';
-		phy_wlrdy  : buffer std_logic := '0';
-		phy_rlreq  : in  std_logic := '0';
-		phy_rlrdy  : buffer std_logic := '0';
+		phywl_req  : in  std_logic := '0';
+		phywl_rdy  : buffer std_logic := '0';
+		phyrl_req  : in  std_logic := '0';
+		phyrl_rdy  : buffer std_logic := '0';
 		read_rdy   : in  std_logic;
-		read_req   : buffer std_logic;
+		read_req   : buffer std_logic := '0';
 		phy_locked : buffer std_logic;
 
 		sys_sti    : in  std_logic_vector(gear-1 downto 0);
@@ -117,15 +117,15 @@ architecture ecp5 of ecp5_sdrdqphy is
 	signal adjstep_req  : std_logic;
 	signal adjstep_rdy  : std_logic;
 
+	signal rlpause_req  : std_logic := '0';
 	signal rlpause_rdy  : std_logic;
-	signal rlpause_req  : std_logic;
+	signal rlpause1_req : std_logic := '0';
 	signal rlpause1_rdy : std_logic;
-	signal rlpause1_req : std_logic;
+	signal wlpause_req  : std_logic := '0';
 	signal wlpause_rdy  : std_logic;
-	signal wlpause_req  : std_logic;
 	signal lv_pause     : std_logic;
 
-	constant delay      : time := 10*0.625 ns;
+	constant delay      : time := 0 ns; --10*0.625 ns;
 
 	signal wlstep_req   : std_logic;
 	signal wlstep_rdy   : std_logic;
@@ -136,9 +136,9 @@ architecture ecp5 of ecp5_sdrdqphy is
 begin
 
 	rl_b : block
-		signal step_req : std_logic;
+		signal step_req : std_logic := '0';
 		signal step_rdy : std_logic;
-		signal adj_req  : std_logic;
+		signal adj_req  : std_logic := '0';
 		signal adj_rdy  : std_logic;
 
 	begin
@@ -185,8 +185,9 @@ begin
    			end process;
 
 			sto <= (others => datavalid);
-			tp(1 to 8) <= phy_locked & lat & rdclksel & '0';
-			-- tp(1 to 8) <= phy_locked & lat & adj_req & adj_rdy;
+			-- tp(1 to 8) <= phy_locked & lat & rdclksel & '1';
+			-- tp(1 to 8) <= phy_locked & lat & adj_req & adj_rdy & "01";
+			tp(1 to 8) <= phy_locked & adj_req & adj_rdy & "00001";
 		end generate;
 
 		adjust_p : process (sclk, read_req)
@@ -195,21 +196,21 @@ begin
 		begin
 			if rising_edge(sclk) then
 				if ctlr_rst='1' then
-					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+					phyrl_rdy <= phyrl_req;
 					state     := s_start;
-				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
+				elsif (phyrl_rdy xor phyrl_req)='1' then
 					case state is
 					when s_start =>
 						adj_req <= not adj_rdy;
 						state   := s_adj;
 					when s_adj =>
-						if (adj_rdy xor to_stdulogic(to_bit(adj_req)))='0' then
+						if (adj_rdy xor adj_req)='0' then
 							rlpause1_req <= not rlpause1_rdy;
 							state        := s_paused;
 						end if;
 					when s_paused =>
 						if (rlpause1_req xor rlpause1_rdy)='0' then
-							phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+							phyrl_rdy <= phyrl_req;
 							state     := s_start;
 						end if;
 					end case;
@@ -226,12 +227,12 @@ begin
 		begin
 			if rising_edge(sclk) then
 				if ctlr_rst='1' then
+					step_rdy <= step_req;
 					state := s_start;
-					step_rdy <= to_stdulogic(to_bit(step_req));
-				elsif (adj_rdy xor to_stdulogic(to_bit(adj_req)))='1' then
+				elsif (adj_rdy xor adj_req)='1' then
 					case state is
 					when s_start =>
-						if (step_rdy xor to_stdulogic(to_bit(step_req)))='1' then
+						if (step_rdy xor step_req)='1' then
 							read_req <= not read_rdy;
 							state    := s_read;
 						end if;
@@ -242,7 +243,7 @@ begin
 						end if;
 					end case;
 				else
-					step_rdy <= to_stdulogic(to_bit(step_req));
+					step_rdy <= step_req;
 					state := s_start;
 				end if;
 			end if;
@@ -254,7 +255,7 @@ begin
 		signal d : std_logic_vector(0 to 0);
 	begin
 
-		d(0) <= transport to_stdulogic(to_bit(dqi0)) after delay;
+		d(0) <= transport dqi0 after delay;
 		adjdqs_e : entity hdl4fpga.adjpha
 		generic map (
 			dtaps    => 1,
@@ -263,8 +264,8 @@ begin
 			edge     => std_logic'('0'),
 			clk      => sclk,
 			rst      => ctlr_rst,
-			req      => phy_wlreq,
-			rdy      => phy_wlrdy,
+			req      => phywl_req,
+			rdy      => phywl_rdy,
 			step_req => wlstep_req,
 			step_rdy => wlstep_rdy,
 			smp      => d,
@@ -283,12 +284,12 @@ begin
 		dqsi_buf <= transport sdram_dqs after delay;
 		pause_b : block
 	
-			signal pause_req : bit;
-			signal pause_rdy : bit;
+			signal pause_req : std_ulogic := '0';
+			signal pause_rdy : std_ulogic;
 
 		begin
 
-			pause_req <= to_bit(rlpause_req) xor to_bit(rlpause1_req) xor to_bit(wlpause_req);
+			pause_req <= rlpause_req xor rlpause1_req xor wlpause_req;
 			process (ctlr_rst, sclk)
 				variable cntr : unsigned(0 to 4);
 			begin
@@ -321,13 +322,13 @@ begin
 			begin
 				if rising_edge(sclk) then
 					if ctlr_rst='1' then
-						wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
-						rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
-						rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
+						wlpause_rdy  <= wlpause_req;
+						rlpause1_rdy <= rlpause1_req;
+						rlpause_rdy  <= rlpause_req;
 					elsif (pause_rdy xor pause_req)='0' then
-						wlpause_rdy  <= to_stdulogic(to_bit(wlpause_req));
-						rlpause1_rdy <= to_stdulogic(to_bit(rlpause1_req));
-						rlpause_rdy  <= to_stdulogic(to_bit(rlpause_req));
+						wlpause_rdy  <= wlpause_req;
+						rlpause1_rdy <= rlpause1_req;
+						rlpause_rdy  <= rlpause_req;
 					end if;
 				end if;
 			end process;
@@ -593,7 +594,7 @@ begin
 			dmi <= sys_dmi;
 		end generate;
 
-		wle <= to_stdulogic(to_bit(phy_wlrdy)) xor phy_wlreq;
+		wle <= phywl_rdy xor phywl_req;
 
 		dqt <= sys_dqt when wle='0' else (others => '1');
 		oddr_g : for i in 0 to byte_size-1 generate
@@ -604,7 +605,7 @@ begin
 			process (sclk)
 			begin
 				if rising_edge(sclk) then
-					sw <= phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq));
+					sw <= phyrl_rdy xor phyrl_req;
 				end if;
 			end process;
 

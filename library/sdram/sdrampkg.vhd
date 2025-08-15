@@ -52,7 +52,7 @@ package sdrampkg is
 			"  cl:{ '010':4, '110':5, '011':6}," &
 			" cwl:{ '000':2},"                   &
 			"tmng:{ tPreRST:200.0e-6, cDLL:200, tCAS:15.0e-9}}" &
-		-- "    tmng : { tPreRST : 1.0e-6, cDLL : 200, tCAS : 15.0e-9}}" &
+			-- "tmng : { tPreRST : 1.0e-6, cDLL : 200, tCAS : 15.0e-9}}" &
 		"ddr2 : {" &
 			"  al:{ '000':0, '001':2, '010':4, '011':6, '100':8, '101':10, '110':12},"     &
 			"  bl:{ '010':4, '011':8},"                                                    &
@@ -60,7 +60,7 @@ package sdrampkg is
 			" cwl:{ '011':4, '100':6, '101':8,  '110':10, '111':12},"                      &
 			" wrl:{ 4:'001', 6:'010',  8:'011',  10:'100', 12:'101', 14:'110', 16:'111'}," &
 			"tmng:{ tPreRST:200.0e-6, cDLL:200, tCAS:12.5e-9, MRD:2}}" &
-		-- "    tmng : { tPreRST : 1.0e-6, cDLL : 200, MRD : 2}}" &
+			-- "tmng : { tPreRST : 1.0e-6, cDLL : 200, MRD : 2}}" &
 		"ddr3:{" &
 			"length:{bl:2, cl:4, rtt:3, ods:2}," &
 			"  al:{ '000':0,   '001':2,   '010':4}," &
@@ -69,7 +69,7 @@ package sdrampkg is
 			" cwl:{ '000':10,  '001':12,  '010':14, '011':16}"                                                                                          &
 			" wrl:{  6:'001',   8:'001',  10:'001',  12:'010',  14:'011', 16:'100', 18:'101', 20:'101', 22:'110', 24 : '110', 26: '111', 28 : '111', 30 : '000', 32 : '000'}," &
 			"tmng:{ tPreRST:200.0e-6, tPstRST:500.0e-6, cDLL:500, ZQINIT:500, MRD:4, MODu:12, XPR:5, WLDQSEN:25, WLMRD:40, tCAS:13.125e-9}}}");
-		-- "tmng : { tPreRST:1.0e-6,   tPstRST:2.0e-6, i cDLL:500, ZQINIT:500, MRD:4, MODu:12, XPR:5, WLDQSEN:25, WLMRD:40, tCAS:13.125e-9}}}");
+			-- "tmng : { tPreRST:1.0e-6,   tPstRST:2.0e-6, i cDLL:500, ZQINIT:500, MRD:4, MODu:12, XPR:5, WLDQSEN:25, WLMRD:40, tCAS:13.125e-9}}}");
 
 	constant phy_db : string := compact("[" &
 		"           ecp5g1:{ device:ecp5, orgz:{gear:1}, tmng:{STRL: 1, DQSL: 0, DQSZL: 0, DQZL: 0, WWNL: 0, STRXL:0, DQSZXL:0, DQSXL:0, DQZXL:0, WWNXL:0}}," &
