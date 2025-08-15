@@ -513,6 +513,7 @@ begin
 			led0 <= sdramdcm_locked;
 			led2 <= phy_locked;
 			led <= tp_phy(1 to led'length);
+			led <= (others => '1');
 		end if;
 	end process;
 

@@ -185,8 +185,8 @@ begin
    			end process;
 
 			sto <= (others => datavalid);
-			-- tp(1 to 8) <= phy_locked & lat & rdclksel & '0';
-			tp(1 to 8) <= phy_locked & adj_req & adj_rdy & b"00000";
+			tp(1 to 8) <= phy_locked & lat & rdclksel & '0';
+			-- tp(1 to 8) <= phy_locked & lat & adj_req & adj_rdy;
 		end generate;
 
 		adjust_p : process (sclk, read_req)
