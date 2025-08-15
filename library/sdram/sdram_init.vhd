@@ -98,12 +98,12 @@ begin
 		constant wrl : natural := natural(ceil(real'(hdo(sdramtmng_data)**".tWR")/ctlr_tcp))*gear;
 		constant sdram_init_wr : std_logic_vector := hdo(generation_data)**(".wrl['"&natural'image(wrl)&"']='000'");
 
-		variable step : natural range 0 to 2**unsigned_num_bits(init_seq_length-1)-1;
+		variable step : unsigned(timer_sel'range);
 	begin
 		if init_rst='1' then
 			init_cfg  <= '0';
 			timer_req <= timer_rdy;
-			step      := 0;
+			step      := (others => '0');
 		elsif rising_edge(sdram_init_clk) then
 			if (timer_req xor timer_rdy)='0' then
 				if init_cfg='0' then
@@ -115,6 +115,7 @@ begin
 					sdram_init_odt <= '-';
 					sdram_init_b   <= (sdram_init_b'range => '-');
 					sdram_init_a   <= (sdram_init_a'range => '-');
+					timer_sel      <= std_logic_vector(step);
 					for i in 0 to init_seq_length-1 loop -- Latticesemi Diamond work around
 						if i=step then
 							sdram_init_cmd <= hdo(cmd)**('.'&string'(hdo(init_seq**i)**".cmd"));
@@ -142,7 +143,6 @@ begin
 								wr    => sdram_init_wr,
 								b     => sdram_init_b,
 								a     => sdram_init_a);
-							timer_sel <= std_logic_vector(to_unsigned(i, timer_sel'length));
 							init_cfg  <= init_rst;
 							if step=init_seq_length-1 then
 								init_cfg <= not init_rst;
@@ -152,10 +152,10 @@ begin
 									if string'(hdo(init_seq)**("["&natural'image(i)&"].data.wl_req=off"))="on" then
 										sdram_init_wlreq <= not sdram_init_wlrdy;
 									end if;
-									step := (step + 1) mod 2**unsigned_num_bits(init_seq_length-1);
+									step := step + 1;
 								end if;
 							else
-								step := (step + 1) mod 2**unsigned_num_bits(init_seq_length-1);
+								step := step + 1;
 							end if;
 							exit;
 						end if;
@@ -180,10 +180,12 @@ begin
 		constant MRD     : natural := max(natural(real'(hdo(sdramtmng_data)**".tMRD=0")/ctlr_tcp),1);
 		constant REFi    : natural := max(natural(real'(hdo(sdramtmng_data)**".tREFI")/ctlr_tcp),1);
 		constant RFC     : natural := max(natural(real'(hdo(sdramtmng_data)**".tRFC")/ctlr_tcp),1);
+		constant tRFC10  : real    := (hdo(sdramtmng_data)**".tRFC"+10.0e-9)/ctlr_tcp;
+		constant RFC10   : natural := max(natural(tRFC10/ctlr_tcp),1);
 		constant cDLL    : natural := hdo(gentmng_data)**".cDLL=1";
 		constant ZQINIT  : natural := hdo(gentmng_data)**".ZQINIT=1";
 		constant MODu    : natural := hdo(gentmng_data)**".MODu=1";
-		constant XPR     : natural := max(natural((real'(hdo(sdramtmng_data)**".tRFC")+10.0e-9)/ctlr_tcp),hdo(gentmng_data)**".XPR=1");
+		constant XPR     : natural := max(RFC,hdo(gentmng_data)**".XPR=1");
 		constant WLDQSEN : natural := hdo(gentmng_data)**".WLDQSEN=1";
 
 		constant sdram_timers : string := '{' &
