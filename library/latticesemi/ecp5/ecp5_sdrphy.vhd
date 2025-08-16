@@ -164,7 +164,6 @@ begin
 
     		delay_i : delayg
     		generic map (
-    			del_value  => 0,
     			del_mode => "DQS_CMD_CLK")
     		port map (
     			a => ck,

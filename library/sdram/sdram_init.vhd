@@ -102,6 +102,13 @@ begin
 	begin
 		if init_rst='1' then
 			init_cfg  <= '0';
+			sdram_init_cmd <= hdo(cmd)**".nop";
+			sdram_init_rst <= '0';
+			sdram_init_cs  <= '1';
+			sdram_init_cke <= '0';
+			sdram_init_odt <= '0';
+			sdram_init_b   <= (sdram_init_b'range => '-');
+			sdram_init_a   <= (sdram_init_a'range => '-');
 			timer_req <= timer_rdy;
 			step      := (others => '0');
 		elsif rising_edge(sdram_init_clk) then

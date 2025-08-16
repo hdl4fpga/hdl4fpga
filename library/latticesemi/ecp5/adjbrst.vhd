@@ -75,7 +75,6 @@ begin
 					wlat      := (others => '0');
 					cntr      := (others => '0');
 					locked    <= '0';
-					tp(1 to 8) <= b"1000_0000";
 				when s_pause =>
 					if (pause_rdy xor pause_req)='0' then
 						step_req  <= not step_rdy;
@@ -83,7 +82,6 @@ begin
 						dtec      := (others => '0');
 						state     := s_step;
 					end if;
-					tp(1 to 8) <= b"0100_0000";
 					locked    <= '0';
 				when s_step =>
 					if (step_req xor step_rdy)='0' then
@@ -92,14 +90,12 @@ begin
 								if dtec(0)='1' then
 									adj_rdy <= adj_req;
 									locked  <= '1';
-									tp(1 to 8) <= b"0010_0000";
 									state  := s_init;
 								else
 									wlat := (others => '0');
 									if lat(lat'left)='1'  then
-										-- adj_rdy <= adj_req;
+										adj_rdy <= adj_req;
 										state  := s_init;
-										tp(1 to 8) <= b"0001_0000";
 									else
 										phase     <= phase + 1;
 										pause_req <= not pause_rdy;
@@ -132,10 +128,6 @@ begin
 				adj_rdy <= adj_req;
 				state   := s_init;
 			end if;
-			tp(5) <= adj_req;
-			tp(6) <= adj_rdy;
-			tp(7) <= pause_req;
-			tp(8) <= pause_rdy;
 		end if;
 	end process;
 

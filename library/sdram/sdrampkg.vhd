@@ -82,7 +82,7 @@ package sdrampkg is
 
 	constant cmd : string := "{nop :'111', mrs:'000', act:'011', read:'101', write:'100', pre:'010', aref:'001', zqc:'110'}";
 
-	constant sdr_init_data : string := "{"                                         &
+	constant sdr_init_data : string := compact("{"                                 &
 		"sdr:{"                                                                    &
 			"seq:["                                                                &
 				"{cmd:nop,  timer:PreRST,  data:{cs:1, cke:0}},"                   &
@@ -129,7 +129,7 @@ package sdrampkg is
 				"{cmd:nop,  timer:XPR,     data:{cs:0, cke:1, rst:1}},"            &  -- 2
 				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr2}},"     &  -- 3
 				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr3}},"     &  -- 4
-				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:dll_dis}}," &  -- 5
+				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr1}}," &  -- 5
 				"{cmd:mrs,  timer:MRD,     data:{cs:0, cke:1, rst:1, a:mr0}},"     &  -- 6
 				"{cmd:zqc,  timer:ZQINIT,  data:{cs:0, cke:1, rst:1}},"            &  -- 7
 				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, a:wl_on}},"   &  -- 8
@@ -139,7 +139,7 @@ package sdrampkg is
 				"{cmd:nop,  timer:MRD,     data:{cs:0, cke:1, rst:1}},"            &  -- 12
 				"{cmd:mrs,  timer:MODu,    data:{cs:0, cke:1, rst:1, a:wl_off}},"  &  -- 13
 				"{cmd:nop,  timer:cDLL,    data:{cs:0, cke:1, rst:1}},"            &  -- 14
-				"{cmd:nop,  timer:REFi,    data:{cs:0, cke:1, rst:1}}]}}";            -- 15
+				"{cmd:nop,  timer:REFi,    data:{cs:0, cke:1, rst:1}}]}}");           -- 15
 
 	procedure mr (
 		signal   b     : out std_logic_vector;
@@ -399,10 +399,10 @@ package body sdrampkg is
 				a(8)  <= '1'; -- DLL reset
 				a(11 downto 9) <= wr;
 				a(12) <= pd(0);
-			elsif reg="dll_dis" then
+			elsif reg="mr1" then
 				b <= hdo(mr)**".mr1";
 				a <= (a'range => '0');
-				a(0)  <= '1';
+				a(0)  <= '0';
 				a(1)  <= ods(0);
 				a(2)  <= rtt(0);
 				a(4 downto 3) <= al(2-1 downto 0);

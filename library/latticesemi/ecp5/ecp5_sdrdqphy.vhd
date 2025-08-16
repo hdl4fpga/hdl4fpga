@@ -187,18 +187,16 @@ begin
    			end process;
 
 			sto <= (others => datavalid);
-			-- tp(1 to 8) <= phy_locked & lat & rdclksel & '1';
-			-- tp(1 to 8) <= phy_locked & lat & adj_req & adj_rdy & "01";
-			tp(1 to 8) <= xxx(1 to 8);
-			-- process(xxx(1))
-				-- variable q : std_logic;
-			-- begin
-				-- if rising_edge(xxx(1)) then
-					-- tp(8) <= q;
-					-- tp(6) <= not q;
-						-- q := not q;
-				-- end if;
-			-- end process;
+			process(sclk)
+				variable q : std_logic;
+			begin
+				if rising_edge(sclk) then
+					-- tp(1 to 8) <= phy_locked & lat & rdclksel & '1';
+					-- tp(1 to 8) <= phy_locked & lat & adj_req & adj_rdy & "01";
+					-- tp(1 to 8) <= xxx(1 to 8);
+					tp(1 to 8) <= (others => phy_locked);
+				end if;
+			end process;
 		end generate;
 
 		adjust_p : process (sclk, read_req)
@@ -648,6 +646,7 @@ begin
 				q(0)    => sdram_dqo(i));
 
 			sdram_dq(i) <= transport sdram_dqo(i) after wl_delay when sdram_dqt(i)='0' else 'Z' after wl_delay;
+			-- sdram_dq(i) <= sdram_dqo(i) when sdram_dqt(i)='0' else 'Z';
 		end generate;
 
 		dm_b : block
@@ -667,6 +666,7 @@ begin
 				q(0)    => sdram_dmo);
 
 			sdram_dm <= transport sdram_dmo after wl_delay when sdram_dmt='0' else 'Z' after wl_delay;
+			-- sdram_dm <= sdram_dmo when sdram_dmt='0' else 'Z';
 
 		end block;
 	end block;
@@ -704,6 +704,7 @@ begin
 				q    => sdram_dqso);
 
 			sdram_dqs <= transport sdram_dqso after wl_delay when sdram_dqst='0' else 'Z' after wl_delay;
+			-- sdram_dqs <= sdram_dqso when sdram_dqst='0' else 'Z';
 		end generate;
 
 
