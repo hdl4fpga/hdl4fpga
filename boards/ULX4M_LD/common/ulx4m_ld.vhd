@@ -126,4 +126,13 @@ entity ulx4m_ld is
 	alias led1 is led(1);
 	alias led0 is led(0);
 
+	alias red0   is led0;
+	alias red1   is led1;
+	alias green0 is led2;
+	alias blue0  is led3;
+	alias red2   is led4;
+	alias red3   is led5;
+	alias green1 is led6;
+	alias blue1  is led7;
+
 end;

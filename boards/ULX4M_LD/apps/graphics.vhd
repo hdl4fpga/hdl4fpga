@@ -464,11 +464,11 @@ begin
 		phy_cmd    => ctlrphy_cmd,
 		phy_rw     => ctlrphy_rw,
 		phy_ini    => ctlrphy_ini,
-		phy_wlreq  => ctlrphy_wlreq,
-		phy_wlrdy  => ctlrphy_wlrdy,
-
-		phy_rlreq  => ctlrphy_rlreq,
-		phy_rlrdy  => ctlrphy_rlrdy,
+		phywl_req  => ctlrphy_wlreq,
+		phywl_rdy  => ctlrphy_wlrdy,
+       
+		phyrl_req  => ctlrphy_rlreq,
+		phyrl_rdy  => ctlrphy_rlrdy,
 		phy_locked => phy_locked,
 
 		sys_rst    => ctlrphy_rst,

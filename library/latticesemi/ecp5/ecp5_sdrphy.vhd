@@ -62,10 +62,10 @@ entity ecp5_sdrphy is
 		phy_ini    : out std_logic;
 		phy_locked : out std_logic;
 
-		phy_wlreq  : in  std_logic := '0';
-		phy_wlrdy  : buffer std_logic := '0';
-		phy_rlreq  : in  std_logic := '0';
-		phy_rlrdy  : buffer std_logic := '0';
+		phywl_req  : in  std_logic := '0';
+		phywl_rdy  : buffer std_logic := '0';
+		phyrl_req  : in  std_logic := '0';
+		phyrl_rdy  : buffer std_logic := '0';
 
 		sys_rst    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
 		sys_cs     : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
@@ -126,7 +126,7 @@ architecture ecp5 of ecp5_sdrphy is
 	signal sdrsys_a : std_logic_vector(sys_a'range);
 
 	signal read_req : std_logic_vector(sdram_dqs'range);
-	signal read_rdy : std_logic_vector(sdram_dqs'range);
+	signal read_rdy : std_logic_vector(sdram_dqs'range) := (others => '0');
 
 	signal dmi : std_logic_vector(sys_dmi'range);
 	signal dqi : std_logic_vector(sys_dqi'range);
@@ -138,7 +138,6 @@ begin
 
 	ck_b : block
 	begin
-
 		gear1or2_g : if gear=1 or gear=2 generate 
 			ck_i : oddrx1f
 			port map (
@@ -165,7 +164,6 @@ begin
 
     		delay_i : delayg
     		generic map (
-    			del_value  => 0,
     			del_mode => "DQS_CMD_CLK")
     		port map (
     			a => ck,
@@ -175,14 +173,14 @@ begin
 
 	end block;
 
-	write_leveling_p : process (phy_wlreq, wl_rdy)
+	write_leveling_p : process (phywl_req, wl_rdy)
 		variable z : std_logic := '1';
 	begin
 		z := '1';
 		for i in wl_rdy'range loop
-			z := z and (wl_rdy(i) xor phy_wlreq);
+			z := z and (wl_rdy(i) xor phywl_req);
 		end loop;
-		phy_wlrdy <= z xor phy_wlreq;
+		phywl_rdy <= z xor phywl_req;
 	end process;
 
 	read_leveling_l_b : block
@@ -223,7 +221,7 @@ begin
 		begin
 			if rising_edge(sclk) then
 				if ctlr_rst='1' then
-					read_rdy <= to_stdlogicvector(to_bitvector(read_req));
+					read_rdy <= read_req;
 					state := s_idle;
 				else
 					case state is
@@ -238,14 +236,14 @@ begin
 						if sdram_idle='1' then
 							phy_frm  <= '0';
 							leveling <= '0';
-							read_rdy <= to_stdlogicvector(to_bitvector(read_req));
+							read_rdy <= read_req;
 							state    := s_idle;
 						end if;
 					when s_idle =>
 						leveling <= '0';
 						phy_frm  <= '0';
 						for i in read_req'reverse_range loop
-							if (read_rdy(i) xor to_stdulogic(to_bit(read_req(i))))='1' then
+							if (read_rdy(i) xor read_req(i))='1' then
 								phy_frm  <= '1';
 								leveling <= '1';
 								state := s_start;
@@ -262,23 +260,23 @@ begin
 		begin
 			if rising_edge(sclk) then
 				if ctlr_rst='1' then
-					phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+					phyrl_rdy <= phyrl_req;
 					phy_ini <= '0';
-				elsif (phy_rlrdy xor to_stdulogic(to_bit(phy_rlreq)))='1' then
+				elsif (phyrl_rdy xor phyrl_req)='1' then
 					z := '1';
 					for i in rl_req'reverse_range loop
-						if (rl_rdy(i) xor to_stdulogic(to_bit(phy_rlreq)))='1' then
+						if (rl_rdy(i) xor phyrl_req)='1' then
 							z := '0';
 						end if;
 					end loop;
 					if z='1' then
 						phy_ini   <= '1';
-						phy_rlrdy <= to_stdulogic(to_bit(phy_rlreq));
+						phyrl_rdy <= phyrl_req;
 					end if;
 				end if;
 			end if;
 		end process;
-		rl_req <= (others => phy_rlreq);
+		rl_req <= (others => phyrl_req);
 	end block;
 
 	sdrbaphy_i : entity hdl4fpga.ecp5_sdrbaphy
@@ -337,10 +335,10 @@ begin
 			ddrdel     => ddrdel,
 			pause      => ms_pause,
 
-			phy_wlreq  => phy_wlreq,
-			phy_wlrdy  => wl_rdy(i),
-			phy_rlreq  => rl_req(i),
-			phy_rlrdy  => rl_rdy(i),
+			phywl_req  => phywl_req,
+			phywl_rdy  => wl_rdy(i),
+			phyrl_req  => rl_req(i),
+			phyrl_rdy  => rl_rdy(i),
 			read_req   => read_req(i),
 			read_rdy   => read_rdy(i),
 			phy_locked => dqs_locked(i),
