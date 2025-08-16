@@ -1349,6 +1349,7 @@ $(HDL4FPGA__ecp5_sdrdqphy__ecp5) : ../latticesemi/ecp5/ecp5_sdrdqphy.vhd \
 		$(IEEE__numeric_bit) \
 		$(HDL4FPGA__phy_iofifo) \
 		$(HDL4FPGA__ecp5_igbx) \
+		$(HDL4FPGA__rdyreq) \
 		$(HDL4FPGA__adjpha) \
 		$(HDL4FPGA__adjbrst) \
 		$(HDL4FPGA__latency) \
@@ -1738,10 +1739,10 @@ $(HDL4FPGA__phy_iofifo__mix) : ../sdram/phy_iofifo.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../sdram/phy_iofifo.vhd
 
 $(HDL4FPGA__rdyreq) \
-$(HDL4FPGA__rdyreq__beh) : ../basic/reqrdy.vhd \
+$(HDL4FPGA__rdyreq__beh) : ../basic/rdyreq.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/reqrdy.vhd
+	$(VCOM) -93 -work hdl4fpga ../basic/rdyreq.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
