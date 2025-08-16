@@ -231,6 +231,8 @@ HDL4FPGA__rom7seg__mixed = $(LIB_HDL4FPGA)/rom7seg/mixed.dat
 HDL4FPGA__rom7seg = $(LIB_HDL4FPGA)/rom7seg/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
+HDL4FPGA__rdyreq__beh = $(LIB_HDL4FPGA)/rdyreq/beh.dat
+HDL4FPGA__rdyreq = $(LIB_HDL4FPGA)/rdyreq/_primary.dat
 HDL4FPGA__phy_iofifo__mix = $(LIB_HDL4FPGA)/phy_iofifo/mix.dat
 HDL4FPGA__phy_iofifo = $(LIB_HDL4FPGA)/phy_iofifo/_primary.dat
 HDL4FPGA__phdata__inference = $(LIB_HDL4FPGA)/phdata/inference.dat
@@ -641,6 +643,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__rom7seg) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
+    $(HDL4FPGA__rdyreq__beh) \
+    $(HDL4FPGA__rdyreq) \
     $(HDL4FPGA__phy_iofifo__mix) \
     $(HDL4FPGA__phy_iofifo) \
     $(HDL4FPGA__phdata__inference) \
@@ -1733,6 +1737,12 @@ $(HDL4FPGA__phy_iofifo__mix) : ../sdram/phy_iofifo.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../sdram/phy_iofifo.vhd
 
+$(HDL4FPGA__rdyreq) \
+$(HDL4FPGA__rdyreq__beh) : ../basic/reqrdy.vhd \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../basic/reqrdy.vhd
+
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../basic/rom.vhd \
 		$(IEEE__numeric_std) \
@@ -2176,8 +2186,8 @@ $(HDL4FPGA__sdram_init__def) : ../sdram/sdram_init.vhd \
 		$(HDL4FPGA__timer) \
 		$(HDL4FPGA__rom) \
 		$(HDL4FPGA__sdrampkg) \
-		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
 		$(IEEE__math_real) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \

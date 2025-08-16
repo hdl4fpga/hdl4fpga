@@ -141,6 +141,7 @@ begin
 		signal adj_req  : std_logic := '0';
 		signal adj_rdy  : std_logic;
 
+		signal xxx : std_logic_vector(1 to 32);
 	begin
 
 		gear1or2 : if gear=1 or gear=2 generate
@@ -159,6 +160,7 @@ begin
     		generic map (
     			debug      => debug)
     		port map (
+				tp => xxx,
     			sclk       => sclk,
 				rst        => ctlr_rst,
     			adj_req    => adj_req,
@@ -187,7 +189,16 @@ begin
 			sto <= (others => datavalid);
 			-- tp(1 to 8) <= phy_locked & lat & rdclksel & '1';
 			-- tp(1 to 8) <= phy_locked & lat & adj_req & adj_rdy & "01";
-			tp(1 to 8) <= phy_locked & adj_req & adj_rdy & "00001";
+			tp(1 to 8) <= xxx(1 to 8);
+			-- process(xxx(1))
+				-- variable q : std_logic;
+			-- begin
+				-- if rising_edge(xxx(1)) then
+					-- tp(8) <= q;
+					-- tp(6) <= not q;
+						-- q := not q;
+				-- end if;
+			-- end process;
 		end generate;
 
 		adjust_p : process (sclk, read_req)
@@ -289,7 +300,21 @@ begin
 
 		begin
 
-			pause_req <= rlpause_req xor rlpause1_req xor wlpause_req;
+			pausereq_i : entity hdl4fpga.rdyreq 
+			generic map (
+				n => 3)
+			port map (
+				clk => sclk,
+				rst => ctlr_rst,
+				reqs(0) => rlpause_req,
+				reqs(1) => rlpause1_req,
+				reqs(2) => wlpause_req,
+				rdys(0) => rlpause_rdy,
+				rdys(1) => rlpause1_rdy,
+				rdys(2) => wlpause_rdy,
+				req => pause_req,
+				rdy => pause_rdy);
+
 			process (ctlr_rst, sclk)
 				variable cntr : unsigned(0 to 4);
 			begin
@@ -314,21 +339,6 @@ begin
 						latch <= '1';
 					else 
 						latch <= '0';
-					end if;
-				end if;
-			end process;
-	
-			process (sclk, pause_rdy )
-			begin
-				if rising_edge(sclk) then
-					if ctlr_rst='1' then
-						wlpause_rdy  <= wlpause_req;
-						rlpause1_rdy <= rlpause1_req;
-						rlpause_rdy  <= rlpause_req;
-					elsif (pause_rdy xor pause_req)='0' then
-						wlpause_rdy  <= wlpause_req;
-						rlpause1_rdy <= rlpause1_req;
-						rlpause_rdy  <= rlpause_req;
 					end if;
 				end if;
 			end process;
