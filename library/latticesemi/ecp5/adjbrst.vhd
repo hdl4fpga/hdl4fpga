@@ -90,12 +90,10 @@ begin
 								if dtec(0)='1' then
 									adj_rdy <= adj_req;
 									locked  <= '1';
-									state  := s_init;
 								else
 									wlat := (others => '0');
 									if lat(lat'left)='1'  then
 										adj_rdy <= adj_req;
-										state  := s_init;
 									else
 										phase     <= phase + 1;
 										pause_req <= not pause_rdy;

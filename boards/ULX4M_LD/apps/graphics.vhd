@@ -509,10 +509,11 @@ begin
 	begin
 		if rising_edge(sys_clk) then
 			
-			led <= (others => '0');
 			led0 <= sdramdcm_locked;
 			led2 <= phy_locked;
-			led <= tp_phy(1 to led'length);
+			led  <= tp_phy(1 to led'length);
+			led  <= (others => '0');
+			led7 <= phy_locked;
 		end if;
 	end process;
 
