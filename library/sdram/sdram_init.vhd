@@ -109,7 +109,6 @@ begin
 			sdram_init_odt <= '0';
 			sdram_init_b   <= (sdram_init_b'range => '-');
 			sdram_init_a   <= (sdram_init_a'range => '-');
-			timer_req <= timer_rdy;
 			step      := (others => '0');
 		elsif rising_edge(sdram_init_clk) then
 			if (timer_req xor timer_rdy)='0' then
@@ -317,8 +316,9 @@ begin
 		generic map (
 			slices => slices(stages downto 1))
 		port map (
-			data => value,
 			clk => sdram_init_clk,
+			rst => init_rst,
+			data => value,
 			req => timer_req,
 			rdy => timer_rdy);
 

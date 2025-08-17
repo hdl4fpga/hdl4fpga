@@ -30,10 +30,11 @@ entity timer is
 	generic (
 		slices : natural_vector);
 	port (
+		clk  : in  std_ulogic;
+		rst  : in  std_ulogic := '0';
 		data : in  std_logic_vector;
-		clk  : in  std_logic;
-		req  : in  std_logic;
-		rdy  : buffer std_logic := '0');
+		req  : in  std_ulogic;
+		rdy  : buffer std_ulogic := '0');
 end;
 
 architecture def of timer is
@@ -47,7 +48,9 @@ begin
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if (rdy xor req)='1' then
+			if rst='1' then
+				rdy <= req;
+			elsif (rdy xor req)='1' then
 				for i in 0 to slices0'length-1 loop
 					if cy(cy'left)='0' then
 						cy(i+1) <= q(i) and cy(i);
