@@ -56,11 +56,6 @@ architecture graphics of orangecrab is
 			"cl:"        & "'0010'}}";
 
 	constant io_link      : string  := settings**".io_link";
-	constant baudrate     : natural := 115200;
-	-- Set your UART pinout here         --
-	alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
-	alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
-
 	signal sys_rst : std_logic;
 	alias sys_clk is clk_48MHz;
 
@@ -164,8 +159,12 @@ begin
 		phy_ddrdel   => ddrdel);
 
 	hdlc_g : if io_link="io_hdlc" generate
+		constant baudrate  : natural := 115200;
 		constant uart_freq : real := clk48MHz_freq;
 		signal uart_clk : std_logic;
+		alias uart_rxd : std_logic is gpio(0); -- input  data received by the FPGA
+		alias uart_txd : std_logic is gpio(1); -- output data sent by the FPGA
+
 	begin
 		nodebug_g : if not debug generate
 			uart_clk <= sys_clk;
