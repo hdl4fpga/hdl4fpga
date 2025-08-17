@@ -68,7 +68,10 @@ architecture graphics of link_mii is
 	signal miitx_end  : std_logic;
 	signal miitx_data : std_logic_vector(si_data'range);
 
-	signal rxdv       : std_logic;
+	signal sync_rxdv : std_logic;
+	signal sync_rxd  : std_logic;
+
+	signal rxdv      : std_logic;
 begin
 
    	process (mii_rxdv, mii_rxc)
@@ -89,6 +92,48 @@ begin
 			non_rmii : rxdv <= mii_rxdv;
 		end if;
    	end process;
+
+	sync_g : if false generate
+		signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
+		signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
+		signal dst_irdy  : std_logic;
+		signal dst_trdy  : std_logic;
+	begin
+
+		process (mii_rxc)
+		begin
+			if rising_edge(mii_rxc) then
+				rxc_rxbus <= mii_rxdv & mii_rxd;
+			end if;
+		end process;
+
+		rxc2txc_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth  => 4,
+			latency    => 0,
+			dst_offset => 0,
+			src_offset => 2,
+			check_sov  => false,
+			check_dov  => true,
+			gray_code  => false)
+		port map (
+			src_clk  => mii_rxc,
+			src_irdy => rxdv,
+			src_data => rxc_rxbus,
+			dst_clk  => mii_txc,
+			dst_irdy => dst_irdy,
+			dst_trdy => dst_trdy,
+			dst_data => txc_rxbus);
+
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				dst_trdy  <= dst_irdy;
+				sync_rxdv <= txc_rxbus(0);
+				sync_rxd  <= txc_rxbus(1 to mii_rxd'length);
+			end if;
+		end process;
+	end generate;
 
 	dhcp_p : process(mii_txc)
 		type states is (s_request, s_wait);
