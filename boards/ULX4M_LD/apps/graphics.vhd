@@ -49,7 +49,7 @@ architecture graphics of ulx4m_ld is
 				"G:8,"                                                                                    &
 				"B:8}},"                                                                                  &
 		"sdram:{"                                                                                         &
-			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'400mhz'"))           & ',' &
+			"dcm:"       & string'(hdl4fpga.ecp5_profiles.sdram_dcm(".'25mhz'.'450mhz'"))           & ',' &
 			"chip_data:" & string'(hdo(sdram_db)**".MT41K256M16-125")                               & ',' &
 			"phy_data:"  & string'(hdo(phy_db)**".ulx4ld_ecp5g4")                                   & ',' &
 			"wrl:"       & "'010'"                                                                  & ',' &                             
