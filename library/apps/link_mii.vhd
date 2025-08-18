@@ -30,7 +30,6 @@ use hdl4fpga.videopkg.all;
 
 entity link_mii is
 	generic (
-		rmii          : boolean := false;
 		default_mac   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 		default_ipv4a : std_logic_vector(0 to 32-1) := aton("192.168.1.1");
 		n             : natural);
@@ -62,38 +61,19 @@ architecture graphics of link_mii is
 	signal dhcpcd_req : std_logic;
 	signal dhcpcd_rdy : std_logic;
 
+	signal miirx_frm  : std_logic;
+	signal miirx_irdy : std_logic;
+	signal miirx_data : std_logic_vector(mii_rxd'range);
+
 	signal miitx_frm  : std_logic;
 	signal miitx_irdy : std_logic;
 	signal miitx_trdy : std_logic;
 	signal miitx_end  : std_logic;
 	signal miitx_data : std_logic_vector(si_data'range);
 
-	signal sync_rxdv : std_logic;
-	signal sync_rxd  : std_logic;
-
-	signal rxdv      : std_logic;
 begin
 
-   	process (mii_rxdv, mii_rxc)
-   		variable last_rxd : std_logic;
-   	begin
-   		if rising_edge(mii_rxc) then
-   			last_rxd := mii_rxdv;
-   		end if;
-		if rmii then
-       		rmii_l: if mii_rxdv='1' then
-       			rxdv <= '1';
-       		elsif last_rxd='1' then
-       			rxdv <= '1';
-       		else 
-       			rxdv <= '0';
-       		end if;
-		else
-			non_rmii : rxdv <= mii_rxdv;
-		end if;
-   	end process;
-
-	sync_g : if false generate
+	sync_g : if true generate
 		signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
 		signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
 		signal dst_irdy  : std_logic;
@@ -114,11 +94,10 @@ begin
 			dst_offset => 0,
 			src_offset => 2,
 			check_sov  => false,
-			check_dov  => true,
-			gray_code  => false)
+			check_dov  => true)
 		port map (
 			src_clk  => mii_rxc,
-			src_irdy => rxdv,
+			src_irdy => mii_rxdv,
 			src_data => rxc_rxbus,
 			dst_clk  => mii_txc,
 			dst_irdy => dst_irdy,
@@ -128,11 +107,18 @@ begin
 		process (mii_txc)
 		begin
 			if rising_edge(mii_txc) then
-				dst_trdy  <= dst_irdy;
-				sync_rxdv <= txc_rxbus(0);
-				sync_rxd  <= txc_rxbus(1 to mii_rxd'length);
+				dst_trdy   <= dst_irdy;
+				miirx_frm  <= txc_rxbus(0);
+				miirx_irdy <= txc_rxbus(0);
+				miirx_data <= txc_rxbus(1 to mii_rxd'length);
 			end if;
 		end process;
+	end generate;
+
+	nosync_g : if false generate 
+		miirx_frm  <= mii_rxdv;
+		miirx_irdy <= mii_rxdv;
+		miirx_data <= mii_rxd;
 	end generate;
 
 	dhcp_p : process(mii_txc)
@@ -166,8 +152,9 @@ begin
 		mii_clk    => mii_txc,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
-		miirx_frm  => rxdv,
-		miirx_data => mii_rxd,
+		miirx_frm  => miirx_frm,
+		miirx_irdy => miirx_irdy,
+		miirx_data => miirx_data,
 	
 		miitx_frm  => miitx_frm,
 		miitx_irdy => miitx_irdy,

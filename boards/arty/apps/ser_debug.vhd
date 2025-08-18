@@ -92,7 +92,6 @@ begin
 
 	mii_e : entity hdl4fpga.link_mii
 	generic map (
-		rmii          => false,
 		default_mac   => x"00_40_00_01_02_03",
 		default_ipv4a => aton("192.168.0.14"),
 		n             => eth_rxd'length)
