@@ -116,10 +116,10 @@ begin
 		mii_rxdv   => eth_rx_dv, 
 		mii_rxd    => eth_rxd);   
 
-	ser_clk  <= eth_tx_clk;
-	ser_frm  <= tp(2);
-	ser_irdy <= eth_tx_en;
-	ser_data <= eth_txd;
+	ser_clk  <= eth_rx_clk;
+	ser_frm  <= tp(1);
+	ser_irdy <= eth_rx_dv;
+	ser_data <= eth_rxd;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

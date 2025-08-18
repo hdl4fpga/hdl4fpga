@@ -71,51 +71,53 @@ architecture graphics of link_mii is
 	signal miitx_end  : std_logic;
 	signal miitx_data : std_logic_vector(si_data'range);
 
+	constant sync : boolean := false;
 begin
 
-	sync_g : if true generate
+	sync_g : if sync generate
+		signal wr_addr   : std_logic_vector(0 to 2-1);
+		signal rd_addr   : std_logic_vector(wr_addr'range);
 		signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
 		signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
-		signal dst_irdy  : std_logic;
-		signal dst_trdy  : std_logic;
 	begin
 
-		process (mii_rxc)
+		process (mii_txc, mii_rxc)
+			variable wrtord  : unsigned(0 to 2-1);
+			variable wr_cntr : unsigned(0 to 2-1);
+			variable rd_cntr : unsigned(0 to 2-1);
 		begin
 			if rising_edge(mii_rxc) then
 				rxc_rxbus <= mii_rxdv & mii_rxd;
+				wr_addr <= std_logic_vector(wr_cntr);
+				if mii_rxdv='1' then
+					wr_cntr := wr_cntr + 1;
+					wrtord  := wr_cntr;
+				end if;
 			end if;
-		end process;
-
-		rxc2txc_e : entity hdl4fpga.fifo
-		generic map (
-			max_depth  => 4,
-			latency    => 0,
-			dst_offset => 0,
-			src_offset => 2,
-			check_sov  => false,
-			check_dov  => true)
-		port map (
-			src_clk  => mii_rxc,
-			src_irdy => mii_rxdv,
-			src_data => rxc_rxbus,
-			dst_clk  => mii_txc,
-			dst_irdy => dst_irdy,
-			dst_trdy => dst_trdy,
-			dst_data => txc_rxbus);
-
-		process (mii_txc)
-		begin
 			if rising_edge(mii_txc) then
-				dst_trdy   <= dst_irdy;
-				miirx_frm  <= txc_rxbus(0);
-				miirx_irdy <= txc_rxbus(0);
-				miirx_data <= txc_rxbus(1 to mii_rxd'length);
+				if txc_rxbus(0)='1' then
+					rd_addr <= std_logic_vector(rd_cntr);
+					rd_cntr := rd_cntr + 1;
+				else
+					rd_cntr := wrtord;
+				end if;
 			end if;
 		end process;
+
+		mem_i : entity hdl4fpga.dpram
+		port map (
+			wr_clk  => mii_rxc,
+			wr_addr => wr_addr,
+			wr_data => rxc_rxbus,
+			rd_addr => rd_addr,
+			rd_data => txc_rxbus);
+		miirx_frm  <= txc_rxbus(0);
+		miirx_irdy <= txc_rxbus(0);
+		miirx_data <= txc_rxbus(1 to mii_rxd'length);
+
 	end generate;
 
-	nosync_g : if false generate 
+	nosync_g : if not sync generate 
 		miirx_frm  <= mii_rxdv;
 		miirx_irdy <= mii_rxdv;
 		miirx_data <= mii_rxd;
@@ -148,7 +150,6 @@ begin
 		default_ipv4a => default_ipv4a)
 	port map (
 		tp         => tp,
-		hdplx      => hdplx,
 		mii_clk    => mii_txc,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,

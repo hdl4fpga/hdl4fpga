@@ -39,8 +39,8 @@ architecture ser_debug of nuhs3adsp is
 	constant settings : string := "{"                                                         &
 		"io_link: io_ipoe,"                                                                   &
 		"video:{"                                                                             &
-			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'20mhz'.'150mhz'"))       & ',' &
-			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'1920x1080'.'@60'.'150mhz'") & ',' &
+			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'20mhz'.'40mhz'"))       & ',' &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
 			"pixel:"   & "{R:8,G:8,B:8}}}";
 
 	signal sys_rst  : std_logic;
@@ -128,10 +128,10 @@ begin
 		mii_rxdv   => mii_rxdv,
 		mii_rxd    => mii_rxd);   
 
-	ser_clk  <= mii_txc;
-	ser_frm  <= tp(2);
-	ser_irdy <= mii_txen;
-	ser_data <= mii_txd;
+	ser_clk  <= mii_rxc;
+	ser_frm  <= tp(1);
+	ser_irdy <= mii_rxdv;
+	ser_data <= mii_rxd;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

@@ -368,7 +368,7 @@ begin
 				dev_gnt <= gnt;
 			end if;
 		end process;
-		tp(1)  <= dev_gnt(0);
+		tp(1)  <= iprx_frm; --dev_gnt(0);
 		tp(2)  <= dev_gnt(1);
 		tp(3)  <= dev_csc;
 		tp(4)  <= dev_req(0);
