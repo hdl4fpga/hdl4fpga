@@ -79,10 +79,10 @@ begin
 		signal rd_addr   : std_logic_vector(wr_addr'range);
 		signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
 		signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
+		signal sync_frm  : std_logic;
 	begin
 
 		process (mii_txc, mii_rxc)
-			variable wrtord  : unsigned(0 to 2-1);
 			variable wr_cntr : unsigned(0 to 2-1);
 			variable rd_cntr : unsigned(0 to 2-1);
 		begin
@@ -90,17 +90,21 @@ begin
 				rxc_rxbus <= mii_rxdv & mii_rxd;
 				wr_addr <= std_logic_vector(wr_cntr);
 				if mii_rxdv='1' then
-					wr_cntr := wr_cntr + 1;
+					wr_cntr := bintogray(graytobin(wr_cntr) + 1);
 					wrtord  := wr_cntr;
 				end if;
 			end if;
 			if rising_edge(mii_txc) then
-				if txc_rxbus(0)='1' then
+				miirx_frm  <= sync_frm;
+				miirx_irdy <= sync_frm;
+				miirx_data <= txc_rxbus(1 to mii_rxd'length);
+				if sync_frm='1' then
+					rd_cntr := bintogray(graytobin(rd_cntr) + 1);
 					rd_addr <= std_logic_vector(rd_cntr);
-					rd_cntr := rd_cntr + 1;
 				else
-					rd_cntr := wrtord;
+					rd_cntr := wr_addr;
 				end if;
+				sync_frm := txc_rxbus(0);
 			end if;
 		end process;
 
@@ -111,9 +115,6 @@ begin
 			wr_data => rxc_rxbus,
 			rd_addr => rd_addr,
 			rd_data => txc_rxbus);
-		miirx_frm  <= txc_rxbus(0);
-		miirx_irdy <= txc_rxbus(0);
-		miirx_data <= txc_rxbus(1 to mii_rxd'length);
 
 	end generate;
 
