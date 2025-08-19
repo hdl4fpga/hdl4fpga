@@ -90,8 +90,7 @@ begin
 				rxc_rxbus <= mii_rxdv & mii_rxd;
 				wr_addr <= std_logic_vector(wr_cntr);
 				if mii_rxdv='1' then
-					wr_cntr := bintogray(graytobin(wr_cntr) + 1);
-					wrtord  := wr_cntr;
+					wr_cntr := bin2gray(gray2bin(wr_cntr) + 1);
 				end if;
 			end if;
 			if rising_edge(mii_txc) then
@@ -99,12 +98,12 @@ begin
 				miirx_irdy <= sync_frm;
 				miirx_data <= txc_rxbus(1 to mii_rxd'length);
 				if sync_frm='1' then
-					rd_cntr := bintogray(graytobin(rd_cntr) + 1);
+					rd_cntr := bin2gray(gray2bin(rd_cntr) + 1);
 					rd_addr <= std_logic_vector(rd_cntr);
 				else
-					rd_cntr := wr_addr;
+					rd_cntr := wr_cntr;
 				end if;
-				sync_frm := txc_rxbus(0);
+				sync_frm <= txc_rxbus(0);
 			end if;
 		end process;
 
