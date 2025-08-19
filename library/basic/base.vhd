@@ -178,10 +178,6 @@ package base is
 		constant round  : natural)
 		return natural;
 
-	function summation (
-		constant elements : natural_vector)
-		return natural;
-
 	-----------------
 	-- bit-shuffle --
 	-----------------
@@ -812,18 +808,6 @@ package body base is
 	-----------
 	-- arith --
 	-----------
-
-	function summation (
-		constant elements : natural_vector)
-		return natural is
-		variable retval : natural;
-	begin
-		retval := 0;
-		for i in elements'range loop
-			retval := retval + elements(i);
-		end loop;
-		return retval;
-	end;
 
 	function mul (
 		constant op1 : signed;

@@ -28,52 +28,31 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
-use hdl4fpga.ipoepkg.all;
 
-entity dll_rx is
+entity frame_decode is
+    generic (
+        frame : string;
+        size  : natural)
 	port (
-		mii_clk    : in  std_logic;
-		dll_frm    : in  std_logic;
-		dll_irdy   : in  std_logic;
-		dll_trdy   : buffer std_logic;
-		dll_data   : in  std_logic_vector;
-
-		hwda_irdy  : buffer std_logic;
-		hwda_trdy  : in  std_logic := '1';
-		hwda_end   : in  std_logic := '1';
-		hwsa_irdy  : buffer std_logic;
-		hwsa_trdy  : in  std_logic := '1';
-		hwsa_end   : in  std_logic := '1';
-		hwtyp_irdy : buffer std_logic;
-		hwtyp_trdy : in  std_logic := '1';
-		hwtyp_end  : in  std_logic := '1';
-		pl_irdy    : out std_logic;
-		pl_trdy    : in  std_logic := '1';
-
-		crc_sb     : out std_logic;
-		crc_equ    : out std_logic;
-		crc_rem    : buffer std_logic_vector(0 to 32-1));
-
+		clk  : in  std_logic;
+		frm  : in  std_logic;
+		irdy : in  std_logic;
+		trdy : buffer std_logic;
+		vld  : buffer std_logic_vector(0 to length(frame)-1);
 end;
 
 architecture def of dll_rx is
-
-	constant mac_frame : string := hdo(frames)**".format.mac";
-	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(mac_frame)/dll_data'length-1));
-	signal hwda_frm  : std_logic;
-	signal hwsa_frm  : std_logic;
-	signal hwtyp_frm : std_logic;
-	signal pl_frm    : std_logic;
-	signal crc_frm   : std_logic;
-	signal crc_irdy  : std_logic;
-
 begin
 
-	process (mii_clk)
-		variable cntr : unsigned(frm_ptr'range);
+	process (clk)
+        type states is (s_init, s_run)
+        variable state : states;
+		variable cntr : unsigned(0 to unsigned_num_bits(summation(frame)/size-1));
 	begin
 		if rising_edge(mii_clk) then
-			if dll_frm='0' then
+            case state is
+            when s_init =>
+			if frm='0' then
 				cntr := to_unsigned(summation(mac_frame)/dll_data'length-1, cntr'length);
 			elsif cntr(0)='0' and dll_irdy='1' and dll_trdy='1' then
 				cntr := cntr - 1;

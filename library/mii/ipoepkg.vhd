@@ -138,6 +138,10 @@ package ipoepkg is
 		constant debug  : boolean := false)
 		return std_logic;
 
+	function summation (
+		constant format : string)
+		return natural;
+
 	function reverse (
 		constant arg : natural_vector)
 		return natural_vector;
@@ -148,17 +152,17 @@ package body ipoepkg is
 
 	function frame_decode (
 		constant ptr   : std_logic_vector;
-		constant frame : natural_vector;
+		constant frame : string;
 		constant size  : natural)
 		return std_logic_vector is
-		variable retval : std_logic_vector(frame'range);
-		variable low    : natural range 0 to summation(frame);
-		variable high   : natural range 0 to summation(frame);
+		variable retval : std_logic_vector(format'range);
+		variable low    : natural range 0 to summation(format);
+		variable high   : natural range 0 to summation(format);
 	begin
 		retval := (others => '0');
 		low    := 0;
-		for i in frame'range loop
-			high := low + frame(i)/size;
+		for i in format'range loop
+			high := low + format(i)/size;
 			if low <= unsigned(ptr) and unsigned(ptr) < high then
 				retval(i) := '1';
 				exit;
@@ -308,5 +312,20 @@ package body ipoepkg is
 		aux(48 to 64-1) := unsigned(oneschecksum(not std_logic_vector(aux), 16));
 		return std_logic_vector(aux(0 to udp'length-1));
 	end;
+
+	function summation (
+		constant format : string)
+		return natural is
+		variable retval : natural;
+		variable value  : natural;
+	begin
+		retval := 0;
+		for i in 0 to format'length-1 loop
+			value := hdo(format)**i;
+			exit when value=0;
+		end loop;
+		return retval;
+	end;
+		
 
 end;

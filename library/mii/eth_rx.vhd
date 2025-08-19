@@ -19,8 +19,6 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -70,20 +68,20 @@ begin
 		mii_data => mii_data,
 		mii_pre  => pream_vld);
 
-	serdes_e : entity hdl4fpga.serdes
+	serlzr_i : entity hdl4fpga.serlzr
 	port map (
-		serdes_clk => mii_clk,
-		serdes_frm => pream_vld,
-		ser_irdy   => mii_irdy,
-		ser_trdy   => mii_trdy,
-		ser_data   => mii_data,
+		src_clk   => mii_clk,
+		src_frm   => pream_vld,
+		src_irdy  => mii_irdy,
+		src_trdy  => mii_trdy,
+		src_data  => mii_data,
+		dst_clk   => mii_clk,
+		dst_frm   => dll_frm,
+		dst_irdy  => dll_irdy,
+		dst_trdy  => dll_trdy,
+		dst_data  => dll_data);
 
-		des_frm    => dll_frm,
-		des_irdy   => dll_irdy,
-		des_trdy   => dll_trdy,
-		des_data   => dll_data);
-
-	dllrx_e : entity hdl4fpga.dll_rx
+	dllrx_i : entity hdl4fpga.dll_rx
 	port map (
 		mii_clk    => mii_clk,
 		dll_frm    => dll_frm,
