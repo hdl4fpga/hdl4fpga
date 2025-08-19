@@ -25,74 +25,81 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
-use hdl4fpga.ethpkg.all;
 
 package ipoepkg is
 	constant frames : string := compact("{" &
-		"format:{"                 &
-    		"arp:{"                &
-    			"   htype:16,"     &
-    			"   ptype:16,"     &
-    			"    hlen:8,"      &
-    			"    plen:8,"      &
-    			"    oper:16,"     &
-    			"     sha:48,"     &
-    			"     spa:32,"     &
-    			"     tha:48,"     &
-    			"     tpa:32},"    &
-    		"ipv4:{"               &
-    			"  verihl:8,"      &
-    			"     tos:8,"      &
-    			"  legnth:16,"     &
-    			"   ident:16,"     &
-    			" flgsfrg:16,"     &
-    			"     ttl:8,"      &
-    			"   proto:8,"      &
-    			"  chksum:16,"     &
-    			"      sa:32,"     &
-    			"      da:32},"    &
-    		"icmp:{"               &
-    			"    type:8,"      &
-    			"    code:8,"      &
-    			"    cksm:16,"     &
-    			"      id:16,"     &
-    			"     seq:16},"    &
-    		"udp:{"                &
-    			"  srcprt:16,"     &
-    			"  dstprt:16,"     &
-    			"  length:16,"     &
-    			"  chksum:16},"    &
-    		"dhcp:{"               &
-    			"      op:8,"      &
-    			"   htype:8,"      &
-    			"    hlen:8,"      &
-    			"    hops:8,"      &
-    			"     xid:32,"     &
-    			"    secs:16,"     &
-    			"   flags:16,"     &
-    			"  ciaddr:32,"     &
-    			"  yiaddr:32,"     &
-    			"  siaddr:32,"     &
-    			"  giaddr:32,"     &
-    			" chaddr6:48,"     &
-    			"chaddr10:80,"     &
-    			"  shname:512,"    &
-    			"  fbname:1024,"   &
-    			"  cookie:32}},"   &
-		"data:{"                   &
-    		"ipv4:{"               &
-				"proto:{"          &
-					"icmp:0x01,"   &
-					" udp:0x11}}," &
-			"icmp:{"               &
-				"reply:{"          &
-					"code:0x00,"   &
-					"type:0x08},"  &
-				"rqst:{"           &
-					"code:0x00,"   &
-					"type:0x00}}," &
-			"dhcp:{"               &
-				"op:{"             &
+		"format:{"                  &
+			"dll:{"                 &
+				"    hwda:48,"      &
+				"    hwsa:48,"      &
+				"    type:16},"     &
+    		"arp:{"                 &
+    			"   htype:16,"      &
+    			"   ptype:16,"      &
+    			"    hlen:8,"       &
+    			"    plen:8,"       &
+    			"    oper:16,"      &
+    			"     sha:48,"      &
+    			"     spa:32,"      &
+    			"     tha:48,"      &
+    			"     tpa:32},"     &
+    		"ipv4:{"                &
+    			"  verihl:8,"       &
+    			"     tos:8,"       &
+    			"  legnth:16,"      &
+    			"   ident:16,"      &
+    			" flgsfrg:16,"      &
+    			"     ttl:8,"       &
+    			"   proto:8,"       &
+    			"  chksum:16,"      &
+    			"      sa:32,"      &
+    			"      da:32},"     &
+    		"icmp:{"                &
+    			"    type:8,"       &
+    			"    code:8,"       &
+    			"    cksm:16,"      &
+    			"      id:16,"      &
+    			"     seq:16},"     &
+    		"udp:{"                 &
+    			"  srcprt:16,"      &
+    			"  dstprt:16,"      &
+    			"  length:16,"      &
+    			"  chksum:16},"     &
+    		"dhcp:{"                &
+    			"      op:8,"       &
+    			"   htype:8,"       &
+    			"    hlen:8,"       &
+    			"    hops:8,"       &
+    			"     xid:32,"      &
+    			"    secs:16,"      &
+    			"   flags:16,"      &
+    			"  ciaddr:32,"      &
+    			"  yiaddr:32,"      &
+    			"  siaddr:32,"      &
+    			"  giaddr:32,"      &
+    			" chaddr6:48,"      &
+    			"chaddr10:80,"      &
+    			"  shname:512,"     &
+    			"  fbname:1024,"    &
+    			"  cookie:32}},"    &
+		"data:{"                    &
+    		"dll:{"                 &
+				"type:{"            &
+					" ip:0x0800,"   &
+					"arp:0x0806}}," &
+    		"ipv4:{"                &
+				"proto:{"           &
+					"icmp:0x01,"    &
+					" udp:0x11}},"  &
+			"icmp:{"                &
+				"reply:{"           &
+					"code:0x00,"    &
+					"type:0x08},"   &
+				"rqst:{"            &
+					"code:0x00,"    &
+					"type:0x00}},"  &
+			"dhcp:{"                &
+				"op:{"              &
 					"offer:0x02}}}}");
 
 	function aton (
@@ -105,9 +112,130 @@ package ipoepkg is
 		constant udp  : std_logic_vector)
 		return std_logic_vector;
 
+	type mode_t is (le, eq, ge, gt);
+
+	function frame_decode (
+		constant ptr   : std_logic_vector;
+		constant frame : natural_vector;
+		constant size  : natural)
+		return std_logic_vector;
+
+	function frame_decode (
+		constant ptr   : std_logic_vector;
+		constant frame : natural_vector;
+		constant size  : natural;
+		constant field : natural;
+		constant mode  : mode_t := eq;
+		constant debug : boolean := false)
+		return std_logic;
+
+	function frame_decode (
+		constant ptr    : std_logic_vector;
+		constant frame  : natural_vector;
+		constant size   : natural;
+		constant fields : natural_vector;
+		constant debug  : boolean := false)
+		return std_logic;
+
+	function reverse (
+		constant arg : natural_vector)
+		return natural_vector;
+
 end;
 
 package body ipoepkg is
+
+	function frame_decode (
+		constant ptr   : std_logic_vector;
+		constant frame : natural_vector;
+		constant size  : natural)
+		return std_logic_vector is
+		variable retval : std_logic_vector(frame'range);
+		variable low    : natural range 0 to summation(frame);
+		variable high   : natural range 0 to summation(frame);
+	begin
+		retval := (others => '0');
+		low    := 0;
+		for i in frame'range loop
+			high := low + frame(i)/size;
+			if low <= unsigned(ptr) and unsigned(ptr) < high then
+				retval(i) := '1';
+				exit;
+			end if;
+			low := high;
+		end loop;
+		return retval;
+	end;
+
+	function frame_decode (
+		constant ptr   : std_logic_vector;
+		constant frame : natural_vector;
+		constant size  : natural;
+		constant field : natural;
+		constant mode  : mode_t := eq;
+		constant debug : boolean := false)
+		return std_logic is
+		variable retval : std_logic;
+		variable sumup  : natural;
+	begin
+		retval := '0';
+		sumup  := 0;
+		for i in frame'range loop
+			if i=field then
+				case mode is
+				when le =>
+					if unsigned(ptr) < sumup+frame(i)/size then
+						retval := '1';
+					end if;
+				when eq =>
+					if sumup <= unsigned(ptr) and unsigned(ptr) < sumup+frame(i)/size then
+						retval := '1';
+					end if;
+				when ge =>
+					if sumup <= unsigned(ptr) then
+						retval := '1';
+					end if;
+				when gt =>
+					if sumup+frame(i)/size <= unsigned(ptr) then
+						retval := '1';
+					end if;
+				end case;
+				exit;
+			end if;
+			sumup := sumup + frame(i)/size;
+		end loop;
+
+		return retval;
+	end;
+
+	function frame_decode (
+		constant ptr    : std_logic_vector;
+		constant frame  : natural_vector;
+		constant size   : natural;
+		constant fields : natural_vector;
+		constant debug : boolean := false)
+		return std_logic is
+		variable retval : std_logic;
+		variable sumup  : natural;
+	begin
+		retval := '0';
+		for i in fields'range loop
+			retval := retval or frame_decode(ptr, frame, size, fields(i));
+		end loop;
+
+		return retval;
+	end;
+
+	function reverse (
+		constant arg : natural_vector)
+		return natural_vector is
+		variable retval : natural_vector(arg'reverse_range);
+	begin
+		for i in arg'reverse_range loop
+			retval(i) := arg(i);
+		end loop;
+		return retval;
+	end;
 
 	function aton (
 		constant ipa : string)
