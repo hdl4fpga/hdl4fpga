@@ -44,16 +44,26 @@ end;
 architecture def of dll_rx is
 begin
 
-	process (clk)
-        type states is (s_init, s_run)
+	process (frm, clk)
+		constant total : natural := summation(frame)/dll_data'length-1, cntr'length);
+        type states is (s_init, s_transfer);
         variable state : states;
-		variable cntr : unsigned(0 to unsigned_num_bits(summation(frame)/size-1));
+		variable cntr  : unsigned(0 to unsigned_num_bits(summation(frame)/size-1));
 	begin
 		if rising_edge(mii_clk) then
             case state is
             when s_init =>
+				cntr := (others => '0');
+				cntr := cntr-total;
+				if frm='1' then
+					state := s_transfer;
+				end if;
+			when s_transfer =>
+				if frm='0' then
+					state := s_init;
+				end if;
+			end case;
 			if frm='0' then
-				cntr := to_unsigned(summation(mac_frame)/dll_data'length-1, cntr'length);
 			elsif cntr(0)='0' and dll_irdy='1' and dll_trdy='1' then
 				cntr := cntr - 1;
 			end if;
