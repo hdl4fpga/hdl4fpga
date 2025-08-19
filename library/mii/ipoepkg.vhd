@@ -29,7 +29,7 @@ use hdl4fpga.base.all;
 package ipoepkg is
 	constant frames : string := compact("{" &
 		"format:{"                  &
-			"dll:{"                 &
+			"mac:{"                 &
 				"    hwda:48,"      &
 				"    hwsa:48,"      &
 				"    type:16},"     &
@@ -83,7 +83,7 @@ package ipoepkg is
     			"  fbname:1024,"    &
     			"  cookie:32}},"    &
 		"data:{"                    &
-    		"dll:{"                 &
+    		"mac:{"                 &
 				"type:{"            &
 					" ip:0x0800,"   &
 					"arp:0x0806}}," &
