@@ -297,8 +297,6 @@ HDL4FPGA__g4_phdata__inference = $(LIB_HDL4FPGA)/g4_phdata/inference.dat
 HDL4FPGA__g4_phdata = $(LIB_HDL4FPGA)/g4_phdata/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
-HDL4FPGA__ethpkg__body = $(LIB_HDL4FPGA)/ethpkg/body.dat
-HDL4FPGA__ethpkg = $(LIB_HDL4FPGA)/ethpkg/_primary.dat
 HDL4FPGA__eth_tx__def = $(LIB_HDL4FPGA)/eth_tx/def.dat
 HDL4FPGA__eth_tx = $(LIB_HDL4FPGA)/eth_tx/_primary.dat
 HDL4FPGA__eth_tb__def = $(LIB_HDL4FPGA)/eth_tb/def.dat
@@ -709,8 +707,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__g4_phdata) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
-    $(HDL4FPGA__ethpkg__body) \
-    $(HDL4FPGA__ethpkg) \
     $(HDL4FPGA__eth_tx__def) \
     $(HDL4FPGA__eth_tx) \
     $(HDL4FPGA__eth_tb__def) \
@@ -918,6 +914,7 @@ $(HDL4FPGA__arbiter__mix) : ../basic/arbiter.vhd \
 
 $(HDL4FPGA__arp_rx) \
 $(HDL4FPGA__arp_rx__def) : ../mii/arp_rx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
@@ -928,6 +925,7 @@ $(HDL4FPGA__arp_rx__def) : ../mii/arp_rx.vhd \
 
 $(HDL4FPGA__arp_tx) \
 $(HDL4FPGA__arp_tx__def) : ../mii/arp_tx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
@@ -1132,6 +1130,7 @@ $(HDL4FPGA__dfs2dfs__behavioral) : ../xilinx/dfs2dfs.vhd \
 
 $(HDL4FPGA__dhcpc_dscb) \
 $(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcp_dscb.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
@@ -1143,6 +1142,7 @@ $(HDL4FPGA__dhcpc_dscb__def) : ../mii/dhcp_dscb.vhd \
 
 $(HDL4FPGA__dhcpc_offer) \
 $(HDL4FPGA__dhcpc_offer__def) : ../mii/dhcp_offer.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
@@ -1153,6 +1153,7 @@ $(HDL4FPGA__dhcpc_offer__def) : ../mii/dhcp_offer.vhd \
 
 $(HDL4FPGA__dhcpcd) \
 $(HDL4FPGA__dhcpcd__def) : ../mii/dhcpcd.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__dhcpc_dscb) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__dhcpc_offer) \
@@ -1165,6 +1166,7 @@ $(HDL4FPGA__dhcpcd__def) : ../mii/dhcpcd.vhd \
 
 $(HDL4FPGA__dll_rx) \
 $(HDL4FPGA__dll_rx__def) : ../mii/dll_rx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
@@ -1390,6 +1392,7 @@ $(HDL4FPGA__ecp5_videodcm__def) : ../apps/ecp5_videodcm.vhd \
 
 $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__dll_rx) \
 		$(HDL4FPGA__serdes) \
 		$(HDL4FPGA__mii_rxpre) \
@@ -1402,6 +1405,7 @@ $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 
 $(HDL4FPGA__eth_tb) \
 $(HDL4FPGA__eth_tb__def) : ../apps/eth_tb.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__eth_tx) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__ethpkg) \
@@ -1422,14 +1426,6 @@ $(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -93 -work hdl4fpga ../mii/eth_tx.vhd
-
-$(HDL4FPGA__ethpkg) \
-$(HDL4FPGA__ethpkg__body) : ../mii/ethpkg.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii/ethpkg.vhd
 
 $(HDL4FPGA__graphics) \
 $(HDL4FPGA__graphics__def) : ../video/graphics.vhd \
@@ -1498,6 +1494,7 @@ $(HDL4FPGA__hdo__body) : ../basic/hdo.vhd \
 
 $(HDL4FPGA__icmpd) \
 $(HDL4FPGA__icmpd__def) : ../mii/icmpd.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__icmprply_tx) \
 		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__latency) \
@@ -1514,6 +1511,7 @@ $(HDL4FPGA__icmpd__def) : ../mii/icmpd.vhd \
 
 $(HDL4FPGA__icmprply_tx) \
 $(HDL4FPGA__icmprply_tx__def) : ../mii/icmprply_tx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
@@ -1524,6 +1522,7 @@ $(HDL4FPGA__icmprply_tx__def) : ../mii/icmprply_tx.vhd \
 
 $(HDL4FPGA__icmprqst_rx) \
 $(HDL4FPGA__icmprqst_rx__def) : ../mii/icmprqst_rx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
@@ -1542,6 +1541,7 @@ $(HDL4FPGA__igbx__beh) : ../xilinx/igbx.vhd \
 $(HDL4FPGA__ipoepkg) \
 $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 		$(HDL4FPGA__ethpkg) \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -1550,6 +1550,7 @@ $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 
 $(HDL4FPGA__ipv4) \
 $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__udp) \
 		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__icmpd) \
@@ -1571,6 +1572,7 @@ $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
 
 $(HDL4FPGA__ipv4_adjlen) \
 $(HDL4FPGA__ipv4_adjlen__def) : ../mii/ipv4_adjlen.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__adder) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__ipoepkg) \
@@ -1583,6 +1585,7 @@ $(HDL4FPGA__ipv4_adjlen__def) : ../mii/ipv4_adjlen.vhd \
 
 $(HDL4FPGA__ipv4_rx) \
 $(HDL4FPGA__ipv4_rx__def) : ../mii/ipv4_rx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
@@ -1593,6 +1596,7 @@ $(HDL4FPGA__ipv4_rx__def) : ../mii/ipv4_rx.vhd \
 
 $(HDL4FPGA__ipv4_tx) \
 $(HDL4FPGA__ipv4_tx__def) : ../mii/ipv4_tx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__mii_1cksm) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__ipoepkg) \
@@ -1638,8 +1642,10 @@ $(HDL4FPGA__link_hdlc__def) : ../apps/link_hdlc.vhd \
 
 $(HDL4FPGA__link_mii) \
 $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__sio_dayudp) \
+		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__ethpkg) \
@@ -1670,6 +1676,7 @@ $(HDL4FPGA__mii_buffer__def) : ../mii/mii_buffer.vhd \
 
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__ipv4) \
 		$(HDL4FPGA__arpd) \
@@ -2444,6 +2451,7 @@ $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
 
 $(HDL4FPGA__sio_udp) \
 $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__sio_flow) \
 		$(HDL4FPGA__mii_ipoe) \
@@ -2529,6 +2537,7 @@ $(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \
 
 $(HDL4FPGA__udp) \
 $(HDL4FPGA__udp__def) : ../mii/udp.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__dhcpcd) \
 		$(HDL4FPGA__sio_muxcmp) \
 		$(HDL4FPGA__udp_tx) \
@@ -2545,6 +2554,7 @@ $(HDL4FPGA__udp__def) : ../mii/udp.vhd \
 
 $(HDL4FPGA__udp_rx) \
 $(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__base) \
@@ -2555,6 +2565,7 @@ $(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \
 
 $(HDL4FPGA__udp_tx) \
 $(HDL4FPGA__udp_tx__def) : ../mii/udp_tx.vhd \
+		$(HDL4FPGA__ethpkg) \
 		$(HDL4FPGA__ipv4_adjlen) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__ipoepkg) \
