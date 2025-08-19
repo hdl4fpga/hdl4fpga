@@ -28,125 +28,72 @@ use hdl4fpga.base.all;
 use hdl4fpga.ethpkg.all;
 
 package ipoepkg is
-
-	constant arp_htype : natural := eth_frame'right+1;
-	constant arp_ptype : natural := eth_frame'right+2;
-	constant arp_hlen  : natural := eth_frame'right+3;
-	constant arp_plen  : natural := eth_frame'right+4;
-	constant arp_oper  : natural := eth_frame'right+5;
-	constant arp_sha   : natural := eth_frame'right+6;
-	constant arp_spa   : natural := eth_frame'right+7;
-	constant arp_tha   : natural := eth_frame'right+8;
-	constant arp_tpa   : natural := eth_frame'right+9;
-
-	constant arp4_frame : natural_vector(arp_htype to arp_tpa) := (
-		arp_htype => 2*octect_size,
-		arp_ptype => 2*octect_size,
-		arp_hlen  => 1*octect_size,
-		arp_plen  => 1*octect_size,
-		arp_oper  => 2*octect_size,
-		arp_sha   => 6*octect_size,
-		arp_spa   => 4*octect_size,
-		arp_tha   => 6*octect_size,
-		arp_tpa   => 4*octect_size);
-
-	constant ipv4_verihl  : natural :=  eth_frame'right+1;
-	constant ipv4_tos     : natural :=  eth_frame'right+2;
-	constant ipv4_len     : natural :=  eth_frame'right+3;
-	constant ipv4_ident   : natural :=  eth_frame'right+4;
-	constant ipv4_flgsfrg : natural :=  eth_frame'right+5;
-	constant ipv4_ttl     : natural :=  eth_frame'right+6;
-	constant ipv4_proto   : natural :=  eth_frame'right+7;
-	constant ipv4_chksum  : natural :=  eth_frame'right+8;
-	constant ipv4_sa      : natural :=  eth_frame'right+9;
-	constant ipv4_da      : natural :=  eth_frame'right+10;
-
-	constant ipv4hdr_frame : natural_vector(ipv4_verihl to ipv4_da) := ( -- Quartus Prime 22.1 bug cannot deal with unconstrains array
-		ipv4_verihl  => 1*octect_size,
-		ipv4_tos     => 1*octect_size,
-		ipv4_len     => 2*octect_size,
-		ipv4_ident   => 2*octect_size,
-		ipv4_flgsfrg => 2*octect_size,
-		ipv4_ttl     => 1*octect_size,
-		ipv4_proto   => 1*octect_size,
-		ipv4_chksum  => 2*octect_size,
-		ipv4_sa      => 4*octect_size,
-		ipv4_da      => 4*octect_size);
-		
-	constant ipv4proto_icmp : std_logic_vector(0 to ipv4hdr_frame(ipv4_proto)-1) := x"01";
-	constant ipv4proto_udp  : std_logic_vector(0 to ipv4hdr_frame(ipv4_proto)-1) := x"11";
-
-	constant icmp_type : natural :=  ipv4hdr_frame'right+1;
-	constant icmp_code : natural :=  ipv4hdr_frame'right+2;
-	constant icmp_cksm : natural :=  ipv4hdr_frame'right+3;
-	constant icmp_id   : natural :=  ipv4hdr_frame'right+4;
-	constant icmp_seq  : natural :=  ipv4hdr_frame'right+5;
-
-	constant icmphdr_frame : natural_vector(icmp_type to icmp_cksm) :=  ( -- Quartus Prime 22.1 bug cannot deal with unconstrains array
-		icmp_type => 1*octect_size,
-		icmp_code => 1*octect_size,
-		icmp_cksm => 2*octect_size);
-
-	constant icmpcode_rply : std_logic_vector(0 to icmphdr_frame(icmp_code)-1) := x"00";
-	constant icmptype_rply : std_logic_vector(0 to icmphdr_frame(icmp_type)-1) := x"00";
-	constant icmpcode_rqst : std_logic_vector(0 to icmphdr_frame(icmp_type)-1) := x"00";
-	constant icmptype_rqst : std_logic_vector(0 to icmphdr_frame(icmp_type)-1) := x"08";
-
-	constant icmprqst_frame : natural_vector := (
-		icmp_id  => 2*octect_size,
-		icmp_seq => 2*octect_size);
-		
-	constant icmprply_frame : natural_vector := (
-		icmp_id  => 2*octect_size,
-		icmp_seq => 2*octect_size);
-		
-	constant udp4_sp   : natural :=  ipv4hdr_frame'right+1;
-	constant udp4_dp   : natural :=  ipv4hdr_frame'right+2;
-	constant udp4_len  : natural :=  ipv4hdr_frame'right+3;
-	constant udp4_cksm : natural :=  ipv4hdr_frame'right+4;
-
-	constant udp4hdr_frame : natural_vector := (
-		udp4_sp   => 2*octect_size,
-		udp4_dp   => 2*octect_size,
-		udp4_len  => 2*octect_size,
-		udp4_cksm => 2*octect_size);
-		
-	constant dhcp4_op       : natural := udp4hdr_frame'right+ 1;
-	constant dhcp4_htype    : natural := udp4hdr_frame'right+ 2;
-	constant dhcp4_hlen     : natural := udp4hdr_frame'right+ 3;
-	constant dhcp4_hops     : natural := udp4hdr_frame'right+ 4;
-	constant dhcp4_xid      : natural := udp4hdr_frame'right+ 5;
-	constant dhcp4_secs     : natural := udp4hdr_frame'right+ 6;
-	constant dhcp4_flags    : natural := udp4hdr_frame'right+ 7;
-	constant dhcp4_ciaddr   : natural := udp4hdr_frame'right+ 8;
-	constant dhcp4_yiaddr   : natural := udp4hdr_frame'right+ 9;
-	constant dhcp4_siaddr   : natural := udp4hdr_frame'right+10;
-	constant dhcp4_giaddr   : natural := udp4hdr_frame'right+11;
-	constant dhcp4_chaddr6  : natural := udp4hdr_frame'right+12;
-	constant dhcp4_chaddr10 : natural := udp4hdr_frame'right+13;
-	constant dhcp4_shname   : natural := udp4hdr_frame'right+14;
-	constant dhcp4_fbname   : natural := udp4hdr_frame'right+15;
-	constant dhcp4_cookie   : natural := udp4hdr_frame'right+16;
-                                       
-	constant dhcp4hdr_frame : natural_vector(dhcp4_op to dhcp4_cookie) := ( -- Quartus Prime 22.1 bug cannot deal with unconstrains array
-		dhcp4_op     =>   1*octect_size,
-		dhcp4_htype  =>   1*octect_size,
-		dhcp4_hlen   =>   1*octect_size,
-		dhcp4_hops   =>   1*octect_size,
-		dhcp4_xid    =>   4*octect_size,
-		dhcp4_secs   =>   2*octect_size,
-		dhcp4_flags  =>   2*octect_size,
-		dhcp4_ciaddr =>   4*octect_size,
-		dhcp4_yiaddr =>   4*octect_size,
-		dhcp4_siaddr =>   4*octect_size,
-		dhcp4_giaddr =>   4*octect_size,
-		dhcp4_chaddr6  =>  6*octect_size,
-		dhcp4_chaddr10 =>  10*octect_size,
-		dhcp4_shname =>  64*octect_size,
-		dhcp4_fbname => 128*octect_size,
-		dhcp4_cookie =>   4*octect_size);
-
-	constant dhcp4_offer : std_logic_vector(0 to dhcp4hdr_frame(dhcp4_op)-1) := x"02";
+	constant frames : string := compact("{" &
+		"format:{"                 &
+    		"arp:{"                &
+    			"   htype:16,"     &
+    			"   ptype:16,"     &
+    			"    hlen:8,"      &
+    			"    plen:8,"      &
+    			"    oper:16,"     &
+    			"     sha:48,"     &
+    			"     spa:32,"     &
+    			"     tha:48,"     &
+    			"     tpa:32},"    &
+    		"ipv4:{"               &
+    			"  verihl:8,"      &
+    			"     tos:8,"      &
+    			"  legnth:16,"     &
+    			"   ident:16,"     &
+    			" flgsfrg:16,"     &
+    			"     ttl:8,"      &
+    			"   proto:8,"      &
+    			"  chksum:16,"     &
+    			"      sa:32,"     &
+    			"      da:32},"    &
+    		"icmp:{"               &
+    			"    type:8,"      &
+    			"    code:8,"      &
+    			"    cksm:16,"     &
+    			"      id:16,"     &
+    			"     seq:16},"    &
+    		"udp:{"                &
+    			"  srcprt:16,"     &
+    			"  dstprt:16,"     &
+    			"  length:16,"     &
+    			"  chksum:16},"    &
+    		"dhcp:{"               &
+    			"      op:8,"      &
+    			"   htype:8,"      &
+    			"    hlen:8,"      &
+    			"    hops:8,"      &
+    			"     xid:32,"     &
+    			"    secs:16,"     &
+    			"   flags:16,"     &
+    			"  ciaddr:32,"     &
+    			"  yiaddr:32,"     &
+    			"  siaddr:32,"     &
+    			"  giaddr:32,"     &
+    			" chaddr6:48,"     &
+    			"chaddr10:80,"     &
+    			"  shname:512,"    &
+    			"  fbname:1024,"   &
+    			"  cookie:32}},"   &
+		"data:{"                   &
+    		"ipv4:{"               &
+				"proto:{"          &
+					"icmp:0x01,"   &
+					" udp:0x11}}," &
+			"icmp:{"               &
+				"reply:{"          &
+					"code:0x00,"   &
+					"type:0x08},"  &
+				"rqst:{"           &
+					"code:0x00,"   &
+					"type:0x00}}," &
+			"dhcp:{"               &
+				"op:{"             &
+					"offer:0x02}}}}");
 
 	function aton (
 		constant ipa : string)
