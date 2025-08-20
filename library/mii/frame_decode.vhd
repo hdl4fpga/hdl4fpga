@@ -19,8 +19,6 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-use std.textio.all;
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -28,83 +26,69 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 entity frame_decode is
     generic (
-        frame : string;
-        size  : natural)
+        frame : string := hdo(frames)**".format.mac";
+        size  : natural := 8);
 	port (
 		clk  : in  std_logic;
-		frm  : in  std_logic;
 		irdy : in  std_logic;
-		trdy : buffer std_logic;
-		vld  : buffer std_logic_vector(0 to length(frame)-1);
+		trdy : out std_logic := '1';
+		eof  : in  std_logic;
+		vld  : buffer std_logic_vector(0 to length(frame)-1));
 end;
 
-architecture def of dll_rx is
+architecture def of frame_decode is
+
+	constant total : natural := summation(frame)/size;
+
+	function boundaries
+		return natural_vector is
+		variable boundary : natural;
+		constant xxx : natural := 2**unsigned_num_bits(total-1);
+		variable retval : natural_vector(vld'range);
+	begin
+		boundary := xxx-total;
+		for i in vld'range loop
+			boundary := hdo(frame)**('['&natural'image(i)&']')/size + boundary;
+			retval(i) := boundary-1;
+		end loop;
+		return retval;
+	end;
+
+	constant limits : natural_vector(vld'range) := boundaries;
 begin
 
-	process (frm, clk)
-		constant total : natural := summation(frame)/dll_data'length-1, cntr'length);
-        type states is (s_init, s_transfer);
-        variable state : states;
-		variable cntr  : unsigned(0 to unsigned_num_bits(summation(frame)/size-1));
+	process (clk)
+		variable cntr  : unsigned(0 to unsigned_num_bits(total-1));
+		variable step  : natural range 0 to vld'length-1;
+		variable limit : natural;
 	begin
-		if rising_edge(mii_clk) then
-            case state is
-            when s_init =>
-				cntr := (others => '0');
-				cntr := cntr-total;
-				if frm='1' then
-					state := s_transfer;
-				end if;
-			when s_transfer =>
-				if frm='0' then
-					state := s_init;
-				end if;
-			end case;
-			if frm='0' then
-			elsif cntr(0)='0' and dll_irdy='1' and dll_trdy='1' then
-				cntr := cntr - 1;
+		if rising_edge(clk) then
+			if irdy='1' then
+			if limit=cntr then
+				limit := limits(step);
+				vld(step) <= '1';
+				step := step + 1;
 			end if;
-			frm_ptr <= std_logic_vector(cntr);
+			if cntr(0)='0' then
+				if irdy='1' then
+					cntr := cntr + 1;
+				end if;
+			end if;
+			if (eof and irdy)='1' then
+				step  := 0;
+				cntr  := (others => '0');
+				cntr  := cntr-total;
+				limit := limits(step);
+			end if;
+			vld <= (others => '0');
+			if step < vld'length then
+				vld(step) <= '1';
+			end if;
 		end if;
 	end process;
 
-	hwda_frm   <= dll_frm  and frame_decode(frm_ptr, reverse(mac_frame), dll_data'length, eth_hwda);
-	hwsa_frm   <= dll_frm  and frame_decode(frm_ptr, reverse(mac_frame), dll_data'length, eth_hwsa);
-	hwtyp_frm  <= dll_frm  and frame_decode(frm_ptr, reverse(mac_frame), dll_data'length, eth_type);
-	pl_frm     <= dll_frm  and frm_ptr(0);
-	hwda_irdy  <= dll_irdy and hwda_frm;
-	hwsa_irdy  <= dll_irdy and hwsa_frm;
-	hwtyp_irdy <= dll_irdy and hwtyp_frm;
-	pl_irdy    <= dll_irdy and pl_frm;
-
-	crc_frm  <= dll_frm;
-	crc_irdy <= dll_irdy;
-	crc_e : entity hdl4fpga.crc
-	port map (
-		g    => x"04c11db7",
-		clk  => mii_clk,
-		frm  => crc_frm,
-		irdy => crc_irdy,
-		data => dll_data,
-		crc  => crc_rem);
-
-	process (dll_frm, mii_clk)
-		variable q : bit;
-	begin
-		if rising_edge(mii_clk) then
-			q := to_bit(dll_frm);
-		end if;
-		crc_sb <= to_stdulogic(q) and not to_stdulogic(to_bit(dll_frm));
-	end process;
-	crc_equ <= setif(crc_rem=x"38fb2284");
-
-	dll_trdy <=
-	   hwda_trdy  when hwda_frm='1'  else
-	   hwsa_trdy  when hwsa_frm='1'  else
-	   hwtyp_trdy when hwtyp_frm='1' else
-	   pl_trdy    when pl_frm='1'    else
-	   '1';
 end;

@@ -33,7 +33,7 @@ package ipoepkg is
 			"mac:{"                 &
 				"    hwda:48,"      &
 				"    hwsa:48,"      &
-				"    type:16},"     &
+				"    type:32},"     &
     		"arp:{"                 &
     			"   htype:16,"      &
     			"   ptype:16,"      &
@@ -113,134 +113,13 @@ package ipoepkg is
 		constant udp  : std_logic_vector)
 		return std_logic_vector;
 
-	type mode_t is (le, eq, ge, gt);
-
-	function frame_decode (
-		constant ptr   : std_logic_vector;
-		constant frame : natural_vector;
-		constant size  : natural)
-		return std_logic_vector;
-
-	function frame_decode (
-		constant ptr   : std_logic_vector;
-		constant frame : natural_vector;
-		constant size  : natural;
-		constant field : natural;
-		constant mode  : mode_t := eq;
-		constant debug : boolean := false)
-		return std_logic;
-
-	function frame_decode (
-		constant ptr    : std_logic_vector;
-		constant frame  : natural_vector;
-		constant size   : natural;
-		constant fields : natural_vector;
-		constant debug  : boolean := false)
-		return std_logic;
-
 	function summation (
 		constant format : string)
 		return natural;
 
-	function reverse (
-		constant arg : natural_vector)
-		return natural_vector;
-
 end;
 
 package body ipoepkg is
-
-	function frame_decode (
-		constant ptr   : std_logic_vector;
-		constant frame : string;
-		constant size  : natural)
-		return std_logic_vector is
-		variable retval : std_logic_vector(format'range);
-		variable low    : natural range 0 to summation(format);
-		variable high   : natural range 0 to summation(format);
-	begin
-		retval := (others => '0');
-		low    := 0;
-		for i in format'range loop
-			high := low + format(i)/size;
-			if low <= unsigned(ptr) and unsigned(ptr) < high then
-				retval(i) := '1';
-				exit;
-			end if;
-			low := high;
-		end loop;
-		return retval;
-	end;
-
-	function frame_decode (
-		constant ptr   : std_logic_vector;
-		constant frame : natural_vector;
-		constant size  : natural;
-		constant field : natural;
-		constant mode  : mode_t := eq;
-		constant debug : boolean := false)
-		return std_logic is
-		variable retval : std_logic;
-		variable sumup  : natural;
-	begin
-		retval := '0';
-		sumup  := 0;
-		for i in frame'range loop
-			if i=field then
-				case mode is
-				when le =>
-					if unsigned(ptr) < sumup+frame(i)/size then
-						retval := '1';
-					end if;
-				when eq =>
-					if sumup <= unsigned(ptr) and unsigned(ptr) < sumup+frame(i)/size then
-						retval := '1';
-					end if;
-				when ge =>
-					if sumup <= unsigned(ptr) then
-						retval := '1';
-					end if;
-				when gt =>
-					if sumup+frame(i)/size <= unsigned(ptr) then
-						retval := '1';
-					end if;
-				end case;
-				exit;
-			end if;
-			sumup := sumup + frame(i)/size;
-		end loop;
-
-		return retval;
-	end;
-
-	function frame_decode (
-		constant ptr    : std_logic_vector;
-		constant frame  : natural_vector;
-		constant size   : natural;
-		constant fields : natural_vector;
-		constant debug : boolean := false)
-		return std_logic is
-		variable retval : std_logic;
-		variable sumup  : natural;
-	begin
-		retval := '0';
-		for i in fields'range loop
-			retval := retval or frame_decode(ptr, frame, size, fields(i));
-		end loop;
-
-		return retval;
-	end;
-
-	function reverse (
-		constant arg : natural_vector)
-		return natural_vector is
-		variable retval : natural_vector(arg'reverse_range);
-	begin
-		for i in arg'reverse_range loop
-			retval(i) := arg(i);
-		end loop;
-		return retval;
-	end;
 
 	function aton (
 		constant ipa : string)
@@ -319,10 +198,10 @@ package body ipoepkg is
 		variable retval : natural;
 		variable value  : natural;
 	begin
-		retval := 0;
 		for i in 0 to format'length-1 loop
-			value := hdo(format)**i;
+			value := hdo(format)**('['&natural'image(i)&']');
 			exit when value=0;
+			retval := retval + value;
 		end loop;
 		return retval;
 	end;
