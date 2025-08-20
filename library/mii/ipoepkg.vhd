@@ -33,7 +33,7 @@ package ipoepkg is
 			"mac:{"                 &
 				"    hwda:48,"      &
 				"    hwsa:48,"      &
-				"    type:16},"     &
+				"    type:32},"     &
     		"arp:{"                 &
     			"   htype:16,"      &
     			"   ptype:16,"      &

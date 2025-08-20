@@ -33,62 +33,61 @@ entity frame_decode is
         frame : string := hdo(frames)**".format.mac";
         size  : natural := 8);
 	port (
-		clk  : in  std_logic;
-		irdy : in  std_logic;
+		clk  : in  std_logic := '0';
+		frm  : in  std_logic := '1';
+		irdy : in  std_logic := '1';
 		trdy : out std_logic := '1';
-		eof  : in  std_logic;
-		vld  : buffer std_logic_vector(0 to length(frame)-1));
+		vld  : buffer std_logic_vector(0 to length(frame)) := (others => '0'));
 end;
 
 architecture def of frame_decode is
-
-	constant total : natural := summation(frame)/size;
-
-	function boundaries
-		return natural_vector is
-		variable boundary : natural;
-		constant xxx : natural := 2**unsigned_num_bits(total-1);
-		variable retval : natural_vector(vld'range);
-	begin
-		boundary := xxx-total;
-		for i in vld'range loop
-			boundary := hdo(frame)**('['&natural'image(i)&']')/size + boundary;
-			retval(i) := boundary-1;
-		end loop;
-		return retval;
-	end;
-
-	constant limits : natural_vector(vld'range) := boundaries;
 begin
 
-	process (clk)
-		variable cntr  : unsigned(0 to unsigned_num_bits(total-1));
+	process (frm, clk)
+		constant total : natural := summation(frame)/size;
+	
+		function boundaries
+			return natural_vector is
+			variable boundary : natural;
+			constant size   : natural := 2**unsigned_num_bits(total-1);
+			variable retval : natural_vector(vld'range);
+		begin
+			boundary := 2*size-total;
+			for i in vld'range loop
+				if i=vld'right then
+					retval(i) := boundary;
+				else
+					boundary  := hdo(frame)**('['&natural'image(i)&']')/size + boundary;
+					retval(i) := (boundary-1);
+				end if;
+			end loop;
+			return retval;
+		end;
+
+		constant boundary : natural_vector := boundaries;
+		variable cntr  : unsigned(0 to unsigned_num_bits(total-1)) := (others => '0');
 		variable step  : natural range 0 to vld'length-1;
 		variable limit : natural;
+
 	begin
 		if rising_edge(clk) then
-			if irdy='1' then
-			if limit=cntr then
-				limit := limits(step);
-				vld(step) <= '1';
-				step := step + 1;
-			end if;
-			if cntr(0)='0' then
+			if frm='0' then
+				step  := 0;
+				cntr  := (others => '0');
+				cntr  := cntr-total;
+				limit := boundary(step);
+			elsif (irdy and cntr(0))='1' then
+				if limit=cntr then
+					step  := step + 1;
+					limit := boundary(step);
+				end if;
 				if irdy='1' then
 					cntr := cntr + 1;
 				end if;
 			end if;
-			if (eof and irdy)='1' then
-				step  := 0;
-				cntr  := (others => '0');
-				cntr  := cntr-total;
-				limit := limits(step);
-			end if;
-			vld <= (others => '0');
-			if step < vld'length then
-				vld(step) <= '1';
-			end if;
 		end if;
+		vld <= (others => '0');
+		vld(step) <= frm;
 	end process;
 
 end;
