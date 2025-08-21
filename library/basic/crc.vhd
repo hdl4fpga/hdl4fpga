@@ -44,18 +44,29 @@ architecture def of crc is
 begin
 
 	assert g'length mod data'length=0
-		report "crc () : length of g should be a multiplo of data'length"
+		report "crc () : length of g => " & natural'image(g'length) & " should be multiple of data'length => " & natural'image(data'length)
 		severity FAILURE;
 
 	process (clk)
+		type states is (s_init, s_run);
+		variable state : states;
 	begin
 		if rising_edge(clk) then
 			if frm='0' then
-				if irdy='0' then
+				case state is
+				when s_init =>
 					crc <= (crc'range => '0');
-				end if;
+				when s_run =>
+					if irdy='0' then
+						crc <= (crc'range => '0');
+					elsif trdy='1' then
+						crc <= not galois_crc(data, not crc, g);
+					end if;
+					state := s_init;
+				end case;
 			elsif (irdy or trdy)='1' then
 				crc <= not galois_crc(data, not crc, g);
+				state := s_run;
 			end if;
 		end if;
 	end process;

@@ -91,5 +91,6 @@ begin
 		act <= (others => '0');
 		act(step) <= frm;
 	end process;
+	trdy <= frm;
 
 end;
