@@ -38,16 +38,13 @@ entity dll_rx is
 		dll_trdy   : buffer std_logic;
 		dll_data   : in  std_logic_vector;
 
-		hwda_irdy  : buffer std_logic;
+		hwda_frm   : buffer std_logic := '0';
 		hwda_trdy  : in  std_logic := '1';
-		hwda_end   : in  std_logic := '1';
-		hwsa_irdy  : buffer std_logic;
+		hwsa_frm   : buffer std_logic := '0';
 		hwsa_trdy  : in  std_logic := '1';
-		hwsa_end   : in  std_logic := '1';
-		hwtyp_irdy : buffer std_logic;
+		hwtyp_frm  : buffer std_logic := '0';
 		hwtyp_trdy : in  std_logic := '1';
-		hwtyp_end  : in  std_logic := '1';
-		pl_irdy    : out std_logic;
+		pl_frm     : buffer std_logic := '0';
 		pl_trdy    : in  std_logic := '1';
 
 		crc_sb     : out std_logic;
@@ -57,48 +54,27 @@ entity dll_rx is
 end;
 
 architecture def of dll_rx is
-
-	constant mac_frame : string := hdo(frames)**".format.mac";
-	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(mac_frame)/dll_data'length-1));
-	signal hwda_frm  : std_logic;
-	signal hwsa_frm  : std_logic;
-	signal hwtyp_frm : std_logic;
-	signal pl_frm    : std_logic;
-	signal crc_frm   : std_logic;
-	signal crc_irdy  : std_logic;
-
 begin
 
-	process (mii_clk)
-		variable cntr : unsigned(frm_ptr'range);
-	begin
-		if rising_edge(mii_clk) then
-			if dll_frm='0' then
-				cntr := to_unsigned(summation(mac_frame)/dll_data'length-1, cntr'length);
-			elsif cntr(0)='0' and dll_irdy='1' and dll_trdy='1' then
-				cntr := cntr - 1;
-			end if;
-			frm_ptr <= std_logic_vector(cntr);
-		end if;
-	end process;
+	decode_i : entity hdl4fpga.frame_decode
+	generic map (
+        frame => hdo(frames)**".format.mac",
+		size  => dll_data'length)
+	port map (
+		clk    => mii_clk,
+		frm    => dll_frm,
+		irdy   => dll_irdy,
+		act(0) => hwda_frm,
+		act(1) => hwsa_frm,
+		act(2) => hwtyp_frm,
+		act(3) => pl_frm);
 
-	hwda_frm   <= dll_frm  and frame_decode(frm_ptr, reverse(mac_frame), dll_data'length, eth_hwda);
-	hwsa_frm   <= dll_frm  and frame_decode(frm_ptr, reverse(mac_frame), dll_data'length, eth_hwsa);
-	hwtyp_frm  <= dll_frm  and frame_decode(frm_ptr, reverse(mac_frame), dll_data'length, eth_type);
-	pl_frm     <= dll_frm  and frm_ptr(0);
-	hwda_irdy  <= dll_irdy and hwda_frm;
-	hwsa_irdy  <= dll_irdy and hwsa_frm;
-	hwtyp_irdy <= dll_irdy and hwtyp_frm;
-	pl_irdy    <= dll_irdy and pl_frm;
-
-	crc_frm  <= dll_frm;
-	crc_irdy <= dll_irdy;
 	crc_e : entity hdl4fpga.crc
 	port map (
 		g    => x"04c11db7",
 		clk  => mii_clk,
-		frm  => crc_frm,
-		irdy => crc_irdy,
+		frm  => dll_frm,
+		irdy => dll_irdy,
 		data => dll_data,
 		crc  => crc_rem);
 

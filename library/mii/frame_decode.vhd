@@ -37,7 +37,7 @@ entity frame_decode is
 		frm  : in  std_logic := '1';
 		irdy : in  std_logic := '1';
 		trdy : out std_logic := '1';
-		vld  : buffer std_logic_vector(0 to length(frame)) := (others => '0'));
+		act  : out std_logic_vector(0 to length(frame)));
 end;
 
 architecture def of frame_decode is
@@ -49,15 +49,17 @@ begin
 		function boundaries
 			return natural_vector is
 			variable boundary : natural;
-			constant size   : natural := 2**unsigned_num_bits(total-1);
-			variable retval : natural_vector(vld'range);
+			constant psize  : natural := 2**unsigned_num_bits(total-1);
+			variable retval : natural_vector(act'range);
 		begin
-			boundary := 2*size-total;
-			for i in vld'range loop
-				if i=vld'right then
+			boundary := 2*psize-total;
+			for i in act'range loop
+				if i=act'right then
 					retval(i) := boundary;
 				else
+				report natural'image(boundary);
 					boundary  := hdo(frame)**('['&natural'image(i)&']')/size + boundary;
+				report natural'image(boundary);
 					retval(i) := (boundary-1);
 				end if;
 			end loop;
@@ -66,7 +68,7 @@ begin
 
 		constant boundary : natural_vector := boundaries;
 		variable cntr  : unsigned(0 to unsigned_num_bits(total-1)) := (others => '0');
-		variable step  : natural range 0 to vld'length-1;
+		variable step  : natural range 0 to act'length-1;
 		variable limit : natural;
 
 	begin
@@ -86,8 +88,8 @@ begin
 				end if;
 			end if;
 		end if;
-		vld <= (others => '0');
-		vld(step) <= frm;
+		act <= (others => '0');
+		act(step) <= frm;
 	end process;
 
 end;

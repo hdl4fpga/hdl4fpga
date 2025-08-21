@@ -64,6 +64,7 @@ architecture ser_debug of nuhs3adsp is
 	signal ser_frm  : std_logic;
 	signal ser_irdy : std_logic;
 	signal ser_data : std_logic_vector(0 to mii_rxd'length-1);
+	signal dll_data : std_logic_vector(0 to mii_rxd'length-1);
 
 	signal video_on     : std_logic;
 	signal video_clk    : std_logic;
@@ -74,6 +75,7 @@ architecture ser_debug of nuhs3adsp is
 
 	signal tp : std_logic_vector(1 to 32);
 
+	signal hwda_frm : std_logic;
 begin
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm
@@ -95,43 +97,21 @@ begin
 		clkfx => mii_clk);
 	mii_refclk <= not mii_clk;
 
-	process (mii_txc)
-	begin
-		if rising_edge(mii_txc) then
-			dhcp_btn <= not sw1;
-		end if;
-	end process;
-
-	mii_e : entity hdl4fpga.link_mii
-	generic map (
-		default_mac   => x"00_40_00_01_02_03",
-		default_ipv4a => aton("192.168.0.14"),
-		n             => mii_rxd'length)
+	ethrx_i : entity hdl4fpga.eth_rx
 	port map (
-		tp         => tp,
-		si_frm     => si_frm,
-		si_irdy    => si_irdy,
-		si_trdy    => si_trdy,
-		si_end     => si_end,
-		si_data    => si_data,
-	
-		so_frm     => so_frm,
-		so_irdy    => so_irdy,
-		so_trdy    => so_trdy,
-		so_data    => so_data,
-		dhcp_btn   => dhcp_btn,
-		mii_txc    => mii_txc,
-		mii_txen   => mii_txen,
-		mii_txd    => mii_txd,
+		mii_clk  => mii_rxc,
+		mii_frm  => mii_rxdv,
+		mii_irdy => mii_rxdv,
+		mii_data => mii_rxd,
+		hwsa_frm => hwda_frm,
+		dll_data => dll_data);
+	mii_txen <= '0';
+	mii_txd <= (others =>'Z');
 
-		mii_rxc    => mii_rxc,
-		mii_rxdv   => mii_rxdv,
-		mii_rxd    => mii_rxd);   
-
-	ser_clk  <= mii_txc;
-	ser_frm  <= tp(1);
-	ser_irdy <= tp(1);
-	ser_data <= tp(2 to 2+mii_rxd'length-1);
+	ser_clk  <= mii_rxc;
+	ser_frm  <= hwda_frm;
+	ser_irdy <= hwda_frm;
+	ser_data <= mii_rxd;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

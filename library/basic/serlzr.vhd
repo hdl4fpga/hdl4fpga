@@ -365,4 +365,9 @@ begin
 
 	end generate;
 
+	srceqdst_g : if src_data'length = dst_data'length generate
+		src_trdy <= dst_trdy;
+		dst_irdy <= src_irdy;
+		dst_data <= src_data;
+	end generate;
 end;

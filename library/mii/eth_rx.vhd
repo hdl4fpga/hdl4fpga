@@ -39,16 +39,13 @@ entity eth_rx is
 		dll_trdy   : in  std_logic := '1';
 		dll_data   : buffer std_logic_vector;
 
-		hwda_irdy  : buffer std_logic;
+		hwda_frm   : buffer std_logic;
 		hwda_trdy  : in  std_logic := '1';
-		hwda_end   : in  std_logic := '1';
-		hwsa_irdy  : buffer std_logic;
+		hwsa_frm   : buffer std_logic;
 		hwsa_trdy  : in  std_logic := '1';
-		hwsa_end   : in  std_logic := '1';
-		hwtyp_irdy : buffer std_logic;
+		hwtyp_frm  : buffer std_logic;
 		hwtyp_trdy : in  std_logic := '1';
-		hwtyp_end  : in  std_logic := '1';
-		pl_irdy    : out std_logic;
+		pl_frm     : out std_logic;
 		pl_trdy    : in  std_logic := '1';
 
 		fcs_sb     : out std_logic;
@@ -58,7 +55,6 @@ entity eth_rx is
 end;
 
 architecture def of eth_rx is
-	signal pream_vld : std_logic;
 begin
 	mii_pre_e : entity hdl4fpga.mii_rxpre
 	port map (
@@ -66,36 +62,33 @@ begin
 		mii_frm  => mii_frm,
 		mii_irdy => mii_irdy,
 		mii_data => mii_data,
-		mii_pre  => pream_vld);
+		mii_pre  => dll_frm);
 
 	serlzr_i : entity hdl4fpga.serlzr
 	port map (
 		src_clk   => mii_clk,
-		src_frm   => pream_vld,
+		src_frm   => dll_frm,
 		src_irdy  => mii_irdy,
 		src_trdy  => mii_trdy,
 		src_data  => mii_data,
 		dst_clk   => mii_clk,
-		dst_frm   => dll_frm,
 		dst_irdy  => dll_irdy,
 		dst_trdy  => dll_trdy,
 		dst_data  => dll_data);
 
 	dllrx_i : entity hdl4fpga.dll_rx
 	port map (
-		mii_clk    => mii_clk,
-		dll_frm    => dll_frm,
-		dll_irdy   => dll_irdy,
-		dll_trdy   => open,
-		dll_data   => dll_data,
+		mii_clk   => mii_clk,
+		dll_frm   => dll_frm,
+		dll_irdy  => dll_irdy,
+		dll_data  => dll_data,
 
-		hwda_irdy  => hwda_irdy,
-		hwda_end   => hwda_end,
-		hwsa_irdy  => hwsa_irdy,
-		hwtyp_irdy => hwtyp_irdy,
-		pl_irdy    => pl_irdy,
-		crc_sb     => fcs_sb,
-		crc_equ    => fcs_vld,
-		crc_rem    => fcs_rem);
+		hwda_frm  => hwda_frm,
+		hwsa_frm  => hwsa_frm,
+		hwtyp_frm => hwtyp_frm,
+		pl_frm    => pl_frm,
+		crc_sb    => fcs_sb,
+		crc_equ   => fcs_vld,
+		crc_rem   => fcs_rem);
 
 end;

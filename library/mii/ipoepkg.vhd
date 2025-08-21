@@ -196,11 +196,11 @@ package body ipoepkg is
 		constant format : string)
 		return natural is
 		variable retval : natural;
-		variable value  : natural;
+		variable value  : integer;
 	begin
 		for i in 0 to format'length-1 loop
-			value := hdo(format)**('['&natural'image(i)&']');
-			exit when value=0;
+			value := hdo(format)**('['&natural'image(i)&"]=-1");
+			exit when value <= 0;
 			retval := retval + value;
 		end loop;
 		return retval;
