@@ -44,7 +44,7 @@ begin
 		variable cy   : std_logic;
 	begin
 		if rising_edge(mii_clk) then
-			if mii_frm='0' then
+			if (mii_frm or mii_irdy)='0' then
 				vld  := '0';
 				cy   := '0';
 				data := (others => '0');

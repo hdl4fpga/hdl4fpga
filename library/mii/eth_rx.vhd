@@ -35,7 +35,7 @@ entity eth_rx is
 		mii_data : in  std_logic_vector;
 
 		dll_frm  : buffer std_logic;
-		dll_irdy : buffer std_logic;
+		dll_irdy : buffer std_logic := '0';
 		dll_trdy : in  std_logic := '1';
 		dll_data : buffer std_logic_vector;
 

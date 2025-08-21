@@ -34,8 +34,8 @@ entity frame_decode is
         size  : natural := 8);
 	port (
 		clk  : in  std_logic := '0';
-		frm  : in  std_logic := '1';
-		irdy : in  std_logic := '1';
+		frm  : in  std_logic := '0';
+		irdy : in  std_logic := '0';
 		trdy : out std_logic := '1';
 		act  : out std_logic_vector(0 to length(frame)));
 end;
@@ -73,19 +73,19 @@ begin
 
 	begin
 		if rising_edge(clk) then
-			if (frm and irdy)='0' then
-				step  := 0;
-				cntr  := (others => '0');
-				cntr  := cntr-total;
-				limit := boundary(step);
+			if frm='0' then
+				if irdy='0' then
+					step  := 0;
+					cntr  := (others => '0');
+					cntr  := cntr-total;
+					limit := boundary(step);
+				end if;
 			elsif (irdy and cntr(0))='1' then
 				if limit=cntr then
 					step  := step + 1;
 					limit := boundary(step);
 				end if;
-				if irdy='1' then
-					cntr := cntr + 1;
-				end if;
+				cntr := cntr + 1;
 			end if;
 		end if;
 		act <= (others => '0');

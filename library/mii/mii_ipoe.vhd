@@ -28,11 +28,13 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
+	generic (
+		macda : std_logic_vector := x"00_40_00_01_02_03");
 	port (
 		mii_clk       : in  std_logic;
 
 		miirx_frm     : in  std_logic;
-		miirx_irdy    : in  std_logic := '1';
+		miirx_irdy    : in  std_logic := '0';
 		miirx_trdy    : out std_logic := '1';
 		miirx_data    : in  std_logic_vector;
 		fcs_sb        : out std_logic;
@@ -83,7 +85,44 @@ begin
 		fcs_sb   => fcs_sb,
 		fcs_vld  => fcs_vld);
 
-	tp(1) <= ethtyp_frm;
-	tp(2 to 2+miirx_data'length-1) <= miirx_data;
+	xxx_b : block
+		signal rd_addr : std_logic_vector(1 to unsigned_num_bits(macda'length/miirx_data'length-1));
+		signal rd_data : std_logic_vector(miirx_data'range);
+		signal wr_addr : std_logic_vector(rd_addr'range);
+		signal wr_data : std_logic_vector(miirx_data'range);
+		signal ethda_trdy : std_logic;
+	begin
+		ethda_trdy <= ethda_frm;
+		process (mii_clk)
+			variable rd_cntr : unsigned(0 to rd_addr'length);
+		begin
+			if rising_edge(mii_clk) then
+				if ethda_frm='0' then
+					if ethda_irdy='0' then
+						rd_cntr := (others => '0');
+						rd_cntr := rd_cntr-macda'length/miirx_data'length;
+					end if;
+				elsif (ethda_irdy and ethda_trdy)='1' then
+					rd_cntr := rd_cntr + 1;
+				end if;
+				rd_addr <= std_logic_vector(rd_cntr(rd_addr'range));
+			end if;
+		end process;
+
+		mem_i : entity hdl4fpga.dpram
+		generic map (
+			bitrom  => std_logic_vector(resize(unsigned(reverse(macda,8)), miirx_data'length*2**rd_addr'length)))
+		port map (
+			rd_addr => rd_addr,
+			rd_data => rd_data,
+	
+			wr_clk  => mii_clk,
+			wr_ena  => '0',
+			wr_addr => wr_addr,
+			wr_data => wr_data);
+	tp(2 to 2+miirx_data'length-1) <= rd_data;
+	end block;
+
+	tp(1) <= ethda_frm;
 
 end;

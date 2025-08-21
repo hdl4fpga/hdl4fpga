@@ -97,7 +97,7 @@ begin
 		clkfx => mii_clk);
 	mii_refclk <= not mii_clk;
 
-	ethrx_i : entity hdl4fpga.mii_ipoe
+	miiipoe_i : entity hdl4fpga.mii_ipoe
 	port map (
 		tp       => tp,
 		mii_clk  => mii_rxc,

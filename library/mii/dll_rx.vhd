@@ -34,21 +34,21 @@ entity dll_rx is
 	port (
 		mii_clk  : in  std_logic;
 		dll_frm  : in  std_logic;
-		dll_irdy : in  std_logic;
+		dll_irdy : in  std_logic := '0';
 		dll_trdy : buffer std_logic;
 		dll_data : in  std_logic_vector;
 
 		da_frm   : buffer std_logic := '0';
-		da_irdy  : out  std_logic := '0';
+		da_irdy  : out std_logic := '0';
 		da_trdy  : in  std_logic := '1';
 		sa_frm   : buffer std_logic := '0';
-		sa_irdy  : out  std_logic := '0';
+		sa_irdy  : out std_logic := '0';
 		sa_trdy  : in  std_logic := '1';
 		typ_frm  : buffer std_logic := '0';
-		typ_irdy : out  std_logic := '0';
+		typ_irdy : out std_logic := '0';
 		typ_trdy : in  std_logic := '1';
 		pyl_frm  : buffer std_logic := '0';
-		pyl_irdy : out  std_logic := '0';
+		pyl_irdy : out std_logic := '0';
 		pyl_trdy : in  std_logic := '1';
 
 		crc_sb   : out std_logic;
