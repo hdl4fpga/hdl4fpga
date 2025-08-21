@@ -52,20 +52,21 @@ begin
 		variable state : states;
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
-				case state is
-				when s_init =>
-					crc <= (crc'range => '0');
-				when s_run =>
-					if irdy='0' then
-						crc <= (crc'range => '0');
-					elsif trdy='1' then
-						crc <= not galois_crc(data, not crc, g);
-					end if;
+			if (irdy and trdy)='1' then
+				if frm='1' then
+					crc <= not galois_crc(data, not crc, g);
+				elsif state=s_run then
+					crc <= not galois_crc(data, not crc, g);
+				end if;
+				if frm='0' then
 					state := s_init;
-				end case;
-			elsif (irdy or trdy)='1' then
-				crc <= not galois_crc(data, not crc, g);
+				end if;
+			end if;
+			if frm='0' then
+				if state=s_init then
+					crc <= (crc'range => '0');
+				end if;
+			else
 				state := s_run;
 			end if;
 		end if;
