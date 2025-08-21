@@ -73,7 +73,7 @@ begin
 
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
+			if (frm and irdy)='0' then
 				step  := 0;
 				cntr  := (others => '0');
 				cntr  := cntr-total;

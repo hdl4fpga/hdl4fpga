@@ -36,7 +36,6 @@ entity crc is
 		irdy : in  std_logic := '1';
 		trdy : out std_logic;
 		data : in  std_logic_vector;
-		mode : in  std_logic := '0';
 		crc  : buffer std_logic_vector);
 end;
 
@@ -45,20 +44,16 @@ architecture def of crc is
 begin
 
 	assert g'length mod data'length=0
-	report "Length of g should be a multiplo of data'length"
-	severity FAILURE;
+		report "crc () : length of g should be a multiplo of data'length"
+		severity FAILURE;
 
 	process (clk)
 	begin
 		if rising_edge(clk) then
-			if frm='0' then
+			if (frm and irdy)='0' then
 				crc <= (crc'range => '0');
 			elsif irdy='1' then
-				if mode='1' then
-					crc <= std_logic_vector(unsigned(crc) rol data'length);
-				else
-					crc <= not galois_crc(data, not crc, g);
-				end if;
+				crc <= not galois_crc(data, not crc, g);
 			end if;
 		end if;
 	end process;

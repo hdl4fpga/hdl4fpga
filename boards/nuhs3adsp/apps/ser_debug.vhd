@@ -97,21 +97,21 @@ begin
 		clkfx => mii_clk);
 	mii_refclk <= not mii_clk;
 
-	ethrx_i : entity hdl4fpga.eth_rx
+	ethrx_i : entity hdl4fpga.mii_ipoe
 	port map (
+		tp       => tp,
 		mii_clk  => mii_rxc,
-		mii_frm  => mii_rxdv,
-		mii_irdy => mii_rxdv,
-		mii_data => mii_rxd,
-		hwsa_frm => hwda_frm,
-		dll_data => dll_data);
+		miirx_frm  => mii_rxdv,
+		miirx_irdy => mii_rxdv,
+		miirx_data => mii_rxd);
+
 	mii_txen <= '0';
 	mii_txd <= (others =>'Z');
 
 	ser_clk  <= mii_rxc;
-	ser_frm  <= hwda_frm;
-	ser_irdy <= hwda_frm;
-	ser_data <= mii_rxd;
+	ser_frm  <= tp(1);
+	ser_irdy  <= tp(1);
+	ser_data <= tp(2 to 2+mii_rxd'length-1);
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

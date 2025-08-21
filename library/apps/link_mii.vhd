@@ -144,36 +144,36 @@ begin
 		end if;
 	end process;
 
-	udpdaisy_e : entity hdl4fpga.sio_dayudp
-	generic map (
-		my_mac        => default_mac,
-		default_ipv4a => default_ipv4a)
-	port map (
-		tp         => tp,
-		mii_clk    => mii_txc,
-		dhcpcd_req => dhcpcd_req,
-		dhcpcd_rdy => dhcpcd_rdy,
-		miirx_frm  => miirx_frm,
-		miirx_irdy => miirx_irdy,
-		miirx_data => miirx_data,
-	
-		miitx_frm  => miitx_frm,
-		miitx_irdy => miitx_irdy,
-		miitx_trdy => miitx_trdy,
-		miitx_end  => miitx_end,
-		miitx_data => miitx_data,
-	
-		si_frm     => si_frm,
-		si_irdy    => si_irdy,
-		si_trdy    => si_trdy,
-		si_end     => si_end,
-		si_data    => si_data,
-	
-		so_clk     => mii_txc,
-		so_frm     => so_frm,
-		so_irdy    => so_irdy,
-		so_trdy    => so_trdy,
-		so_data    => so_data);
+	-- udpdaisy_e : entity hdl4fpga.sio_dayudp
+	-- generic map (
+		-- my_mac        => default_mac,
+		-- default_ipv4a => default_ipv4a)
+	-- port map (
+		-- tp         => tp,
+		-- mii_clk    => mii_txc,
+		-- dhcpcd_req => dhcpcd_req,
+		-- dhcpcd_rdy => dhcpcd_rdy,
+		-- miirx_frm  => miirx_frm,
+		-- miirx_irdy => miirx_irdy,
+		-- miirx_data => miirx_data,
+	-- 
+		-- miitx_frm  => miitx_frm,
+		-- miitx_irdy => miitx_irdy,
+		-- miitx_trdy => miitx_trdy,
+		-- miitx_end  => miitx_end,
+		-- miitx_data => miitx_data,
+	-- 
+		-- si_frm     => si_frm,
+		-- si_irdy    => si_irdy,
+		-- si_trdy    => si_trdy,
+		-- si_end     => si_end,
+		-- si_data    => si_data,
+	-- 
+		-- so_clk     => mii_txc,
+		-- so_frm     => so_frm,
+		-- so_irdy    => so_irdy,
+		-- so_trdy    => so_trdy,
+		-- so_data    => so_data);
 	
 	desser_e: entity hdl4fpga.desser
 	port map (

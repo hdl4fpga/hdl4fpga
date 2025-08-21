@@ -90,7 +90,7 @@ begin
 		clk  => uart_clk,
 		frm  => hdlctx_frm,
 		irdy => crc_irdy,
-		mode => hdlctx_end,
+		-- mode => hdlctx_end,
 		data => hdlctx_data,
 		crc  => crc_data);
 
