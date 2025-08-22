@@ -84,11 +84,13 @@ begin
 					cntr := cntr + 1;
 				end if;
 			end if;
+			if (frm or irdy)='0' then -- Initialization
+				step  := 0;
+				cntr  := to_unsigned(2**cntr'length-total, cntr'length);
+				limit := boundary(step);
+			end if;
 			if frm='0' then
 				if irdy='0' then
-					step  := 0;
-					cntr  := to_unsigned(2**cntr'length-total, cntr'length);
-					limit := boundary(step);
 					last  := '0';
 				elsif trdy='1' then
 					last  := '0';

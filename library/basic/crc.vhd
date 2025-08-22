@@ -54,9 +54,11 @@ begin
 			if ((last or frm) and irdy and trdy)='1' then
 				crc <= not galois_crc(data, not crc, g);
 			end if;
+			if (frm or irdy)='0' then
+				crc <= (crc'range => '0');
+			end if;
 			if frm='0' then
 				if irdy='0' then
-					crc <= (crc'range => '0');
 					last := '0';
 				elsif trdy='1' then
 					last := '0';
