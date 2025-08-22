@@ -120,9 +120,9 @@ begin
 			wr_ena  => '0',
 			wr_addr => wr_addr,
 			wr_data => wr_data);
-	tp(2 to 2+miirx_data'length-1) <= rd_data;
+	tp(2 to 2+miirx_data'length-1) <= miirx_data;
 	end block;
 
-	tp(1) <= ethda_frm;
+	tp(1) <= ethsa_frm;
 
 end;

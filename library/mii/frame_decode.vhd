@@ -52,10 +52,11 @@ begin
 			constant psize  : natural := 2**unsigned_num_bits(total-1);
 			variable retval : natural_vector(act'range);
 		begin
+			report natural'image(2*psize);
 			boundary := 2*psize-total;
 			for i in act'range loop
 				if i=act'right then
-					retval(i) := boundary;
+					retval(i) := 0;
 				else
 				report natural'image(boundary);
 					boundary  := hdo(frame)**('['&natural'image(i)&']')/size + boundary;
@@ -71,42 +72,35 @@ begin
 		variable step  : natural range 0 to act'length-1;
 		variable limit : natural range 0 to 2**cntr'length-1;
 
-		type states is (s_init, s_last);
-		variable state : states;
+		variable last : std_logic;
 	begin
 		if rising_edge(clk) then
-			if irdy='1' then
-				if trdy='1' then
-					if frm='1' or state=s_last then
-						if cntr(0)='1' then
-							if limit=cntr then
-								step  := step + 1;
-								limit := boundary(step);
-							end if;
-							cntr := cntr + 1;
-						end if;
+			if ((last or frm) and irdy and trdy)='1' then
+				if cntr(0)='1' then
+					if limit=cntr then
+						step  := step + 1;
+						limit := boundary(step);
 					end if;
-					if frm='0' then
-						state := s_init;
-					end if;
+					cntr := cntr + 1;
 				end if;
-			else
-				state := s_init;
 			end if;
 			if frm='0' then
-				if state=s_init then
+				if irdy='0' then
 					step  := 0;
-					cntr  := (others => '0');
-					cntr  := cntr-total;
+					cntr  := to_unsigned(2**cntr'length-total, cntr'length);
 					limit := boundary(step);
+					last  := '0';
+				elsif trdy='1' then
+					last  := '0';
 				end if;
 			else
-				state := s_last;
+				last := '1';
 			end if;
 		end if;
+		trdy <= frm or last;
+
 		act <= (others => '0');
 		act(step) <= frm;
 	end process;
-	trdy <= frm;
 
 end;

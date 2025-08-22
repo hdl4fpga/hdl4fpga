@@ -81,7 +81,7 @@ begin
 	port map (
 		mii_clk  => mii_clk,
 		dll_frm  => dll_frm,
-		dll_irdy => dll_irdy,
+		dll_irdy => dll_frm,
 		dll_data => dll_data,
 
 		da_frm   => da_frm,

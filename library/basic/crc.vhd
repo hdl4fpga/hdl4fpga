@@ -47,32 +47,25 @@ begin
 		report "crc () : length of g => " & natural'image(g'length) & " should be multiple of data'length => " & natural'image(data'length)
 		severity FAILURE;
 
-	process (clk)
-		type states is (s_init, s_last);
-		variable state : states;
+	process (frm, clk)
+		variable last : std_logic;
 	begin
 		if rising_edge(clk) then
-			if irdy='1' then
-				if trdy='1' then
-					if frm='1' or state=s_last then
-						crc <= not galois_crc(data, not crc, g);
-					end if;
-					if frm='0' then
-						state := s_init;
-					end if;
-				end if;
-			else
-				state := s_init;
+			if ((last or frm) and irdy and trdy)='1' then
+				crc <= not galois_crc(data, not crc, g);
 			end if;
 			if frm='0' then
-				if state=s_init then
+				if irdy='0' then
 					crc <= (crc'range => '0');
+					last := '0';
+				elsif trdy='1' then
+					last := '0';
 				end if;
 			else
-				state := s_last;
+				last := '1';
 			end if;
 		end if;
+		trdy <= frm or last;
 	end process;
-	trdy <= frm;
 
 end;
