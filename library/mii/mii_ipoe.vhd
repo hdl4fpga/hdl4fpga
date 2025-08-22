@@ -91,22 +91,37 @@ begin
 		signal wr_addr : std_logic_vector(rd_addr'range);
 		signal wr_data : std_logic_vector(miirx_data'range);
 		signal ethda_trdy : std_logic;
+
+		alias clk  is mii_clk;
+		alias frm  is ethda_frm;
+		alias irdy is ethda_irdy;
+		alias trdy is ethda_trdy;
+
 	begin
-		ethda_trdy <= ethda_frm;
-		process (mii_clk)
+		process (frm, clk)
 			variable rd_cntr : unsigned(0 to rd_addr'length);
+			variable last : std_logic;
 		begin
-			if rising_edge(mii_clk) then
-				if ethda_frm='0' then
-					if ethda_irdy='0' then
-						rd_cntr := (others => '0');
-						rd_cntr := rd_cntr-macda'length/miirx_data'length;
-					end if;
-				elsif (ethda_irdy and ethda_trdy)='1' then
+			if rising_edge(clk) then
+				if ((last or frm) and irdy and trdy)='1' then
 					rd_cntr := rd_cntr + 1;
+				end if;
+				if (frm or irdy)='0' then
+					rd_cntr := (others => '0');
+					rd_cntr := rd_cntr-macda'length/miirx_data'length;
+				end if;
+				if frm='0' then
+					if irdy='0' then
+						last := '0';
+					elsif trdy='1' then
+						last := '0';
+					end if;
+				else
+					last := '1';
 				end if;
 				rd_addr <= std_logic_vector(rd_cntr(rd_addr'range));
 			end if;
+			trdy <= frm or last;
 		end process;
 
 		mem_i : entity hdl4fpga.dpram
@@ -116,11 +131,12 @@ begin
 			rd_addr => rd_addr,
 			rd_data => rd_data,
 	
-			wr_clk  => mii_clk,
+			wr_clk  => clk,
 			wr_ena  => '0',
 			wr_addr => wr_addr,
 			wr_data => wr_data);
-	tp(2 to 2+miirx_data'length-1) <= rd_data;
+
+		tp(2 to 2+miirx_data'length-1) <= rd_data;
 	end block;
 
 	tp(1) <= ethda_frm;
