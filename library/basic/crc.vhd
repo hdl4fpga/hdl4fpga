@@ -48,26 +48,28 @@ begin
 		severity FAILURE;
 
 	process (clk)
-		type states is (s_init, s_run);
+		type states is (s_init, s_last);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
-			if (irdy and trdy)='1' then
-				if frm='1' then
-					crc <= not galois_crc(data, not crc, g);
-				elsif state=s_run then
-					crc <= not galois_crc(data, not crc, g);
+			if irdy='1' then
+				if trdy='1' then
+					if frm='1' or state=s_last then
+						crc <= not galois_crc(data, not crc, g);
+					end if;
+					if frm='0' then
+						state := s_init;
+					end if;
 				end if;
-				if frm='0' then
-					state := s_init;
-				end if;
+			else
+				state := s_init;
 			end if;
 			if frm='0' then
 				if state=s_init then
 					crc <= (crc'range => '0');
 				end if;
 			else
-				state := s_run;
+				state := s_last;
 			end if;
 		end if;
 	end process;

@@ -31,12 +31,12 @@ use hdl4fpga.ipoepkg.all;
 entity frame_decode is
     generic (
         frame : string := hdo(frames)**".format.mac";
-        size  : natural := 8);
+        size  : natural := 4);
 	port (
 		clk  : in  std_logic := '0';
 		frm  : in  std_logic := '0';
 		irdy : in  std_logic := '0';
-		trdy : out std_logic := '1';
+		trdy : buffer std_logic := '0';
 		act  : out std_logic_vector(0 to length(frame)));
 end;
 
@@ -69,23 +69,39 @@ begin
 		constant boundary : natural_vector := boundaries;
 		variable cntr  : unsigned(0 to unsigned_num_bits(total-1)) := (others => '0');
 		variable step  : natural range 0 to act'length-1;
-		variable limit : natural;
+		variable limit : natural range 0 to 2**cntr'length-1;
 
+		type states is (s_init, s_last);
+		variable state : states;
 	begin
 		if rising_edge(clk) then
+			if irdy='1' then
+				if trdy='1' then
+					if frm='1' or state=s_last then
+						if cntr(0)='1' then
+							if limit=cntr then
+								step  := step + 1;
+								limit := boundary(step);
+							end if;
+							cntr := cntr + 1;
+						end if;
+					end if;
+					if frm='0' then
+						state := s_init;
+					end if;
+				end if;
+			else
+				state := s_init;
+			end if;
 			if frm='0' then
-				if irdy='0' then
+				if state=s_init then
 					step  := 0;
 					cntr  := (others => '0');
 					cntr  := cntr-total;
 					limit := boundary(step);
 				end if;
-			elsif (irdy and cntr(0))='1' then
-				if limit=cntr then
-					step  := step + 1;
-					limit := boundary(step);
-				end if;
-				cntr := cntr + 1;
+			else
+				state := s_last;
 			end if;
 		end if;
 		act <= (others => '0');
