@@ -91,6 +91,8 @@ begin
 		signal wr_addr : std_logic_vector(rd_addr'range);
 		signal wr_data : std_logic_vector(miirx_data'range);
 		signal ethda_trdy : std_logic;
+		signal equ : std_logic;
+		signal xxx : std_logic;
 
 		alias clk  is mii_clk;
 		alias frm  is ethda_frm;
@@ -136,9 +138,49 @@ begin
 			wr_addr => wr_addr,
 			wr_data => wr_data);
 
-		tp(2 to 2+miirx_data'length-1) <= rd_data;
+		process (frm, irdy, trdy, clk)
+			variable last : std_logic;
+		begin
+			if rising_edge(clk) then
+				if ((last or frm) and irdy and trdy)='1' then
+					if rd_data/=miirx_data then
+						equ <= '0';
+					end if;
+				end if;
+				if (frm or irdy)='0' then
+					equ <= '0';
+				end if;
+				if frm='0' then
+					if irdy='0' then
+						last := '0';
+					elsif trdy='1' then
+						last := '0';
+					end if;
+				else
+					if last='0' then
+						equ <= '1';
+					end if;
+					last := '1';
+				end if;
+			end if;
+			trdy <= frm or last;
+		end process;
+
+		process (equ, frm, miirx_frm, clk)
+			variable q : std_logic;
+		begin
+			if rising_edge(clk) then
+				if equ='1' then
+					q := not frm;
+				elsif miirx_frm='0' then
+					q := '0';
+				end if;
+			end if;
+			tp(1) <= ((q or equ) and not frm) and miirx_frm;
+		end process;
+
+		tp(2 to 2+miirx_data'length-1) <= miirx_data;
 	end block;
 
-	tp(1) <= ethda_frm;
 
 end;
