@@ -47,7 +47,7 @@ begin
 	sl_irdy <= mr_irdy;
 	mr_trdy <= sl_trdy;
 
-	process (mr_frm, clk)
+	process (mr_frm, mr_irdy, clk)
 		variable last : std_logic;
 		variable cy : std_logic;
 	begin
@@ -55,15 +55,12 @@ begin
 			if ((last or mr_frm) and mr_irdy and sl_trdy)='1' then
 				if mr_data/=sl_data then
 					cy := '0';
+				elsif last='0' then
+					cy := '1';
 				end if;
 			end if;
 			if (mr_frm or mr_irdy)='0' then
-				if last='1' then
-					equ <= cy;
-				else
-					equ <= '0';
-				end if;
-				cy := '1';
+				cy := '0';
 			end if;
 			if mr_frm='0' then
 				if mr_irdy='0' then
@@ -71,11 +68,11 @@ begin
 				elsif sl_trdy='1' then
 					last := '0';
 				end if;
-			else
+			elsif mr_irdy='1' then
 				last := '1';
 			end if;
-			-- equ <= cy when mr_data=sl_data else '0'; 
 		end if;
+		equ <= cy and not mr_frm and not mr_irdy and last;
 	end process;
 
 end;

@@ -95,7 +95,7 @@ begin
 				elsif trdy='1' then
 					last  := '0';
 				end if;
-			else
+			elsif irdy='1' then
 				last := '1';
 			end if;
 		end if;

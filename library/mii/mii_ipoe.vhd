@@ -158,7 +158,7 @@ begin
 				end if;
    			end if;
    		end process;
-		tp(1) <= q and miirx_frm;
+		tp(1) <= (equ or q) and miirx_frm;
 		tp(2 to 2+miirx_data'length-1) <= miirx_data;
 	end block;
 

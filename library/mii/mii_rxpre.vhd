@@ -66,7 +66,7 @@ begin
 					end loop;
 				end if;
 			end if;
+			mii_pre <= mii_frm and vld;
 		end if;
-		mii_pre <= mii_frm and vld;
 	end process;
 end;
