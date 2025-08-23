@@ -28,48 +28,54 @@ use hdl4fpga.base.all;
 
 entity sio_cmp is
     port (
-        clk   : in  std_logic;
-        frm   : in  std_logic;
-		irdy1 : in  std_logic;
-		trdy1 : out std_logic;
-		data1 : in  std_logic_vector;
-		irdy2 : in  std_logic;
-		trdy2 : out std_logic;
-        data2 : in  std_logic_vector;
-		equ12 : buffer std_logic);
+		clk     : in  std_logic;
+		mr_frm  : in  std_logic := '0';
+		mr_irdy : in  std_logic := '0';
+		mr_trdy : out std_logic := '1';
+		mr_data : in  std_logic_vector;
+		sl_frm  : out std_logic := '0';
+		sl_irdy : out std_logic := '0';
+		sl_trdy : in  std_logic := '1';
+		sl_data : in  std_logic_vector;
+		equ     : buffer std_logic := '0');
 end;
 
 architecture def of sio_cmp is
-	signal cy   : std_logic;
-	signal irdy : std_logic;
-	signal trdy : std_logic;
 begin
 
-	irdy <= irdy1 and irdy2;
-	process (frm, clk)
+	sl_frm  <= mr_frm;
+	sl_irdy <= mr_irdy;
+	mr_trdy <= sl_trdy;
+
+	process (mr_frm, clk)
 		variable last : std_logic;
+		variable cy : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ((last or frm) and irdy and trdy)='1' then
-				cy <= equ12;
+			if ((last or mr_frm) and mr_irdy and sl_trdy)='1' then
+				if mr_data/=sl_data then
+					cy := '0';
+				end if;
 			end if;
-			if (frm or irdy)='0' then
-				cy <= '1';
+			if (mr_frm or mr_irdy)='0' then
+				if last='1' then
+					equ <= cy;
+				else
+					equ <= '0';
+				end if;
+				cy := '1';
 			end if;
-			if frm='0' then
-				if irdy='0' then
+			if mr_frm='0' then
+				if mr_irdy='0' then
 					last := '0';
-				elsif trdy='1' then
+				elsif sl_trdy='1' then
 					last := '0';
 				end if;
 			else
 				last := '1';
 			end if;
+			-- equ <= cy when mr_data=sl_data else '0'; 
 		end if;
-		trdy <= frm or last;
 	end process;
-	trdy1 <= irdy;
-	trdy2 <= irdy;
-	equ12 <= cy when data1=data2 else '0'; 
 
 end;

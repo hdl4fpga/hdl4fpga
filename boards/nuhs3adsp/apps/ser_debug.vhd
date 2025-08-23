@@ -110,7 +110,7 @@ begin
 
 	ser_clk  <= mii_rxc;
 	ser_frm  <= tp(1);
-	ser_irdy  <= tp(1);
+	ser_irdy <= tp(1);
 	ser_data <= tp(2 to 2+mii_rxd'length-1);
 
 	ser_debug_e : entity hdl4fpga.ser_debug

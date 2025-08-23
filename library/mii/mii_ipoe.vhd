@@ -91,7 +91,8 @@ begin
 		signal wr_addr : std_logic_vector(rd_addr'range);
 		signal wr_data : std_logic_vector(miirx_data'range);
 		signal ethda_trdy : std_logic;
-		signal equ12 : std_logic;
+		signal equ : std_logic;
+		signal q : std_logic;
 
 		alias clk  is mii_clk;
 		alias frm  is ethda_frm;
@@ -99,6 +100,7 @@ begin
 		alias trdy is ethda_trdy;
 
 	begin
+
 		process (frm, clk)
 			variable rd_cntr : unsigned(0 to rd_addr'length);
 			variable last : std_logic;
@@ -137,24 +139,27 @@ begin
 			wr_addr => wr_addr,
 			wr_data => wr_data);
 
-	cmp_i : entity hdl4fpga.sio_cmp
-	port map (
-		clk   => clk,
-		frm   => miirx_frm,
-		irdy1 => irdy,
-		irdy2 => irdy,
-		data1 => miirx_data,
-		data2 => rd_data,
-		equ12 => equ12);
+    	cmp_i : entity hdl4fpga.sio_cmp
+    	port map (
+    		clk     => clk,
+    		mr_frm  => frm,
+    		mr_irdy => irdy,
+    		mr_data => miirx_data,
+    		sl_data => rd_data,
+    		equ     => equ);
 
-		process (clk)
-		begin
-			if rising_edge(clk) then
-			end if;
-		end process;
-		tp(1) <= equ12 and miirx_frm;
+   		process (clk)
+   		begin
+   			if rising_edge(clk) then
+				if (miirx_frm or miirx_irdy)='0' then
+					q <= '0';
+				elsif equ='1' then
+					q <= '1';
+				end if;
+   			end if;
+   		end process;
+		tp(1) <= q and miirx_frm;
 		tp(2 to 2+miirx_data'length-1) <= miirx_data;
 	end block;
-
 
 end;
