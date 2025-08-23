@@ -21,6 +21,7 @@
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 architecture nuhs3adsp_serdebug of testbench is
 	constant ddr_std  : positive := 1;
@@ -261,14 +262,26 @@ begin
 
 	sw1 <= '1', '0' after 1 us;
 
---	eth_e: entity hdl4fpga.mii_rom
---	generic map (
---		mem_data => reverse(icmppkt,8))
---	port map (
---		mii_txc  => mii_rxc,
---		mii_txen => arp_req,
---		mii_txdv => eth_txen,
---		mii_txd  => eth_txd);
+	xxx_b : block
+		signal addr : std_logic_vector(0 to 9);
+	begin
+		process (clk)
+			variable cntr : unsigned(0 to 10);
+		begin
+			if rising_edge(clk) then
+				cntr := (others => '0');
+				cntr := cntr - 
+			end if;
+		end process;
+	
+		eth_e: entity hdl4fpga.rom
+		generic map (
+			mem_data => reverse(icmppkt,8))
+		port map (
+			addr => addr,
+			data => eth_txd);
+
+	end block;
 --
 --	process (mii_rxc)
 --	begin
