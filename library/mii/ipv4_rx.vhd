@@ -24,60 +24,88 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 entity ipv4_rx is
 	port (
-		mii_clk        : in  std_logic;
+		mii_clk     : in  std_logic;
+		ipv4_frm    : in  std_logic := '0';
+		ipv4_irdy   : in  std_logic := '0';
+		ipv4_trdy   : out std_logic := '1';
+		ipv4_data   : in  std_logic_vector;
 
-		ipv4_frm       : in  std_logic;
-		ipv4_irdy      : in  std_logic;
-		ipv4_data      : in  std_logic_vector;
+		verihl_frm   : buffer std_logic := '0';
+		verihl_irdy  : out std_logic := '0';
+		verihl_trdy  : in  std_logic := '1';
+		tos_frm      : buffer std_logic := '0';
+		tos_irdy     : out std_logic := '0';
+		tos_trdy     : in  std_logic := '1';
+		length_frm   : buffer std_logic := '0';
+		length_irdy  : out std_logic := '0';
+		length_trdy  : in  std_logic := '1';
+		ident_frm    : buffer std_logic := '0';
+		ident_irdy   : out std_logic := '0';
+		ident_trdy   : in  std_logic := '1';
+		flgsfrg_frm  : buffer std_logic := '0';
+		flgsfrg_irdy : out std_logic := '0';
+		flgsfrg_trdy : in  std_logic := '1';
+		ttl_frm      : buffer std_logic := '0';
+		ttl_irdy     : out std_logic := '0';
+		ttl_trdy     : in  std_logic := '1';
+		proto_frm    : buffer std_logic := '0';
+		proto_irdy   : out std_logic := '0';
+		proto_trdy   : in  std_logic := '1';
+		chksum_frm   : buffer std_logic := '0';
+		chksum_irdy  : out std_logic := '0';
+		chksum_trdy  : in  std_logic := '1';
+		sa_frm       : buffer std_logic := '0';
+		sa_irdy      : out std_logic := '0';
+		sa_trdy      : in  std_logic := '1';
+		da_frm       : buffer std_logic := '0';
+		da_irdy      : out std_logic := '0';
+		da_trdy      : in  std_logic := '1';
 
-		ipv4len_irdy   : out std_logic;
-		ipv4da_frm     : buffer std_logic;
-		ipv4da_irdy    : out std_logic;
-		ipv4sa_irdy    : out std_logic;
-		ipv4proto_irdy : out std_logic;
-
-		pl_frm         : buffer std_logic;
-		pl_irdy        : out std_logic);
+		pyl_frm      : buffer std_logic := '0';
+		pyl_irdy     : out std_logic := '0';
+		pyl_trdy     : in  std_logic := '1');
 
 end;
 
 architecture def of ipv4_rx is
-
-	signal frm_ptr       : std_logic_vector(0 to unsigned_num_bits(summation(ipv4hdr_frame)/ipv4_data'length-1));
-	signal ipv4len_frm   : std_logic;
-	signal ipv4sa_frm    : std_logic;
-	signal ipv4proto_frm : std_logic;
-
 begin
 
-	process (mii_clk)
-		variable cntr : unsigned(frm_ptr'range);
-	begin
-		if rising_edge(mii_clk) then
-			if ipv4_frm='0' then
-				cntr := to_unsigned(summation(ipv4hdr_frame)/ipv4_data'length-1, cntr'length);
-			elsif cntr(0)='0' and ipv4_irdy='1' then
-				cntr := cntr - 1;
-			end if;
-			frm_ptr <= std_logic_vector(cntr);
-		end if;
-	end process;
+	decode_i : entity hdl4fpga.frame_decode
+	generic map (
+		frame => hdo(frames)**".format.ipv4",
+		size  => ipv4_data'length)
+	port map (
+		clk     => mii_clk,
+		frm     => ipv4_frm,
+		irdy    => ipv4_irdy,
+		act(0)  => verihl_frm,
+		act(1)  => tos_frm,
+		act(2)  => length_frm,
+		act(3)  => ident_frm,
+		act(4)  => flgsfrg_frm,
+		act(5)  => ttl_frm,
+		act(6)  => proto_frm,
+		act(7)  => chksum_frm,
+		act(8)  => sa_frm,
+		act(9)  => da_frm,
+		act(10) => pyl_frm);
 
-	ipv4len_frm   <= ipv4_frm and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_len);
-	ipv4sa_frm    <= ipv4_frm and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_sa);
-	ipv4da_frm    <= ipv4_frm and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_da);
-	ipv4proto_frm <= ipv4_frm and frame_decode(frm_ptr, reverse(ipv4hdr_frame), ipv4_data'length, ipv4_proto);
-	pl_frm        <= ipv4_frm and frm_ptr(0);
-
-	ipv4len_irdy   <= ipv4_irdy and ipv4len_frm;
-	ipv4sa_irdy    <= ipv4_irdy and ipv4sa_frm;
-	ipv4da_irdy    <= ipv4_irdy and ipv4da_frm;
-	ipv4proto_irdy <= ipv4_irdy and ipv4proto_frm;
-	pl_irdy        <= ipv4_irdy and pl_frm;
+    verihl_irdy  <= verihl_frm;  
+    tos_irdy     <= tos_frm;
+    length_irdy  <= length_frm;
+    ident_irdy   <= ident_frm;
+    flgsfrg_irdy <= flgsfrg_frm;
+    ttl_irdy     <= ttl_frm;
+    proto_irdy   <= proto_frm;
+    chksum_irdy  <= chksum_frm;
+    sa_irdy      <= sa_frm;
+    da_irdy      <= da_frm;
+    pyl_irdy     <= pyl_frm;
 
 end;

@@ -62,8 +62,8 @@ package ipoepkg is
     			"      id:16,"      &
     			"     seq:16},"     &
     		"udp:{"                 &
-    			"  srcprt:16,"      &
-    			"  dstprt:16,"      &
+    			"      sp:16,"      &
+    			"      dp:16,"      &
     			"  length:16,"      &
     			"  chksum:16},"     &
     		"dhcp:{"                &

@@ -60,6 +60,7 @@ architecture def of mii_ipoe is
 	signal ethpyl_frm  : std_logic;
 	signal ethpyl_irdy : std_logic;
 
+	signal ipv4da_frm  : std_logic;
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -158,8 +159,16 @@ begin
 				end if;
    			end if;
    		end process;
-		tp(1) <= (equ or q) and miirx_frm;
+		-- tp(1) <= (equ or q) and miirx_frm;
 		tp(2 to 2+miirx_data'length-1) <= miirx_data;
 	end block;
 
+	ipv4rx_i : entity hdl4fpga.ipv4_rx
+	port map (
+		mii_clk   => mii_clk,
+		ipv4_frm  => ethpyl_frm,
+		ipv4_irdy => ethpyl_irdy,
+		ipv4_data => miirx_data,
+		da_frm    => ipv4da_frm);
+	tp(1) <= ipv4da_frm;
 end;

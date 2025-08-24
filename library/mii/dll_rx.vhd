@@ -35,7 +35,7 @@ entity dll_rx is
 		mii_clk  : in  std_logic;
 		dll_frm  : in  std_logic;
 		dll_irdy : in  std_logic := '0';
-		dll_trdy : buffer std_logic;
+		dll_trdy : buffer std_logic := '0';
 		dll_data : in  std_logic_vector;
 
 		da_frm   : buffer std_logic := '0';
