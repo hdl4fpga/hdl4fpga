@@ -88,19 +88,19 @@ begin
 	xxx_b : block
 		signal equ : std_logic;
 		signal q : std_logic;
+		signal cmp_data : std_logic_vector(miirx_data'range);
 
 	begin
 
 		mem_i : entity hdl4fpga.sio_ram
 	   	generic map (
 			bitdata => reverse(macda,8))
-		port (
+		port map (
 			si_data => miirx_data,
 			so_clk  => mii_clk,
 			so_frm  => ethda_frm,
 			so_irdy => ethda_irdy,
-			so_data => cmp_data)
-		end;
+			so_data => cmp_data);
 
 		cmp_i : entity hdl4fpga.sio_cmp
 		port map (
@@ -121,8 +121,8 @@ begin
 				end if;
    			end if;
    		end process;
+
 		-- tp(1) <= (equ or q) and miirx_frm;
-		tp(2 to 2+miirx_data'length-1) <= miirx_data;
 	end block;
 
 	ipv4rx_i : entity hdl4fpga.ipv4_rx
@@ -133,4 +133,5 @@ begin
 		ipv4_data => miirx_data,
 		da_frm    => ipv4da_frm);
 	tp(1) <= ipv4da_frm;
+	tp(2 to 2+miirx_data'length-1) <= miirx_data;
 end;

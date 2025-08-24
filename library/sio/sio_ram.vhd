@@ -45,9 +45,7 @@ end;
 
 architecture def of sio_ram is
 	signal rd_addr : std_logic_vector(1 to unsigned_num_bits(bitdata'length/so_data'length-1));
-	signal rd_data : std_logic_vector(so_data'range);
 	signal wr_addr : std_logic_vector(rd_addr'range);
-	signal wr_data : std_logic_vector(si_data'range);
 	signal wr_ena  : std_logic;
 
 begin
@@ -105,7 +103,7 @@ begin
 			end if;
 			wr_addr <= std_logic_vector(cntr(rd_addr'range));
 		end if;
-		si_trdy <=  si_frm or last;
+		si_trdy <= (si_frm or last);
 		wr_ena  <= (si_frm or last) and si_irdy;
 	end process;
 
@@ -114,11 +112,11 @@ begin
 		bitdata  => std_logic_vector(resize(unsigned(bitdata), so_data'length*2**rd_addr'length)))
 	port map (
 		rd_addr => rd_addr,
-		rd_data => rd_data,
+		rd_data => so_data,
 
 		wr_clk  => si_clk,
 		wr_ena  => wr_ena,
 		wr_addr => wr_addr,
-		wr_data => wr_data);
+		wr_data => si_data);
 
 end;
