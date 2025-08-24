@@ -206,7 +206,7 @@ begin
 	
 		eth_e: entity hdl4fpga.rom
 		generic map (
-			bitrom => reverse(bitrom,8))
+			bitdata => reverse(bitrom,8))
 		port map (
 			addr => std_logic_vector(addr),
 			data => mii_rxd);

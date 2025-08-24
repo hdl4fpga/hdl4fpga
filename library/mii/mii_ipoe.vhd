@@ -86,71 +86,34 @@ begin
 		fcs_vld  => fcs_vld);
 
 	xxx_b : block
-		signal rd_addr : std_logic_vector(1 to unsigned_num_bits(macda'length/miirx_data'length-1));
-		signal rd_data : std_logic_vector(miirx_data'range);
-		signal wr_addr : std_logic_vector(rd_addr'range);
-		signal wr_data : std_logic_vector(miirx_data'range);
-		signal ethda_trdy : std_logic;
 		signal equ : std_logic;
 		signal q : std_logic;
 
-		alias clk  is mii_clk;
-		alias frm  is ethda_frm;
-		alias irdy is ethda_irdy;
-		alias trdy is ethda_trdy;
-
 	begin
 
-		process (frm, clk)
-			variable rd_cntr : unsigned(0 to rd_addr'length);
-			variable last : std_logic;
-		begin
-			if rising_edge(clk) then
-				if ((last or frm) and irdy and trdy)='1' then
-					rd_cntr := rd_cntr + 1;
-				end if;
-				if (frm or irdy)='0' then
-					rd_cntr := (others => '0');
-					rd_cntr := rd_cntr-macda'length/miirx_data'length;
-				end if;
-				if frm='0' then
-					if irdy='0' then
-						last := '0';
-					elsif trdy='1' then
-						last := '0';
-					end if;
-				else
-					last := '1';
-				end if;
-				rd_addr <= std_logic_vector(rd_cntr(rd_addr'range));
-			end if;
-			trdy <= frm or last;
-		end process;
+		mem_i : entity hdl4fpga.sio_ram
+	   	generic map (
+			bitdata => reverse(macda,8))
+		port (
+			si_data => miirx_data,
+			so_clk  => mii_clk,
+			so_frm  => ethda_frm,
+			so_irdy => ethda_irdy,
+			so_data => cmp_data)
+		end;
 
-		mem_i : entity hdl4fpga.dpram
-		generic map (
-			bitdata  => std_logic_vector(resize(unsigned(reverse(macda,8)), miirx_data'length*2**rd_addr'length)))
+		cmp_i : entity hdl4fpga.sio_cmp
 		port map (
-			rd_addr => rd_addr,
-			rd_data => rd_data,
-	
-			wr_clk  => clk,
-			wr_ena  => '0',
-			wr_addr => wr_addr,
-			wr_data => wr_data);
+			clk     => mii_clk,
+			mr_frm  => ethda_frm,
+			mr_irdy => ethda_irdy,
+			mr_data => miirx_data,
+			sl_data => cmp_data,
+			equ     => equ);
 
-    	cmp_i : entity hdl4fpga.sio_cmp
-    	port map (
-    		clk     => clk,
-    		mr_frm  => frm,
-    		mr_irdy => irdy,
-    		mr_data => miirx_data,
-    		sl_data => rd_data,
-    		equ     => equ);
-
-   		process (clk)
+   		process (mii_clk)
    		begin
-   			if rising_edge(clk) then
+   			if rising_edge(mii_clk) then
 				if (miirx_frm or miirx_irdy)='0' then
 					q <= '0';
 				elsif equ='1' then

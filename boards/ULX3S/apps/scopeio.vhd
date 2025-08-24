@@ -733,7 +733,7 @@ begin
 		rom_e : entity hdl4fpga.rom
 		generic map (
 			latency => 2,
-			bitrom => funtab(size => 2**addr'length, resolution => input_sample'length))
+			bitdata => funtab(size => 2**addr'length, resolution => input_sample'length))
 		port map (
 			clk => input_clk,
 			addr => std_logic_vector(addr),
