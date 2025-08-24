@@ -54,6 +54,7 @@ architecture def of mii_ipoe is
 	signal ethda_frm   : std_logic;
 	signal ethda_irdy  : std_logic;
 	signal ethda_equ   : std_logic;
+	signal bcstda_equ  : std_logic;
 	signal ethsa_frm   : std_logic;
 	signal ethsa_irdy  : std_logic;
 	signal ethtyp_frm  : std_logic;
@@ -62,6 +63,12 @@ architecture def of mii_ipoe is
 	signal arptyp_equ  : std_logic;
 	signal ethpyl_frm  : std_logic;
 	signal ethpyl_irdy : std_logic;
+
+	signal arprx_frm  : std_logic;
+	alias  arprx_irdy is arprx_frm;
+	signal arprx_data : std_logic_vector(miirx_data'range);
+	signal arptha_frm  : std_logic;
+	signal arptpa_frm  : std_logic;
 
 	signal ipv4rx_frm  : std_logic;
 	alias  ipv4rx_irdy is ipv4rx_frm;
@@ -94,6 +101,16 @@ begin
 		fcs_sb   => fcs_sb,
 		fcs_vld  => fcs_vld);
 
+	bcstda_cmp_i : entity hdl4fpga.mii_cmp
+   	generic map (
+		bitdata => reverse(x"ff_ff_ff_ff_ff_ff",8))
+	port map (
+		mii_clk => mii_clk,
+		frm     => ethda_frm,
+		irdy    => ethda_irdy,
+		data    => miirx_data,
+		equ     => bcstda_equ);
+
 	ethda_cmp_i : entity hdl4fpga.mii_cmp
    	generic map (
 		bitdata => reverse(macda,8))
@@ -114,6 +131,39 @@ begin
 		data    => miirx_data,
 		equ     => arptyp_equ);
 
+	process (mii_clk)
+		variable da_vld  : std_logic;
+		variable typ_vld : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if (miirx_frm or miirx_irdy)='0' then
+				da_vld  := '0';
+				typ_vld := '0';
+			else
+				if (not da_vld and ethda_equ)='1' then
+					da_vld := '1';
+				end if;
+				if (not da_vld and bcstda_equ)='1' then
+					da_vld := '1';
+				end if;
+				if (not typ_vld and arptyp_equ)='1' then
+					typ_vld := '1';
+				end if;
+			end if;
+			arprx_frm  <= ethpyl_frm and da_vld and typ_vld;
+			arprx_data <= miirx_data;
+		end if;
+	end process;
+
+	arprx_i : entity hdl4fpga.arp_rx
+	port map (
+		mii_clk  => mii_clk,
+		arp_frm  => arprx_frm,
+		arp_irdy => arprx_irdy,
+		arp_data => arprx_data,
+		tpa_frm  => arptpa_frm,
+		tha_frm  => arptha_frm);
+
 	ipv4typ_cmp_i : entity hdl4fpga.mii_cmp
    	generic map (
 		bitdata => reverse(hdo(frames)**".data.mac.type.ipv4",8))
@@ -126,7 +176,7 @@ begin
 
 	process (mii_clk)
 		variable da_vld  : std_logic;
-		variable typ_vld  : std_logic;
+		variable typ_vld : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if (miirx_frm or miirx_irdy)='0' then
@@ -136,36 +186,14 @@ begin
 				if (not da_vld and ethda_equ)='1' then
 					da_vld := '1';
 				end if;
-				if (not typ_vld and typ_equ)='1' then
+				if (not da_vld and bcstda_equ)='1' then
+					da_vld := '1';
+				end if;
+				if (not typ_vld and ipv4typ_equ)='1' then
 					typ_vld := '1';
 				end if;
 			end if;
-			ipv4rx_frm  <= ethpyl_frm and da_vld and ipv4typ_vld;
-			ipv4rx_data <= miirx_data;
-		end if;
-	end process;
-
-	process (mii_clk)
-		variable da_vld  : std_logic;
-		variable arptyp_vld  : std_logic;
-		variable ipv4typ_vld : std_logic;
-	begin
-		if rising_edge(mii_clk) then
-			if (miirx_frm or miirx_irdy)='0' then
-				da_vld  := '0';
-				ipv4typ_vld := '0';
-			else
-				if (not da_vld and ethda_equ)='1' then
-					da_vld := '1';
-				end if;
-				if (not ipv4typ_vld and ipv4typ_equ)='1' then
-					ipv4typ_vld := '1';
-				end if;
-				if (not arptyp_vld and arptyp_equ)='1' then
-					arptyp_vld := '1';
-				end if;
-			end if;
-			ipv4rx_frm  <= ethpyl_frm and da_vld and ipv4typ_vld;
+			ipv4rx_frm  <= ethpyl_frm and da_vld and typ_vld;
 			ipv4rx_data <= miirx_data;
 		end if;
 	end process;
@@ -177,6 +205,6 @@ begin
 		ipv4_irdy => ipv4rx_irdy,
 		ipv4_data => ipv4rx_data,
 		da_frm    => ipv4da_frm);
-	tp(1) <= ipv4da_frm;
+	tp(1) <= arptpa_frm;
 	tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
 end;

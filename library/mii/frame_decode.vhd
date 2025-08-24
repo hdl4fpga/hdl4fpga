@@ -52,15 +52,15 @@ begin
 			constant psize  : natural := 2**unsigned_num_bits(total-1);
 			variable retval : natural_vector(act'range);
 		begin
-			report natural'image(2*psize);
 			boundary := 2*psize-total;
 			for i in act'range loop
+				assert true
+					report "frame_decode.boundaries() : boundary => " & natural'image(boundary)
+					severity note;
 				if i=act'right then
 					retval(i) := 0;
 				else
-				report natural'image(boundary);
 					boundary  := hdo(frame)**('['&natural'image(i)&']')/size + boundary;
-				report natural'image(boundary);
 					retval(i) := (boundary-1);
 				end if;
 			end loop;

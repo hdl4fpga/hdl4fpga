@@ -33,6 +33,7 @@ entity icmp_rx is
 		mii_clk     : in  std_logic;
 		icmp_frm    : in  std_logic := '0';
 		icmp_irdy   : in  std_logic := '0';
+		icmp_trdy   : out std_logic := '0';
 		icmp_data   : in  std_logic_vector;
 
 		type_frm    : buffer std_logic := '0';
@@ -73,10 +74,19 @@ begin
 		act(4)  => seq_frm,
 		act(5)  => pyl_frm);
 
-		type_irdy   <= type_frm;
-		code_irdy   <= code_frm;
-		chksum_irdy <= chksum_frm;
-		id_irdy     <= id_frm;
-		seq_irdy    <= seq_frm;
-		pyl_irdy    <= pyl_frm;
+	type_irdy   <= type_frm;
+	code_irdy   <= code_frm;
+	chksum_irdy <= chksum_frm;
+	id_irdy     <= id_frm;
+	seq_irdy    <= seq_frm;
+	pyl_irdy    <= pyl_frm;
+
+	icmp_trdy <=
+    	type_trdy   when   type_frm='1' else
+    	code_trdy   when   code_frm='1' else
+    	chksum_trdy when chksum_frm='1' else
+    	id_trdy     when     id_frm='1' else
+    	seq_trdy    when    seq_frm='1' else
+    	pyl_trdy    when    pyl_frm='1';
+
 end;
