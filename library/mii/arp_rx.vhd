@@ -112,6 +112,7 @@ begin
     	spa_trdy   when   spa_frm='1' else 
     	tha_trdy   when   tha_frm='1' else 
     	tpa_trdy   when   tpa_frm='1' else 
-    	pyl_trdy   when   pyl_frm='1';
+    	pyl_trdy   when   pyl_frm='1' else
+		'0';
 
 end;

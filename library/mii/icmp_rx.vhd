@@ -87,6 +87,7 @@ begin
     	chksum_trdy when chksum_frm='1' else
     	id_trdy     when     id_frm='1' else
     	seq_trdy    when    seq_frm='1' else
-    	pyl_trdy    when    pyl_frm='1';
+    	pyl_trdy    when    pyl_frm='1' else
+		'0';
 
 end;

@@ -107,7 +107,7 @@ begin
 		sa_trdy  when  sa_frm='1' else
 		typ_trdy when typ_frm='1' else
 		pyl_trdy when pyl_frm='1' else
-		'1';
+		'0';
 
 	da_irdy  <=  da_frm;
 	sa_irdy  <=  sa_frm;

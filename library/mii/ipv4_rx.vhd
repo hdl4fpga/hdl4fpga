@@ -107,4 +107,18 @@ begin
     da_irdy      <= da_frm;
     pyl_irdy     <= pyl_frm;
 
+	ipv4_trdy <=
+		verihl_trdy  when  verihl_frm='1' else
+		tos_trdy     when     tos_frm='1' else
+		length_trdy  when  length_frm='1' else
+		ident_trdy   when   ident_frm='1' else
+		flgsfrg_trdy when flgsfrg_frm='1' else
+		ttl_trdy     when     ttl_frm='1' else
+		proto_trdy   when   proto_frm='1' else
+		chksum_trdy  when  chksum_frm='1' else
+		sa_trdy      when      sa_frm='1' else
+		da_trdy      when      da_frm='1' else
+		pyl_trdy     when     pyl_frm='1' else
+		'0';
+
 end;

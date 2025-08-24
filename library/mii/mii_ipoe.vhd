@@ -205,6 +205,6 @@ begin
 		ipv4_irdy => ipv4rx_irdy,
 		ipv4_data => ipv4rx_data,
 		da_frm    => ipv4da_frm);
-	tp(1) <= arptpa_frm;
+	tp(1) <= arptpa_frm or arptha_frm;
 	tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
 end;
