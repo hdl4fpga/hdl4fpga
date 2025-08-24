@@ -114,6 +114,8 @@ HDL4FPGA__so_data__def = $(LIB_HDL4FPGA)/so_data/def.dat
 HDL4FPGA__so_data = $(LIB_HDL4FPGA)/so_data/_primary.dat
 HDL4FPGA__sio_sin__beh = $(LIB_HDL4FPGA)/sio_sin/beh.dat
 HDL4FPGA__sio_sin = $(LIB_HDL4FPGA)/sio_sin/_primary.dat
+HDL4FPGA__sio_rom__def = $(LIB_HDL4FPGA)/sio_rom/def.dat
+HDL4FPGA__sio_rom = $(LIB_HDL4FPGA)/sio_rom/_primary.dat
 HDL4FPGA__sio_rgtr__def = $(LIB_HDL4FPGA)/sio_rgtr/def.dat
 HDL4FPGA__sio_rgtr = $(LIB_HDL4FPGA)/sio_rgtr/_primary.dat
 HDL4FPGA__sio_ram__def = $(LIB_HDL4FPGA)/sio_ram/def.dat
@@ -372,6 +374,8 @@ HDL4FPGA__base__body = $(LIB_HDL4FPGA)/base/body.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
 HDL4FPGA__barrel__beh = $(LIB_HDL4FPGA)/barrel/beh.dat
 HDL4FPGA__barrel = $(LIB_HDL4FPGA)/barrel/_primary.dat
+HDL4FPGA__arp_tx__def = $(LIB_HDL4FPGA)/arp_tx/def.dat
+HDL4FPGA__arp_tx = $(LIB_HDL4FPGA)/arp_tx/_primary.dat
 HDL4FPGA__arp_decode__def = $(LIB_HDL4FPGA)/arp_decode/def.dat
 HDL4FPGA__arp_decode = $(LIB_HDL4FPGA)/arp_decode/_primary.dat
 HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
@@ -492,6 +496,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__so_data) \
     $(HDL4FPGA__sio_sin__beh) \
     $(HDL4FPGA__sio_sin) \
+    $(HDL4FPGA__sio_rom__def) \
+    $(HDL4FPGA__sio_rom) \
     $(HDL4FPGA__sio_rgtr__def) \
     $(HDL4FPGA__sio_rgtr) \
     $(HDL4FPGA__sio_ram__def) \
@@ -750,6 +756,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__base) \
     $(HDL4FPGA__barrel__beh) \
     $(HDL4FPGA__barrel) \
+    $(HDL4FPGA__arp_tx__def) \
+    $(HDL4FPGA__arp_tx) \
     $(HDL4FPGA__arp_decode__def) \
     $(HDL4FPGA__arp_decode) \
     $(HDL4FPGA__arbiter__mix) \
@@ -858,6 +866,18 @@ $(HDL4FPGA__arp_decode__def) : ../mii/arp_decode.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -93 -work hdl4fpga ../mii/arp_decode.vhd
+
+$(HDL4FPGA__arp_tx) \
+$(HDL4FPGA__arp_tx__def) : ../mii/arp_tx.vhd \
+		$(HDL4FPGA__sio_rom) \
+		$(HDL4FPGA__arp_decode) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/arp_tx.vhd
 
 $(HDL4FPGA__barrel) \
 $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
@@ -2195,6 +2215,15 @@ $(HDL4FPGA__sio_rgtr__def) : ../sio/sio_rgtr.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../sio/sio_rgtr.vhd
+
+$(HDL4FPGA__sio_rom) \
+$(HDL4FPGA__sio_rom__def) : ../sio/sio_rom.vhd \
+		$(HDL4FPGA__rom) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../sio/sio_rom.vhd
 
 $(HDL4FPGA__sio_sin) \
 $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
