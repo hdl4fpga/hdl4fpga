@@ -27,50 +27,49 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
-entity icmprqst_rx is
+entity icmp_rx is
 	port (
 		mii_clk      : in  std_logic;
-		icmp_frm     : in  std_logic;
+		icmp_frm     : in  std_logic := '0';
+		icmp_irdy    : in  std_logic := '0';
 		icmp_data    : in  std_logic_vector;
-		icmp_irdy    : in  std_logic;
 
-		icmptype_frm : buffer std_logic;
-		icmptype_irdy : out std_logic;
-		icmpcode_frm : buffer std_logic;
-		icmpcode_irdy : out std_logic;
-		icmpcksm_frm : buffer std_logic;
-		icmpcksm_irdy : out std_logic;
-		icmppl_frm   : buffer std_logic;
-		icmppl_irdy  : out std_logic);
+		type_frm    : buffer std_logic := '0';
+		type_irdy   : out std_logic := '0';
+		type_trdy   : in  std_logic := '1';
+		code_frm    : buffer std_logic := '0';
+		code_irdy   : out std_logic := '0';
+		code_trdy   : in  std_logic := '1';
+		chksum_frm  : buffer std_logic := '0';
+		chksum_irdy : out std_logic := '0';
+		chksum_trdy : in  std_logic := '1';
+		pyl_frm     : buffer std_logic := '0';
+		pyl_irdy    : out std_logic := '0';
+		pyl_trdy    : in  std_logic := '1');
 end;
 
-architecture def of icmprqst_rx is
-
-	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(icmphdr_frame)/icmp_data'length-1));
-
+architecture def of icmp_rx is
 begin
 
-	process (mii_clk)
-		variable cntr : unsigned(frm_ptr'range);
-	begin
-		if rising_edge(mii_clk) then
-			if icmp_frm='0' then
-				cntr := to_unsigned(summation(icmphdr_frame)/icmp_data'length-1, cntr'length);
-			elsif cntr(0)='0' and icmp_irdy='1' then
-				cntr := cntr - 1;
-			end if;
-			frm_ptr <= std_logic_vector(cntr);
-		end if;
-	end process;
+	decode_i : entity hdl4fpga.frame_decode
+	generic map (
+		frame => hdo(frames)**".format.icmp",
+		size  => icmp_data'length)
+	port map (
+		clk     => mii_clk,
+		frm     => udp_frm,
+		irdy    => udp_irdy,
+		act(0)  => type_frm,
+		act(1)  => code_frm,
+		act(2)  => ckksum_frm,
+		act(3)  => id_frm,
+		act(4)  => seq_frm,
+		act(5)  => pyl_frm);
 
-	icmptype_frm <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_type);
-	icmpcode_frm <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_code);
-	icmpcksm_frm <= icmp_frm and frame_decode(frm_ptr, reverse(icmphdr_frame), icmp_data'length, icmp_cksm);
-	icmppl_frm   <= icmp_frm and frm_ptr(0);
-
-	icmptype_irdy <= icmp_irdy and icmptype_frm;
-	icmpcode_irdy <= icmp_irdy and icmpcode_frm;
-	icmpcksm_irdy <= icmp_irdy and icmpcksm_frm;
-	icmppl_irdy   <= icmp_irdy and icmppl_frm;
-
+		type_irdy   <= type_frm;
+		code_irdy   <= code_frm;
+		ckksum_irdy <= ckksum_frm;
+		id_irdy     <= id_frm;
+		seq_irdy    <= seq_frm;
+		pyl_irdy    <= pyl_frm;
 end;

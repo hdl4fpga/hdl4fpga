@@ -58,7 +58,7 @@ package ipoepkg is
     		"icmp:{"                &
     			"    type:8,"       &
     			"    code:8,"       &
-    			"    cksm:16,"      &
+    			"  ckksum:16,"      &
     			"      id:16,"      &
     			"     seq:16},"     &
     		"udp:{"                 &
