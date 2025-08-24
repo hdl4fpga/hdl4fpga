@@ -30,10 +30,10 @@ use hdl4fpga.ipoepkg.all;
 
 entity icmp_rx is
 	port (
-		mii_clk      : in  std_logic;
-		icmp_frm     : in  std_logic := '0';
-		icmp_irdy    : in  std_logic := '0';
-		icmp_data    : in  std_logic_vector;
+		mii_clk     : in  std_logic;
+		icmp_frm    : in  std_logic := '0';
+		icmp_irdy   : in  std_logic := '0';
+		icmp_data   : in  std_logic_vector;
 
 		type_frm    : buffer std_logic := '0';
 		type_irdy   : out std_logic := '0';
