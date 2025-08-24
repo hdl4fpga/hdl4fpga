@@ -52,14 +52,21 @@ architecture def of mii_ipoe is
 
 	signal ethda_frm   : std_logic;
 	signal ethda_irdy  : std_logic;
+	signal ethda_equ   : std_logic;
 	signal ethsa_frm   : std_logic;
 	signal ethsa_irdy  : std_logic;
 	signal ethtyp_frm  : std_logic;
 	signal ethtyp_irdy : std_logic;
+	signal ethtyp_equ  : std_logic;
 	signal ethpyl_frm  : std_logic;
 	signal ethpyl_irdy : std_logic;
 
+	signal ipv4rx_frm  : std_logic;
+	alias  ipv4rx_irdy is ipv4rx_frm;
+	signal ipv4rx_data : std_logic_vector(miirx_data'range);
+
 	signal ipv4da_frm  : std_logic;
+
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -85,43 +92,54 @@ begin
 		fcs_sb   => fcs_sb,
 		fcs_vld  => fcs_vld);
 
-	xxx_b : block
-		signal equ : std_logic;
-		signal q : std_logic;
+	ethda_cmp_i : entity hdl4fpga.mii_cmp
+   	generic map (
+		bitdata => reverse(macda,8))
+	port map (
+		mii_clk => mii_clk,
+		frm     => ethda_frm,
+		irdy    => ethda_irdy,
+		data    => miirx_data,
+		equ     => ethda_equ);
 
+	ethtyp_cmp_i : entity hdl4fpga.mii_cmp
+   	generic map (
+		bitdata => reverse(x"0800",8))
+	port map (
+		mii_clk => mii_clk,
+		frm     => ethtyp_frm,
+		irdy    => ethtyp_irdy,
+		data    => miirx_data,
+		equ     => ethtyp_equ);
+
+	process (mii_clk)
+		variable da_vld  : std_logic;
+		variable typ_vld : std_logic;
 	begin
-
-		cmp_i : entity hdl4fpga.mii_cmp
-	   	generic map (
-			bitdata => reverse(macda,8))
-		port map (
-			mii_clk => mii_clk,
-			frm     => ethda_frm,
-			irdy    => ethda_irdy,
-			data    => miirx_data,
-			equ     => equ);
-
-   		process (mii_clk)
-   		begin
-   			if rising_edge(mii_clk) then
-				if (miirx_frm or miirx_irdy)='0' then
-					q <= '0';
-				elsif equ='1' then
-					q <= '1';
+		if rising_edge(mii_clk) then
+			if (miirx_frm or miirx_irdy)='0' then
+				da_vld  := '0';
+				typ_vld := '0';
+			else
+				if (not da_vld and ethda_equ)='1' then
+					da_vld := '1';
 				end if;
-   			end if;
-   		end process;
-
-		-- tp(1) <= (equ or q) and miirx_frm;
-	end block;
+				if (not typ_vld and ethtyp_equ)='1' then
+					typ_vld := '1';
+				end if;
+			end if;
+			ipv4rx_frm  <= ethpyl_frm and da_vld and typ_vld;
+			ipv4rx_data <= miirx_data;
+		end if;
+	end process;
 
 	ipv4rx_i : entity hdl4fpga.ipv4_rx
 	port map (
 		mii_clk   => mii_clk,
-		ipv4_frm  => ethpyl_frm,
-		ipv4_irdy => ethpyl_irdy,
-		ipv4_data => miirx_data,
+		ipv4_frm  => ipv4rx_frm,
+		ipv4_irdy => ipv4rx_irdy,
+		ipv4_data => ipv4rx_data,
 		da_frm    => ipv4da_frm);
 	tp(1) <= ipv4da_frm;
-	tp(2 to 2+miirx_data'length-1) <= miirx_data;
+	tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
 end;
