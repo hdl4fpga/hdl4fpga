@@ -58,7 +58,8 @@ architecture def of mii_ipoe is
 	signal ethsa_irdy  : std_logic;
 	signal ethtyp_frm  : std_logic;
 	signal ethtyp_irdy : std_logic;
-	signal ethtyp_equ  : std_logic;
+	signal ipv4typ_equ : std_logic;
+	signal arptyp_equ  : std_logic;
 	signal ethpyl_frm  : std_logic;
 	signal ethpyl_irdy : std_logic;
 
@@ -103,7 +104,17 @@ begin
 		data    => miirx_data,
 		equ     => ethda_equ);
 
-	ethtyp_cmp_i : entity hdl4fpga.mii_cmp
+	arptyp_cmp_i : entity hdl4fpga.mii_cmp
+   	generic map (
+		bitdata => reverse(hdo(frames)**".data.mac.type.arp",8))
+	port map (
+		mii_clk => mii_clk,
+		frm     => ethtyp_frm,
+		irdy    => ethtyp_irdy,
+		data    => miirx_data,
+		equ     => arptyp_equ);
+
+	ipv4typ_cmp_i : entity hdl4fpga.mii_cmp
    	generic map (
 		bitdata => reverse(hdo(frames)**".data.mac.type.ipv4",8))
 	port map (
@@ -111,11 +122,11 @@ begin
 		frm     => ethtyp_frm,
 		irdy    => ethtyp_irdy,
 		data    => miirx_data,
-		equ     => ethtyp_equ);
+		equ     => ipv4typ_equ);
 
 	process (mii_clk)
 		variable da_vld  : std_logic;
-		variable typ_vld : std_logic;
+		variable typ_vld  : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if (miirx_frm or miirx_irdy)='0' then
@@ -125,11 +136,36 @@ begin
 				if (not da_vld and ethda_equ)='1' then
 					da_vld := '1';
 				end if;
-				if (not typ_vld and ethtyp_equ)='1' then
+				if (not typ_vld and typ_equ)='1' then
 					typ_vld := '1';
 				end if;
 			end if;
-			ipv4rx_frm  <= ethpyl_frm and da_vld and typ_vld;
+			ipv4rx_frm  <= ethpyl_frm and da_vld and ipv4typ_vld;
+			ipv4rx_data <= miirx_data;
+		end if;
+	end process;
+
+	process (mii_clk)
+		variable da_vld  : std_logic;
+		variable arptyp_vld  : std_logic;
+		variable ipv4typ_vld : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if (miirx_frm or miirx_irdy)='0' then
+				da_vld  := '0';
+				ipv4typ_vld := '0';
+			else
+				if (not da_vld and ethda_equ)='1' then
+					da_vld := '1';
+				end if;
+				if (not ipv4typ_vld and ipv4typ_equ)='1' then
+					ipv4typ_vld := '1';
+				end if;
+				if (not arptyp_vld and arptyp_equ)='1' then
+					arptyp_vld := '1';
+				end if;
+			end if;
+			ipv4rx_frm  <= ethpyl_frm and da_vld and ipv4typ_vld;
 			ipv4rx_data <= miirx_data;
 		end if;
 	end process;
