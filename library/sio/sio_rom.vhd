@@ -24,70 +24,55 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
-use hdl4fpga.ipoepkg.all;
 
-entity icmp_decode is
-	port (
-		mii_clk     : in  std_logic;
-		icmp_frm    : in  std_logic := '0';
-		icmp_irdy   : in  std_logic := '0';
-		icmp_trdy   : out std_logic := '0';
-		icmp_data   : in  std_logic_vector;
-
-		type_frm    : buffer std_logic := '0';
-		type_irdy   : out std_logic := '0';
-		type_trdy   : in  std_logic := '1';
-		code_frm    : buffer std_logic := '0';
-		code_irdy   : out std_logic := '0';
-		code_trdy   : in  std_logic := '1';
-		chksum_frm  : buffer std_logic := '0';
-		chksum_irdy : out std_logic := '0';
-		chksum_trdy : in  std_logic := '1';
-		id_frm      : buffer std_logic := '0';
-		id_irdy     : out std_logic := '0';
-		id_trdy     : in  std_logic := '1';
-		seq_frm     : buffer std_logic := '0';
-		seq_irdy    : out std_logic := '0';
-		seq_trdy    : in  std_logic := '1';
-		pyl_frm     : buffer std_logic := '0';
-		pyl_irdy    : out std_logic := '0';
-		pyl_trdy    : in  std_logic := '1');
+entity sio_ram is
+	generic (
+		bitdata : std_logic_vector);
+    port (
+		so_clk  : in  std_logic := '0';
+		so_frm  : in  std_logic := '0';
+		so_irdy : in  std_logic := '0';
+		so_trdy : out std_logic := '0';
+		so_data : out std_logic_vector);
 end;
 
-architecture def of icmp_decode is
+architecture def of sio_ram is
+	signal rd_addr : std_logic_vector(1 to unsigned_num_bits(bitdata'length/so_data'length-1));
+
 begin
 
-	decode_i : entity hdl4fpga.frame_decode
+	process (so_frm, so_clk)
+		variable cntr : unsigned(0 to rd_addr'length);
+		variable last : std_logic;
+	begin
+		if rising_edge(so_clk) then
+			if ((last or so_frm) and so_irdy)='1' then
+				cntr := cntr + 1;
+			end if;
+			if (so_frm or so_irdy)='0' then
+				cntr := (others => '0');
+				cntr := cntr-bitdata'length/so_data'length;
+			end if;
+			if so_frm='0' then
+				if so_irdy='0' then
+					last := '0';
+				elsif last='1' then
+					last := '0';
+				end if;
+			elsif so_irdy='1' then
+				last := '1';
+			end if;
+			rd_addr <= std_logic_vector(cntr(rd_addr'range));
+		end if;
+		so_trdy <= so_frm or last;
+	end process;
+
+	mem_i : entity hdl4fpga.rom
 	generic map (
-		frame => hdo(frames)**".format.icmp",
-		size  => icmp_data'length)
+		bitdata  => std_logic_vector(resize(unsigned(bitdata), so_data'length*2**rd_addr'length)))
 	port map (
-		clk     => mii_clk,
-		frm     => icmp_frm,
-		irdy    => icmp_irdy,
-		act(0)  => type_frm,
-		act(1)  => code_frm,
-		act(2)  => chksum_frm,
-		act(3)  => id_frm,
-		act(4)  => seq_frm,
-		act(5)  => pyl_frm);
-
-	type_irdy   <= type_frm;
-	code_irdy   <= code_frm;
-	chksum_irdy <= chksum_frm;
-	id_irdy     <= id_frm;
-	seq_irdy    <= seq_frm;
-	pyl_irdy    <= pyl_frm;
-
-	icmp_trdy <=
-    	type_trdy   when   type_frm='1' else
-    	code_trdy   when   code_frm='1' else
-    	chksum_trdy when chksum_frm='1' else
-    	id_trdy     when     id_frm='1' else
-    	seq_trdy    when    seq_frm='1' else
-    	pyl_trdy    when    pyl_frm='1' else
-		'0';
+		addr => rd_addr,
+		data => so_data);
 
 end;

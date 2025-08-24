@@ -155,7 +155,7 @@ begin
 		end if;
 	end process;
 
-	arprx_i : entity hdl4fpga.arp_rx
+	arprx_i : entity hdl4fpga.arp_decode
 	port map (
 		mii_clk  => mii_clk,
 		arp_frm  => arprx_frm,
@@ -198,7 +198,7 @@ begin
 		end if;
 	end process;
 
-	ipv4rx_i : entity hdl4fpga.ipv4_rx
+	ipv4rx_i : entity hdl4fpga.ipv4_decode
 	port map (
 		mii_clk   => mii_clk,
 		ipv4_frm  => ipv4rx_frm,

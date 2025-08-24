@@ -29,96 +29,117 @@ use hdl4fpga.ipoepkg.all;
 
 entity arp_tx is
 	generic (
-		hwsa     : std_logic_vector(0 to 48-1));
+		mac_sa   : std_logic_vector(0 to 48-1));
 	port (
 		mii_clk  : in  std_logic;
 		arp_req  : in  std_logic;
 		arp_rdy  : buffer std_logic;
 		
-		pa_frm   : buffer std_logic;
-		pa_irdy  : out std_logic;
-		pa_trdy  : in  std_logic;
-		pa_end   : in  std_logic;
-		pa_data  : in  std_logic_vector;
+		pa_frm     : out std_logic;
+		pa_irdy    : out std_logic;
+		pa_trdy    : in  std_logic;
+		pa_data    : in  std_logic_vector;
 
-		dlltx_irdy : out std_logic;
-		dlltx_data : buffer std_logic_vector;
-		dlltx_end  : in  std_logic;
+		ethda_frm  : in  std_logic;
+		ethda_irdy : in  std_logic;
+		ethda_trdy : out std_logic;
+		ethda_data : out std_logic_vector;
 
 		arp_frm  : buffer std_logic;
 		arp_irdy : buffer std_logic;
 		arp_trdy : in  std_logic;
-		arp_end  : out std_logic;
 		arp_data : out std_logic_vector);
 
 end;
 
 architecture def of arp_tx is
-
-	signal frm_ptr     : std_logic_vector(0 to unsigned_num_bits(summation(arp4_frame)/arp_data'length-1));
-	signal arpmux_irdy : std_logic;
-	signal arpmux_trdy : std_logic;
-	signal arpmux_data : std_logic_vector(arp_data'range);
+	signal htype_frm  : std_logic;
+	signal htype_irdy : std_logic;
+	signal ptype_frm  : std_logic;
+	signal ptype_irdy : std_logic;
+	signal hlen_frm   : std_logic;
+	signal hlen_irdy  : std_logic;
+	signal plen_frm   : std_logic;
+	signal plen_irdy  : std_logic;
+	signal oper_frm   : std_logic;
+	signal oper_irdy  : std_logic;
+	signal sha_frm    : std_logic;
+	signal sha_irdy   : std_logic;
+	signal spa_frm    : std_logic;
+	signal spa_irdy   : std_logic;
+	signal tha_frm    : std_logic;
+	signal tha_irdy   : std_logic;
+	signal tpa_frm    : std_logic;
+	signal tpa_irdy   : std_logic;
 
 begin
 
 	arp_frm <= to_stdulogic(to_bit(arp_rdy) xor to_bit(arp_req));
 	decode_i : entity hdl4fpga.arp_decode
-
-	process (mii_clk)
-		variable cntr : unsigned(frm_ptr'range);
-	begin
-		if rising_edge(mii_clk) then
-			if arp_frm='0' then
-				cntr := to_unsigned(summation(arp4_frame)/arp_data'length-1, cntr'length);
-			elsif cntr(0)='0' then
-				if dlltx_end='1' then
-					if (arp_irdy and arp_trdy)='1' then
-						cntr := cntr - 1;
-					end if;
-				end if;
-			elsif (arp_irdy and arp_trdy)='1' then
-				arp_rdy <= to_stdulogic(to_bit(arp_req));
-			end if;
-			frm_ptr <= std_logic_vector(cntr);
-		end if;
-	end process;
-
-	process (arp_frm, dlltx_end, frm_ptr)
-	begin
-		if arp_frm='1' then
-			if frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_spa)='1' then
-				pa_frm <= '1';
-			elsif frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_tpa)='1' then
-				pa_frm <= '1';
-			else
-				pa_frm <= '0';
-			end if;
-		else
-			pa_frm <= '0';
-		end if;
-	end process;
-	pa_irdy <= pa_frm and arp_irdy and arp_trdy;
-	
-	arpmux_irdy <= 
-		'0' when dlltx_end='0' else
-		'0' when    pa_frm='1' else
-		arp_trdy;
-	arpmux_e : entity hdl4fpga.sio_mux
 	port map (
-		mux_data => reverse(
+		mii_clk    => mii_clk,
+		arp_frm    => arp_frm,
+		arp_irdy   => arp_irdy,
+		arp_data   => arp_data,
+		htype_frm  => htype_frm ,
+		htype_irdy => htype_irdy,
+		htype_trdy => arp_trdy,
+		ptype_frm  => ptype_frm,
+		ptype_irdy => ptype_irdy,
+		ptype_trdy => arp_trdy,
+		hlen_frm   => hlen_frm ,
+		hlen_irdy  => hlen_irdy,
+		hlen_trdy  => arp_trdy,
+		plen_frm   => plen_frm,
+		plen_irdy  => plen_irdy,
+		plen_trdy  => arp_trdy,
+		oper_frm   => oper_frm,
+		oper_irdy  => oper_irdy,
+		oper_trdy  => arp_trdy,
+		sha_frm    => sha_frm,
+		sha_irdy   => sha_irdy,
+		sha_trdy   => arp_trdy,
+		spa_frm    => spa_frm,
+		spa_irdy   => spa_irdy,
+		spa_trdy   => arp_trdy,
+		tha_frm    => tha_frm,
+		tha_irdy   => tha_irdy,
+		tha_trdy   => arp_trdy,
+		tpa_frm    => tpa_frm,
+		tpa_irdy   => tpa_irdy,
+		tpa_trdy   => arp_trdy);
+	pa_frm  <= spa_frm  or tpa_frm;
+	pa_irdy <= 
+    	spa_irdy   when   spa_frm='1' else 
+    	tpa_irdy   when   tpa_frm='1' else 
+
+	so_irdy <= 
+    	htype_trdy when htype_frm='1' else 
+    	ptype_trdy when ptype_frm='1' else 
+    	hlen_trdy  when  hlen_frm='1' else 
+    	plen_trdy  when  plen_frm='1' else 
+    	oper_trdy  when  oper_frm='1' else 
+    	sha_trdy   when   sha_frm='1' else 
+    	tha_trdy   when   tha_frm='1' else 
+    	pyl_trdy   when   pyl_frm='1' else
+		'0';
+
+	mem_i : entity hdl4fpga.sio_rom
+	generic map (
+		bitdata =>
 			x"0001" &                 -- htype 
 			x"0800" &                 -- ptype 
 			x"06"   &                 -- hlen  
 			x"04"   &                 -- plen  
 			x"0002" &                 -- oper  
-			hwsa    &                 -- Sender Hardware Address
+			mac_sa  &                 -- Sender Hardware Address
 			x"ff_ff_ff_ff_ff_ff", 8), -- Target Hardware Address
-        sio_clk  => mii_clk,
-		sio_frm  => arp_frm,
-		sio_irdy => arpmux_irdy,
-        sio_trdy => arpmux_trdy,
-        so_data  => arpmux_data);
+	port map (
+        so_clk  => mii_clk,
+		so_frm  => arp_frm,
+		so_irdy => so_irdy,
+		so_trdy => so_trdy,
+		so_data => so_data);
 
 	dlltx_irdy <= arp_frm and arp_trdy;
 	dlltx_data <= (arp_data'range => '1');
@@ -130,6 +151,5 @@ begin
 		dlltx_data  when dlltx_end='0' else
 		arpmux_data when    pa_frm='0' else
 		pa_data;
-	arp_end    <= frm_ptr(0);
 
 end;

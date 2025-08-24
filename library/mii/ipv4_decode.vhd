@@ -27,7 +27,7 @@ library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.ipoepkg.all;
 
-entity ipv4_rx is
+entity ipv4_decode is
 	port (
 		mii_clk     : in  std_logic;
 		ipv4_frm    : in  std_logic := '0';
@@ -72,7 +72,7 @@ entity ipv4_rx is
 
 end;
 
-architecture def of ipv4_rx is
+architecture def of ipv4_decode is
 begin
 
 	decode_i : entity hdl4fpga.frame_decode

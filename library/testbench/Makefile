@@ -249,14 +249,14 @@ HDL4FPGA__lifo__def = $(LIB_HDL4FPGA)/lifo/def.dat
 HDL4FPGA__lifo = $(LIB_HDL4FPGA)/lifo/_primary.dat
 HDL4FPGA__latency__def = $(LIB_HDL4FPGA)/latency/def.dat
 HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
-HDL4FPGA__ipv4_rx__def = $(LIB_HDL4FPGA)/ipv4_rx/def.dat
-HDL4FPGA__ipv4_rx = $(LIB_HDL4FPGA)/ipv4_rx/_primary.dat
+HDL4FPGA__ipv4_decode__def = $(LIB_HDL4FPGA)/ipv4_decode/def.dat
+HDL4FPGA__ipv4_decode = $(LIB_HDL4FPGA)/ipv4_decode/_primary.dat
 HDL4FPGA__ipoepkg__body = $(LIB_HDL4FPGA)/ipoepkg/body.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
 HDL4FPGA__igbx__beh = $(LIB_HDL4FPGA)/igbx/beh.dat
 HDL4FPGA__igbx = $(LIB_HDL4FPGA)/igbx/_primary.dat
-HDL4FPGA__icmp_rx__def = $(LIB_HDL4FPGA)/icmp_rx/def.dat
-HDL4FPGA__icmp_rx = $(LIB_HDL4FPGA)/icmp_rx/_primary.dat
+HDL4FPGA__icmp_decode__def = $(LIB_HDL4FPGA)/icmp_decode/def.dat
+HDL4FPGA__icmp_decode = $(LIB_HDL4FPGA)/icmp_decode/_primary.dat
 HDL4FPGA__hdo__body = $(LIB_HDL4FPGA)/hdo/body.dat
 HDL4FPGA__hdo = $(LIB_HDL4FPGA)/hdo/_primary.dat
 HDL4FPGA__hdlcsync_tx__def = $(LIB_HDL4FPGA)/hdlcsync_tx/def.dat
@@ -372,8 +372,8 @@ HDL4FPGA__base__body = $(LIB_HDL4FPGA)/base/body.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
 HDL4FPGA__barrel__beh = $(LIB_HDL4FPGA)/barrel/beh.dat
 HDL4FPGA__barrel = $(LIB_HDL4FPGA)/barrel/_primary.dat
-HDL4FPGA__arp_rx__def = $(LIB_HDL4FPGA)/arp_rx/def.dat
-HDL4FPGA__arp_rx = $(LIB_HDL4FPGA)/arp_rx/_primary.dat
+HDL4FPGA__arp_decode__def = $(LIB_HDL4FPGA)/arp_decode/def.dat
+HDL4FPGA__arp_decode = $(LIB_HDL4FPGA)/arp_decode/_primary.dat
 HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
 HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__app_graphics__mix = $(LIB_HDL4FPGA)/app_graphics/mix.dat
@@ -627,14 +627,14 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__lifo) \
     $(HDL4FPGA__latency__def) \
     $(HDL4FPGA__latency) \
-    $(HDL4FPGA__ipv4_rx__def) \
-    $(HDL4FPGA__ipv4_rx) \
+    $(HDL4FPGA__ipv4_decode__def) \
+    $(HDL4FPGA__ipv4_decode) \
     $(HDL4FPGA__ipoepkg__body) \
     $(HDL4FPGA__ipoepkg) \
     $(HDL4FPGA__igbx__beh) \
     $(HDL4FPGA__igbx) \
-    $(HDL4FPGA__icmp_rx__def) \
-    $(HDL4FPGA__icmp_rx) \
+    $(HDL4FPGA__icmp_decode__def) \
+    $(HDL4FPGA__icmp_decode) \
     $(HDL4FPGA__hdo__body) \
     $(HDL4FPGA__hdo) \
     $(HDL4FPGA__hdlcsync_tx__def) \
@@ -750,8 +750,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__base) \
     $(HDL4FPGA__barrel__beh) \
     $(HDL4FPGA__barrel) \
-    $(HDL4FPGA__arp_rx__def) \
-    $(HDL4FPGA__arp_rx) \
+    $(HDL4FPGA__arp_decode__def) \
+    $(HDL4FPGA__arp_decode) \
     $(HDL4FPGA__arbiter__mix) \
     $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__app_graphics__mix) \
@@ -848,8 +848,8 @@ $(HDL4FPGA__arbiter__mix) : ../basic/arbiter.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../basic/arbiter.vhd
 
-$(HDL4FPGA__arp_rx) \
-$(HDL4FPGA__arp_rx__def) : ../mii/arp_rx.vhd \
+$(HDL4FPGA__arp_decode) \
+$(HDL4FPGA__arp_decode__def) : ../mii/arp_decode.vhd \
 		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__base) \
 		$(HDL4FPGA__ipoepkg) \
@@ -857,7 +857,7 @@ $(HDL4FPGA__arp_rx__def) : ../mii/arp_rx.vhd \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -93 -work hdl4fpga ../mii/arp_rx.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii/arp_decode.vhd
 
 $(HDL4FPGA__barrel) \
 $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
@@ -1354,8 +1354,8 @@ $(HDL4FPGA__hdo__body) : ../basic/hdo.vhd \
 		$(STD__textio)
 	$(VCOM) -93 -work hdl4fpga ../basic/hdo.vhd
 
-$(HDL4FPGA__icmp_rx) \
-$(HDL4FPGA__icmp_rx__def) : ../mii/icmp_rx.vhd \
+$(HDL4FPGA__icmp_decode) \
+$(HDL4FPGA__icmp_decode__def) : ../mii/icmp_decode.vhd \
 		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
@@ -1363,7 +1363,7 @@ $(HDL4FPGA__icmp_rx__def) : ../mii/icmp_rx.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii/icmp_rx.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii/icmp_decode.vhd
 
 $(HDL4FPGA__igbx) \
 $(HDL4FPGA__igbx__beh) : ../xilinx/igbx.vhd \
@@ -1381,8 +1381,8 @@ $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../mii/ipoepkg.vhd
 
-$(HDL4FPGA__ipv4_rx) \
-$(HDL4FPGA__ipv4_rx__def) : ../mii/ipv4_rx.vhd \
+$(HDL4FPGA__ipv4_decode) \
+$(HDL4FPGA__ipv4_decode__def) : ../mii/ipv4_decode.vhd \
 		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__base) \
 		$(HDL4FPGA__ipoepkg) \
@@ -1390,7 +1390,7 @@ $(HDL4FPGA__ipv4_rx__def) : ../mii/ipv4_rx.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii/ipv4_rx.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii/ipv4_decode.vhd
 
 $(HDL4FPGA__latency) \
 $(HDL4FPGA__latency__def) : ../basic/latency.vhd \
@@ -1450,13 +1450,13 @@ $(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \
 
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
-		$(HDL4FPGA__ipv4_rx) \
-		$(HDL4FPGA__sio_cmp) \
-		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__ipv4_decode) \
+		$(HDL4FPGA__arp_decode) \
+		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__eth_rx) \
-		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)

@@ -29,7 +29,7 @@ library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.ipoepkg.all;
 
-entity arp_rx is
+entity arp_decode is
 	port (
 		mii_clk   : in  std_logic;
 		arp_frm   : in  std_logic := '0';
@@ -49,9 +49,9 @@ entity arp_rx is
 		plen_frm   : buffer std_logic := '0';
 		plen_irdy  : out std_logic := '0';
 		plen_trdy  : in  std_logic := '1';
-		per_frm    : buffer std_logic := '0';
-		per_irdy   : out std_logic := '0';
-		per_trdy   : in  std_logic := '1';
+		oper_frm   : buffer std_logic := '0';
+		oper_irdy  : out std_logic := '0';
+		oper_trdy  : in  std_logic := '1';
 		sha_frm    : buffer std_logic := '0';
 		sha_irdy   : out std_logic := '0';
 		sha_trdy   : in  std_logic := '1';
@@ -69,7 +69,7 @@ entity arp_rx is
 		pyl_trdy   : in  std_logic := '1');
 end;
 
-architecture def of arp_rx is
+architecture def of arp_decode is
 begin
 
 	decode_i : entity hdl4fpga.frame_decode
@@ -84,7 +84,7 @@ begin
 		act(1)  => ptype_frm,
 		act(2)  => hlen_frm,
 		act(3)  => plen_frm,
-		act(4)  => per_frm,
+		act(4)  => oper_frm,
 		act(5)  => sha_frm,
 		act(6)  => spa_frm,
 		act(7)  => tha_frm,
@@ -95,7 +95,7 @@ begin
 	ptype_irdy <= ptype_frm;
 	hlen_irdy  <= hlen_frm;
 	plen_irdy  <= plen_frm;
-	per_irdy   <= per_frm;
+	oper_irdy  <= oper_frm;
 	sha_irdy   <= sha_frm;
 	spa_irdy   <= spa_frm;
 	tha_irdy   <= tha_frm;
@@ -107,7 +107,7 @@ begin
     	ptype_trdy when ptype_frm='1' else 
     	hlen_trdy  when  hlen_frm='1' else 
     	plen_trdy  when  plen_frm='1' else 
-    	per_trdy   when   per_frm='1' else 
+    	oper_trdy  when  oper_frm='1' else 
     	sha_trdy   when   sha_frm='1' else 
     	spa_trdy   when   spa_frm='1' else 
     	tha_trdy   when   tha_frm='1' else 
