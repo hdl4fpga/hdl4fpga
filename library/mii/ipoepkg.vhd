@@ -86,8 +86,8 @@ package ipoepkg is
 		"data:{"                    &
     		"mac:{"                 &
 				"type:{"            &
-					" ip:0x0800,"   &
-					"arp:0x0806}}," &
+					"ipv4:0x0800,"  &
+					" arp:0x0806}}," &
     		"ipv4:{"                &
 				"proto:{"           &
 					"icmp:0x01,"    &

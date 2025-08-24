@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -104,7 +105,7 @@ begin
 
 	ethtyp_cmp_i : entity hdl4fpga.mii_cmp
    	generic map (
-		bitdata => reverse(x"0800",8))
+		bitdata => reverse(hdo(frames)**".data.mac.type.ipv4",8))
 	port map (
 		mii_clk => mii_clk,
 		frm     => ethtyp_frm,
