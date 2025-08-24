@@ -46,7 +46,7 @@ end;
 
 architecture beh of scopeio_downsampler is
 
-	function to_bitrom (
+	function to_bitdata (
 		constant data : integer_vector;
 		constant size : natural)
 		return std_logic_vector is
@@ -85,7 +85,7 @@ begin
 
 	factorrom_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => to_bitrom(adjust(factors), scaler_bits))
+		bitdata => to_bitdata(adjust(factors), scaler_bits))
 	port map (
 		addr => factor_id,
 		data => factor);

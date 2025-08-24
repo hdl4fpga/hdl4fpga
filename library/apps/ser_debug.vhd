@@ -70,7 +70,7 @@ begin
 	generic map (
 		code_spce   => to_ascii(" "),
 		code_digits => to_ascii("0123456789abcdef"),
-		cga_bitrom  => to_ascii("Ready Steady GO!"),
+		cga_bitdata  => to_ascii("Ready Steady GO!"),
 		timings =>  hdo(settings)**".timings")
 	port map (
 		phy_clk     => ser_clk,

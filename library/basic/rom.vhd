@@ -26,7 +26,7 @@ use ieee.numeric_std.all;
 entity rom is
 	generic (
 		latency : natural := 0;
-		bitrom : std_logic_vector);
+		bitdata : std_logic_vector);
 	port (
 		clk  : in  std_logic := '-';
 		addr : in  std_logic_vector;
@@ -58,7 +58,7 @@ architecture def of rom is
 		return retval;
 	end;
 
-	constant rom : word_vector(0 to 2**addr'length-1) := init_rom(bitrom, 2**addr'length);
+	constant rom : word_vector(0 to 2**addr'length-1) := init_rom(bitdata, 2**addr'length);
 
 begin
 

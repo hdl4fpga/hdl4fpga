@@ -160,7 +160,7 @@ begin
 		generic map (
 			synchronous_rdaddr => false,
 			synchronous_rddata => setif(latency > 0, setif(latency > 1, true, sync_read), false),
-			bitrom => mem_data)
+			bitdata => mem_data)
 		port map (
 			wr_clk  => src_clk,
 			wr_ena  => wr_ena,

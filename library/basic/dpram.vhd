@@ -33,7 +33,7 @@ entity dpram is
 		synchronous_wraddr : boolean := false;
 		synchronous_wrdata : boolean := false;
 		synchronous_wrena  : boolean := false;
-		bitrom : std_logic_vector := (0 to 0 => '-'));
+		bitdata : std_logic_vector := (0 to 0 => '-'));
 	port (
 		rd_clk  : in  std_logic := '-';
 		rd_addr : in  std_logic_vector;
@@ -51,19 +51,19 @@ architecture def of dpram is
 	type word_vector is array (natural range <>) of word;
 
 	function init_ram (
-		constant bitrom : std_logic_vector;
+		constant bitdata : std_logic_vector;
 		constant size   : natural)
 		return   word_vector is
-		alias bitrom0   : std_logic_vector(0 to bitrom'length-1) is bitrom;
+		alias bitdata0   : std_logic_vector(0 to bitdata'length-1) is bitdata;
 		variable aux    : std_logic_vector(0 to size*word'length-1);
 		variable retval : word_vector(0 to size-1);
 	begin
 		aux := (others => '0'); -- Latticesemi Diamond bug, it won't accept '-' as default value
-		if bitrom'length > 0 then  -- "if" WORKAROUND suggested by emard @ github.com
-			if aux'length >= bitrom'length then
-				aux(0 to bitrom'length-1) := bitrom0;
+		if bitdata'length > 0 then  -- "if" WORKAROUND suggested by emard @ github.com
+			if aux'length >= bitdata'length then
+				aux(0 to bitdata'length-1) := bitdata0;
 			else
-				aux := bitrom0(0 to aux'length-1);
+				aux := bitdata0(0 to aux'length-1);
 			end if;
 
 			for i in retval'range loop
@@ -78,7 +78,7 @@ architecture def of dpram is
 	signal async_wraddr : std_logic_vector(wr_addr'range);
 	signal async_wrdata : std_logic_vector(wr_data'range);
 	signal async_wrena  : std_logic;
-	signal ram : word_vector(0 to 2**wr_addr'length-1) := init_ram(bitrom, 2**wr_addr'length);
+	signal ram : word_vector(0 to 2**wr_addr'length-1) := init_ram(bitdata, 2**wr_addr'length);
 
 begin
 

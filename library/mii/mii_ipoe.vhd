@@ -129,7 +129,7 @@ begin
 
 		mem_i : entity hdl4fpga.dpram
 		generic map (
-			bitrom  => std_logic_vector(resize(unsigned(reverse(macda,8)), miirx_data'length*2**rd_addr'length)))
+			bitdata  => std_logic_vector(resize(unsigned(reverse(macda,8)), miirx_data'length*2**rd_addr'length)))
 		port map (
 			rd_addr => rd_addr,
 			rd_data => rd_data,

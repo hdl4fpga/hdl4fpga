@@ -46,7 +46,7 @@ architecture def of box_edges is
 --	signal wr_addr : std_logic_vector(rd_addr'range);
 --	signal wr_data : std_logic_vector(rd_data'range);
 
-	function to_bitrom (
+	function to_bitdata (
 		constant data : natural_vector;
 		constant size : natural)
 		return std_logic_vector is
@@ -77,7 +77,7 @@ begin
 
 --	mem_e : entity hdl4fpga.dpram
 --	generic map (
---		bitrom => to_bitrom(edges, video_pos'length))
+--		bitdata => to_bitdata(edges, video_pos'length))
 --	port map (
 --		wr_clk  => '-',
 --		wr_ena  => '0',
@@ -89,7 +89,7 @@ begin
 
 	mem_e : entity hdl4fpga.rom
 	generic map (
-		bitrom => to_bitrom(edges, video_pos'length))
+		bitdata => to_bitdata(edges, video_pos'length))
 	port map (
 		clk  => video_clk,
 		addr => rd_addr,

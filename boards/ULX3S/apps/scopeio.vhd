@@ -281,7 +281,7 @@ begin
 
 		mem_e : entity hdl4fpga.rom 
 		generic map (
-			bitrom => bitrom)
+			bitdata => bitrom)
 		port map (
 			clk  => sio_clk,
 			addr => std_logic_vector(addr(1 to addr'right)),

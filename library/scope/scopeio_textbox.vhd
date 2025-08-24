@@ -34,7 +34,7 @@ entity scopeio_textbox is
 		inputs          : natural;
 		waveform        : string;
 		latency         : natural;
-		font_bitrom     : std_logic_vector := psf1cp850x8x16;
+		font_bitdata     : std_logic_vector := psf1cp850x8x16;
 		font_height     : natural := 16);
 	port (
 		tp              : out std_logic_vector(1 to 32);
@@ -162,7 +162,7 @@ begin
 
 	cgaram_e : entity hdl4fpga.cgaram
 	generic map (
-		font_bitrom  => font_bitrom,
+		font_bitdata  => font_bitdata,
 		font_height  => font_height,
 		font_width   => font_width)
 	port map (

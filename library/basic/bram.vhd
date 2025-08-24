@@ -29,7 +29,7 @@ use hdl4fpga.base.all;
 
 entity bram is
 	generic (
-		bitrom : std_logic_vector := (1 to 0 => '-'));
+		bitdata : std_logic_vector := (1 to 0 => '-'));
 	port (
 		clka  : in  std_logic;
 		addra : in  std_logic_vector;
@@ -53,14 +53,14 @@ architecture inference of bram is
 
 
 	function init_ram (
-		constant bitrom : std_logic_vector;
+		constant bitdata : std_logic_vector;
 		constant size   : natural)
 		return   word_vector is
 		variable aux    : std_logic_vector(0 to size*word'length-1);
 		variable retval : word_vector(0 to size-1);
 	begin
-		aux(0 to bitrom'length-1) := bitrom;
-		if bitrom'length > 0 then  -- "if" WORKAROUND suggested by emard @ github.com
+		aux(0 to bitdata'length-1) := bitdata;
+		if bitdata'length > 0 then  -- "if" WORKAROUND suggested by emard @ github.com
 			for i in retval'range loop
 				retval(i) := aux(i*retval(0)'length to (i+1)*retval(0)'length-1);
 			end loop;
@@ -70,7 +70,7 @@ architecture inference of bram is
 
 	constant addr_size : natural := mnm(addra'length,addrb'length);
 
-	shared variable ram : word_vector(0 to 2**addr_size-1) := init_ram(bitrom, 2**addr_size);
+	shared variable ram : word_vector(0 to 2**addr_size-1) := init_ram(bitdata, 2**addr_size);
 
 begin
 

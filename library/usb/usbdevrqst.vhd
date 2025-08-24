@@ -305,14 +305,14 @@ begin
 
 		meta_e : entity hdl4fpga.rom
 		generic map (
-			bitrom => layout_table_content)
+			bitdata => layout_table_content)
 		port map (
 			addr => layout_table_addr,
 			data => layout_table_data);
 
 		data_e : entity hdl4fpga.rom
 		generic map (
-			bitrom => section_content)
+			bitdata => section_content)
 		port map (
 			addr => descriptor_addr,  
 			data => descriptor_data);

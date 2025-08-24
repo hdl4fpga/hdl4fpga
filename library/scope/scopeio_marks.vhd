@@ -356,7 +356,7 @@ begin
 
 	hzmem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => (0 to 2**hzaddr_bits*hz_mark'length-1 => '1'),
+		bitdata => (0 to 2**hzaddr_bits*hz_mark'length-1 => '1'),
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (
@@ -371,7 +371,7 @@ begin
 
 	vt_mem_e : entity hdl4fpga.dpram
 	generic map (
-		bitrom => (0 to 2**vtaddr_bits*vt_mark'length-1 => '1'),
+		bitdata => (0 to 2**vtaddr_bits*vt_mark'length-1 => '1'),
 		synchronous_rdaddr => true,
 		synchronous_rddata => true)
 	port map (

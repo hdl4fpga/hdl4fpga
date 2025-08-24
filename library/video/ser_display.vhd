@@ -31,14 +31,14 @@ use hdl4fpga.videopkg.all;
 
 entity ser_display is
 	generic (
-		font_bitrom   : std_logic_vector := psf1cp850x8x16;
+		font_bitdata   : std_logic_vector := psf1cp850x8x16;
 		font_width    : natural := 8;
 		font_height   : natural := 16;
 
 		timings       : string;
 		code_spce     : std_logic_vector;
 		code_digits   : std_logic_vector;
-		cga_bitrom    : std_logic_vector := (1 to 0 => '-'));
+		cga_bitdata    : std_logic_vector := (1 to 0 => '-'));
 	port (
 		phy_clk       : in  std_logic;
 		phy_frm       : in  std_logic;
@@ -54,7 +54,7 @@ end;
 
 architecture def of ser_display is
 
-	subtype font_code is std_logic_vector(unsigned_num_bits(font_bitrom'length/font_width/font_height-1)-1 downto 0);
+	subtype font_code is std_logic_vector(unsigned_num_bits(font_bitdata'length/font_width/font_height-1)-1 downto 0);
 	subtype digit     is std_logic_vector(0 to 4-1);
 
 	constant fontwidth_bits  : natural := unsigned_num_bits(font_width-1);
@@ -143,8 +143,8 @@ begin
 	generic map (
 		display_width  => display_width,
 		display_height => display_height,
-		cga_bitrom     => cga_bitrom,
-		font_bitrom    => psf1cp850x8x16,
+		cga_bitdata     => cga_bitdata,
+		font_bitdata    => psf1cp850x8x16,
 		font_height    => font_height,
 		font_width     => font_width)
 	port map (

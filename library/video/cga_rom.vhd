@@ -28,7 +28,7 @@ use hdl4fpga.cgafonts.all;
 
 entity cga_rom is
 	generic (
-		font_bitrom : std_logic_vector;
+		font_bitdata : std_logic_vector;
 		font_height : natural;
 		font_width  : natural);
 	port (
@@ -54,7 +54,7 @@ begin
 
 	cgarom_e : entity hdl4fpga.rom
 	generic map (
-		bitrom  => font_bitrom,
+		bitdata  => font_bitdata,
 		latency => 2)
 	port map (
 		clk  => clk,

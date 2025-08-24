@@ -391,14 +391,14 @@ begin
 		meta_addr <= to_unsigned(str_id, meta_addr'length);
 		lutrom_e : entity hdl4fpga.rom
 		generic map (
-			bitrom => textmeta)
+			bitdata => textmeta)
 		port map (
 			addr => std_logic_vector(meta_addr),
 			data => meta_data);
 
 		textrom_e : entity hdl4fpga.rom
 		generic map (
-			bitrom => textdata)
+			bitdata => textdata)
 		port map (
 			addr => text_addr,
 			data => text_data);

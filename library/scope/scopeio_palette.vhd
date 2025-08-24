@@ -330,13 +330,13 @@ begin
 
 		signal rd_addr  : std_logic_vector(palette_addr'range);
 		signal rd_data  : std_logic_vector(video_color'range);
-		constant bitrom : std_logic_vector := init_color;
+		constant bitdata : std_logic_vector := init_color;
 	begin
 
 		wr_ena <= palette_colorena and palette_dv;
 		mem_e : entity hdl4fpga.dpram
 		generic map (
-			bitrom => bitrom)
+			bitdata => bitdata)
 		port map (
 			wr_clk  => rgtr_clk,
 			wr_addr => palette_addr,

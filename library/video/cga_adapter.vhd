@@ -33,8 +33,8 @@ entity cga_adapter is
 		display_scale  : natural := 1;
 		display_width  : natural;
 		display_height : natural;
-		cga_bitrom     : std_logic_vector := (1 to 0 => '-');
-		font_bitrom    : std_logic_vector := psf1cp850x8x16;
+		cga_bitdata     : std_logic_vector := (1 to 0 => '-');
+		font_bitdata    : std_logic_vector := psf1cp850x8x16;
 		font_height    : natural := 16;
 		font_width     : natural := 8);
 	port (
@@ -59,7 +59,7 @@ architecture struct of cga_adapter is
 	signal video_on  : std_logic;
 
 	signal cga_codes : std_logic_vector(cga_data'range);
-	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitrom'length/font_height/font_width-1)-1 downto 0);
+	signal cga_code  : std_logic_vector(unsigned_num_bits(font_bitdata'length/font_height/font_width-1)-1 downto 0);
 	signal mux_code  : std_logic_vector(cga_code'range);
 	signal char_addr : unsigned(cga_addr'length-1+(unsigned_num_bits(cga_codes'length/cga_code'length)-1) downto 0);
 
@@ -163,7 +163,7 @@ begin
     	generic map (
     		synchronous_rdaddr => true,
     		synchronous_rddata => true,
-    		bitrom => cga_bitrom)
+    		bitdata => cga_bitdata)
     	port map (
     		wr_clk  => cga_clk,
     		wr_ena  => cga_we,
@@ -214,7 +214,7 @@ begin
 
 	rom_e : entity hdl4fpga.cga_rom
 	generic map (
-		font_bitrom => font_bitrom,
+		font_bitdata => font_bitdata,
 		font_height => font_height,
 		font_width  => font_width)
 	port map (
