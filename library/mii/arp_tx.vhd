@@ -32,23 +32,21 @@ entity arp_tx is
 		mac_sa   : std_logic_vector(0 to 48-1));
 	port (
 		mii_clk  : in  std_logic;
-		arp_req  : in  std_logic;
-		arp_rdy  : buffer std_logic;
 		
-		pa_frm     : out std_logic;
-		pa_irdy    : out std_logic;
+		pa_frm     : buffer std_logic;
+		pa_irdy    : buffer std_logic;
 		pa_trdy    : in  std_logic;
 		pa_data    : in  std_logic_vector;
 
 		ethda_frm  : in  std_logic;
 		ethda_irdy : in  std_logic;
 		ethda_trdy : out std_logic;
-		ethda_data : out std_logic_vector;
+		ethda_data : buffer std_logic_vector;
 
-		arp_frm  : buffer std_logic;
-		arp_irdy : buffer std_logic;
-		arp_trdy : in  std_logic;
-		arp_data : out std_logic_vector);
+		arp_frm  : in std_logic;
+		arp_irdy : in std_logic;
+		arp_trdy : out std_logic;
+		arp_data : buffer std_logic_vector);
 
 end;
 
@@ -72,68 +70,72 @@ architecture def of arp_tx is
 	signal tpa_frm    : std_logic;
 	signal tpa_irdy   : std_logic;
 
+	signal so_frm  : std_logic;
+	signal so_trdy : std_logic;
+	signal so_irdy : std_logic;
+	signal so_data : std_logic_vector(arp_data'range);
 begin
 
-	arp_frm <= to_stdulogic(to_bit(arp_rdy) xor to_bit(arp_req));
 	decode_i : entity hdl4fpga.arp_decode
 	port map (
 		mii_clk    => mii_clk,
 		arp_frm    => arp_frm,
 		arp_irdy   => arp_irdy,
 		arp_data   => arp_data,
-		htype_frm  => htype_frm ,
+		htype_frm  => htype_frm,
 		htype_irdy => htype_irdy,
-		htype_trdy => arp_trdy,
+		htype_trdy => arp_irdy,
 		ptype_frm  => ptype_frm,
 		ptype_irdy => ptype_irdy,
-		ptype_trdy => arp_trdy,
+		ptype_trdy => arp_irdy,
 		hlen_frm   => hlen_frm ,
 		hlen_irdy  => hlen_irdy,
-		hlen_trdy  => arp_trdy,
+		hlen_trdy  => arp_irdy,
 		plen_frm   => plen_frm,
 		plen_irdy  => plen_irdy,
-		plen_trdy  => arp_trdy,
+		plen_trdy  => arp_irdy,
 		oper_frm   => oper_frm,
 		oper_irdy  => oper_irdy,
-		oper_trdy  => arp_trdy,
+		oper_trdy  => arp_irdy,
 		sha_frm    => sha_frm,
 		sha_irdy   => sha_irdy,
-		sha_trdy   => arp_trdy,
+		sha_trdy   => arp_irdy,
 		spa_frm    => spa_frm,
 		spa_irdy   => spa_irdy,
-		spa_trdy   => arp_trdy,
+		spa_trdy   => arp_irdy,
 		tha_frm    => tha_frm,
 		tha_irdy   => tha_irdy,
-		tha_trdy   => arp_trdy,
+		tha_trdy   => arp_irdy,
 		tpa_frm    => tpa_frm,
 		tpa_irdy   => tpa_irdy,
-		tpa_trdy   => arp_trdy);
+		tpa_trdy   => arp_irdy);
+
 	pa_frm  <= spa_frm  or tpa_frm;
 	pa_irdy <= 
     	spa_irdy   when   spa_frm='1' else 
     	tpa_irdy   when   tpa_frm='1' else 
+		'0';
 
 	so_irdy <= 
-    	htype_trdy when htype_frm='1' else 
-    	ptype_trdy when ptype_frm='1' else 
-    	hlen_trdy  when  hlen_frm='1' else 
-    	plen_trdy  when  plen_frm='1' else 
-    	oper_trdy  when  oper_frm='1' else 
-    	sha_trdy   when   sha_frm='1' else 
-    	tha_trdy   when   tha_frm='1' else 
-    	pyl_trdy   when   pyl_frm='1' else
+    	htype_irdy when htype_frm='1' else 
+    	ptype_irdy when ptype_frm='1' else 
+    	hlen_irdy  when  hlen_frm='1' else 
+    	plen_irdy  when  plen_frm='1' else 
+    	oper_irdy  when  oper_frm='1' else 
+    	sha_irdy   when   sha_frm='1' else 
+    	tha_irdy   when   tha_frm='1' else 
 		'0';
 
 	mem_i : entity hdl4fpga.sio_rom
 	generic map (
-		bitdata =>
+		bitdata => reverse(
 			x"0001" &                 -- htype 
 			x"0800" &                 -- ptype 
 			x"06"   &                 -- hlen  
 			x"04"   &                 -- plen  
 			x"0002" &                 -- oper  
 			mac_sa  &                 -- Sender Hardware Address
-			x"ff_ff_ff_ff_ff_ff", 8), -- Target Hardware Address
+			x"ff_ff_ff_ff_ff_ff", 8)) -- Target Hardware Address
 	port map (
         so_clk  => mii_clk,
 		so_frm  => arp_frm,
@@ -141,15 +143,15 @@ begin
 		so_trdy => so_trdy,
 		so_data => so_data);
 
-	dlltx_irdy <= arp_frm and arp_trdy;
-	dlltx_data <= (arp_data'range => '1');
-	arp_irdy   <= 
-		arp_frm     when dlltx_end='0' else
-		arpmux_trdy when    pa_frm='0' else 
-		pa_trdy;
-	arp_data   <= 
-		dlltx_data  when dlltx_end='0' else
-		arpmux_data when    pa_frm='0' else
-		pa_data;
+	ethda_trdy <= ethda_frm and ethda_irdy;
+	ethda_data <= (arp_data'range => '1');
+	arp_trdy   <= 
+		arp_frm when ethda_frm='1' else
+		pa_irdy when    pa_frm='1' else
+		so_trdy;
+	arp_data <= 
+		ethda_data when ethda_irdy='1' else
+		pa_data    when     pa_frm='1' else
+		so_data;
 
 end;

@@ -26,7 +26,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity sio_ram is
+entity sio_rom is
 	generic (
 		bitdata : std_logic_vector);
     port (
@@ -37,7 +37,7 @@ entity sio_ram is
 		so_data : out std_logic_vector);
 end;
 
-architecture def of sio_ram is
+architecture def of sio_rom is
 	signal rd_addr : std_logic_vector(1 to unsigned_num_bits(bitdata'length/so_data'length-1));
 
 begin
