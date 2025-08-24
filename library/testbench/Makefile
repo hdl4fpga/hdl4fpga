@@ -277,7 +277,6 @@ HDL4FPGA__frame_decode__def = $(LIB_HDL4FPGA)/frame_decode/def.dat
 HDL4FPGA__frame_decode = $(LIB_HDL4FPGA)/frame_decode/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
-HDL4FPGA__eth_tb = $(LIB_HDL4FPGA)/eth_tb/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 HDL4FPGA__ecp5_videodcm__def = $(LIB_HDL4FPGA)/ecp5_videodcm/def.dat
@@ -371,6 +370,8 @@ HDL4FPGA__base__body = $(LIB_HDL4FPGA)/base/body.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
 HDL4FPGA__barrel__beh = $(LIB_HDL4FPGA)/barrel/beh.dat
 HDL4FPGA__barrel = $(LIB_HDL4FPGA)/barrel/_primary.dat
+HDL4FPGA__arp_rx__def = $(LIB_HDL4FPGA)/arp_rx/def.dat
+HDL4FPGA__arp_rx = $(LIB_HDL4FPGA)/arp_rx/_primary.dat
 HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
 HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__app_graphics__mix = $(LIB_HDL4FPGA)/app_graphics/mix.dat
@@ -652,7 +653,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__frame_decode) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
-    $(HDL4FPGA__eth_tb) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
     $(HDL4FPGA__ecp5_videodcm__def) \
@@ -746,6 +746,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__base) \
     $(HDL4FPGA__barrel__beh) \
     $(HDL4FPGA__barrel) \
+    $(HDL4FPGA__arp_rx__def) \
+    $(HDL4FPGA__arp_rx) \
     $(HDL4FPGA__arbiter__mix) \
     $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__app_graphics__mix) \
@@ -841,6 +843,17 @@ $(HDL4FPGA__arbiter__mix) : ../basic/arbiter.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../basic/arbiter.vhd
+
+$(HDL4FPGA__arp_rx) \
+$(HDL4FPGA__arp_rx__def) : ../mii/arp_rx.vhd \
+		$(HDL4FPGA__frame_decode) \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -93 -work hdl4fpga ../mii/arp_rx.vhd
 
 $(HDL4FPGA__barrel) \
 $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
@@ -1026,8 +1039,8 @@ $(HDL4FPGA__dll_rx) \
 $(HDL4FPGA__dll_rx__def) : ../mii/dll_rx.vhd \
 		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__frame_decode) \
-		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
+		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
@@ -1261,15 +1274,6 @@ $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../mii/eth_rx.vhd
-
-$(HDL4FPGA__eth_tb) : ../apps/eth_tb.vhd \
-		$(HDL4FPGA__hdo) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../apps/eth_tb.vhd
 
 $(HDL4FPGA__frame_decode) \
 $(HDL4FPGA__frame_decode__def) : ../mii/frame_decode.vhd \

@@ -26,35 +26,68 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
-use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 use hdl4fpga.ipoepkg.all;
 
 entity arp_rx is
 	port (
-		mii_clk  : in  std_logic;
-		arp_frm  : in  std_logic;
-		arp_irdy : in  std_logic;
-		arp_data : in  std_logic_vector;
+		mii_clk   : in  std_logic;
+		arp_frm   : in  std_logic;
+		arp_irdy  : in  std_logic;
+		arp_data  : in  std_logic_vector;
 
-		tpa_frm  : out std_logic);
+		htype_frm  : buffer std_logic := '0';
+		htype_irdy : out std_logic := '0';
+		htype_trdy : in  std_logic := '1';
+		ptype_frm  : buffer std_logic := '0';
+		ptype_irdy : out std_logic := '0';
+		ptype_trdy : in  std_logic := '1';
+		hlen_frm   : buffer std_logic := '0';
+		hlen_irdy  : out std_logic := '0';
+		hlen_trdy  : in  std_logic := '1';
+		plen_frm   : buffer std_logic := '0';
+		plen_irdy  : out std_logic := '0';
+		plen_trdy  : in  std_logic := '1';
+		per_frm    : buffer std_logic := '0';
+		per_irdy   : out std_logic := '0';
+		per_trdy   : in  std_logic := '1';
+		sha_frm    : buffer std_logic := '0';
+		sha_irdy   : out std_logic := '0';
+		sha_trdy   : in  std_logic := '1';
+		spa_frm    : buffer std_logic := '0';
+		spa_irdy   : out std_logic := '0';
+		spa_trdy   : in  std_logic := '1';
+		tha_frm    : buffer std_logic := '0';
+		tha_irdy   : out std_logic := '0';
+		tha_trdy   : in  std_logic := '1';
+		tpa_frm    : buffer std_logic := '0';
+		tpa_irdy   : out std_logic := '0';
+		tpa_trdy   : in  std_logic := '1';
+		pyl_frm    : buffer std_logic := '0';
+		pyl_irdy   : out std_logic := '0';
+		pyl_trdy   : in  std_logic := '1');
 end;
 
 architecture def of arp_rx is
-	signal frm_ptr   : std_logic_vector(0 to unsigned_num_bits(summation(arp4_frame)/arp_data'length-1));
 begin
 
-	process (mii_clk)
-		variable cntr : unsigned(frm_ptr'range);
-	begin
-		if rising_edge(mii_clk) then
-			if arp_frm='0' then
-				cntr := to_unsigned(summation(arp4_frame)/arp_data'length-1, cntr'length);
-			elsif cntr(0)='0' and arp_irdy='1' then
-				cntr := cntr - 1;
-			end if;
-			frm_ptr <= std_logic_vector(cntr);
-		end if;
-	end process;
+	decode_i : entity hdl4fpga.frame_decode
+	generic map (
+		frame => hdo(frames)**".format.arp",
+		size  => arp_data'length)
+	port map (
+		clk     => mii_clk,
+		frm     => arp_frm,
+		irdy    => arp_irdy,
+		act(0)  => htype_frm,
+		act(1)  => ptype_frm,
+		act(2)  => hlen_frm,
+		act(3)  => plen_frm,
+		act(4)  => per_frm,
+		act(5)  => sha_frm,
+		act(6)  => spa_frm,
+		act(7)  => tha_frm,
+		act(8)  => tpa_frm,
+		act(9)  => pyl_frm);
 
-	tpa_frm  <= arp_frm and frame_decode(frm_ptr, reverse(arp4_frame), arp_data'length, arp_tpa);
 end;
