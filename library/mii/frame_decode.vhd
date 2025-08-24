@@ -36,7 +36,7 @@ entity frame_decode is
 		clk  : in  std_logic := '0';
 		frm  : in  std_logic := '0';
 		irdy : in  std_logic := '0';
-		trdy : buffer std_logic := '0';
+		trdy : out std_logic := '0';
 		act  : out std_logic_vector(0 to length(frame)));
 end;
 
@@ -75,7 +75,7 @@ begin
 		variable last : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ((last or frm) and irdy and trdy)='1' then
+			if ((last or frm) and irdy)='1' then
 				if cntr(0)='1' then
 					if limit=cntr then
 						step  := step + 1;
@@ -92,7 +92,7 @@ begin
 			if frm='0' then
 				if irdy='0' then
 					last  := '0';
-				elsif trdy='1' then
+				elsif last='1' then
 					last  := '0';
 				end if;
 			elsif irdy='1' then

@@ -31,16 +31,15 @@ entity mii_ipoe is
 	generic (
 		macda : std_logic_vector := x"00_40_00_01_02_03");
 	port (
-		mii_clk       : in  std_logic;
+		mii_clk    : in  std_logic;
+		miirx_frm  : in  std_logic;
+		miirx_irdy : in  std_logic := '0';
+		miirx_trdy : out std_logic := '1';
+		miirx_data : in  std_logic_vector;
+		fcs_sb     : out std_logic;
+		fcs_vld    : out std_logic;
 
-		miirx_frm     : in  std_logic;
-		miirx_irdy    : in  std_logic := '0';
-		miirx_trdy    : out std_logic := '1';
-		miirx_data    : in  std_logic_vector;
-		fcs_sb        : out std_logic;
-		fcs_vld       : out std_logic;
-
-		tp            : buffer std_logic_vector(1 to 32) := (others => '0'));
+		tp         : buffer std_logic_vector(1 to 32) := (others => '0'));
 
 end;
 

@@ -34,7 +34,7 @@ entity crc is
         clk  : in  std_logic;
 		frm  : in  std_logic := '0';
 		irdy : in  std_logic := '0';
-		trdy : buffer std_logic := '0';
+		trdy : out std_logic := '0';
 		data : in  std_logic_vector;
 		crc  : buffer std_logic_vector);
 end;
@@ -51,7 +51,7 @@ begin
 		variable last : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ((last or frm) and irdy and trdy)='1' then
+			if ((last or frm) and irdy)='1' then
 				crc <= not galois_crc(data, not crc, g);
 			end if;
 			if (frm or irdy)='0' then
@@ -60,7 +60,7 @@ begin
 			if frm='0' then
 				if irdy='0' then
 					last := '0';
-				elsif trdy='1' then
+				elsif last='1' then
 					last := '0';
 				end if;
 			elsif irdy='1' then

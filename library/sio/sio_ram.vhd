@@ -28,128 +28,97 @@ use hdl4fpga.base.all;
 
 entity sio_ram is
 	generic (
-		mode_fifo  : boolean := true;
-		mem_data   : std_logic_vector := (0 to 0 => '-');
-		mem_length : natural := 0;
-		mem_size   : natural := 0);
+		bitdata : std_logic_vector);
     port (
-		si_clk     : in  std_logic;
-		si_frm     : in  std_logic;
-		si_irdy    : in  std_logic;
-		si_trdy    : out std_logic;
-		si_full    : buffer std_logic;
-		si_data    : in  std_logic_vector;
+		si_clk  : in  std_logic := '0';
+		si_frm  : in  std_logic := '0';
+		si_irdy : in  std_logic := '0';
+		si_trdy : out std_logic := '1';
+		si_data : in  std_logic_vector;
 
-		so_clk     : in  std_logic;
-		so_frm     : in  std_logic;
-		so_irdy    : in  std_logic;
-		so_trdy    : out std_logic;
-		so_empty   : out std_logic;
-		so_end     : out std_logic;
-		so_data    : out std_logic_vector);
+		so_clk  : in  std_logic := '0';
+		so_frm  : in  std_logic := '0';
+		so_irdy : in  std_logic := '0';
+		so_trdy : out std_logic := '0';
+		so_data : out std_logic_vector);
 end;
 
 architecture def of sio_ram is
-	constant max_words   : natural := setif(mem_length=0, setif(mem_size=0, mem_data'length, mem_size), mem_length)/si_data'length;
-	constant cntr_length : natural := unsigned_num_bits(max_words-1);
-	subtype addr_range is natural range 1 to cntr_length;
-
-	signal wr_addr : unsigned(0 to cntr_length);
+	signal rd_addr : std_logic_vector(1 to unsigned_num_bits(bitdata'length/so_data'length-1));
+	signal rd_data : std_logic_vector(so_data'range);
+	signal wr_addr : std_logic_vector(rd_addr'range);
+	signal wr_data : std_logic_vector(si_data'range);
 	signal wr_ena  : std_logic;
-	signal rd_addr : unsigned(0 to cntr_length);
-	signal len     : unsigned(0 to cntr_length);
 
 begin
 
 	assert so_data'length=si_data'length
-	report "so_data and si_data have different length"
-	severity FAILURE;
+		report "sio_ram() : so_data => " & natural'image(so_data'length) & " and si_data => " & natural'image(si_data'length) & " have different length"
+		severity failure;
 
-	assert max_words > 0
-	report "max_words should be greater than 0"
-	severity FAILURE;
-
-	process (si_frm, si_irdy, si_clk)
-		variable cntr : unsigned(0 to cntr_length);
-	begin
-		if rising_edge(si_clk) then
-			if si_frm='0' then
-				cntr := (others => '0');
-			else
-				if si_irdy='1' then 
-					if cntr(0)='0' then
-						cntr := cntr + 1;
-					end if;
-				end if;
-				len <= cntr;
-			end if;
-			if mem_length /= 0 then
-				len <= to_unsigned(max_words, len'length);
-			end if;
-			wr_addr <= cntr;
-		end if;
-		wr_ena <= not cntr(0) and si_frm and si_irdy;
-	end process;
-	si_trdy <= si_frm;
-	si_full <= 
-		'0' when mem_length=0 else 
-		'1' when wr_addr>=(mem_length+si_data'length-1)/si_data'length else
-		'0';
-
-	mem_b : block
-		signal waddr : std_logic_vector(addr_range);
-		signal raddr : std_logic_vector(addr_range);
-	begin
-		-- This is because GHDL. The worst vhdl compiler ever
-		waddr <= std_logic_vector(wr_addr(addr_range));
-		raddr <= std_logic_vector(rd_addr(addr_range));
-		mem_e : entity hdl4fpga.dpram 
-		generic map (
-			synchronous_rdaddr => false,
-			synchronous_rddata => false,
-			bitrom => mem_data)
-		port map (
-			wr_clk  => si_clk,
-			wr_ena  => wr_ena,
-			wr_addr => waddr,
-			-- wr_addr => std_logic_vector(wr_addr(addr_range)),
-			wr_data => si_data,
-	
-			rd_clk  => so_clk,
-			rd_addr => raddr,
-			-- rd_addr => std_logic_vector(rd_addr(addr_range)),
-			rd_data => so_data);
-	end block;
-
-	process(so_clk)
+	process (so_frm, so_clk)
+		variable cntr : unsigned(0 to rd_addr'length);
+		variable last : std_logic;
 	begin
 		if rising_edge(so_clk) then
-			if not mode_fifo then
-				if so_frm='0' then
-					rd_addr <= len-1;
-				elsif si_full='0' then
-					rd_addr <= len-1;
-				elsif so_irdy='1' then
-					if rd_addr(0)='0' then
-						rd_addr <= rd_addr - 1;
-					end if;
-				end if;
-			elsif so_frm='0' then
-				rd_addr <= (others => '0');
-			elsif so_irdy='1' then
-				if rd_addr < len then
-					rd_addr <= rd_addr + 1;
-				end if;
+			if ((last or so_frm) and so_irdy)='1' then
+				cntr := cntr + 1;
 			end if;
+			if (so_frm or so_irdy)='0' then
+				cntr := (others => '0');
+				cntr := cntr-bitdata'length/so_data'length;
+			end if;
+			if so_frm='0' then
+				if so_irdy='0' then
+					last := '0';
+				elsif last='1' then
+					last := '0';
+				end if;
+			elsif so_irdy='1' then
+				last := '1';
+			end if;
+			rd_addr <= std_logic_vector(cntr(rd_addr'range));
 		end if;
+		so_trdy <= so_frm or last;
 	end process;
 
-	so_trdy  <= 
-		setif(rd_addr < len) when mode_fifo else
-		not rd_addr(0) and si_full;
-	so_empty <= setif(len=(len'range => '0'));
-	so_end   <=
-		setif(rd_addr >= len) when mode_fifo else
-		rd_addr(0);
+	process (si_frm, si_clk)
+		variable cntr : unsigned(0 to rd_addr'length);
+		variable last : std_logic;
+	begin
+		if rising_edge(si_clk) then
+			if ((last or si_frm) and si_irdy)='1' then
+				cntr := cntr + 1;
+			end if;
+			if (si_frm or si_irdy)='0' then
+				cntr := (others => '0');
+				cntr := cntr-bitdata'length/si_data'length;
+			end if;
+			if si_frm='0' then
+				if si_irdy='0' then
+					last := '0';
+				elsif last='1' then
+					last := '0';
+				end if;
+			elsif si_irdy='1' then
+				last := '1';
+			end if;
+			wr_addr <= std_logic_vector(cntr(rd_addr'range));
+		end if;
+		si_trdy <=  si_frm or last;
+		wr_ena  <= (si_frm or last) and si_irdy;
+	end process;
+
+	mem_i : entity hdl4fpga.dpram
+	generic map (
+		bitrom  => std_logic_vector(resize(unsigned(bitdata), so_data'length*2**rd_addr'length)))
+	port map (
+		rd_addr => rd_addr,
+		rd_data => rd_data,
+
+		wr_clk  => si_clk,
+		wr_ena  => wr_ena,
+		wr_addr => wr_addr,
+		wr_data => wr_data);
 
 end;
