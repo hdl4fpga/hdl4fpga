@@ -253,6 +253,8 @@ HDL4FPGA__ipoepkg__body = $(LIB_HDL4FPGA)/ipoepkg/body.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
 HDL4FPGA__igbx__beh = $(LIB_HDL4FPGA)/igbx/beh.dat
 HDL4FPGA__igbx = $(LIB_HDL4FPGA)/igbx/_primary.dat
+HDL4FPGA__icmp_rx__def = $(LIB_HDL4FPGA)/icmp_rx/def.dat
+HDL4FPGA__icmp_rx = $(LIB_HDL4FPGA)/icmp_rx/_primary.dat
 HDL4FPGA__hdo__body = $(LIB_HDL4FPGA)/hdo/body.dat
 HDL4FPGA__hdo = $(LIB_HDL4FPGA)/hdo/_primary.dat
 HDL4FPGA__hdlcsync_tx__def = $(LIB_HDL4FPGA)/hdlcsync_tx/def.dat
@@ -626,6 +628,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__ipoepkg) \
     $(HDL4FPGA__igbx__beh) \
     $(HDL4FPGA__igbx) \
+    $(HDL4FPGA__icmp_rx__def) \
+    $(HDL4FPGA__icmp_rx) \
     $(HDL4FPGA__hdo__body) \
     $(HDL4FPGA__hdo) \
     $(HDL4FPGA__hdlcsync_tx__def) \
@@ -1341,6 +1345,17 @@ $(HDL4FPGA__hdo__body) : ../basic/hdo.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -93 -work hdl4fpga ../basic/hdo.vhd
+
+$(HDL4FPGA__icmp_rx) \
+$(HDL4FPGA__icmp_rx__def) : ../mii/icmp_rx.vhd \
+		$(HDL4FPGA__frame_decode) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/icmp_rx.vhd
 
 $(HDL4FPGA__igbx) \
 $(HDL4FPGA__igbx__beh) : ../xilinx/igbx.vhd \

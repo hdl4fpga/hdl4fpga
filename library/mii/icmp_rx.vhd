@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -43,6 +44,12 @@ entity icmp_rx is
 		chksum_frm  : buffer std_logic := '0';
 		chksum_irdy : out std_logic := '0';
 		chksum_trdy : in  std_logic := '1';
+		id_frm      : buffer std_logic := '0';
+		id_irdy     : out std_logic := '0';
+		id_trdy     : in  std_logic := '1';
+		seq_frm     : buffer std_logic := '0';
+		seq_irdy    : out std_logic := '0';
+		seq_trdy    : in  std_logic := '1';
 		pyl_frm     : buffer std_logic := '0';
 		pyl_irdy    : out std_logic := '0';
 		pyl_trdy    : in  std_logic := '1');
@@ -57,18 +64,18 @@ begin
 		size  => icmp_data'length)
 	port map (
 		clk     => mii_clk,
-		frm     => udp_frm,
-		irdy    => udp_irdy,
+		frm     => icmp_frm,
+		irdy    => icmp_irdy,
 		act(0)  => type_frm,
 		act(1)  => code_frm,
-		act(2)  => ckksum_frm,
+		act(2)  => chksum_frm,
 		act(3)  => id_frm,
 		act(4)  => seq_frm,
 		act(5)  => pyl_frm);
 
 		type_irdy   <= type_frm;
 		code_irdy   <= code_frm;
-		ckksum_irdy <= ckksum_frm;
+		chksum_irdy <= chksum_frm;
 		id_irdy     <= id_frm;
 		seq_irdy    <= seq_frm;
 		pyl_irdy    <= pyl_frm;
