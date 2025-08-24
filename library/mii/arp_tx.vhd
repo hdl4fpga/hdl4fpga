@@ -63,6 +63,8 @@ architecture def of arp_tx is
 begin
 
 	arp_frm <= to_stdulogic(to_bit(arp_rdy) xor to_bit(arp_req));
+	decode_i : entity hdl4fpga.arp_decode
+
 	process (mii_clk)
 		variable cntr : unsigned(frm_ptr'range);
 	begin

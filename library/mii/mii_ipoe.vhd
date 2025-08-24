@@ -161,8 +161,8 @@ begin
 		arp_frm  => arprx_frm,
 		arp_irdy => arprx_irdy,
 		arp_data => arprx_data,
-		tpa_frm  => arptpa_frm,
-		tha_frm  => arptha_frm);
+		spa_frm  => arptpa_frm,
+		sha_frm  => arptha_frm);
 
 	ipv4typ_cmp_i : entity hdl4fpga.mii_cmp
    	generic map (
