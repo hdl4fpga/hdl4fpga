@@ -32,8 +32,9 @@ use hdl4fpga.ipoepkg.all;
 entity arp_rx is
 	port (
 		mii_clk   : in  std_logic;
-		arp_frm   : in  std_logic;
-		arp_irdy  : in  std_logic;
+		arp_frm   : in  std_logic := '0';
+		arp_irdy  : in  std_logic := '0';
+		arp_trdy  : out std_logic := '0';
 		arp_data  : in  std_logic_vector;
 
 		htype_frm  : buffer std_logic := '0';
@@ -89,5 +90,28 @@ begin
 		act(7)  => tha_frm,
 		act(8)  => tpa_frm,
 		act(9)  => pyl_frm);
+
+	htype_irdy <= htype_frm;
+	ptype_irdy <= ptype_frm;
+	hlen_irdy  <= hlen_frm;
+	plen_irdy  <= plen_frm;
+	per_irdy   <= per_frm;
+	sha_irdy   <= sha_frm;
+	spa_irdy   <= spa_frm;
+	tha_irdy   <= tha_frm;
+	tpa_irdy   <= tpa_frm;
+	pyl_irdy   <= pyl_frm;
+
+	arp_trdy <= 
+    	htype_trdy when htype_frm='1' else 
+    	ptype_trdy when ptype_frm='1' else 
+    	hlen_trdy  when  hlen_frm='1' else 
+    	plen_trdy  when  plen_frm='1' else 
+    	per_trdy   when   per_frm='1' else 
+    	sha_trdy   when   sha_frm='1' else 
+    	spa_trdy   when   spa_frm='1' else 
+    	tha_trdy   when   tha_frm='1' else 
+    	tpa_trdy   when   tpa_frm='1' else 
+    	pyl_trdy   when   pyl_frm='1';
 
 end;
