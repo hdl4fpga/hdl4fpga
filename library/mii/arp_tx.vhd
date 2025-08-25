@@ -111,12 +111,15 @@ begin
 		tha_trdy   => arp_irdy,
 		tpa_frm    => tpa_frm,
 		tpa_irdy   => tpa_irdy,
-		tpa_trdy   => arp_irdy);
+		tpa_trdy   => arp_irdy;
+		pyl_frm    => pyl_frm,
+		pyl_irdy   => pyl_irdy,
+		pyl_trdy   => arp_irdy);
 
 	pa_frm  <= spa_frm  or tpa_frm;
 	pa_irdy <= 
-    	spa_irdy   when   spa_frm='1' else 
-    	tpa_irdy   when   tpa_frm='1' else 
+    	spa_irdy when spa_frm='1' else 
+    	tpa_irdy when tpa_frm='1' else 
 		'0';
 
 	so_irdy <= 
