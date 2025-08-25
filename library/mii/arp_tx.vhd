@@ -33,6 +33,9 @@ entity arp_tx is
 	port (
 		mii_clk  : in  std_logic;
 		
+		arptx_req  : in  std_logic := '0';
+		arptx_rdy  : out std_logic := '0';
+
 		pa_frm     : buffer std_logic;
 		pa_irdy    : buffer std_logic;
 		pa_trdy    : in  std_logic;
@@ -43,9 +46,9 @@ entity arp_tx is
 		ethda_trdy : out std_logic;
 		ethda_data : buffer std_logic_vector;
 
-		arp_frm  : in std_logic;
-		arp_irdy : in std_logic;
-		arp_trdy : out std_logic;
+		arp_frm  : buffer std_logic;
+		arp_irdy : buffer std_logic;
+		arp_trdy : in  std_logic;
 		arp_data : buffer std_logic_vector);
 
 end;
@@ -145,7 +148,7 @@ begin
 
 	ethda_trdy <= ethda_frm and ethda_irdy;
 	ethda_data <= (arp_data'range => '1');
-	arp_trdy   <= 
+	arp_irdy   <= 
 		arp_frm when ethda_frm='1' else
 		pa_irdy when    pa_frm='1' else
 		so_trdy;

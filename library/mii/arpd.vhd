@@ -38,10 +38,10 @@ entity arpd is
 		arprx_irdy    : in  std_logic;
 		arprx_data    : in  std_logic_vector;
 
-		sparx_irdy    : out std_logic;
-		sparx_trdy    : in  std_logic;
-		sparx_end     : in  std_logic;
-		sparx_equ     : in  std_logic;
+		ipaddr_frm    : out std_logic;
+		ipaddr_irdy   : out std_logic;
+		ipaddr_trdy   : in  std_logic := '1';
+		ipaddr_data   : in  std_logic;
 
 		ipv4sawr_frm  : in  std_logic;
 		ipv4sawr_irdy : in  std_logic;
@@ -65,10 +65,11 @@ end;
 
 architecture def of arpd is
 
+	signal arptx_rdy : std_logic := '0';
+	signal arptx_req : std_logic := '0';
+
 	signal tparx_frm : std_logic;
 	signal tparx_vld : std_logic;
-	signal arptx_rdy : std_logic;
-	signal arptx_req : std_logic;
 
 	signal spatx_frm   : std_logic;
 	signal spatx_irdy  : std_logic;
@@ -78,29 +79,33 @@ architecture def of arpd is
 
 begin
 
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if (to_bit(arptx_req) xor to_bit(arptx_rdy))='0' then
-				if arprx_frm='1' then
-					arptx_req <= to_stdulogic(to_bit(arptx_rdy)) xor (tparx_vld and sparx_end);
-				elsif (to_bit(arp_req) xor to_bit(arp_rdy))='1' then
-					arptx_req <= not to_stdulogic(to_bit(arptx_rdy));
-					arp_rdy   <= arp_req;
-				end if;
-			end if;
-		end if;
-	end process;
-
-	arprx_e : entity hdl4fpga.arp_rx
+	arprx_i : entity hdl4fpga.arp_decode
 	port map (
 		mii_clk  => mii_clk,
 		arp_frm  => arprx_frm,
 		arp_irdy => arprx_irdy,
 		arp_data => arprx_data,
-		tpa_frm  => tparx_frm);
+		tpa_frm  => ipaddr_frm,
+		tpa_irdy => ipaddr_irdy);
 
-	sparx_irdy <= tparx_frm and arprx_irdy;
+	cmp_i : entity hdl4fpga.sio_cmp
+	port map (
+		clk     => mii_clk,
+		mr_frm  => ipaddr_frm,
+		mr_irdy => ipaddr_irdy,
+		mr_data => ipaddr_data,
+		sl_data => arprx_data,
+		equ     => ipaddr_equ);
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if (arprx_frm and ipaddr_equ)='1' then
+				arptx_req <= not arptx_rdy;
+			end if;
+		end if;
+	end process;
+
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
@@ -114,22 +119,18 @@ begin
 
 	ipv4sa_e : entity hdl4fpga.sio_ram
 	generic map (
-		mem_data => reverse(default_ipv4a,8),
-		mem_length => 32)
+		bitdata => reverse(default_ipv4a,8))
 	port map (
 		si_clk  => mii_clk,
-		si_frm  => ipv4sawr_frm,
-		si_irdy => ipv4sawr_irdy,
-		si_trdy => ipv4sawr_trdy,
-		si_full => ipv4sawr_end,
-		si_data => ipv4sawr_data,
+		si_frm  => ipv4sa_frm,
+		si_irdy => ipv4sa_irdy,
+		si_data => ipv4sa_data,
 	
 		so_clk  => mii_clk,
-		so_frm  => spatx_frm,
-		so_irdy => spatx_irdy,
-		so_trdy => spatx_trdy,
-		so_end  => spatx_end,
-		so_data => spatx_data);
+		so_frm  => spa_frm,
+		so_irdy => spa_irdy,
+		so_trdy => spa_trdy,
+		so_data => spa_data);
 
 	arptx_e : entity hdl4fpga.arp_tx
 	generic map (
@@ -138,11 +139,10 @@ begin
 		mii_clk    => mii_clk,
 		arp_req    => arptx_req,
 		arp_rdy    => arptx_rdy,
-		pa_frm     => spatx_frm,
-		pa_irdy    => spatx_irdy,
-		pa_trdy    => spatx_trdy,
-		pa_end     => spatx_end,
-		pa_data    => spatx_data,
+		pa_frm     => spa_frm,
+		pa_irdy    => spa_irdy,
+		pa_trdy    => spa_trdy,
+		pa_data    => spa_data,
 
 		dlltx_irdy => dlltx_irdy,
 		dlltx_end  => dlltx_end,
@@ -151,7 +151,6 @@ begin
 		arp_frm    => arptx_frm,
 		arp_irdy   => arptx_irdy,
 		arp_trdy   => arptx_trdy,
-		arp_end    => arptx_end,
 		arp_data   => arptx_data);
 
 end;
