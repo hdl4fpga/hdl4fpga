@@ -38,16 +38,16 @@ entity arpd is
 		arprx_irdy    : in  std_logic;
 		arprx_data    : in  std_logic_vector;
 
-		ipaddr_frm    : out std_logic;
-		ipaddr_irdy   : out std_logic;
-		ipaddr_trdy   : in  std_logic := '1';
-		ipaddr_data   : in  std_logic;
+		myipad_frm    : out std_logic;
+		myipad_irdy   : out std_logic;
+		myipad_trdy   : in  std_logic := '1';
+		myipad_data   : in  std_logic;
 
-		ipv4sawr_frm  : in  std_logic;
-		ipv4sawr_irdy : in  std_logic;
-		ipv4sawr_trdy : out std_logic;
-		ipv4sawr_end  : out std_logic;
-		ipv4sawr_data : in  std_logic_vector;
+		ipv4sa_frm    : in  std_logic;
+		ipv4sa_irdy   : in  std_logic;
+		ipv4sa_trdy   : out std_logic;
+		ipv4sa_end    : out std_logic;
+		ipv4sa_data   : in  std_logic_vector;
 	
 		dlltx_irdy    : out  std_logic;
 		dlltx_end     : in   std_logic;
@@ -85,22 +85,22 @@ begin
 		arp_frm  => arprx_frm,
 		arp_irdy => arprx_irdy,
 		arp_data => arprx_data,
-		tpa_frm  => ipaddr_frm,
-		tpa_irdy => ipaddr_irdy);
+		tpa_frm  => myipad_frm,
+		tpa_irdy => myipad_irdy);
 
 	cmp_i : entity hdl4fpga.sio_cmp
 	port map (
 		clk     => mii_clk,
-		mr_frm  => ipaddr_frm,
-		mr_irdy => ipaddr_irdy,
-		mr_data => ipaddr_data,
+		mr_frm  => myipad_frm,
+		mr_irdy => myipad_irdy,
+		mr_data => myipad_data,
 		sl_data => arprx_data,
-		equ     => ipaddr_equ);
+		equ     => myipad_equ);
 
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			if (arprx_frm and ipaddr_equ)='1' then
+			if (arprx_frm and myipad_equ)='1' then
 				arptx_req <= not arptx_rdy;
 			end if;
 		end if;
@@ -137,8 +137,8 @@ begin
 		hwsa       => hwsa)
 	port map (
 		mii_clk    => mii_clk,
-		arp_req    => arptx_req,
-		arp_rdy    => arptx_rdy,
+		tx_req     => tx_req,
+		tx_rdy     => tx_rdy,
 		pa_frm     => spa_frm,
 		pa_irdy    => spa_irdy,
 		pa_trdy    => spa_trdy,
