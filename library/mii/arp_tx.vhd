@@ -173,6 +173,13 @@ begin
 		arp_frm when ethda_frm='1' else
 		pa_irdy when    pa_frm='1' else
 		so_trdy;
+
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			f 
+
+		end if;
 	arp_data <= 
 		ethda_data when ethda_irdy='1' else
 		pa_data    when     pa_frm='1' else
