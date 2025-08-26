@@ -29,12 +29,12 @@ use hdl4fpga.ipoepkg.all;
 
 entity arp_tx is
 	generic (
-		mac_sa   : std_logic_vector(0 to 48-1));
+		mac_sa     : std_logic_vector(0 to 48-1));
 	port (
-		mii_clk  : in  std_logic;
+		mii_clk    : in  std_logic;
 		
-		arptx_req  : in  std_logic := '0';
-		arptx_rdy  : out std_logic := '0';
+		tx_req     : in  std_logic := '0';
+		tx_rdy     : buffer std_logic := '0';
 
 		pa_frm     : buffer std_logic;
 		pa_irdy    : buffer std_logic;
@@ -46,10 +46,10 @@ entity arp_tx is
 		ethda_trdy : out std_logic;
 		ethda_data : buffer std_logic_vector;
 
-		arp_frm  : buffer std_logic;
-		arp_irdy : buffer std_logic;
-		arp_trdy : in  std_logic;
-		arp_data : buffer std_logic_vector);
+		arp_frm    : buffer std_logic;
+		arp_irdy   : buffer std_logic;
+		arp_trdy   : in  std_logic;
+		arp_data   : buffer std_logic_vector);
 
 end;
 
@@ -72,13 +72,31 @@ architecture def of arp_tx is
 	signal tha_irdy   : std_logic;
 	signal tpa_frm    : std_logic;
 	signal tpa_irdy   : std_logic;
+	signal pyl_frm    : std_logic;
+	signal pyl_irdy   : std_logic;
 
-	signal so_frm  : std_logic;
-	signal so_trdy : std_logic;
-	signal so_irdy : std_logic;
-	signal so_data : std_logic_vector(arp_data'range);
+	signal so_frm     : std_logic;
+	signal so_trdy    : std_logic;
+	signal so_irdy    : std_logic;
+	signal so_data    : std_logic_vector(arp_data'range);
 begin
 
+	process (pyl_frm, mii_clk)
+		variable frm : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if (arp_frm or arp_irdy)='0' then
+				if (tx_rdy xor tx_req)='1' then
+					frm := '1';
+				end if;
+			elsif (pyl_frm and arp_irdy and arp_trdy)='1' then
+				tx_rdy <= tx_req;
+			end if;
+		end if;
+		arp_frm <= not pyl_frm and frm;
+	end process;
+
+	arp_irdy <= arp_frm;
 	decode_i : entity hdl4fpga.arp_decode
 	port map (
 		mii_clk    => mii_clk,
@@ -87,34 +105,34 @@ begin
 		arp_data   => arp_data,
 		htype_frm  => htype_frm,
 		htype_irdy => htype_irdy,
-		htype_trdy => arp_irdy,
+		htype_trdy => arp_trdy,
 		ptype_frm  => ptype_frm,
 		ptype_irdy => ptype_irdy,
-		ptype_trdy => arp_irdy,
+		ptype_trdy => arp_trdy,
 		hlen_frm   => hlen_frm ,
 		hlen_irdy  => hlen_irdy,
-		hlen_trdy  => arp_irdy,
+		hlen_trdy  => arp_trdy,
 		plen_frm   => plen_frm,
 		plen_irdy  => plen_irdy,
-		plen_trdy  => arp_irdy,
+		plen_trdy  => arp_trdy,
 		oper_frm   => oper_frm,
 		oper_irdy  => oper_irdy,
-		oper_trdy  => arp_irdy,
+		oper_trdy  => arp_trdy,
 		sha_frm    => sha_frm,
 		sha_irdy   => sha_irdy,
-		sha_trdy   => arp_irdy,
+		sha_trdy   => arp_trdy,
 		spa_frm    => spa_frm,
 		spa_irdy   => spa_irdy,
-		spa_trdy   => arp_irdy,
+		spa_trdy   => arp_trdy,
 		tha_frm    => tha_frm,
 		tha_irdy   => tha_irdy,
-		tha_trdy   => arp_irdy,
+		tha_trdy   => arp_trdy,
 		tpa_frm    => tpa_frm,
 		tpa_irdy   => tpa_irdy,
-		tpa_trdy   => arp_irdy;
+		tpa_trdy   => arp_trdy,
 		pyl_frm    => pyl_frm,
 		pyl_irdy   => pyl_irdy,
-		pyl_trdy   => arp_irdy);
+		pyl_trdy   => arp_trdy);
 
 	pa_frm  <= spa_frm  or tpa_frm;
 	pa_irdy <= 
