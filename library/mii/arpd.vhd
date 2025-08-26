@@ -43,11 +43,11 @@ entity arpd is
 		myipad_trdy   : in  std_logic := '1';
 		myipad_data   : in  std_logic;
 
-		ipv4sa_frm    : in  std_logic;
-		ipv4sa_irdy   : in  std_logic;
-		ipv4sa_trdy   : out std_logic;
-		ipv4sa_end    : out std_logic;
-		ipv4sa_data   : in  std_logic_vector;
+		ipsa_frm      : in  std_logic;
+		ipsa_irdy     : in  std_logic;
+		ipsa_trdy     : out std_logic;
+		ipsa_end      : out std_logic;
+		ipsa_data     : in  std_logic_vector;
 	
 		dlltx_irdy    : out  std_logic;
 		dlltx_end     : in   std_logic;
@@ -117,14 +117,15 @@ begin
 		end if;
 	end process;
 
-	ipv4sa_e : entity hdl4fpga.sio_ram
+	ipsa_e : entity hdl4fpga.sio_ram
 	generic map (
-		bitdata => reverse(default_ipv4a,8))
+		bitdata => reverse(x"00_00_00_00",8))
 	port map (
 		si_clk  => mii_clk,
-		si_frm  => ipv4sa_frm,
-		si_irdy => ipv4sa_irdy,
-		si_data => ipv4sa_data,
+		si_frm  => ipsa_frm,
+		si_irdy => ipsa_irdy,
+		si_trdy => ipsa_trdy,
+		si_data => ipsa_data,
 	
 		so_clk  => mii_clk,
 		so_frm  => spa_frm,
