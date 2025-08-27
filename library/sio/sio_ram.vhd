@@ -54,7 +54,7 @@ begin
 		report "sio_ram() : so_data => " & natural'image(so_data'length) & " and si_data => " & natural'image(si_data'length) & " have different length"
 		severity failure;
 
-	process (so_frm, so_clk)
+	process (so_frm, so_irdy, so_clk)
 		variable cntr : unsigned(0 to rd_addr'length);
 		variable last : std_logic;
 	begin
@@ -77,10 +77,10 @@ begin
 			end if;
 			rd_addr <= std_logic_vector(cntr(rd_addr'range));
 		end if;
-		so_trdy <= so_frm or last;
+		so_trdy <= (so_frm or last) and so_irdy;
 	end process;
 
-	process (si_frm, si_clk)
+	process (si_frm, si_irdy, si_clk)
 		variable cntr : unsigned(0 to rd_addr'length);
 		variable last : std_logic;
 	begin
@@ -103,7 +103,7 @@ begin
 			end if;
 			wr_addr <= std_logic_vector(cntr(rd_addr'range));
 		end if;
-		si_trdy <= (si_frm or last);
+		si_trdy <= (si_frm or last) and si_irdy;
 		wr_ena  <= (si_frm or last) and si_irdy;
 	end process;
 

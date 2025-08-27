@@ -47,7 +47,7 @@ begin
 		report "crc () : length of g => " & natural'image(g'length) & " should be multiple of data'length => " & natural'image(data'length)
 		severity FAILURE;
 
-	process (frm, clk)
+	process (frm, irdy, clk)
 		variable last : std_logic;
 	begin
 		if rising_edge(clk) then
@@ -67,7 +67,7 @@ begin
 				last := '1';
 			end if;
 		end if;
-		trdy <= frm or last;
+		trdy <= (frm or last) and irdy;
 	end process;
 
 end;

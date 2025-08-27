@@ -86,20 +86,22 @@ architecture def of arp_tx is
 begin
 
 	process (pyl_frm, mii_clk)
-		variable qfrm : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if (tx_rdy xor tx_req)='1' then
-				if (arp_frm or arp_irdy)='0' then
+				if (not arp_frm and arp_irdy and arp_trdy)='1' then
 					tx_rdy <= tx_req;
+				elsif (pyl_frm and irdy and arp_trdy)='1' then
+					frm <= '0';
+				else
+					frm <= '1';
 				end if;
 			else
+				frm <= '0';
 			end if;
 		end if;
 	end process;
-	frm <= not pyl_frm and (tx_rdy xor tx_req);
 
-	arp_irdy <= arp_frm;
 	decode_i : entity hdl4fpga.arp_decode
 	port map (
 		mii_clk    => mii_clk,
@@ -173,8 +175,8 @@ begin
 	ethda_trdy <= ethda_frm and ethda_irdy;
 	ethda_data <= (arp_data'range => '1');
 	irdy <= 
-		arp_frm when ethda_frm='1' else
-		pa_irdy when    pa_frm='1' else
+		arp_irdy when ethda_frm='1' else
+		pa_irdy  when    pa_frm='1' else
 		so_trdy;
 	data <= 
 		ethda_data when ethda_irdy='1' else
@@ -184,10 +186,12 @@ begin
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
-			arp_data <= 
-			ethda_data when ethda_irdy='1' else
-			pa_data    when     pa_frm='1' else
-			so_data;
+			if (arp_irdy and arp_trdy)='1' then
+				arp_data <= data;
+			end if;
+			arp_frm  <= frm and not pyl_frm;
+			arp_irdy <= frm;
 		end if;
-	process;
+	end process;
+
 end;

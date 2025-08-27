@@ -43,7 +43,7 @@ end;
 architecture def of frame_decode is
 begin
 
-	process (frm, clk)
+	process (frm, irdy, clk)
 		constant total : natural := summation(frame)/size;
 	
 		function boundaries
@@ -99,7 +99,7 @@ begin
 				last := '1';
 			end if;
 		end if;
-		trdy <= frm or last;
+		trdy <= (frm or last) and irdy;
 
 		act <= (others => '0');
 		act(step) <= frm;
