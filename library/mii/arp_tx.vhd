@@ -79,30 +79,33 @@ architecture def of arp_tx is
 	signal so_trdy    : std_logic;
 	signal so_irdy    : std_logic;
 	signal so_data    : std_logic_vector(arp_data'range);
+
+	signal frm  : std_logic;
+	signal irdy : std_logic;
+	signal data : std_logic_vector(arp_data'range);
 begin
 
 	process (pyl_frm, mii_clk)
-		variable frm : std_logic;
+		variable qfrm : std_logic;
 	begin
 		if rising_edge(mii_clk) then
-			if (arp_frm or arp_irdy)='0' then
-				if (tx_rdy xor tx_req)='1' then
-					frm := '1';
+			if (tx_rdy xor tx_req)='1' then
+				if (arp_frm or arp_irdy)='0' then
+					tx_rdy <= tx_req;
 				end if;
-			elsif (pyl_frm and arp_irdy and arp_trdy)='1' then
-				tx_rdy <= tx_req;
+			else
 			end if;
 		end if;
-		arp_frm <= not pyl_frm and frm;
 	end process;
+	frm <= not pyl_frm and (tx_rdy xor tx_req);
 
 	arp_irdy <= arp_frm;
 	decode_i : entity hdl4fpga.arp_decode
 	port map (
 		mii_clk    => mii_clk,
-		arp_frm    => arp_frm,
-		arp_irdy   => arp_irdy,
-		arp_data   => arp_data,
+		arp_frm    => frm,
+		arp_irdy   => irdy,
+		arp_data   => data,
 		htype_frm  => htype_frm,
 		htype_irdy => htype_irdy,
 		htype_trdy => arp_trdy,
@@ -169,20 +172,22 @@ begin
 
 	ethda_trdy <= ethda_frm and ethda_irdy;
 	ethda_data <= (arp_data'range => '1');
-	arp_irdy   <= 
+	irdy <= 
 		arp_frm when ethda_frm='1' else
 		pa_irdy when    pa_frm='1' else
 		so_trdy;
-
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			f 
-
-		end if;
-	arp_data <= 
+	data <= 
 		ethda_data when ethda_irdy='1' else
 		pa_data    when     pa_frm='1' else
 		so_data;
 
+	process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			arp_data <= 
+			ethda_data when ethda_irdy='1' else
+			pa_data    when     pa_frm='1' else
+			so_data;
+		end if;
+	process;
 end;
