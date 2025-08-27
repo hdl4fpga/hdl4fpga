@@ -104,7 +104,7 @@ begin
 						frm <= '1';
 					end if;
 				when s_finish =>
-					if (not arp_frm and arp_irdy and arp_trdy)='1' then
+					if (arp_frm or arp_irdy or arp_trdy)='0' then
 						tx_rdy <= tx_req;
 						state := s_start;
 					else
@@ -195,7 +195,7 @@ begin
 		pa_irdy  when    pa_frm='1' else
 		so_trdy;
 	data <= 
-		ethda_data when ethda_irdy='1' else
+		ethda_data when ethda_frm='1' else
 		pa_data    when     pa_frm='1' else
 		so_data;
 
@@ -205,9 +205,9 @@ begin
 			if (arp_irdy and arp_trdy)='1' then
 				arp_data <= data;
 			end if;
-			arp_frm  <= frm and not pyl_frm;
-			arp_irdy <= frm;
 		end if;
 	end process;
+	arp_irdy <= frm;
+	arp_frm  <= frm and not pyl_frm;
 
 end;

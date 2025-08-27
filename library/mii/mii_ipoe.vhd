@@ -182,7 +182,7 @@ begin
 			pa_trdy    => '1',
 			pa_data    => pa_data,
 	
-			ethda_frm  => '1',
+			ethda_frm  => '0',
 			ethda_irdy => '1',
 			ethda_data => ethda_data,
 	
