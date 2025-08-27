@@ -37,6 +37,7 @@ entity frame_decode is
 		frm  : in  std_logic := '0';
 		irdy : in  std_logic := '0';
 		trdy : out std_logic := '0';
+		fin  : out std_logic := '0';
 		act  : out std_logic_vector(0 to length(frame)));
 end;
 
@@ -99,6 +100,7 @@ begin
 				last := '1';
 			end if;
 		end if;
+		fin  <= not cntr(0);
 		trdy <= (frm or last) and irdy;
 
 		act <= (others => '0');

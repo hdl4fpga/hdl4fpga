@@ -73,8 +73,6 @@ architecture def of arp_tx is
 	signal tha_irdy   : std_logic;
 	signal tpa_frm    : std_logic;
 	signal tpa_irdy   : std_logic;
-	signal pyl_frm    : std_logic;
-	signal pyl_irdy   : std_logic;
 
 	signal so_frm     : std_logic;
 	signal so_trdy    : std_logic;
@@ -83,11 +81,12 @@ architecture def of arp_tx is
 
 	signal frm  : std_logic;
 	signal irdy : std_logic;
+	signal fin  : std_logic;
 	signal data : std_logic_vector(arp_data'range);
 begin
 
 	process (mii_clk)
-		type states is (s_start, s_active, s_finish);
+		type states is (s_start, s_active, s_wait);
 		variable state : states;
 	begin
 		if rising_edge(mii_clk) then
@@ -97,22 +96,22 @@ begin
 					frm <= '1';
 					state := s_active;
 				when s_active =>
-					if (pyl_frm and irdy and arp_trdy)='1' then
+					if (fin and irdy and arp_trdy)='1' then
 						frm   <= '0';
-						state := s_finish;
+						state := s_wait;
 					else
 						frm <= '1';
 					end if;
-				when s_finish =>
-					if (arp_frm or arp_irdy or arp_trdy)='0' then
+				when s_wait =>
+					if (arp_irdy or arp_trdy)='0' then
 						tx_rdy <= tx_req;
-						state := s_start;
+						state  := s_start;
 					else
-						frm   <= '0';
+						frm <= '0';
 					end if;
 				end case;
 			else
-				frm <= '0';
+				frm   <= '0';
 				state := s_start;
 			end if;
 		end if;
@@ -124,6 +123,7 @@ begin
 		arp_frm    => frm,
 		arp_irdy   => irdy,
 		arp_data   => data,
+		arp_fin    => fin,
 		htype_frm  => htype_frm,
 		htype_irdy => htype_irdy,
 		htype_trdy => arp_trdy,
@@ -150,10 +150,7 @@ begin
 		tha_trdy   => arp_trdy,
 		tpa_frm    => tpa_frm,
 		tpa_irdy   => tpa_irdy,
-		tpa_trdy   => arp_trdy,
-		pyl_frm    => pyl_frm,
-		pyl_irdy   => pyl_irdy,
-		pyl_trdy   => arp_trdy);
+		tpa_trdy   => arp_trdy);
 
 	pa_frm  <= spa_frm  or tpa_frm;
 	pa_irdy <= 
@@ -208,6 +205,6 @@ begin
 		end if;
 	end process;
 	arp_irdy <= frm;
-	arp_frm  <= frm and not pyl_frm;
+	arp_frm  <= frm and not fin;
 
 end;
