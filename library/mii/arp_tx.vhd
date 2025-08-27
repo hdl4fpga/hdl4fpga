@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -85,19 +86,34 @@ architecture def of arp_tx is
 	signal data : std_logic_vector(arp_data'range);
 begin
 
-	process (pyl_frm, mii_clk)
+	process (mii_clk)
+		type states is (s_start, s_active, s_finish);
+		variable state : states;
 	begin
 		if rising_edge(mii_clk) then
 			if (tx_rdy xor tx_req)='1' then
-				if (not arp_frm and arp_irdy and arp_trdy)='1' then
-					tx_rdy <= tx_req;
-				elsif (pyl_frm and irdy and arp_trdy)='1' then
-					frm <= '0';
-				else
+				case state is
+				when s_start =>
 					frm <= '1';
-				end if;
+					state := s_active;
+				when s_active =>
+					if (pyl_frm and irdy and arp_trdy)='1' then
+						frm   <= '0';
+						state := s_finish;
+					else
+						frm <= '1';
+					end if;
+				when s_finish =>
+					if (not arp_frm and arp_irdy and arp_trdy)='1' then
+						tx_rdy <= tx_req;
+						state := s_start;
+					else
+						frm   <= '0';
+					end if;
+				end case;
 			else
 				frm <= '0';
+				state := s_start;
 			end if;
 		end if;
 	end process;
@@ -158,11 +174,11 @@ begin
 	mem_i : entity hdl4fpga.sio_rom
 	generic map (
 		bitdata => reverse(
-			x"0001" &                 -- htype 
-			x"0800" &                 -- ptype 
-			x"06"   &                 -- hlen  
-			x"04"   &                 -- plen  
-			x"0002" &                 -- oper  
+			std_logic_vector'(hdo(frames)**".data.arp.htype")     &
+			std_logic_vector'(hdo(frames)**".data.arp.ptype")     &
+			std_logic_vector'(hdo(frames)**".data.arp.hlen")      &
+			std_logic_vector'(hdo(frames)**".data.arp.plen")      &
+			std_logic_vector'(hdo(frames)**".data.arp.oper.reply")&
 			mac_sa  &                 -- Sender Hardware Address
 			x"ff_ff_ff_ff_ff_ff", 8)) -- Target Hardware Address
 	port map (

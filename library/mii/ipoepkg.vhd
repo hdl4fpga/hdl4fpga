@@ -88,6 +88,13 @@ package ipoepkg is
 				"type:{"            &
 					"ipv4:0x0800,"  &
 					" arp:0x0806}}," &
+    		"arp:{"                 &
+			    "htype:0x0001,"     &
+			    "ptype:0x0800,"     &
+			    " hlen:0x06,"       &
+			    " plen:0x04,"       &
+			    " oper:{"           &
+					"reply:0x0002}}," &
     		"ipv4:{"                &
 				"proto:{"           &
 					"icmp:0x01,"    &

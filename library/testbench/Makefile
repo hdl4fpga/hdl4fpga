@@ -868,16 +868,16 @@ $(HDL4FPGA__arp_decode__def) : ../mii/arp_decode.vhd \
 	$(VCOM) -93 -work hdl4fpga ../mii/arp_decode.vhd
 
 $(HDL4FPGA__arp_tx) \
-$(HDL4FPGA__arp_tx__def) : ../mii/arp_tx.vhd \
+$(HDL4FPGA__arp_tx__def) : ../mii//arp_tx.vhd \
 		$(HDL4FPGA__sio_rom) \
 		$(HDL4FPGA__arp_decode) \
-		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii/arp_tx.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii//arp_tx.vhd
 
 $(HDL4FPGA__barrel) \
 $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
@@ -1471,6 +1471,7 @@ $(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__ipv4_decode) \
+		$(HDL4FPGA__arp_tx) \
 		$(HDL4FPGA__arp_decode) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__eth_rx) \
