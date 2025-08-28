@@ -170,7 +170,12 @@ begin
 		signal arp_data   : std_logic_vector(miirx_data'range);
 		signal yyy : std_logic := '0';
 	begin
-		yyy <= '1' after 1 us;
+		process (mii_clk)
+		begin
+		if rising_edge(mii_clk) then
+			yyy <= '1' after 1 us;
+		end if;
+		end process;
 		arptx_i : entity hdl4fpga.arp_tx
 		generic map (
 			mac_sa     => mymac)
@@ -186,7 +191,7 @@ begin
 			ethda_irdy => '1',
 			ethda_data => ethda_data,
 	
-			arp_trdy   => '1',
+			-- arp_trdy   => '1',
 			arp_data   => arp_data);
 	end block;
 

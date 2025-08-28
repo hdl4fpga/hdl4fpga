@@ -49,7 +49,7 @@ entity arp_tx is
 
 		arp_frm    : buffer std_logic := '0';
 		arp_irdy   : buffer std_logic := '0';
-		arp_trdy   : in  std_logic;
+		arp_trdy   : in  std_logic := '1';
 		arp_data   : buffer std_logic_vector);
 
 end;
@@ -84,8 +84,10 @@ architecture def of arp_tx is
 	signal decode_fin  : std_logic;
 	signal decode_data : std_logic_vector(arp_data'range);
 
+		-- signal arp_trdy   : std_logic;
 begin
 
+	-- arp_trdy <= arp_irdy and arp_frm;
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
@@ -177,17 +179,23 @@ begin
 		pa_data    when     pa_frm='1' else
 		so_data;
 
-	process decode_fin, (mii_clk)
+	process (decode_fin, mii_clk)
 		variable frm : std_logic;
 	begin
 		if rising_edge(mii_clk) then
-			if (arp_irdy and arp_trdy)='1' then
-				arp_irdy <= decode_frm;
+			if (decode_irdy and arp_trdy)='1' then
 				arp_data <= decode_data;
-				frm := decode_frm;
+			elsif (decode_irdy and not arp_irdy)='1'then
+				arp_data <= decode_data;
 			end if;
+			if decode_fin='0' then
+				arp_irdy <= decode_irdy;
+			elsif arp_trdy='1' then
+				arp_irdy <= '0';
+			end if;
+			frm := decode_frm;
 		end if;
-		arp_frm  <= frm and not decode_fin;
+		arp_frm <= frm and not decode_fin;
 	end process;
 
 end;
