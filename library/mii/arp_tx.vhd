@@ -169,7 +169,7 @@ begin
 	ethda_trdy <= ethda_frm and ethda_irdy;
 	ethda_data <= (arp_data'range => '1');
 	decode_irdy <= 
-		arp_irdy   when ethda_frm='1' else
+		ethda_irdy when ethda_frm='1' else
 		pa_irdy    when    pa_frm='1' else
 		so_trdy;
 	decode_data <= 
