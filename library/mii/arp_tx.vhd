@@ -87,8 +87,6 @@ architecture def of arp_tx is
 begin
 
 	process (mii_clk)
-		type states is (s_start, s_active);
-		variable state : states;
 	begin
 		if rising_edge(mii_clk) then
 			if (tx_rdy xor tx_req)='1' then
