@@ -146,9 +146,9 @@ architecture nuhs3adsp_serdebug of testbench is
 		"mac:0x"                   &
 		    "55555555555555d5"     &
 			"00_40_00_01_02_03"    & -- mac source address
-			"00_27_0e_0f_f5_95"    & -- mac source address
-			"0800,"                & -- mac type
+			"00_27_0e_0f_f5_95,"   & -- mac source address
 		"arp:0x"                   &
+			"0806"                 & -- mac type
 			"0000"                 & -- arp_htype
 			"0000"                 & -- arp_ptype
 			"00"                   & -- arp_hlen 
@@ -159,6 +159,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"00_00_00_00_00_00"    & -- arp_tha  
 			"c0_a8_00_0e,"         & -- arp_tpa  
 		"icmp:0x"                  &
+			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
 			"0000"                 & -- IP Length
 			"0000"                 & -- IP Identification
@@ -213,7 +214,7 @@ begin
 
 	end block;
 
-	rst <= '1', '0' after 3000 ns;
+	rst <= '1', '0' after 1 us;
 
 	du_e : nuhs3adsp
 	port map (

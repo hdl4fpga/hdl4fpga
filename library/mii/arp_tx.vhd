@@ -49,7 +49,7 @@ entity arp_tx is
 
 		arp_frm    : buffer std_logic;
 		arp_irdy   : buffer std_logic;
-		arp_trdy   : in  std_logic;
+		arp_trdy   : in  std_logic := '1';
 		arp_data   : buffer std_logic_vector);
 
 end;
@@ -83,39 +83,22 @@ architecture def of arp_tx is
 	signal irdy : std_logic;
 	signal fin  : std_logic;
 	signal data : std_logic_vector(arp_data'range);
+
 begin
 
 	process (mii_clk)
-		type states is (s_start, s_active, s_wait);
+		type states is (s_start, s_active);
 		variable state : states;
 	begin
 		if rising_edge(mii_clk) then
 			if (tx_rdy xor tx_req)='1' then
-				case state is
-				when s_start =>
-					frm <= '1';
-					state := s_active;
-				when s_active =>
-					if (fin and irdy and arp_trdy)='1' then
-						frm   <= '0';
-						state := s_wait;
-					else
-						frm <= '1';
-					end if;
-				when s_wait =>
-					if (arp_irdy or arp_trdy)='0' then
-						tx_rdy <= tx_req;
-						state  := s_start;
-					else
-						frm <= '0';
-					end if;
-				end case;
-			else
-				frm   <= '0';
-				state := s_start;
+				if (fin and arp_irdy and arp_trdy)='1' then
+					tx_rdy <= tx_req;
+				end if;
 			end if;
 		end if;
 	end process;
+	frm <= (tx_rdy xor tx_req);
 
 	decode_i : entity hdl4fpga.arp_decode
 	port map (

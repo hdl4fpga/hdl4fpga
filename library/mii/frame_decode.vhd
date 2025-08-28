@@ -69,7 +69,7 @@ begin
 		end;
 
 		constant boundary : natural_vector := boundaries;
-		variable cntr  : unsigned(0 to unsigned_num_bits(total-1)) := (others => '0');
+		variable cntr  : unsigned(0 to unsigned_num_bits(total-1)) := ('1', others => '0');
 		variable step  : natural range 0 to act'length-1;
 		variable limit : natural range 0 to 2**cntr'length-1;
 

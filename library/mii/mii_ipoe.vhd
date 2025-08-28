@@ -132,8 +132,8 @@ begin
 		equ     => arptyp_equ);
 
 	process (mii_clk)
-		variable da_vld  : std_logic;
-		variable typ_vld : std_logic;
+		variable da_vld  : std_logic := '0';
+		variable typ_vld : std_logic := '0';
 	begin
 		if rising_edge(mii_clk) then
 			if (miirx_frm or miirx_irdy)='0' then
@@ -186,7 +186,7 @@ begin
 			ethda_irdy => '1',
 			ethda_data => ethda_data,
 	
-			arp_trdy   => '1',
+			-- arp_trdy   => '1',
 			arp_data   => arp_data);
 	end block;
 
@@ -201,8 +201,8 @@ begin
 		equ     => ipv4typ_equ);
 
 	process (mii_clk)
-		variable da_vld  : std_logic;
-		variable typ_vld : std_logic;
+		variable da_vld  : std_logic := '0';
+		variable typ_vld : std_logic := '0';
 	begin
 		if rising_edge(mii_clk) then
 			if (miirx_frm or miirx_irdy)='0' then
