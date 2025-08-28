@@ -155,45 +155,7 @@ begin
 		end if;
 	end process;
 
-	arprx_i : entity hdl4fpga.arp_decode
-	port map (
-		mii_clk  => mii_clk,
-		arp_frm  => arprx_frm,
-		arp_irdy => arprx_irdy,
-		arp_data => arprx_data,
-		spa_frm  => arptpa_frm,
-		sha_frm  => arptha_frm);
-
-	xxx : block
-		signal pa_data    : std_logic_vector(miirx_data'range);
-		signal ethda_data : std_logic_vector(miirx_data'range);
-		signal arp_data   : std_logic_vector(miirx_data'range);
-		signal yyy : std_logic := '0';
-	begin
-		process (mii_clk)
-		begin
-		if rising_edge(mii_clk) then
-			yyy <= '1' after 1 us;
-		end if;
-		end process;
-		arptx_i : entity hdl4fpga.arp_tx
-		generic map (
-			mac_sa     => mymac)
-		port map (
-			mii_clk    => mii_clk,
-			
-			tx_req     => yyy,
-	
-			pa_trdy    => '1',
-			pa_data    => pa_data,
-	
-			ethda_frm  => '0',
-			ethda_irdy => '1',
-			ethda_data => ethda_data,
-	
-			-- arp_trdy   => '1',
-			arp_data   => arp_data);
-	end block;
+	arpd_i : entity hdl4fpga.arpd
 
 	ipv4typ_cmp_i : entity hdl4fpga.mii_cmp
    	generic map (
