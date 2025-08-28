@@ -47,9 +47,9 @@ entity arp_tx is
 		ethda_trdy : out std_logic;
 		ethda_data : buffer std_logic_vector;
 
-		arp_frm    : buffer std_logic;
-		arp_irdy   : buffer std_logic;
-		arp_trdy   : in  std_logic := '1';
+		arp_frm    : buffer std_logic := '0';
+		arp_irdy   : buffer std_logic := '0';
+		arp_trdy   : in  std_logic;
 		arp_data   : buffer std_logic_vector);
 
 end;

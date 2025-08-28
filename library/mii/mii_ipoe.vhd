@@ -186,7 +186,7 @@ begin
 			ethda_irdy => '1',
 			ethda_data => ethda_data,
 	
-			-- arp_trdy   => '1',
+			arp_trdy   => '1',
 			arp_data   => arp_data);
 	end block;
 
