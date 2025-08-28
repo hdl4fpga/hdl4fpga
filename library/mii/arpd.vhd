@@ -27,7 +27,6 @@ use hdl4fpga.base.all;
 
 entity arpd is
 	generic (
-		default_ipv4a : std_logic_vector;
 		hwsa          : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk       : in  std_logic;
@@ -46,17 +45,14 @@ entity arpd is
 		ipsa_frm      : in  std_logic;
 		ipsa_irdy     : in  std_logic;
 		ipsa_trdy     : out std_logic;
-		ipsa_end      : out std_logic;
 		ipsa_data     : in  std_logic_vector;
 	
 		dlltx_irdy    : out  std_logic;
-		dlltx_end     : in   std_logic;
 		dlltx_data    : out std_logic_vector;
 
 		arptx_frm     : buffer std_logic := '0';
 		arptx_irdy    : out std_logic;
 		arptx_trdy    : in  std_logic;
-		arptx_end     : buffer std_logic;
 		arptx_data    : out std_logic_vector;
 
 		tp            : out std_logic_vector(1 to 32));
@@ -146,7 +142,6 @@ begin
 		pa_data    => spa_data,
 
 		dlltx_irdy => dlltx_irdy,
-		dlltx_end  => dlltx_end,
 		dlltx_data => dlltx_data,
 
 		arp_frm    => arptx_frm,
