@@ -34,7 +34,7 @@ entity arp_decode is
 		mii_clk   : in  std_logic;
 		arp_frm   : in  std_logic := '0';
 		arp_irdy  : in  std_logic := '0';
-		arp_trdy  : out std_logic := '0';
+		arp_trdy  : buffer std_logic := '0';
 		arp_data  : in  std_logic_vector;
 		arp_fin   : out std_logic := '0';
 
@@ -71,8 +71,10 @@ entity arp_decode is
 end;
 
 architecture def of arp_decode is
+	signal irdy : std_logic;
 begin
 
+	irdy <= arp_irdy and arp_trdy;
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => hdo(frames)**".format.arp",
@@ -80,7 +82,7 @@ begin
 	port map (
 		clk     => mii_clk,
 		frm     => arp_frm,
-		irdy    => arp_irdy,
+		irdy    => irdy,
 		fin     => arp_fin,
 		act(0)  => htype_frm,
 		act(1)  => ptype_frm,

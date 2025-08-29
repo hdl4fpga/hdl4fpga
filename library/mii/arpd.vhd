@@ -31,21 +31,21 @@ entity arpd is
 		mac_sa     : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk    : in  std_logic;
-		tx_req     : buffer std_logic;
-		tx_rdy     : buffer std_logic;
+		tx_req     : buffer std_logic := '0';
+		tx_rdy     : buffer std_logic := '0';
 
 		arprx_frm  : in  std_logic;
 		arprx_irdy : in  std_logic;
 		arprx_data : in  std_logic_vector;
 
-		ethda_frm  : in  std_logic;
-		ethda_irdy : in  std_logic;
-		ethda_trdy : out std_logic;
-		ethda_data : buffer std_logic_vector;
+		ethsa_frm  : out std_logic := '0';
+		ethsa_irdy : out std_logic := '0';
+		ethsa_trdy : in  std_logic := '1';
+		ethsa_data : in  std_logic_vector;
 
 		arptx_frm  : buffer std_logic := '0';
-		arptx_irdy : out std_logic;
-		arptx_trdy : in  std_logic;
+		arptx_irdy : out std_logic := '0';
+		arptx_trdy : in  std_logic := '1';
 		arptx_data : out std_logic_vector;
 
 		tp         : out std_logic_vector(1 to 32));
@@ -136,22 +136,23 @@ begin
 	generic map (
 		mac_sa     => mac_sa)
 	port map (
-		mii_clk    => mii_clk,
-		tx_req     => tx_req,
-		tx_rdy     => tx_rdy,
-		pa_frm     => spatx_frm,
-		pa_irdy    => spatx_irdy,
-		pa_trdy    => spatx_trdy,
-		pa_data    => spatx_data,
+		mii_clk  => mii_clk,
+		tx_req   => tx_req,
+		tx_rdy   => tx_rdy,
 
-		ethda_frm  => ethda_frm,
-		ethda_irdy => ethda_irdy,
-		ethda_trdy => ethda_trdy,
-		ethda_data => ethda_data,
+		pa_frm   => spatx_frm,
+		pa_irdy  => spatx_irdy,
+		pa_trdy  => spatx_trdy,
+		pa_data  => spatx_data,
 
-		arp_frm    => arptx_frm,
-		arp_irdy   => arptx_irdy,
-		arp_trdy   => arptx_trdy,
-		arp_data   => arptx_data);
+		sha_frm  => ethsa_frm,
+		sha_irdy => ethsa_irdy,
+		sha_trdy => ethsa_trdy,
+		sha_data => ethsa_data,
+
+		arp_frm  => arptx_frm,
+		arp_irdy => arptx_irdy,
+		arp_trdy => arptx_trdy,
+		arp_data => arptx_data);
 
 end;

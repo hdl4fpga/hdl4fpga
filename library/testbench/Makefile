@@ -374,6 +374,8 @@ HDL4FPGA__base__body = $(LIB_HDL4FPGA)/base/body.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
 HDL4FPGA__barrel__beh = $(LIB_HDL4FPGA)/barrel/beh.dat
 HDL4FPGA__barrel = $(LIB_HDL4FPGA)/barrel/_primary.dat
+HDL4FPGA__arpd__def = $(LIB_HDL4FPGA)/arpd/def.dat
+HDL4FPGA__arpd = $(LIB_HDL4FPGA)/arpd/_primary.dat
 HDL4FPGA__arp_tx__def = $(LIB_HDL4FPGA)/arp_tx/def.dat
 HDL4FPGA__arp_tx = $(LIB_HDL4FPGA)/arp_tx/_primary.dat
 HDL4FPGA__arp_decode__def = $(LIB_HDL4FPGA)/arp_decode/def.dat
@@ -756,6 +758,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__base) \
     $(HDL4FPGA__barrel__beh) \
     $(HDL4FPGA__barrel) \
+    $(HDL4FPGA__arpd__def) \
+    $(HDL4FPGA__arpd) \
     $(HDL4FPGA__arp_tx__def) \
     $(HDL4FPGA__arp_tx) \
     $(HDL4FPGA__arp_decode__def) \
@@ -878,6 +882,20 @@ $(HDL4FPGA__arp_tx__def) : ../mii//arp_tx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../mii//arp_tx.vhd
+
+$(HDL4FPGA__arpd) \
+$(HDL4FPGA__arpd__def) : ../mii/arpd.vhd \
+		$(HDL4FPGA__arp_tx) \
+		$(HDL4FPGA__sio_cmp) \
+		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__arp_decode) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__ipoepkg) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__base) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/arpd.vhd
 
 $(HDL4FPGA__barrel) \
 $(HDL4FPGA__barrel__beh) : ../basic/barrel.vhd \
@@ -1471,8 +1489,7 @@ $(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__ipv4_decode) \
-		$(HDL4FPGA__arp_tx) \
-		$(HDL4FPGA__arp_decode) \
+		$(HDL4FPGA__arpd) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__ipoepkg) \

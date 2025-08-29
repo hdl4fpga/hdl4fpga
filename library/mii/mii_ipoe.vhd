@@ -55,8 +55,6 @@ architecture def of mii_ipoe is
 	signal ethda_irdy  : std_logic;
 	signal ethda_equ   : std_logic;
 	signal bcstda_equ  : std_logic;
-	signal ethsa_frm   : std_logic;
-	signal ethsa_irdy  : std_logic;
 	signal ethtyp_frm  : std_logic;
 	signal ethtyp_irdy : std_logic;
 	signal ipv4typ_equ : std_logic;
@@ -64,9 +62,20 @@ architecture def of mii_ipoe is
 	signal ethpyl_frm  : std_logic;
 	signal ethpyl_irdy : std_logic;
 
+	signal ethsa_frm   : std_logic := '0';
+	signal ethsa_irdy  : std_logic := '0';
+	signal ethsa_trdy  : std_logic := '1';
+	signal ethsa_data  : std_logic_vector(miirx_data'range);
+
 	signal arprx_frm  : std_logic;
 	alias  arprx_irdy is arprx_frm;
 	signal arprx_data : std_logic_vector(miirx_data'range);
+
+	signal arptx_frm  : std_logic;
+	signal arptx_irdy : std_logic;
+	signal arptx_trdy : std_logic := '1';
+	signal arptx_data : std_logic_vector(miirx_data'range);
+
 	signal arptha_frm  : std_logic;
 	signal arptpa_frm  : std_logic;
 
@@ -92,8 +101,6 @@ begin
 
 		da_frm   => ethda_frm,
 		da_irdy  => ethda_irdy,
-		sa_frm   => ethsa_frm,
-		sa_irdy  => ethsa_irdy,
 		typ_frm  => ethtyp_frm,
 		typ_irdy => ethtyp_irdy,
 		pyl_frm  => ethpyl_frm,
@@ -155,25 +162,25 @@ begin
 		end if;
 	end process;
 
-		arpd_i : entity hdl4fpga.arpd
-		generic map (
-			mymacad => mymacad)
-		port map (
-			mii_clk       => mii_clk,
-			arp_req       => arp_req
-			arp_rdy       => arp_rdy
+	arpd_i : entity hdl4fpga.arpd
+	generic map (
+		mac_sa => mymac)
+	port map (
+		mii_clk    => mii_clk,
 
-			arprx_frm     => arprx_frm,
-			arprx_irdy    => arprx_irdy,
-			arprx_data    => arprx_data,
+		arprx_frm  => arprx_frm,
+		arprx_irdy => arprx_irdy,
+		arprx_data => arprx_data,
 
-			dlltx_irdy    => dlltx_irdy,
-			dlltx_data    => dlltx_data,
-		
-			arptx_frm     => arptx_frm,
-			arptx_irdy    => arptx_irdy,
-			arptx_trdy    => arptx_trdy,
-			arptx_data    => arptx_data);
+		ethsa_frm  => ethsa_frm,
+		ethsa_irdy => ethsa_irdy,
+		ethsa_trdy => ethsa_trdy,
+		ethsa_data => ethsa_data,
+
+		arptx_frm  => arptx_frm,
+		arptx_irdy => arptx_irdy,
+		arptx_trdy => arptx_trdy,
+		arptx_data => arptx_data);
 
 
 	ipv4typ_cmp_i : entity hdl4fpga.mii_cmp

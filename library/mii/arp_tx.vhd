@@ -30,27 +30,27 @@ use hdl4fpga.ipoepkg.all;
 
 entity arp_tx is
 	generic (
-		mac_sa     : std_logic_vector(0 to 48-1));
+		mac_sa   : std_logic_vector(0 to 48-1));
 	port (
-		mii_clk    : in  std_logic;
+		mii_clk  : in  std_logic;
 		
-		tx_req     : in  std_logic := '0';
-		tx_rdy     : buffer std_logic := '0';
+		tx_req   : in  std_logic := '0';
+		tx_rdy   : buffer std_logic := '0';
 
-		pa_frm     : buffer std_logic;
-		pa_irdy    : buffer std_logic;
-		pa_trdy    : in  std_logic;
-		pa_data    : in  std_logic_vector;
+		pa_frm   : buffer std_logic := '0';
+		pa_irdy  : buffer std_logic := '0';
+		pa_trdy  : in  std_logic := '0';
+		pa_data  : in  std_logic_vector;
 
-		ethda_frm  : in  std_logic;
-		ethda_irdy : in  std_logic;
-		ethda_trdy : out std_logic;
-		ethda_data : buffer std_logic_vector;
+		sha_frm  : buffer std_logic := '0';
+		sha_irdy : buffer std_logic := '0';
+		sha_trdy : in  std_logic := '0';
+		sha_data : in  std_logic_vector;
 
-		arp_frm    : buffer std_logic := '0';
-		arp_irdy   : buffer std_logic := '0';
-		arp_trdy   : in  std_logic := '1';
-		arp_data   : buffer std_logic_vector);
+		arp_frm  : buffer std_logic := '0';
+		arp_irdy : buffer std_logic := '0';
+		arp_trdy : in  std_logic := '1';
+		arp_data : buffer std_logic_vector);
 
 end;
 
@@ -65,16 +65,16 @@ architecture def of arp_tx is
 	signal plen_irdy  : std_logic;
 	signal oper_frm   : std_logic;
 	signal oper_irdy  : std_logic;
-	signal sha_frm    : std_logic;
-	signal sha_irdy   : std_logic;
 	signal spa_frm    : std_logic;
 	signal spa_irdy   : std_logic;
 	signal tha_frm    : std_logic;
 	signal tha_irdy   : std_logic;
+	signal tha_trdy   : std_logic;
+	signal tha_data   : std_logic_vector(arp_data'range);
 	signal tpa_frm    : std_logic;
 	signal tpa_irdy   : std_logic;
 
-	signal so_frm     : std_logic;
+	alias  so_frm is arp_frm;
 	signal so_trdy    : std_logic;
 	signal so_irdy    : std_logic;
 	signal so_data    : std_logic_vector(arp_data'range);
@@ -122,16 +122,16 @@ begin
 		oper_trdy  => arp_trdy,
 		sha_frm    => sha_frm,
 		sha_irdy   => sha_irdy,
-		sha_trdy   => arp_trdy,
+		sha_trdy   => sha_trdy,
 		spa_frm    => spa_frm,
 		spa_irdy   => spa_irdy,
-		spa_trdy   => arp_trdy,
+		spa_trdy   => pa_trdy,
 		tha_frm    => tha_frm,
 		tha_irdy   => tha_irdy,
 		tha_trdy   => arp_trdy,
 		tpa_frm    => tpa_frm,
 		tpa_irdy   => tpa_irdy,
-		tpa_trdy   => arp_trdy);
+		tpa_trdy   => pa_trdy);
 
 	pa_frm  <= spa_frm  or tpa_frm;
 	pa_irdy <= 
@@ -166,15 +166,17 @@ begin
 		so_trdy => so_trdy,
 		so_data => so_data);
 
-	ethda_trdy <= ethda_frm and ethda_irdy;
-	ethda_data <= (arp_data'range => '1');
+	tha_trdy <= tha_frm and tha_irdy;
+	tha_data <= (arp_data'range => '1');
 	decode_irdy <= 
-		ethda_irdy when ethda_frm='1' else
-		pa_irdy    when    pa_frm='1' else
-		so_trdy;
+		tha_irdy when tha_frm='1' else
+		pa_irdy  when  pa_frm='1' else
+		so_trdy  when so_irdy='1' else
+		'0';
+
 	decode_data <= 
-		ethda_data when ethda_frm='1' else
-		pa_data    when    pa_frm='1' else
+		tha_data when tha_frm='1' else
+		pa_data  when    pa_frm='1' else
 		so_data;
 
 	process (decode_fin, mii_clk)

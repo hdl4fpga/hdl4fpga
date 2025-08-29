@@ -57,8 +57,10 @@ entity dll_rx is
 end;
 
 architecture def of dll_rx is
+	signal irdy : std_logic;
 begin
 
+	irdy <= dll_irdy and dll_trdy;
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => hdo(frames)**".format.mac",
@@ -66,7 +68,7 @@ begin
 	port map (
 		clk    => mii_clk,
 		frm    => dll_frm,
-		irdy   => dll_irdy,
+		irdy   => irdy,
 		act(0) => da_frm,
 		act(1) => sa_frm,
 		act(2) => typ_frm,
