@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 entity arpd is
 	generic (
@@ -82,7 +83,7 @@ begin
 	begin
 		ipsa_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => reverse(aton(192.168.0.14),8))
+			bitdata => reverse(aton("192.168.0.14"),8))
 		port map (
 			si_data => arprx_data,
 			so_clk  => mii_clk,
@@ -92,12 +93,10 @@ begin
 			so_data => tparx_data);
 
 		cmp_i : entity hdl4fpga.sio_cmp
-		generic map (
-			bitdata => reverse(mymac,8))
 		port map (
 			mii_clk => mii_clk,
 			frm     => tparx_frm,
-			irdy    => tparx_irdy
+			irdy    => tparx_irdy,
 			data    => tparx_data,
 			equ     => tpa_equ);
 
@@ -118,7 +117,7 @@ begin
 
 	ipsatx_e : entity hdl4fpga.sio_ram
 	generic map (
-		bitdata => reverse(aton(192.168.0.14),8))
+		bitdata => reverse(aton("192.168.0.14"),8))
 	port map (
 		si_clk  => mii_clk,
 		si_data => arprx_data,
