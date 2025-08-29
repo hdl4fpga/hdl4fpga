@@ -42,11 +42,6 @@ entity arp_tx is
 		pa_trdy  : in  std_logic := '0';
 		pa_data  : in  std_logic_vector;
 
-		sha_frm  : buffer std_logic := '0';
-		sha_irdy : buffer std_logic := '0';
-		sha_trdy : in  std_logic := '0';
-		sha_data : in  std_logic_vector;
-
 		arp_frm  : buffer std_logic := '0';
 		arp_irdy : buffer std_logic := '0';
 		arp_trdy : in  std_logic := '1';
@@ -65,6 +60,8 @@ architecture def of arp_tx is
 	signal plen_irdy  : std_logic;
 	signal oper_frm   : std_logic;
 	signal oper_irdy  : std_logic;
+	signal sha_frm    : std_logic;
+	signal sha_irdy   : std_logic;
 	signal spa_frm    : std_logic;
 	signal spa_irdy   : std_logic;
 	signal tha_frm    : std_logic;
@@ -122,7 +119,7 @@ begin
 		oper_trdy  => arp_trdy,
 		sha_frm    => sha_frm,
 		sha_irdy   => sha_irdy,
-		sha_trdy   => sha_trdy,
+		sha_trdy   => arp_trdy,
 		spa_frm    => spa_frm,
 		spa_irdy   => spa_irdy,
 		spa_trdy   => pa_trdy,

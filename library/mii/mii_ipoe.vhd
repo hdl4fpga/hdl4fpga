@@ -172,11 +172,6 @@ begin
 		arprx_irdy => arprx_irdy,
 		arprx_data => arprx_data,
 
-		ethsa_frm  => ethsa_frm,
-		ethsa_irdy => ethsa_irdy,
-		ethsa_trdy => ethsa_trdy,
-		ethsa_data => ethsa_data,
-
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,
 		arptx_trdy => arptx_trdy,

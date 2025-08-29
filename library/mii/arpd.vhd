@@ -38,11 +38,6 @@ entity arpd is
 		arprx_irdy : in  std_logic;
 		arprx_data : in  std_logic_vector;
 
-		ethsa_frm  : out std_logic := '0';
-		ethsa_irdy : out std_logic := '0';
-		ethsa_trdy : in  std_logic := '1';
-		ethsa_data : in  std_logic_vector;
-
 		arptx_frm  : buffer std_logic := '0';
 		arptx_irdy : out std_logic := '0';
 		arptx_trdy : in  std_logic := '1';
@@ -144,11 +139,6 @@ begin
 		pa_irdy  => spatx_irdy,
 		pa_trdy  => spatx_trdy,
 		pa_data  => spatx_data,
-
-		sha_frm  => ethsa_frm,
-		sha_irdy => ethsa_irdy,
-		sha_trdy => ethsa_trdy,
-		sha_data => ethsa_data,
 
 		arp_frm  => arptx_frm,
 		arp_irdy => arptx_irdy,
