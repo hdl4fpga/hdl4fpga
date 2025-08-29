@@ -155,35 +155,40 @@ begin
 		end if;
 	end process;
 
-	arpd_i : entity hdl4fpga.arpd
-	generic map (
-		mymacad => mymacad)
-	port map (
-		mii_clk       => mii_clk,
-		arp_req       => arp_req
-		arp_rdy       => arp_rdy
+	xxx_b : block
+	begin
+    	myipaddr_i : entity hdl4fpga.sio_ram
+    	generic map (
+    		bitdata => aton("192.168.0.14")
+        port map (
+    		si_data => miirx_data,
 
-		arprx_frm     => arprx_frm,
-		arprx_irdy    => arprx_irdy,
-		arprx_data    => arprx_data,
+    		so_clk  => mii_clk,
+    		so_frm  => myipad_frm,
+    		so_irdy => myipad_irdy,
+    		so_trdy => myipad_trdy,
+    		so_data => myipad_data);
 
-		myipad_frm    => myipad_frm,
-		myipad_irdy   => myipad_irdy,
-		myipad_trdy   => myipad_trdy,
-		myipad_data   => myipad_data,
+    	arpd_i : entity hdl4fpga.arpd
+    	generic map (
+    		mymacad => mymacad)
+    	port map (
+    		mii_clk       => mii_clk,
+    		arp_req       => arp_req
+    		arp_rdy       => arp_rdy
 
-		ipsa_frm      => ipsa_frm,
-		ipsa_irdy     => ipsa_irdy,
-		ipsa_trdy     => ipsa_trdy,
-		ipsa_data     => ipsa_data,
-	
-		dlltx_irdy    => dlltx_irdy,
-		dlltx_data    => dlltx_data,
-                                   
-		arptx_frm     => arptx_frm,
-		arptx_irdy    => arptx_irdy,
-		arptx_trdy    => arptx_trdy,
-		arptx_data    => arptx_data);
+    		arprx_frm     => arprx_frm,
+    		arprx_irdy    => arprx_irdy,
+    		arprx_data    => arprx_data,
+
+    		dlltx_irdy    => dlltx_irdy,
+    		dlltx_data    => dlltx_data,
+                                       
+    		arptx_frm     => arptx_frm,
+    		arptx_irdy    => arptx_irdy,
+    		arptx_trdy    => arptx_trdy,
+    		arptx_data    => arptx_data);
+	end block;
 
 
 	ipv4typ_cmp_i : entity hdl4fpga.mii_cmp

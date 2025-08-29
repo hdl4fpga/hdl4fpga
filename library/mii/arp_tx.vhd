@@ -178,7 +178,7 @@ begin
 		so_data;
 
 	process (decode_fin, mii_clk)
-		variable frm_lat1 : std_logic;
+		variable lat1 : std_logic;
 	begin
 		if rising_edge(mii_clk) then
 			if (decode_irdy and arp_trdy)='1' then
@@ -191,9 +191,9 @@ begin
 			elsif arp_trdy='1' then
 				arp_irdy <= '0';
 			end if;
-			frm_lat1 := decode_frm;
+			lat1 := decode_frm;
 		end if;
-		arp_frm <= frm_lat1 and not decode_fin;
+		arp_frm <= lat1 and not decode_fin;
 	end process;
 
 end;

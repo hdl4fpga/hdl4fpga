@@ -72,7 +72,7 @@ begin
 				last := '1';
 			end if;
 		end if;
-		equ <= cy and not mr_frm and not mr_irdy and last;
+		equ <= cy and not (mr_frm or mr_irdy) and last;
 	end process;
 
 end;

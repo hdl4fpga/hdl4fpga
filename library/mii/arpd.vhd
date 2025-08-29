@@ -37,16 +37,6 @@ entity arpd is
 		arprx_irdy    : in  std_logic;
 		arprx_data    : in  std_logic_vector;
 
-		myipad_frm    : out std_logic;
-		myipad_irdy   : out std_logic;
-		myipad_trdy   : in  std_logic := '1';
-		myipad_data   : in  std_logic;
-
-		ipsa_frm      : in  std_logic;
-		ipsa_irdy     : in  std_logic;
-		ipsa_trdy     : out std_logic;
-		ipsa_data     : in  std_logic_vector;
-	
 		dlltx_irdy    : out  std_logic;
 		dlltx_data    : out std_logic_vector;
 
@@ -61,11 +51,13 @@ end;
 
 architecture def of arpd is
 
+	signal tparx_frm  : std_logic;
+	signal tparx_irdy : std_logic;
+	signal tparx_trdy : std_logic := '1';
+	signal tparx_data : std_logic_vector(arprx_data'range);
+
 	signal arptx_rdy : std_logic := '0';
 	signal arptx_req : std_logic := '0';
-
-	signal tparx_frm : std_logic;
-	signal tparx_vld : std_logic;
 
 	signal spatx_frm   : std_logic;
 	signal spatx_irdy  : std_logic;
@@ -81,47 +73,55 @@ begin
 		arp_frm  => arprx_frm,
 		arp_irdy => arprx_irdy,
 		arp_data => arprx_data,
-		tpa_frm  => myipad_frm,
-		tpa_irdy => myipad_irdy);
+		tpa_frm  => tparx_frm,
+		tpa_irdy => tparx_irdy,
+		tpa_trdy => tparx_trdy);
 
-	cmp_i : entity hdl4fpga.sio_cmp
-	port map (
-		clk     => mii_clk,
-		mr_frm  => myipad_frm,
-		mr_irdy => myipad_irdy,
-		mr_data => myipad_data,
-		sl_data => arprx_data,
-		equ     => myipad_equ);
-
-	process (mii_clk)
+	tpacmp_b : block
+		signal tpa_equ : std_logic;
 	begin
-		if rising_edge(mii_clk) then
-			if (arprx_frm and myipad_equ)='1' then
-				arptx_req <= not arptx_rdy;
-			end if;
-		end if;
-	end process;
+		ipsa_i : entity hdl4fpga.sio_ram
+		generic map (
+			bitdata => reverse(aton(192.168.0.14),8))
+		port map (
+			si_data => arprx_data,
+			so_clk  => mii_clk,
+			so_frm  => tparx_frm,
+			so_irdy => tparx_irdy,
+			so_trdy => tparx_trdy,
+			so_data => tparx_data);
 
-	process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if arprx_frm='0' then
-				tparx_vld <= '0';
-			elsif sparx_end='0' then
-				tparx_vld <= sparx_equ;
-			end if;
-		end if;
-	end process;
+		cmp_i : entity hdl4fpga.sio_cmp
+		generic map (
+			bitdata => reverse(mymac,8))
+		port map (
+			mii_clk => mii_clk,
+			frm     => tparx_frm,
+			irdy    => tparx_irdy
+			data    => tparx_data,
+			equ     => tpa_equ);
 
-	ipsa_e : entity hdl4fpga.sio_ram
+    	process (mii_clk)
+			variable lat1 : std_logic;
+    	begin
+    		if rising_edge(mii_clk) then
+    			if (tparx_frm or tparx_irdy)='0' then
+					if lat1='1' then
+						arp_req <= not arp_rdy;
+					end if;
+    			end if;
+				lat1 := (tparx_frm or tparx_irdy);
+    		end if;
+    	end process;
+
+	end block;
+
+	ipsatx_e : entity hdl4fpga.sio_ram
 	generic map (
-		bitdata => reverse(x"00_00_00_00",8))
+		bitdata => reverse(aton(192.168.0.14),8))
 	port map (
 		si_clk  => mii_clk,
-		si_frm  => ipsa_frm,
-		si_irdy => ipsa_irdy,
-		si_trdy => ipsa_trdy,
-		si_data => ipsa_data,
+		si_data => arprx_data,
 	
 		so_clk  => mii_clk,
 		so_frm  => spa_frm,
