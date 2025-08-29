@@ -28,25 +28,27 @@ use hdl4fpga.ipoepkg.all;
 
 entity arpd is
 	generic (
-		hwsa          : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		mac_sa     : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		mii_clk       : in  std_logic;
-		arp_req       : in  std_logic;
-		arp_rdy       : buffer  std_logic;
+		mii_clk    : in  std_logic;
+		tx_req     : buffer std_logic;
+		tx_rdy     : buffer std_logic;
 
-		arprx_frm     : in  std_logic;
-		arprx_irdy    : in  std_logic;
-		arprx_data    : in  std_logic_vector;
+		arprx_frm  : in  std_logic;
+		arprx_irdy : in  std_logic;
+		arprx_data : in  std_logic_vector;
 
-		dlltx_irdy    : out  std_logic;
-		dlltx_data    : out std_logic_vector;
+		ethda_frm  : in  std_logic;
+		ethda_irdy : in  std_logic;
+		ethda_trdy : out std_logic;
+		ethda_data : buffer std_logic_vector;
 
-		arptx_frm     : buffer std_logic := '0';
-		arptx_irdy    : out std_logic;
-		arptx_trdy    : in  std_logic;
-		arptx_data    : out std_logic_vector;
+		arptx_frm  : buffer std_logic := '0';
+		arptx_irdy : out std_logic;
+		arptx_trdy : in  std_logic;
+		arptx_data : out std_logic_vector;
 
-		tp            : out std_logic_vector(1 to 32));
+		tp         : out std_logic_vector(1 to 32));
 
 end;
 
@@ -94,24 +96,26 @@ begin
 
 		cmp_i : entity hdl4fpga.sio_cmp
 		port map (
-			mii_clk => mii_clk,
-			frm     => tparx_frm,
-			irdy    => tparx_irdy,
-			data    => tparx_data,
+			clk     => mii_clk,
+			mr_frm  => tparx_frm,
+			mr_irdy => tparx_irdy,
+			mr_trdy => tparx_trdy,
+			mr_data => tparx_data,
+			sl_data => arprx_data,
 			equ     => tpa_equ);
 
-    	process (mii_clk)
+		process (mii_clk)
 			variable lat1 : std_logic;
-    	begin
-    		if rising_edge(mii_clk) then
-    			if (tparx_frm or tparx_irdy)='0' then
+		begin
+			if rising_edge(mii_clk) then
+				if (tparx_frm or tparx_irdy)='0' then
 					if lat1='1' then
-						arp_req <= not arp_rdy;
+						tx_req <= not tx_rdy;
 					end if;
-    			end if;
+				end if;
 				lat1 := (tparx_frm or tparx_irdy);
-    		end if;
-    	end process;
+			end if;
+		end process;
 
 	end block;
 
@@ -123,25 +127,27 @@ begin
 		si_data => arprx_data,
 	
 		so_clk  => mii_clk,
-		so_frm  => spa_frm,
-		so_irdy => spa_irdy,
-		so_trdy => spa_trdy,
-		so_data => spa_data);
+		so_frm  => spatx_frm,
+		so_irdy => spatx_irdy,
+		so_trdy => spatx_trdy,
+		so_data => spatx_data);
 
 	arptx_e : entity hdl4fpga.arp_tx
 	generic map (
-		hwsa       => hwsa)
+		mac_sa     => mac_sa)
 	port map (
 		mii_clk    => mii_clk,
 		tx_req     => tx_req,
 		tx_rdy     => tx_rdy,
-		pa_frm     => spa_frm,
-		pa_irdy    => spa_irdy,
-		pa_trdy    => spa_trdy,
-		pa_data    => spa_data,
+		pa_frm     => spatx_frm,
+		pa_irdy    => spatx_irdy,
+		pa_trdy    => spatx_trdy,
+		pa_data    => spatx_data,
 
-		dlltx_irdy => dlltx_irdy,
-		dlltx_data => dlltx_data,
+		ethda_frm  => ethda_frm,
+		ethda_irdy => ethda_irdy,
+		ethda_trdy => ethda_trdy,
+		ethda_data => ethda_data,
 
 		arp_frm    => arptx_frm,
 		arp_irdy   => arptx_irdy,
