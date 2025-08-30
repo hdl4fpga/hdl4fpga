@@ -30,32 +30,28 @@ use hdl4fpga.base.all;
 
 entity eth_tx is
 	generic (
-		debug       : boolean := false);
+		sha         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk     : in  std_logic;
 
-		pl_frm      : in  std_logic;
-		pl_irdy     : in  std_logic := '1';
-		pl_trdy     : buffer std_logic;
-		pl_end      : in  std_logic;
-		pl_data     : in  std_logic_vector;
+		mac_frm     : in  std_logic;
+		mac_irdy    : in  std_logic := '1';
+		mac_trdy    : buffer std_logic;
+		mac_data    : in  std_logic_vector;
 
-		hwda_irdy   : out std_logic;
-		hwda_end    : in  std_logic := '1';
-		hwda_data   : in  std_logic_vector;
+		ethda_frm   : out std_logic;
+		ethda_irdy  : out std_logic;
+		ethda_trdy  : in  std_logic := '1';
+		ethda_data  : in  std_logic_vector;
 
-		hwsa_irdy   : out std_logic;
-		hwsa_end    : in  std_logic := '1';
-		hwsa_data   : in  std_logic_vector;
-
-		hwtyp_irdy  : out std_logic;
-		hwtyp_end   : in  std_logic := '1';
-		hwtyp_data  : in  std_logic_vector;
+		ethtyp_frm  : out std_logic;
+		ethtyp_irdy : out std_logic;
+		ethtyp_trdy : in  std_logic := '1';
+		ethtyp_data : in  std_logic_vector;
 
 		mii_frm     : buffer std_logic;
 		mii_irdy    : buffer std_logic;
 		mii_trdy    : in  std_logic := '1';
-		mii_end     : buffer std_logic;
 		mii_data    : out std_logic_vector);
 
 end;
@@ -67,8 +63,9 @@ architecture def of eth_tx is
 	signal decode_trdy : std_logic := '1';
 	signal decode_data : std_logic_vector(arp_data'range);
 
+	signal prmb_frm  : std_logic;
+	signal prmb_irdy : std_logic;
 	signal prmb_trdy : std_logic;
-	signal prmb_end  : std_logic;
 	signal prmb_data : std_logic_vector(mii_data'range);
 
 	signal fcs_irdy : std_logic;
