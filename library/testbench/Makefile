@@ -281,6 +281,8 @@ HDL4FPGA__frame_decode__def = $(LIB_HDL4FPGA)/frame_decode/def.dat
 HDL4FPGA__frame_decode = $(LIB_HDL4FPGA)/frame_decode/_primary.dat
 HDL4FPGA__fifo__def = $(LIB_HDL4FPGA)/fifo/def.dat
 HDL4FPGA__fifo = $(LIB_HDL4FPGA)/fifo/_primary.dat
+HDL4FPGA__eth_tx__def = $(LIB_HDL4FPGA)/eth_tx/def.dat
+HDL4FPGA__eth_tx = $(LIB_HDL4FPGA)/eth_tx/_primary.dat
 HDL4FPGA__eth_rx__def = $(LIB_HDL4FPGA)/eth_rx/def.dat
 HDL4FPGA__eth_rx = $(LIB_HDL4FPGA)/eth_rx/_primary.dat
 HDL4FPGA__ecp5_videodcm__def = $(LIB_HDL4FPGA)/ecp5_videodcm/def.dat
@@ -665,6 +667,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__frame_decode) \
     $(HDL4FPGA__fifo__def) \
     $(HDL4FPGA__fifo) \
+    $(HDL4FPGA__eth_tx__def) \
+    $(HDL4FPGA__eth_tx) \
     $(HDL4FPGA__eth_rx__def) \
     $(HDL4FPGA__eth_rx) \
     $(HDL4FPGA__ecp5_videodcm__def) \
@@ -1317,6 +1321,19 @@ $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../mii/eth_rx.vhd
+
+$(HDL4FPGA__eth_tx) \
+$(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
+		$(HDL4FPGA__crc) \
+		$(HDL4FPGA__sio_rom) \
+		$(HDL4FPGA__frame_decode) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio)
+	$(VCOM) -93 -work hdl4fpga ../mii/eth_tx.vhd
 
 $(HDL4FPGA__frame_decode) \
 $(HDL4FPGA__frame_decode__def) : ../mii/frame_decode.vhd \
