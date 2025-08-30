@@ -67,9 +67,9 @@ architecture def of eth_tx is
 	signal decode_trdy : std_logic := '1';
 	signal decode_data : std_logic_vector(arp_data'range);
 
-	signal pre_trdy : std_logic;
-	signal pre_end  : std_logic;
-	signal pre_data : std_logic_vector(mii_data'range);
+	signal prmb_trdy : std_logic;
+	signal prmb_end  : std_logic;
+	signal prmb_data : std_logic_vector(mii_data'range);
 
 	signal minpkt   : std_logic;
 
@@ -90,8 +90,8 @@ begin
 	generic map (
 		frame => "{"                 &
 			"prmb:"& "64"                            & ','  &
-			"hwda:"& hdo(frames)**".format.mac.hwda" & ','  &
-			"hwsa:"& hdo(frames)**".format.mac.hwsa" & ','  &
+			" tha:"& hdo(frames)**".format.mac.hwda" & ','  &
+			" sha:"& hdo(frames)**".format.mac.hwsa" & ','  &
 			"type:"& hdo(frames)**".format.mac.type" &  "}",
 		size  => dll_data'length)
 	port map (
