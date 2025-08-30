@@ -26,7 +26,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 entity eth_tx is
 	generic (
@@ -53,7 +55,6 @@ entity eth_tx is
 		mii_irdy    : buffer std_logic;
 		mii_trdy    : in  std_logic := '1';
 		mii_data    : out std_logic_vector);
-
 end;
 
 architecture def of eth_tx is
