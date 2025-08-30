@@ -62,36 +62,43 @@ architecture def of eth_tx is
 	signal decode_frm  : std_logic;
 	signal decode_irdy : std_logic;
 	signal decode_trdy : std_logic := '1';
-	signal decode_data : std_logic_vector(arp_data'range);
+	signal decode_data : std_logic_vector(mii_data'range);
 
-	signal prmb_frm  : std_logic;
-	signal prmb_irdy : std_logic;
-	signal prmb_trdy : std_logic;
-	signal prmb_data : std_logic_vector(mii_data'range);
+	signal prmb_frm    : std_logic;
+	signal prmb_irdy   : std_logic;
+	signal prmb_trdy   : std_logic;
+	signal prmb_data   : std_logic_vector(mii_data'range);
 
-	signal fcs_irdy : std_logic;
-	signal fcs_data : std_logic_vector(mii_data'range);
-	signal fcs_crc  : std_logic_vector(0 to 32-1);
+	signal sha_frm     : std_logic;
+	signal sha_irdy    : std_logic;
+	signal sha_trdy    : std_logic;
+	signal sha_data    : std_logic_vector(mii_data'range);
+
+	signal pyl_frm     : std_logic;
+
+	signal fcs_irdy    : std_logic;
+	signal fcs_data    : std_logic_vector(mii_data'range);
+	signal fcs_crc     : std_logic_vector(0 to 32-1);
 
 begin
 
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
-		frame => "{"                 &
-			"prmb:"& "64"                            & ','  &
-			" tha:"& hdo(frames)**".format.mac.hwda" & ','  &
-			" sha:"& hdo(frames)**".format.mac.hwsa" & ','  &
-			"type:"& hdo(frames)**".format.mac.type" &  "}",
-		size  => dll_data'length)
+		frame => "{"                                                 &
+			"prmb:"& "64"                                     & ','  &
+			" tha:"& string'(hdo(frames)**".format.mac.hwda") & ','  &
+			" sha:"& string'(hdo(frames)**".format.mac.hwsa") & ','  &
+			"type:"& string'(hdo(frames)**".format.mac.type") & '}',
+		size  => mii_data'length)
 	port map (
 		clk    => mii_clk,
 		frm    => decode_frm,
 		irdy   => decode_irdy,
 		trdy   => decode_trdy,
 		act(0) => prmb_frm,
-		act(1) => hwda_frm,
-		act(2) => hwsa_frm,
-		act(3) => typ_frm,
+		act(1) => ethda_frm,
+		act(2) => sha_frm,
+		act(3) => ethtyp_frm,
 		act(4) => pyl_frm);
 
 	pre_e : entity hdl4fpga.sio_rom
@@ -120,7 +127,6 @@ begin
 		clk  => mii_clk,
 		frm  => mii_frm,
 		irdy => fcs_irdy,
-		mode => fcs_mode,
 		data => fcs_data,
 		crc  => fcs_crc);
 
