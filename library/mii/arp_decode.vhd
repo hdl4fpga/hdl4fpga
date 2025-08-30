@@ -31,12 +31,13 @@ use hdl4fpga.ipoepkg.all;
 
 entity arp_decode is
 	port (
-		mii_clk   : in  std_logic;
-		arp_frm   : in  std_logic := '0';
-		arp_irdy  : in  std_logic := '0';
-		arp_trdy  : buffer std_logic := '0';
-		arp_data  : in  std_logic_vector;
-		arp_fin   : out std_logic := '0';
+		mii_clk    : in  std_logic;
+		arp_frm    : in  std_logic := '0';
+		arp_irdy   : in  std_logic := '0';
+		arp_trdy   : buffer std_logic := '0';
+		arp_data   : in  std_logic_vector;
+		arp_last   : out std_logic := '0';
+		arp_fin    : out std_logic := '0';
 
 		htype_frm  : buffer std_logic := '0';
 		htype_irdy : out std_logic := '0';
@@ -83,6 +84,7 @@ begin
 		clk     => mii_clk,
 		frm     => arp_frm,
 		irdy    => irdy,
+		last    => arp_last,
 		fin     => arp_fin,
 		act(0)  => htype_frm,
 		act(1)  => ptype_frm,

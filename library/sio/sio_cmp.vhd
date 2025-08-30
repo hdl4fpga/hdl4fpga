@@ -48,14 +48,14 @@ begin
 	mr_trdy <= sl_trdy;
 
 	process (mr_frm, mr_irdy, clk)
-		variable last : std_logic;
+		variable active : std_logic;
 		variable cy : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ((last or mr_frm) and mr_irdy and sl_trdy)='1' then
+			if ((active or mr_frm) and mr_irdy and sl_trdy)='1' then
 				if mr_data/=sl_data then
 					cy := '0';
-				elsif last='0' then
+				elsif active='0' then
 					cy := '1';
 				end if;
 			end if;
@@ -64,15 +64,15 @@ begin
 			end if;
 			if mr_frm='0' then
 				if mr_irdy='0' then
-					last := '0';
+					active := '0';
 				elsif sl_trdy='1' then
-					last := '0';
+					active := '0';
 				end if;
 			elsif mr_irdy='1' then
-				last := '1';
+				active := '1';
 			end if;
 		end if;
-		equ <= cy and not (mr_frm or mr_irdy) and last;
+		equ <= cy and not (mr_frm or mr_irdy) and active;
 	end process;
 
 end;

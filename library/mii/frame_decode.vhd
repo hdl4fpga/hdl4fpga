@@ -38,6 +38,7 @@ entity frame_decode is
 		irdy : in  std_logic := '0';
 		trdy : out std_logic := '0';
 		fin  : out std_logic := '0';
+		last : out std_logic := '0';
 		act  : out std_logic_vector(0 to length(frame)));
 end;
 
@@ -73,10 +74,10 @@ begin
 		variable step  : natural range 0 to act'length-1;
 		variable limit : natural range 0 to 2**cntr'length-1;
 
-		variable last : std_logic;
+		variable active : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ((last or frm) and irdy)='1' then
+			if ((active or frm) and irdy)='1' then
 				if cntr(0)='1' then
 					if limit=cntr then
 						step  := step + 1;
@@ -85,6 +86,11 @@ begin
 					cntr := cntr + 1;
 				end if;
 			end if;
+			if cntr=(cntr'range => '1') then
+				last <= '1';
+			else
+				last <= '0';
+			end if;
 			if (frm or irdy)='0' then -- Initialization
 				step  := 0;
 				cntr  := to_unsigned(2**cntr'length-total, cntr'length);
@@ -92,16 +98,16 @@ begin
 			end if;
 			if frm='0' then
 				if irdy='0' then
-					last  := '0';
-				elsif last='1' then
-					last  := '0';
+					active  := '0';
+				elsif active='1' then
+					active  := '0';
 				end if;
 			elsif irdy='1' then
-				last := '1';
+				active := '1';
 			end if;
 		end if;
 		fin  <= not cntr(0);
-		trdy <= (frm or last) and irdy;
+		trdy <= (frm or active) and irdy;
 
 		act <= (others => '0');
 		act(step) <= frm;

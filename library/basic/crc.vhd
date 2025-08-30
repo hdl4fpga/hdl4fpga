@@ -48,10 +48,10 @@ begin
 		severity FAILURE;
 
 	process (frm, irdy, clk)
-		variable last : std_logic;
+		variable active : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ((last or frm) and irdy)='1' then
+			if ((active or frm) and irdy)='1' then
 				crc <= not galois_crc(data, not crc, g);
 			end if;
 			if (frm or irdy)='0' then
@@ -59,15 +59,15 @@ begin
 			end if;
 			if frm='0' then
 				if irdy='0' then
-					last := '0';
-				elsif last='1' then
-					last := '0';
+					active := '0';
+				elsif active='1' then
+					active := '0';
 				end if;
 			elsif irdy='1' then
-				last := '1';
+				active := '1';
 			end if;
 		end if;
-		trdy <= (frm or last) and irdy;
+		trdy <= (frm or active) and irdy;
 	end process;
 
 end;

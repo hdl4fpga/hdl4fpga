@@ -44,10 +44,10 @@ begin
 
 	process (so_frm, so_clk)
 		variable cntr : unsigned(0 to rd_addr'length);
-		variable last : std_logic;
+		variable active : std_logic;
 	begin
 		if rising_edge(so_clk) then
-			if ((last or so_frm) and so_irdy)='1' then
+			if ((active or so_frm) and so_irdy)='1' then
 				cntr := cntr + 1;
 			end if;
 			if (so_frm or so_irdy)='0' then
@@ -56,16 +56,16 @@ begin
 			end if;
 			if so_frm='0' then
 				if so_irdy='0' then
-					last := '0';
-				elsif last='1' then
-					last := '0';
+					active := '0';
+				elsif active='1' then
+					active := '0';
 				end if;
 			elsif so_irdy='1' then
-				last := '1';
+				active := '1';
 			end if;
 			rd_addr <= std_logic_vector(cntr(rd_addr'range));
 		end if;
-		so_trdy <= so_frm or last;
+		so_trdy <= so_frm or active;
 	end process;
 
 	mem_i : entity hdl4fpga.rom

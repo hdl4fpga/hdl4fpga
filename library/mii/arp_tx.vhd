@@ -71,15 +71,16 @@ architecture def of arp_tx is
 	signal tpa_frm    : std_logic;
 	signal tpa_irdy   : std_logic;
 
-	alias  so_frm is arp_frm;
+	signal decode_frm  : std_logic;
+	signal decode_irdy : std_logic;
+	signal decode_last : std_logic;
+	signal decode_fin  : std_logic;
+	signal decode_data : std_logic_vector(arp_data'range);
+
+	alias  so_frm is decode_frm;
 	signal so_trdy    : std_logic;
 	signal so_irdy    : std_logic;
 	signal so_data    : std_logic_vector(arp_data'range);
-
-	signal decode_frm  : std_logic;
-	signal decode_irdy : std_logic;
-	signal decode_fin  : std_logic;
-	signal decode_data : std_logic_vector(arp_data'range);
 
 begin
 
@@ -87,8 +88,12 @@ begin
 	begin
 		if rising_edge(mii_clk) then
 			if (tx_rdy xor tx_req)='1' then
-				if (decode_fin and arp_irdy and arp_trdy)='1' then
-					tx_rdy <= tx_req;
+				if arp_frm='0' then
+					if (arp_irdy or arp_trdy)='0' then
+						tx_rdy <= tx_req;
+					elsif (arp_irdy and arp_trdy)='1' then
+						tx_rdy <= tx_req;
+					end if;
 				end if;
 			end if;
 		end if;
@@ -101,6 +106,7 @@ begin
 		arp_frm    => decode_frm,
 		arp_irdy   => decode_irdy,
 		arp_data   => decode_data,
+		arp_last   => decode_last,
 		arp_fin    => decode_fin,
 		htype_frm  => htype_frm,
 		htype_irdy => htype_irdy,
@@ -158,7 +164,7 @@ begin
 			x"ff_ff_ff_ff_ff_ff", 8)) -- Target Hardware Address
 	port map (
         so_clk  => mii_clk,
-		so_frm  => arp_frm,
+		so_frm  => decode_frm,
 		so_irdy => so_irdy,
 		so_trdy => so_trdy,
 		so_data => so_data);
@@ -173,11 +179,10 @@ begin
 
 	decode_data <= 
 		tha_data when tha_frm='1' else
-		pa_data  when    pa_frm='1' else
+		pa_data  when  pa_frm='1' else
 		so_data;
 
-	process (decode_fin, mii_clk)
-		variable lat1 : std_logic;
+	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if (decode_irdy and arp_trdy)='1' then
@@ -185,14 +190,28 @@ begin
 			elsif (decode_irdy and not arp_irdy)='1'then
 				arp_data <= decode_data;
 			end if;
-			if decode_fin='0' then
+			if arp_frm='0' then
+				if (arp_irdy and arp_trdy)='1' then
+					arp_irdy <= '0';
+				else
+					arp_irdy <= decode_irdy;
+				end if;
+			else
 				arp_irdy <= decode_irdy;
-			elsif arp_trdy='1' then
-				arp_irdy <= '0';
 			end if;
-			lat1 := decode_frm;
+
+			if decode_frm='0' then
+				arp_frm <= '0';
+			elsif decode_last='1' then
+				arp_frm <= '0';
+			elsif decode_fin='1' then
+				arp_frm <= '0';
+			else
+				arp_frm <= decode_frm and not decode_last;
+			end if;
+
+			arp_data <= decode_data;
 		end if;
-		arp_frm <= lat1 and not decode_fin;
 	end process;
 
 end;
