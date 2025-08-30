@@ -50,26 +50,26 @@ entity arp_tx is
 end;
 
 architecture def of arp_tx is
-	signal htype_frm  : std_logic;
-	signal htype_irdy : std_logic;
-	signal ptype_frm  : std_logic;
-	signal ptype_irdy : std_logic;
-	signal hlen_frm   : std_logic;
-	signal hlen_irdy  : std_logic;
-	signal plen_frm   : std_logic;
-	signal plen_irdy  : std_logic;
-	signal oper_frm   : std_logic;
-	signal oper_irdy  : std_logic;
-	signal sha_frm    : std_logic;
-	signal sha_irdy   : std_logic;
-	signal spa_frm    : std_logic;
-	signal spa_irdy   : std_logic;
-	signal tha_frm    : std_logic;
-	signal tha_irdy   : std_logic;
-	signal tha_trdy   : std_logic;
-	signal tha_data   : std_logic_vector(arp_data'range);
-	signal tpa_frm    : std_logic;
-	signal tpa_irdy   : std_logic;
+	signal htype_frm   : std_logic;
+	signal htype_irdy  : std_logic;
+	signal ptype_frm   : std_logic;
+	signal ptype_irdy  : std_logic;
+	signal hlen_frm    : std_logic;
+	signal hlen_irdy   : std_logic;
+	signal plen_frm    : std_logic;
+	signal plen_irdy   : std_logic;
+	signal oper_frm    : std_logic;
+	signal oper_irdy   : std_logic;
+	signal sha_frm     : std_logic;
+	signal sha_irdy    : std_logic;
+	signal spa_frm     : std_logic;
+	signal spa_irdy    : std_logic;
+	signal tha_frm     : std_logic;
+	signal tha_irdy    : std_logic;
+	signal tha_trdy    : std_logic;
+	signal tha_data    : std_logic_vector(arp_data'range);
+	signal tpa_frm     : std_logic;
+	signal tpa_irdy    : std_logic;
 
 	signal decode_frm  : std_logic;
 	signal decode_irdy : std_logic;
@@ -78,22 +78,22 @@ architecture def of arp_tx is
 	signal decode_data : std_logic_vector(arp_data'range);
 
 	alias  so_frm is decode_frm;
-	signal so_trdy    : std_logic;
-	signal so_irdy    : std_logic;
-	signal so_data    : std_logic_vector(arp_data'range);
+	signal so_irdy     : std_logic;
+	signal so_trdy     : std_logic;
+	signal so_data     : std_logic_vector(arp_data'range);
 
+	-- signal arp_trdy : std_logic;
 begin
 
+	-- arp_trdy <= '1'; --arp_frm and arp_irdy;
+	-- arp_trdy <= arp_frm and arp_irdy;
+	-- arp_trdy <= arp_irdy;
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if (tx_rdy xor tx_req)='1' then
-				if arp_frm='0' then
-					if (arp_irdy or arp_trdy)='0' then
-						tx_rdy <= tx_req;
-					elsif (arp_irdy and arp_trdy)='1' then
-						tx_rdy <= tx_req;
-					end if;
+				if (decode_last and not arp_frm and arp_irdy and arp_trdy)='1' then
+					tx_rdy <= tx_req;
 				end if;
 			end if;
 		end if;
@@ -190,26 +190,18 @@ begin
 			elsif (decode_irdy and not arp_irdy)='1'then
 				arp_data <= decode_data;
 			end if;
-			if arp_frm='0' then
-				if (arp_irdy and arp_trdy)='1' then
-					arp_irdy <= '0';
-				else
-					arp_irdy <= decode_irdy;
-				end if;
-			else
+
+			if (not arp_frm and (arp_irdy and arp_trdy))='1' then
+				arp_irdy <= '0';
+			elsif not decode_last='1' then
 				arp_irdy <= decode_irdy;
 			end if;
 
 			if decode_frm='0' then
 				arp_frm <= '0';
-			elsif decode_last='1' then
-				arp_frm <= '0';
-			elsif decode_fin='1' then
-				arp_frm <= '0';
 			else
 				arp_frm <= decode_frm and not decode_last;
 			end if;
-
 			arp_data <= decode_data;
 		end if;
 	end process;

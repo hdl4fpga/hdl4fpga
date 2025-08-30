@@ -77,7 +77,7 @@ begin
 		dst_trdy  => dll_trdy,
 		dst_data  => dll_data);
 
-	dllrx_i : entity hdl4fpga.dll_rx
+	dllrx_i : entity hdl4fpga.dll_decode
 	port map (
 		mii_clk  => mii_clk,
 		dll_frm  => dll_frm,

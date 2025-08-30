@@ -129,15 +129,15 @@ begin
 
 	end block;
 
-	pre_e : entity hdl4fpga.sio_mux
+	pre_e : entity hdl4fpga.sio_rom
+	generic map (
+		bitdata => reverse(x"5555_5555_5555_55d5", 8))
 	port map (
-		mux_data => reverse(x"5555_5555_5555_55d5", 8),
-		sio_clk  => mii_clk,
-		sio_frm  => mii_frm,
-		sio_irdy => mii_trdy,
-		sio_trdy => pre_trdy,
-		so_end   => pre_end,
-		so_data  => pre_data);
+        so_clk  => mii_clk,
+		so_frm  => pre_frm,
+		so_irdy => pre_irdy,
+		so_trdy => pre_trdy,
+		so_data => pre_data);
 
 	process(mii_clk)
 		variable cntr : unsigned(0 to unsigned_num_bits(64*8/mii_data'length-1));

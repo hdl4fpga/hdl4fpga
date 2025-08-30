@@ -88,19 +88,18 @@ begin
 			end if;
 			if cntr=(cntr'range => '1') then
 				last <= '1';
-			else
-				last <= '0';
 			end if;
 			if (frm or irdy)='0' then -- Initialization
 				step  := 0;
 				cntr  := to_unsigned(2**cntr'length-total, cntr'length);
 				limit := boundary(step);
+				last   <= '0';
 			end if;
 			if frm='0' then
 				if irdy='0' then
-					active  := '0';
+					active := '0';
 				elsif active='1' then
-					active  := '0';
+					active := '0';
 				end if;
 			elsif irdy='1' then
 				active := '1';

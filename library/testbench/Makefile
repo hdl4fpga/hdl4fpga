@@ -886,6 +886,7 @@ $(HDL4FPGA__arp_tx__def) : ../mii//arp_tx.vhd \
 $(HDL4FPGA__arpd) \
 $(HDL4FPGA__arpd__def) : ../mii/arpd.vhd \
 		$(HDL4FPGA__arp_tx) \
+		$(HDL4FPGA__sio_rom) \
 		$(HDL4FPGA__sio_cmp) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__arp_decode) \
@@ -1078,7 +1079,7 @@ $(HDL4FPGA__dfs2dfs__behavioral) : ../xilinx/dfs2dfs.vhd \
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfs2dfs.vhd
 
 $(HDL4FPGA__dll_rx) \
-$(HDL4FPGA__dll_rx__def) : ../mii/dll_rx.vhd \
+$(HDL4FPGA__dll_rx__def) : ../mii/dll_decode.vhd \
 		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__base) \
@@ -1087,7 +1088,7 @@ $(HDL4FPGA__dll_rx__def) : ../mii/dll_rx.vhd \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -93 -work hdl4fpga ../mii/dll_rx.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii/dll_decode.vhd
 
 $(HDL4FPGA__dmacntr) \
 $(HDL4FPGA__dmacntr__def) : ../sdram/dmacntr.vhd \

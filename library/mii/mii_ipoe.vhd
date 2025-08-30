@@ -62,10 +62,10 @@ architecture def of mii_ipoe is
 	signal ethpyl_frm  : std_logic;
 	signal ethpyl_irdy : std_logic;
 
-	signal ethsa_frm   : std_logic := '0';
-	signal ethsa_irdy  : std_logic := '0';
-	signal ethsa_trdy  : std_logic := '1';
-	signal ethsa_data  : std_logic_vector(miirx_data'range);
+	signal thatx_frm   : std_logic := '0';
+	signal thatx_irdy  : std_logic := '0';
+	signal thatx_trdy  : std_logic := '0';
+	signal thatx_data  : std_logic_vector(miirx_data'range);
 
 	signal arprx_frm  : std_logic;
 	alias  arprx_irdy is arprx_frm;
@@ -171,6 +171,11 @@ begin
 		arprx_frm  => arprx_frm,
 		arprx_irdy => arprx_irdy,
 		arprx_data => arprx_data,
+
+		thatx_frm  => thatx_frm,
+		thatx_irdy => thatx_irdy,
+		thatx_trdy => thatx_trdy,
+		thatx_data => thatx_data,
 
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,

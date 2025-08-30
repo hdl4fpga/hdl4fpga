@@ -38,6 +38,11 @@ entity arpd is
 		arprx_irdy : in  std_logic;
 		arprx_data : in  std_logic_vector;
 
+		thatx_frm  : in  std_logic := '0';
+		thatx_irdy : in  std_logic := '0';
+		thatx_trdy : out std_logic := '0';
+		thatx_data : out std_logic_vector;
+
 		arptx_frm  : buffer std_logic := '0';
 		arptx_irdy : out std_logic := '0';
 		arptx_trdy : in  std_logic := '1';
@@ -114,7 +119,17 @@ begin
 
 	end block;
 
-	ipsatx_e : entity hdl4fpga.sio_ram
+	thatx_i : entity hdl4fpga.sio_rom
+	generic map (
+		bitdata => reverse(x"ff_ff_ff_ff_ff_ff", 8))
+	port map (
+        so_clk  => mii_clk,
+		so_frm  => thatx_frm,
+		so_irdy => thatx_irdy,
+		so_trdy => thatx_trdy,
+		so_data => thatx_data);
+
+	spatx_e : entity hdl4fpga.sio_ram
 	generic map (
 		bitdata => reverse(aton("192.168.0.14"),8))
 	port map (
