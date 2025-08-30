@@ -71,18 +71,9 @@ architecture def of eth_tx is
 	signal prmb_end  : std_logic;
 	signal prmb_data : std_logic_vector(mii_data'range);
 
-	signal minpkt   : std_logic;
-
 	signal fcs_irdy : std_logic;
-	signal fcs_mode : std_logic;
 	signal fcs_data : std_logic_vector(mii_data'range);
-	signal fcs_end  : std_logic;
 	signal fcs_crc  : std_logic_vector(0 to 32-1);
-
-	signal tx_irdy : std_logic;
-	signal tx_trdy : std_logic;
-	signal tx_end  : std_logic;
-	signal tx_data : std_logic_vector(pl_data'range);
 
 begin
 

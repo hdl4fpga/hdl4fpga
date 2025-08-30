@@ -65,7 +65,6 @@ architecture def of arpd is
 	signal spatx_frm   : std_logic;
 	signal spatx_irdy  : std_logic;
 	signal spatx_trdy  : std_logic;
-	signal spatx_end   : std_logic;
 	signal spatx_data  : std_logic_vector(arptx_data'range);
 
 begin
