@@ -30,7 +30,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
 	generic (
-		mymac : std_logic_vector := x"00_40_00_01_02_03");
+		sha : std_logic_vector := x"00_40_00_01_02_03");
 	port (
 		mii_clk    : in  std_logic;
 		miirx_frm  : in  std_logic;
@@ -120,7 +120,7 @@ begin
 
 	ethda_cmp_i : entity hdl4fpga.mii_cmp
    	generic map (
-		bitdata => reverse(mymac,8))
+		bitdata => reverse(sha,8))
 	port map (
 		mii_clk => mii_clk,
 		frm     => ethda_frm,
@@ -164,7 +164,7 @@ begin
 
 	arpd_i : entity hdl4fpga.arpd
 	generic map (
-		mac_sa => mymac)
+		sha => sha)
 	port map (
 		mii_clk    => mii_clk,
 

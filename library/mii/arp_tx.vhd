@@ -30,7 +30,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity arp_tx is
 	generic (
-		mac_sa   : std_logic_vector(0 to 48-1));
+		sha      : std_logic_vector(0 to 48-1));
 	port (
 		mii_clk  : in  std_logic;
 		
@@ -82,12 +82,8 @@ architecture def of arp_tx is
 	signal so_trdy     : std_logic;
 	signal so_data     : std_logic_vector(arp_data'range);
 
-	-- signal arp_trdy : std_logic;
 begin
 
-	-- arp_trdy <= '1'; --arp_frm and arp_irdy;
-	-- arp_trdy <= arp_frm and arp_irdy;
-	-- arp_trdy <= arp_irdy;
 	process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
@@ -155,12 +151,12 @@ begin
 	mem_i : entity hdl4fpga.sio_rom
 	generic map (
 		bitdata => reverse(
-			std_logic_vector'(hdo(frames)**".data.arp.htype")     &
-			std_logic_vector'(hdo(frames)**".data.arp.ptype")     &
-			std_logic_vector'(hdo(frames)**".data.arp.hlen")      &
-			std_logic_vector'(hdo(frames)**".data.arp.plen")      &
-			std_logic_vector'(hdo(frames)**".data.arp.oper.reply")&
-			mac_sa  &                 -- Sender Hardware Address
+			std_logic_vector'(hdo(frames)**".data.arp.htype")      &
+			std_logic_vector'(hdo(frames)**".data.arp.ptype")      &
+			std_logic_vector'(hdo(frames)**".data.arp.hlen")       &
+			std_logic_vector'(hdo(frames)**".data.arp.plen")       &
+			std_logic_vector'(hdo(frames)**".data.arp.oper.reply") &
+			sha                                                    &
 			x"ff_ff_ff_ff_ff_ff", 8)) -- Target Hardware Address
 	port map (
         so_clk  => mii_clk,

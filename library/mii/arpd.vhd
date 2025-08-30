@@ -28,7 +28,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity arpd is
 	generic (
-		mac_sa     : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		sha     : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk    : in  std_logic;
 		tx_req     : buffer std_logic := '0';
@@ -144,7 +144,7 @@ begin
 
 	arptx_e : entity hdl4fpga.arp_tx
 	generic map (
-		mac_sa     => mac_sa)
+		sha     => sha)
 	port map (
 		mii_clk  => mii_clk,
 		tx_req   => tx_req,
