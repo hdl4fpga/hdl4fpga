@@ -40,50 +40,64 @@ entity mii_ipoe is
 		fcs_sb     : out std_logic;
 		fcs_vld    : out std_logic;
 
+		miitx_clk  : in  std_logic;
+		miitx_frm  : out std_logic;
+		miitx_irdy : out std_logic := '0';
+		miitx_trdy : in  std_logic := '1';
+		miitx_data : out std_logic_vector;
+
 		tp         : buffer std_logic_vector(1 to 32) := (others => '0'));
 
 end;
 
 architecture def of mii_ipoe is
 
-	signal dll_frm     : std_logic;
-	signal dll_irdy    : std_logic;
-	signal dll_trdy    : std_logic;
-	signal dll_data    : std_logic_vector(miirx_data'range);
+	signal dll_frm       : std_logic;
+	signal dll_irdy      : std_logic;
+	signal dll_trdy      : std_logic;
+	signal dll_data      : std_logic_vector(miirx_data'range);
 
-	signal ethda_frm   : std_logic;
-	signal ethda_irdy  : std_logic;
-	signal ethda_equ   : std_logic;
-	signal bcstda_equ  : std_logic;
-	signal ethtyp_frm  : std_logic;
-	signal ethtyp_irdy : std_logic;
-	signal ipv4typ_equ : std_logic;
-	signal arptyp_equ  : std_logic;
-	signal ethpyl_frm  : std_logic;
-	signal ethpyl_irdy : std_logic;
+	signal ethda_frm     : std_logic;
+	signal ethda_irdy    : std_logic;
+	signal ethda_equ     : std_logic;
+	signal bcstda_equ    : std_logic;
+	signal ethtyp_frm    : std_logic;
+	signal ethtyp_irdy   : std_logic;
+	signal ipv4typ_equ   : std_logic;
+	signal arptyp_equ    : std_logic;
+	signal ethpyl_frm    : std_logic;
+	signal ethpyl_irdy   : std_logic;
 
-	signal thatx_frm   : std_logic := '0';
-	signal thatx_irdy  : std_logic := '0';
-	signal thatx_trdy  : std_logic := '0';
-	signal thatx_data  : std_logic_vector(miirx_data'range);
+	signal thatx_frm     : std_logic := '0';
+	signal thatx_irdy    : std_logic := '0';
+	signal thatx_trdy    : std_logic := '0';
+	signal thatx_data    : std_logic_vector(miirx_data'range);
 
-	signal arprx_frm  : std_logic;
+	signal arprx_frm     : std_logic;
 	alias  arprx_irdy is arprx_frm;
-	signal arprx_data : std_logic_vector(miirx_data'range);
+	signal arprx_data    : std_logic_vector(miirx_data'range);
 
-	signal arptx_frm  : std_logic;
-	signal arptx_irdy : std_logic;
-	signal arptx_trdy : std_logic := '1';
-	signal arptx_data : std_logic_vector(miirx_data'range);
+	signal arptx_frm     : std_logic;
+	signal arptx_irdy    : std_logic;
+	signal arptx_trdy    : std_logic := '1';
+	signal arptx_data    : std_logic_vector(miirx_data'range);
 
-	signal arptha_frm  : std_logic;
-	signal arptpa_frm  : std_logic;
+	signal arptha_frm    : std_logic;
+	signal arptpa_frm    : std_logic;
 
-	signal ipv4rx_frm  : std_logic;
+	signal ipv4rx_frm    : std_logic;
 	alias  ipv4rx_irdy is ipv4rx_frm;
-	signal ipv4rx_data : std_logic_vector(miirx_data'range);
+	signal ipv4rx_data   : std_logic_vector(miirx_data'range);
 
-	signal ipv4da_frm  : std_logic;
+	signal ipv4da_frm    : std_logic;
+
+    signal ethtx_req     : std_logic;
+    signal ethtx_rdy     : std_logic;
+
+	signal ethtyptx_frm  : std_logic := '0';
+	signal ethtyptx_irdy : std_logic := '0';
+	signal ethtyptx_trdy : std_logic := '0';
+	signal ethtyptx_data : std_logic_vector(miitx_data'range);
 
 begin
 
@@ -109,7 +123,7 @@ begin
 		fcs_vld  => fcs_vld);
 
 	bcstda_cmp_i : entity hdl4fpga.mii_cmp
-   	generic map (
+	generic map (
 		bitdata => reverse(x"ff_ff_ff_ff_ff_ff",8))
 	port map (
 		mii_clk => mii_clk,
@@ -119,7 +133,7 @@ begin
 		equ     => bcstda_equ);
 
 	ethda_cmp_i : entity hdl4fpga.mii_cmp
-   	generic map (
+	generic map (
 		bitdata => reverse(sha,8))
 	port map (
 		mii_clk => mii_clk,
@@ -129,7 +143,7 @@ begin
 		equ     => ethda_equ);
 
 	arptyp_cmp_i : entity hdl4fpga.mii_cmp
-   	generic map (
+	generic map (
 		bitdata => reverse(hdo(frames)**".data.mac.type.arp",8))
 	port map (
 		mii_clk => mii_clk,
@@ -177,14 +191,44 @@ begin
 		thatx_trdy => thatx_trdy,
 		thatx_data => thatx_data,
 
+		ethtyptx_frm  => ethtyptx_frm,
+		ethtyptx_irdy => ethtyptx_irdy,
+		ethtyptx_trdy => ethtyptx_trdy,
+		ethtyptx_data => ethtyptx_data,
+
 		arptx_frm  => arptx_frm,
 		arptx_irdy => arptx_irdy,
 		arptx_trdy => arptx_trdy,
 		arptx_data => arptx_data);
 
+    ethtx_i : entity hdl4fpga.eth_tx
+	port map (
+        tx_req      => ethtx_req,
+        tx_rdy      => ethtx_rdy,
+
+		mii_clk     => miitx_clk,
+		mii_frm     => miitx_frm,
+		mii_irdy    => miitx_irdy,
+		mii_trdy    => miitx_trdy,
+		mii_data    => miitx_data,
+
+		pyl_frm     => arptx_frm,
+		pyl_irdy    => arptx_irdy,
+		pyl_trdy    => arptx_trdy,
+		pyl_data    => arptx_data,
+
+		ethda_frm   => thatx_frm,
+		ethda_irdy  => thatx_irdy,
+		ethda_trdy  => thatx_trdy,
+		ethda_data  => thatx_data,
+
+		ethtyp_frm  => ethtyptx_frm,
+		ethtyp_irdy => ethtyptx_irdy,
+		ethtyp_trdy => ethtyptx_trdy,
+		ethtyp_data => ethtyptx_data);
 
 	ipv4typ_cmp_i : entity hdl4fpga.mii_cmp
-   	generic map (
+	generic map (
 		bitdata => reverse(hdo(frames)**".data.mac.type.ipv4",8))
 	port map (
 		mii_clk => mii_clk,

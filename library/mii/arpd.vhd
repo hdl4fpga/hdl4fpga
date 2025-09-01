@@ -23,6 +23,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -30,25 +31,30 @@ entity arpd is
 	generic (
 		sha     : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		mii_clk    : in  std_logic;
-		tx_req     : buffer std_logic := '0';
-		tx_rdy     : buffer std_logic := '0';
+		mii_clk       : in  std_logic;
+		tx_req        : buffer std_logic := '0';
+		tx_rdy        : buffer std_logic := '0';
 
-		arprx_frm  : in  std_logic;
-		arprx_irdy : in  std_logic;
-		arprx_data : in  std_logic_vector;
+		arprx_frm     : in  std_logic;
+		arprx_irdy    : in  std_logic;
+		arprx_data    : in  std_logic_vector;
 
-		thatx_frm  : in  std_logic := '0';
-		thatx_irdy : in  std_logic := '0';
-		thatx_trdy : out std_logic := '0';
-		thatx_data : out std_logic_vector;
+		thatx_frm     : in  std_logic := '0';
+		thatx_irdy    : in  std_logic := '0';
+		thatx_trdy    : out std_logic := '0';
+		thatx_data    : out std_logic_vector;
 
-		arptx_frm  : buffer std_logic := '0';
-		arptx_irdy : out std_logic := '0';
-		arptx_trdy : in  std_logic := '1';
-		arptx_data : out std_logic_vector;
+		ethtyptx_frm  : in  std_logic := '0';
+		ethtyptx_irdy : in  std_logic := '0';
+		ethtyptx_trdy : out std_logic := '0';
+		ethtyptx_data : out std_logic_vector;
 
-		tp         : out std_logic_vector(1 to 32));
+		arptx_frm     : buffer std_logic := '0';
+		arptx_irdy    : out std_logic := '0';
+		arptx_trdy    : in  std_logic := '1';
+		arptx_data    : out std_logic_vector;
+
+		tp            : out std_logic_vector(1 to 32));
 
 end;
 
@@ -117,6 +123,16 @@ begin
 		end process;
 
 	end block;
+
+	ethtyptx_i : entity hdl4fpga.sio_rom
+	generic map (
+		bitdata => reverse(hdo(frames)**".data.mac.type.arp",8))
+	port map (
+        so_clk  => mii_clk,
+		so_frm  => ethtyptx_frm,
+		so_irdy => ethtyptx_irdy,
+		so_trdy => ethtyptx_trdy,
+		so_data => ethtyptx_data);
 
 	thatx_i : entity hdl4fpga.sio_rom
 	generic map (

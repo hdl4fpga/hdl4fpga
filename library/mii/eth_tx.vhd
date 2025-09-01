@@ -34,24 +34,19 @@ entity eth_tx is
 	generic (
 		sha         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
+        tx_req      : in  std_logic := '0';
+        tx_rdy      : buffer std_logic := '0';
+
 		mii_clk     : in  std_logic;
 		mii_frm     : buffer std_logic;
 		mii_irdy    : buffer std_logic;
 		mii_trdy    : in  std_logic := '1';
 		mii_data    : out std_logic_vector;
 
-        tx_req      : in  std_logic := '0';
-        tx_rdy      : buffer std_logic := '0';
-
-		pyl_frm     : buffer std_logic;
-		pyl_irdy    : buffer std_logic;
-		pyl_trdy    : in  std_logic;
+		pyl_frm     : in  std_logic;
+		pyl_irdy    : in  std_logic;
+		pyl_trdy    : out std_logic;
 		pyl_data    : in  std_logic_vector;
-
-		mac_frm     : in  std_logic;
-		mac_irdy    : in  std_logic := '1';
-		mac_trdy    : buffer std_logic;
-		mac_data    : in  std_logic_vector;
 
 		ethda_frm   : buffer std_logic;
 		ethda_irdy  : buffer std_logic;
@@ -88,6 +83,7 @@ architecture def of eth_tx is
 	signal fcs_data    : std_logic_vector(mii_data'range);
 	signal fcs_crc     : std_logic_vector(0 to 32-1);
 
+    signal act4        : std_logic;
 begin
 
     process(mii_clk)
@@ -118,14 +114,14 @@ begin
 		act(1) => ethda_frm,
 		act(2) => sha_frm,
 		act(3) => ethtyp_frm,
-		act(4) => pyl_frm);
+		act(4) => act4);
 
 	decode_trdy <=
 		prmb_trdy   when   prmb_frm='1' else
 		ethda_trdy  when  ethda_frm='1' else
 		sha_trdy    when    sha_frm='1' else
 		ethtyp_trdy when ethtyp_frm='1' else
-		pyl_trdy    when    pyl_frm='1' else
+		pyl_irdy    when    pyl_frm='1' else
 		'0';
 
 	pre_e : entity hdl4fpga.sio_rom
