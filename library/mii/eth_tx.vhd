@@ -35,26 +35,34 @@ entity eth_tx is
 		sha         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		mii_clk     : in  std_logic;
+		mii_frm     : buffer std_logic;
+		mii_irdy    : buffer std_logic;
+		mii_trdy    : in  std_logic := '1';
+		mii_data    : out std_logic_vector;
+
+        tx_req      : in  std_logic := '0';
+        tx_rdy      : buffer std_logic := '0';
+
+		pyl_frm     : buffer std_logic;
+		pyl_irdy    : buffer std_logic;
+		pyl_trdy    : in  std_logic;
+		pyl_data    : in  std_logic_vector;
 
 		mac_frm     : in  std_logic;
 		mac_irdy    : in  std_logic := '1';
 		mac_trdy    : buffer std_logic;
 		mac_data    : in  std_logic_vector;
 
-		ethda_frm   : out std_logic;
-		ethda_irdy  : out std_logic;
+		ethda_frm   : buffer std_logic;
+		ethda_irdy  : buffer std_logic;
 		ethda_trdy  : in  std_logic := '1';
 		ethda_data  : in  std_logic_vector;
 
-		ethtyp_frm  : out std_logic;
-		ethtyp_irdy : out std_logic;
+		ethtyp_frm  : buffer std_logic;
+		ethtyp_irdy : buffer std_logic;
 		ethtyp_trdy : in  std_logic := '1';
-		ethtyp_data : in  std_logic_vector;
+		ethtyp_data : in  std_logic_vector);
 
-		mii_frm     : buffer std_logic;
-		mii_irdy    : buffer std_logic;
-		mii_trdy    : in  std_logic := '1';
-		mii_data    : out std_logic_vector);
 end;
 
 architecture def of eth_tx is
@@ -74,20 +82,31 @@ architecture def of eth_tx is
 	signal sha_trdy    : std_logic;
 	signal sha_data    : std_logic_vector(mii_data'range);
 
-	signal pyl_frm     : std_logic;
-
+	signal fcs_frm     : std_logic;
 	signal fcs_irdy    : std_logic;
+	signal fcs_trdy    : std_logic;
 	signal fcs_data    : std_logic_vector(mii_data'range);
 	signal fcs_crc     : std_logic_vector(0 to 32-1);
 
 begin
 
+    process(mii_clk)
+    begin
+        if rising_edge(mii_clk) then
+            if (tx_rdy xor tx_rdy)='1' then
+
+            end if;
+        end if;
+    end process;
+
+	decode_frm <= (tx_rdy xor tx_req);
+
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
-		frame => "{"                                                 &
-			"prmb:"& "64"                                     & ','  &
-			" tha:"& string'(hdo(frames)**".format.mac.hwda") & ','  &
-			" sha:"& string'(hdo(frames)**".format.mac.hwsa") & ','  &
+		frame => "{"                                                &
+			"prmb:"& "64"                                     & ',' &
+			" tha:"& string'(hdo(frames)**".format.mac.hwda") & ',' &
+			" sha:"& string'(hdo(frames)**".format.mac.hwsa") & ',' &
 			"type:"& string'(hdo(frames)**".format.mac.type") & '}',
 		size  => mii_data'length)
 	port map (
@@ -100,6 +119,14 @@ begin
 		act(2) => sha_frm,
 		act(3) => ethtyp_frm,
 		act(4) => pyl_frm);
+
+	decode_trdy <=
+		prmb_trdy   when   prmb_frm='1' else
+		ethda_trdy  when  ethda_frm='1' else
+		sha_trdy    when    sha_frm='1' else
+		ethtyp_trdy when ethtyp_frm='1' else
+		pyl_trdy    when    pyl_frm='1' else
+		'0';
 
 	pre_e : entity hdl4fpga.sio_rom
 	generic map (
@@ -121,13 +148,30 @@ begin
 		so_trdy => sha_trdy,
 		so_data => sha_data);
 
+	fcs_frm  <= ethda_frm or sha_frm or ethtyp_frm or pyl_frm;
+	fcs_irdy <=
+		prmb_irdy   when   prmb_frm='1' else
+		ethda_irdy  when  ethda_frm='1' else
+		sha_irdy    when    sha_frm='1' else
+		ethtyp_irdy when ethtyp_frm='1' else
+		pyl_irdy    when    pyl_frm='1' else
+		'0';
+
 	fcs_e : entity hdl4fpga.crc
 	port map (
 		g    => x"04c11db7",
 		clk  => mii_clk,
-		frm  => mii_frm,
+		frm  => fcs_frm,
 		irdy => fcs_irdy,
+		trdy => fcs_trdy,
 		data => fcs_data,
 		crc  => fcs_crc);
 
+	mii_data <= 
+		prmb_data   when   prmb_frm='1' else
+		ethda_data  when  ethda_frm='1' else
+		sha_data    when    sha_frm='1' else
+		ethtyp_data when ethtyp_frm='1' else
+		pyl_data    when    pyl_frm='1' else
+		fcs_data;
 end;
