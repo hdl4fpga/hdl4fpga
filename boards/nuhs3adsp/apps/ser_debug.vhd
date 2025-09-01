@@ -103,10 +103,13 @@ begin
 		mii_clk  => mii_rxc,
 		miirx_frm  => mii_rxdv,
 		miirx_irdy => mii_rxdv,
-		miirx_data => mii_rxd);
+		miirx_data => mii_rxd,
+		miitx_clk  => mii_txc,
+		miitx_frm  => mii_txen,
+		miitx_data => mii_txd);
 
-	mii_txen <= '0';
-	mii_txd <= (others =>'Z');
+	-- mii_txen <= '0';
+	-- mii_txd <= (others =>'Z');
 
 	ser_clk  <= mii_rxc;
 	ser_frm  <= tp(1);
