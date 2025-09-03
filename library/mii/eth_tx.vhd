@@ -34,8 +34,8 @@ entity eth_tx is
 	generic (
 		sha         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-        tx_req      : in  std_logic := '0';
-        tx_rdy      : buffer std_logic := '0';
+		tx_req      : in  std_logic := '0';
+		tx_rdy      : buffer std_logic := '0';
 
 		mii_clk     : in  std_logic;
 		mii_frm     : buffer std_logic;
@@ -45,7 +45,7 @@ entity eth_tx is
 
 		pyl_frm     : in  std_logic;
 		pyl_irdy    : in  std_logic;
-		pyl_trdy    : out std_logic;
+		pyl_trdy    : out std_logic := '0';
 		pyl_data    : in  std_logic_vector;
 
 		ethda_frm   : buffer std_logic;

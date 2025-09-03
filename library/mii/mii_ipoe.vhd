@@ -91,8 +91,8 @@ architecture def of mii_ipoe is
 
 	signal ipv4da_frm    : std_logic;
 
-    signal ethtx_req     : std_logic;
-    signal ethtx_rdy     : std_logic;
+	signal ethtx_req     : std_logic;
+	signal ethtx_rdy     : std_logic;
 
 	signal ethtyptx_frm  : std_logic := '0';
 	signal ethtyptx_irdy : std_logic := '0';
@@ -180,31 +180,31 @@ begin
 	generic map (
 		sha => sha)
 	port map (
-		mii_clk    => mii_clk,
+		mii_clk       => mii_clk,
 
-		arprx_frm  => arprx_frm,
-		arprx_irdy => arprx_irdy,
-		arprx_data => arprx_data,
+		arprx_frm     => arprx_frm,
+		arprx_irdy    => arprx_irdy,
+		arprx_data    => arprx_data,
 
-		thatx_frm  => thatx_frm,
-		thatx_irdy => thatx_irdy,
-		thatx_trdy => thatx_trdy,
-		thatx_data => thatx_data,
+		thatx_frm     => thatx_frm,
+		thatx_irdy    => thatx_irdy,
+		thatx_trdy    => thatx_trdy,
+		thatx_data    => thatx_data,
 
 		ethtyptx_frm  => ethtyptx_frm,
 		ethtyptx_irdy => ethtyptx_irdy,
 		ethtyptx_trdy => ethtyptx_trdy,
 		ethtyptx_data => ethtyptx_data,
 
-		arptx_frm  => arptx_frm,
-		arptx_irdy => arptx_irdy,
-		arptx_trdy => arptx_trdy,
-		arptx_data => arptx_data);
+		arptx_frm     => arptx_frm,
+		arptx_irdy    => arptx_irdy,
+		arptx_trdy    => arptx_trdy,
+		arptx_data    => arptx_data);
 
-    ethtx_i : entity hdl4fpga.eth_tx
+	ethtx_i : entity hdl4fpga.eth_tx
 	port map (
-        tx_req      => ethtx_req,
-        tx_rdy      => ethtx_rdy,
+	    tx_req      => ethtx_req,
+	    tx_rdy      => ethtx_rdy,
 
 		mii_clk     => miitx_clk,
 		mii_frm     => miitx_frm,
