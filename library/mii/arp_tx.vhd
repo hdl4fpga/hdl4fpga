@@ -77,10 +77,10 @@ architecture def of arp_tx is
 	signal decode_fin  : std_logic;
 	signal decode_data : std_logic_vector(arp_data'range);
 
-	alias  so_frm is decode_frm;
-	signal so_irdy     : std_logic;
-	signal so_trdy     : std_logic;
-	signal so_data     : std_logic_vector(arp_data'range);
+	alias  rom_frm is decode_frm;
+	signal rom_irdy     : std_logic;
+	signal rom_trdy     : std_logic;
+	signal rom_data     : std_logic_vector(arp_data'range);
 
 begin
 
@@ -138,14 +138,14 @@ begin
     	tpa_irdy when tpa_frm='1' else 
 		'0';
 
-	so_irdy <= 
-    	htype_irdy when htype_frm='1' else 
-    	ptype_irdy when ptype_frm='1' else 
-    	hlen_irdy  when  hlen_frm='1' else 
-    	plen_irdy  when  plen_frm='1' else 
-    	oper_irdy  when  oper_frm='1' else 
-    	sha_irdy   when   sha_frm='1' else 
-    	tha_irdy   when   tha_frm='1' else 
+	rom_irdy <= 
+    	arp_trdy and htype_irdy when htype_frm='1' else 
+    	arp_trdy and ptype_irdy when ptype_frm='1' else 
+    	arp_trdy and hlen_irdy  when  hlen_frm='1' else 
+    	arp_trdy and plen_irdy  when  plen_frm='1' else 
+    	arp_trdy and oper_irdy  when  oper_frm='1' else 
+    	arp_trdy and sha_irdy   when   sha_frm='1' else 
+    	arp_trdy and tha_irdy   when   tha_frm='1' else 
 		'0';
 
 	mem_i : entity hdl4fpga.sio_rom
@@ -161,22 +161,22 @@ begin
 	port map (
         so_clk  => mii_clk,
 		so_frm  => decode_frm,
-		so_irdy => so_irdy,
-		so_trdy => so_trdy,
-		so_data => so_data);
+		so_irdy => rom_irdy,
+		so_trdy => rom_trdy,
+		so_data => rom_data);
 
 	tha_trdy <= tha_frm and tha_irdy;
 	tha_data <= (arp_data'range => '1');
 	decode_irdy <= 
-		tha_irdy when tha_frm='1' else
-		pa_irdy  when  pa_frm='1' else
-		so_trdy  when so_irdy='1' else
+		tha_irdy when  tha_frm='1' else
+		pa_irdy  when   pa_frm='1' else
+		rom_trdy when rom_irdy='1' else
 		'0';
 
 	decode_data <= 
 		tha_data when tha_frm='1' else
 		pa_data  when  pa_frm='1' else
-		so_data;
+		rom_data;
 
 	process (mii_clk)
 	begin
