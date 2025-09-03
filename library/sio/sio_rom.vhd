@@ -42,7 +42,7 @@ architecture def of sio_rom is
 
 begin
 
-	process (so_frm, so_clk)
+	process (so_frm, so_irdy, so_clk)
 		variable cntr : unsigned(0 to rd_addr'length);
 		variable active : std_logic;
 	begin
@@ -65,7 +65,7 @@ begin
 			end if;
 			rd_addr <= std_logic_vector(cntr(rd_addr'range));
 		end if;
-		so_trdy <= so_frm or active;
+		so_trdy <= (so_frm or active) and so_irdy;
 	end process;
 
 	mem_i : entity hdl4fpga.rom

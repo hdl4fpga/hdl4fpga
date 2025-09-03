@@ -180,7 +180,7 @@ architecture nuhs3adsp_serdebug of testbench is
 begin
 
 	mii_rxc <= mii_refclk after 5 ps;
-	mii_txc <= not mii_refclk after 5 ps;
+	mii_txc <= mii_refclk after 5 ps;
 
 	clk <= not clk after 25 ns;
 

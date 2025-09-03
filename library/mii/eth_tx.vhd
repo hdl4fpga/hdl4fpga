@@ -34,8 +34,6 @@ entity eth_tx is
 	generic (
 		sha         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		tx_req      : in  std_logic := '0';
-		tx_rdy      : buffer std_logic := '0';
 
 		mii_clk     : in  std_logic;
 		mii_frm     : buffer std_logic;
@@ -62,18 +60,18 @@ end;
 
 architecture def of eth_tx is
 
-	signal decode_frm  : std_logic;
+	alias  decode_frm  is pyl_frm;
 	signal decode_irdy : std_logic;
 	signal decode_trdy : std_logic := '1';
 	signal decode_data : std_logic_vector(mii_data'range);
 
 	signal prmb_frm    : std_logic;
-	signal prmb_irdy   : std_logic;
+	alias  prmb_irdy   is prmb_frm;
 	signal prmb_trdy   : std_logic;
 	signal prmb_data   : std_logic_vector(mii_data'range);
 
 	signal sha_frm     : std_logic;
-	signal sha_irdy    : std_logic;
+	alias  sha_irdy    is sha_frm;
 	signal sha_trdy    : std_logic;
 	signal sha_data    : std_logic_vector(mii_data'range);
 
@@ -85,17 +83,6 @@ architecture def of eth_tx is
 
     signal act4        : std_logic;
 begin
-
-    process(mii_clk)
-    begin
-        if rising_edge(mii_clk) then
-            if (tx_rdy xor tx_rdy)='1' then
-
-            end if;
-        end if;
-    end process;
-
-	decode_frm <= (tx_rdy xor tx_req);
 
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
@@ -114,9 +101,11 @@ begin
 		act(1) => ethda_frm,
 		act(2) => sha_frm,
 		act(3) => ethtyp_frm,
-		act(4) => act4);
+		act(4) => pyl_trdy);
+	ethda_irdy  <= ethda_frm;
+	ethtyp_irdy <= ethtyp_frm;
 
-	decode_trdy <=
+	decode_irdy <=
 		prmb_trdy   when   prmb_frm='1' else
 		ethda_trdy  when  ethda_frm='1' else
 		sha_trdy    when    sha_frm='1' else
@@ -124,7 +113,7 @@ begin
 		pyl_irdy    when    pyl_frm='1' else
 		'0';
 
-	pre_e : entity hdl4fpga.sio_rom
+	prmb_i : entity hdl4fpga.sio_rom
 	generic map (
 		bitdata => reverse(x"5555_5555_5555_55d5", 8))
 	port map (
@@ -136,7 +125,7 @@ begin
 
 	sha_i : entity hdl4fpga.sio_rom
 	generic map (
-		bitdata => reverse(x"ff_ff_ff_ff_ff_ff", 8))
+		bitdata => reverse(sha, 8))
 	port map (
         so_clk  => mii_clk,
 		so_frm  => sha_frm,
@@ -162,6 +151,15 @@ begin
 		trdy => fcs_trdy,
 		data => fcs_data,
 		crc  => fcs_crc);
+
+	mii_frm  <= prmb_frm or ethda_frm or sha_frm or ethtyp_frm or pyl_frm;
+	mii_irdy <=
+		prmb_trdy   when   prmb_frm='1' else
+		ethda_trdy  when  ethda_frm='1' else
+		sha_trdy    when    sha_frm='1' else
+		ethtyp_trdy when ethtyp_frm='1' else
+		pyl_irdy    when    pyl_frm='1' else
+		'0';
 
 	mii_data <= 
 		prmb_data   when   prmb_frm='1' else

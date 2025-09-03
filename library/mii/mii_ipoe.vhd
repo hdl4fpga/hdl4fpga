@@ -91,9 +91,6 @@ architecture def of mii_ipoe is
 
 	signal ipv4da_frm    : std_logic;
 
-	signal ethtx_req     : std_logic;
-	signal ethtx_rdy     : std_logic;
-
 	signal ethtyptx_frm  : std_logic := '0';
 	signal ethtyptx_irdy : std_logic := '0';
 	signal ethtyptx_trdy : std_logic := '0';
@@ -203,9 +200,6 @@ begin
 
 	ethtx_i : entity hdl4fpga.eth_tx
 	port map (
-	    tx_req      => ethtx_req,
-	    tx_rdy      => ethtx_rdy,
-
 		mii_clk     => miitx_clk,
 		mii_frm     => miitx_frm,
 		mii_irdy    => miitx_irdy,

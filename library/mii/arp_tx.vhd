@@ -148,7 +148,7 @@ begin
     	arp_trdy and tha_irdy   when   tha_frm='1' else 
 		'0';
 
-	mem_i : entity hdl4fpga.sio_rom
+	rom_i : entity hdl4fpga.sio_rom
 	generic map (
 		bitdata => reverse(
 			std_logic_vector'(hdo(frames)**".data.arp.htype")      &
@@ -171,7 +171,7 @@ begin
 		tha_irdy when  tha_frm='1' else
 		pa_irdy  when   pa_frm='1' else
 		rom_trdy when rom_irdy='1' else
-		'0';
+		'1';
 
 	decode_data <= 
 		tha_data when tha_frm='1' else
