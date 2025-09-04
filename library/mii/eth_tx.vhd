@@ -174,7 +174,7 @@ begin
 		ethtyp_data when ethtyp_frm='1' else
 		pyl_data    when    pyl_frm='1' else
 		pyl_data    when   pyl_irdy='1' else
-		(pyl_data'range => '0');
+		(pyl_data'range => '-');
 
 	g <= x"04c11db7" when (pyl_frm or pyl_irdy)='1' else x"00000000";
 	fcs_e : entity hdl4fpga.crc
@@ -200,9 +200,8 @@ begin
 		ethda_trdy  when  ethda_frm='1' else
 		sha_trdy    when    sha_frm='1' else
 		ethtyp_trdy when ethtyp_frm='1' else
-		pyl_irdy    when    pyl_frm='1' else
-		'0';
-
+		(pyl_irdy or pyl_frm);
+		
 	mii_data <= 
 		prmb_data   when   prmb_frm='1' else
 		ethda_data  when  ethda_frm='1' else

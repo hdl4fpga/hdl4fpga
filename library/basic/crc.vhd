@@ -52,10 +52,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if ((active or frm) and irdy)='1' then
-				crc <= not galois_crc(data, not crc, g);
-			end if;
-			if (frm or irdy)='0' then
-				crc <= (crc'range => '0');
+				if active='0' then
+					crc <= not galois_crc(data, (crc'range => '1'), g);
+				else
+					crc <= not galois_crc(data, not crc, g);
+				end if;
 			end if;
 			if frm='0' then
 				if irdy='0' then
