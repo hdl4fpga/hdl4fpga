@@ -63,6 +63,7 @@ architecture def of eth_tx is
 	alias  decode_frm  is pyl_frm;
 	signal decode_irdy : std_logic;
 	signal decode_trdy : std_logic := '1';
+	signal decode_fin  : std_logic := '1';
 	signal decode_data : std_logic_vector(mii_data'range);
 
 	signal prmb_frm    : std_logic;
@@ -81,8 +82,17 @@ architecture def of eth_tx is
 	signal fcs_data    : std_logic_vector(mii_data'range);
 	signal fcs_crc     : std_logic_vector(0 to 32-1);
 
-    signal act4        : std_logic;
+    signal pyl_act     : std_logic;
+
+	signal g : std_logic_vector(fcs_crc'range);
+
+	signal crc_frm : std_logic;
+	alias  crc_irdy is crc_frm;
+	alias  crc_data is fcs_data(mii_data'range);
+
 begin
+
+	pyl_trdy <= decode_fin and decode_trdy;
 
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
@@ -97,11 +107,12 @@ begin
 		frm    => decode_frm,
 		irdy   => decode_irdy,
 		trdy   => decode_trdy,
+		fin    => decode_fin,
 		act(0) => prmb_frm,
 		act(1) => ethda_frm,
 		act(2) => sha_frm,
 		act(3) => ethtyp_frm,
-		act(4) => pyl_trdy);
+		act(4) => pyl_act);
 	ethda_irdy  <= ethda_frm;
 	ethtyp_irdy <= ethtyp_frm;
 
@@ -110,8 +121,7 @@ begin
 		ethda_trdy  when  ethda_frm='1' else
 		sha_trdy    when    sha_frm='1' else
 		ethtyp_trdy when ethtyp_frm='1' else
-		pyl_irdy    when    pyl_frm='1' else
-		'0';
+		(pyl_frm or pyl_irdy);
 
 	prmb_i : entity hdl4fpga.sio_rom
 	generic map (
@@ -133,18 +143,43 @@ begin
 		so_trdy => sha_trdy,
 		so_data => sha_data);
 
-	fcs_frm  <= ethda_frm or sha_frm or ethtyp_frm or pyl_frm;
+	process (mii_clk)
+		variable shr : unsigned(0 to 8-1);
+	begin
+		if rising_edge(mii_clk) then
+			shr(0) := pyl_frm or pyl_irdy;
+			shr := rotate_left(shr, 1);
+			crc_frm <= shr(0);
+		end if;
+	end process;
+
+	fcs_frm  <= 
+		'0' when   prmb_frm='1' else
+		'1' when  ethda_frm='1' else
+		'1' when    sha_frm='1' else
+		'1' when ethtyp_frm='1' else
+		'1' when    pyl_frm='1' else
+		crc_frm;
+
 	fcs_irdy <=
-		prmb_irdy   when   prmb_frm='1' else
+		'0'         when   prmb_frm='1' else
 		ethda_irdy  when  ethda_frm='1' else
 		sha_irdy    when    sha_frm='1' else
 		ethtyp_irdy when ethtyp_frm='1' else
-		pyl_irdy    when    pyl_frm='1' else
-		'0';
+		crc_irdy;
 
+	fcs_data <= 
+		ethda_data  when  ethda_frm='1' else
+		sha_data    when    sha_frm='1' else
+		ethtyp_data when ethtyp_frm='1' else
+		pyl_data    when    pyl_frm='1' else
+		pyl_data    when   pyl_irdy='1' else
+		(pyl_data'range => '0');
+
+	g <= x"04c11db7" when (pyl_frm or pyl_irdy)='1' else x"00000000";
 	fcs_e : entity hdl4fpga.crc
 	port map (
-		g    => x"04c11db7",
+		g    => g,
 		clk  => mii_clk,
 		frm  => fcs_frm,
 		irdy => fcs_irdy,
@@ -152,9 +187,16 @@ begin
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	mii_frm  <= prmb_frm or ethda_frm or sha_frm or ethtyp_frm or pyl_frm;
+	mii_frm  <= 
+		'1' when   prmb_frm='1' else
+		'1' when  ethda_frm='1' else
+		'1' when    sha_frm='1' else
+		'1' when ethtyp_frm='1' else
+		'1' when    pyl_frm='1' else
+		'1' when   pyl_irdy='1' else
+		'0';
+
 	mii_irdy <=
-		prmb_trdy   when   prmb_frm='1' else
 		ethda_trdy  when  ethda_frm='1' else
 		sha_trdy    when    sha_frm='1' else
 		ethtyp_trdy when ethtyp_frm='1' else
@@ -167,5 +209,5 @@ begin
 		sha_data    when    sha_frm='1' else
 		ethtyp_data when ethtyp_frm='1' else
 		pyl_data    when    pyl_frm='1' else
-		fcs_data;
+		fcs_crc(mii_data'range);
 end;

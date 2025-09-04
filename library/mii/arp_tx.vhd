@@ -134,18 +134,18 @@ begin
 
 	pa_frm  <= spa_frm  or tpa_frm;
 	pa_irdy <= 
-    	spa_irdy when spa_frm='1' else 
-    	tpa_irdy when tpa_frm='1' else 
+		spa_irdy when spa_frm='1' else 
+		tpa_irdy when tpa_frm='1' else 
 		'0';
 
 	rom_irdy <= 
-    	arp_trdy and htype_irdy when htype_frm='1' else 
-    	arp_trdy and ptype_irdy when ptype_frm='1' else 
-    	arp_trdy and hlen_irdy  when  hlen_frm='1' else 
-    	arp_trdy and plen_irdy  when  plen_frm='1' else 
-    	arp_trdy and oper_irdy  when  oper_frm='1' else 
-    	arp_trdy and sha_irdy   when   sha_frm='1' else 
-    	arp_trdy and tha_irdy   when   tha_frm='1' else 
+		arp_trdy and htype_irdy when htype_frm='1' else 
+		arp_trdy and ptype_irdy when ptype_frm='1' else 
+		arp_trdy and hlen_irdy  when  hlen_frm='1' else 
+		arp_trdy and plen_irdy  when  plen_frm='1' else 
+		arp_trdy and oper_irdy  when  oper_frm='1' else 
+		arp_trdy and sha_irdy   when   sha_frm='1' else 
+		arp_trdy and tha_irdy   when   tha_frm='1' else 
 		'0';
 
 	rom_i : entity hdl4fpga.sio_rom
@@ -171,7 +171,7 @@ begin
 		tha_irdy when  tha_frm='1' else
 		pa_irdy  when   pa_frm='1' else
 		rom_trdy when rom_irdy='1' else
-		'1';
+		(tx_rdy xor tx_req);
 
 	decode_data <= 
 		tha_data when tha_frm='1' else
