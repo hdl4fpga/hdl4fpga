@@ -43,7 +43,7 @@ entity eth_tx is
 
 		pyl_frm     : in  std_logic;
 		pyl_irdy    : in  std_logic;
-		pyl_trdy    : out std_logic := '0';
+		pyl_trdy    : buffer std_logic := '0';
 		pyl_data    : in  std_logic_vector;
 
 		ethda_frm   : buffer std_logic;
@@ -85,14 +85,14 @@ architecture def of eth_tx is
     signal pyl_act     : std_logic;
 
 	signal g : std_logic_vector(fcs_crc'range);
+	signal crc_shf : std_logic;
 
-	signal crc_frm : std_logic;
+	signal crc_frm  : std_logic;
 	alias  crc_irdy is crc_frm;
-	alias  crc_data is fcs_data(mii_data'range);
+	signal crc_trdy : std_logic := '1';
+	alias  crc_data is fcs_crc(mii_data'range);
 
 begin
-
-	pyl_trdy <= decode_fin and decode_trdy;
 
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
@@ -143,16 +143,6 @@ begin
 		so_trdy => sha_trdy,
 		so_data => sha_data);
 
-	process (mii_clk)
-		variable shr : unsigned(0 to 8-1);
-	begin
-		if rising_edge(mii_clk) then
-			shr(0) := pyl_frm or pyl_irdy;
-			shr := rotate_left(shr, 1);
-			crc_frm <= shr(0);
-		end if;
-	end process;
-
 	fcs_frm  <= 
 		'0' when   prmb_frm='1' else
 		'1' when  ethda_frm='1' else
@@ -176,7 +166,19 @@ begin
 		pyl_data    when   pyl_irdy='1' else
 		(pyl_data'range => '-');
 
-	g <= x"04c11db7" when (pyl_frm or pyl_irdy)='1' else x"00000000";
+	process (decode_fin, decode_trdy, pyl_frm, pyl_irdy, mii_clk)
+		variable shr : unsigned(0 to fcs_crc'length/mii_data'length);
+	begin
+		if rising_edge(mii_clk) then
+			shr(0) := pyl_frm;
+			shr := rotate_left(shr, 1);
+			crc_frm <= shr(0);
+			crc_shf <= not pyl_frm and pyl_irdy;
+		end if;
+		pyl_trdy <= decode_fin and ((pyl_frm and decode_trdy) or (not shr(1) and pyl_irdy));
+	end process;
+
+	g <= x"04c11db7" when crc_shf='0' else x"00000000";
 	fcs_e : entity hdl4fpga.crc
 	port map (
 		g    => g,
@@ -197,10 +199,13 @@ begin
 		'0';
 
 	mii_irdy <=
+		prmb_trdy   when   prmb_frm='1' else
 		ethda_trdy  when  ethda_frm='1' else
 		sha_trdy    when    sha_frm='1' else
 		ethtyp_trdy when ethtyp_frm='1' else
-		(pyl_irdy or pyl_frm);
+		pyl_trdy    when    pyl_frm='1' else
+		crc_trdy    when    crc_frm='1' else
+		'0';
 		
 	mii_data <= 
 		prmb_data   when   prmb_frm='1' else
@@ -208,5 +213,5 @@ begin
 		sha_data    when    sha_frm='1' else
 		ethtyp_data when ethtyp_frm='1' else
 		pyl_data    when    pyl_frm='1' else
-		fcs_crc(mii_data'range);
+		crc_data;
 end;

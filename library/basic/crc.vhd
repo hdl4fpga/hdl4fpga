@@ -36,7 +36,7 @@ entity crc is
 		irdy : in  std_logic := '0';
 		trdy : out std_logic := '0';
 		data : in  std_logic_vector;
-		crc  : buffer std_logic_vector);
+		crc  : out std_logic_vector);
 end;
 
 architecture def of crc is
@@ -48,16 +48,17 @@ begin
 		severity FAILURE;
 
 	process (frm, irdy, clk)
+		variable lfsr   : std_logic_vector(crc'range);
 		variable active : std_logic;
 	begin
 		if rising_edge(clk) then
 			if ((active or frm) and irdy)='1' then
 				if active='0' then
-					crc <= not galois_crc(data, (crc'range => '1'), g);
-				else
-					crc <= not galois_crc(data, not crc, g);
+					lfsr := (lfsr'range => '0');
 				end if;
+				lfsr := not galois_crc(data, not lfsr, g);
 			end if;
+			crc <= lfsr;
 			if frm='0' then
 				if irdy='0' then
 					active := '0';
