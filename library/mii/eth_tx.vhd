@@ -166,16 +166,19 @@ begin
 		pyl_data    when   pyl_irdy='1' else
 		(pyl_data'range => '-');
 
+	crc_trdy <= crc_frm or crc_irdy;
 	process (decode_fin, decode_trdy, pyl_frm, pyl_irdy, mii_clk)
 		variable shr : unsigned(0 to fcs_crc'length/mii_data'length);
 	begin
 		if rising_edge(mii_clk) then
-			shr(0) := pyl_frm;
-			shr := rotate_left(shr, 1);
+			if (pyl_frm or pyl_irdy or crc_trdy)='1' then
+				shr(0) := pyl_frm;
+				shr := rotate_left(shr, 1);
+			end if;
 			crc_frm <= shr(0);
 			crc_shf <= not pyl_frm and pyl_irdy;
 		end if;
-		pyl_trdy <= decode_fin and ((pyl_frm and decode_trdy) or (not shr(1) and pyl_irdy));
+		pyl_trdy <= (decode_fin and pyl_frm and decode_trdy) or (decode_fin and not shr(1) and pyl_irdy);
 	end process;
 
 	g <= x"04c11db7" when crc_shf='0' else x"00000000";
