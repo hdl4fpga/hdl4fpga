@@ -78,7 +78,6 @@ architecture def of eth_tx is
 	signal min_frm     : std_logic;
 	alias  min_irdy    is sha_frm;
 	constant min_trdy  : std_logic := '1';
-	alias  min_data    is pyl_data;
 
 	signal fcs_frm     : std_logic;
 	signal fcs_irdy    : std_logic;

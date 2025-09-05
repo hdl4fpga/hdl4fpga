@@ -30,9 +30,10 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
 	generic (
-		sha : std_logic_vector := x"00_40_00_01_02_03");
+		ipaddr : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
+		hwaddr : std_logic_vector := x"00_40_00_01_02_03");
 	port (
-		mii_clk    : in  std_logic;
+		miirx_clk    : in  std_logic;
 		miirx_frm  : in  std_logic;
 		miirx_irdy : in  std_logic := '0';
 		miirx_trdy : out std_logic := '1';
@@ -51,7 +52,6 @@ entity mii_ipoe is
 end;
 
 architecture def of mii_ipoe is
-
 	signal dll_frm       : std_logic;
 	signal dll_irdy      : std_logic;
 	signal dll_trdy      : std_logic;
@@ -100,7 +100,7 @@ begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
-		mii_clk  => mii_clk,
+		mii_clk  => miirx_clk,
 		mii_frm  => miirx_frm,
 		mii_irdy => miirx_irdy,
 		mii_data => miirx_data,
@@ -123,7 +123,7 @@ begin
 	generic map (
 		bitdata => reverse(x"ff_ff_ff_ff_ff_ff",8))
 	port map (
-		mii_clk => mii_clk,
+		mii_clk => miirx_clk,
 		frm     => ethda_frm,
 		irdy    => ethda_irdy,
 		data    => miirx_data,
@@ -131,9 +131,9 @@ begin
 
 	ethda_cmp_i : entity hdl4fpga.mii_cmp
 	generic map (
-		bitdata => reverse(sha,8))
+		bitdata => reverse(hwaddr,8))
 	port map (
-		mii_clk => mii_clk,
+		mii_clk => miirx_clk,
 		frm     => ethda_frm,
 		irdy    => ethda_irdy,
 		data    => miirx_data,
@@ -143,17 +143,17 @@ begin
 	generic map (
 		bitdata => reverse(hdo(frames)**".data.mac.type.arp",8))
 	port map (
-		mii_clk => mii_clk,
+		mii_clk => miirx_clk,
 		frm     => ethtyp_frm,
 		irdy    => ethtyp_irdy,
 		data    => miirx_data,
 		equ     => arptyp_equ);
 
-	process (mii_clk)
+	process (miirx_clk)
 		variable da_vld  : std_logic := '0';
 		variable typ_vld : std_logic := '0';
 	begin
-		if rising_edge(mii_clk) then
+		if rising_edge(miirx_clk) then
 			if (miirx_frm or miirx_irdy)='0' then
 				da_vld  := '0';
 				typ_vld := '0';
@@ -175,9 +175,9 @@ begin
 
 	arpd_i : entity hdl4fpga.arpd
 	generic map (
-		sha => sha)
+		hwaddr => hwaddr)
 	port map (
-		mii_clk       => mii_clk,
+		miirx_clk     => miirx_clk,
 
 		arprx_frm     => arprx_frm,
 		arprx_irdy    => arprx_irdy,
@@ -193,6 +193,7 @@ begin
 		ethtyptx_trdy => ethtyptx_trdy,
 		ethtyptx_data => ethtyptx_data,
 
+		miitx_clk     => miitx_clk,
 		arptx_frm     => arptx_frm,
 		arptx_irdy    => arptx_irdy,
 		arptx_trdy    => arptx_trdy,
@@ -225,17 +226,17 @@ begin
 	generic map (
 		bitdata => reverse(hdo(frames)**".data.mac.type.ipv4",8))
 	port map (
-		mii_clk => mii_clk,
+		mii_clk => miirx_clk,
 		frm     => ethtyp_frm,
 		irdy    => ethtyp_irdy,
 		data    => miirx_data,
 		equ     => ipv4typ_equ);
 
-	process (mii_clk)
+	process (miirx_clk)
 		variable da_vld  : std_logic := '0';
 		variable typ_vld : std_logic := '0';
 	begin
-		if rising_edge(mii_clk) then
+		if rising_edge(miirx_clk) then
 			if (miirx_frm or miirx_irdy)='0' then
 				da_vld  := '0';
 				typ_vld := '0';
@@ -257,7 +258,7 @@ begin
 
 	ipv4rx_i : entity hdl4fpga.ipv4_decode
 	port map (
-		mii_clk   => mii_clk,
+		mii_clk   => miirx_clk,
 		ipv4_frm  => ipv4rx_frm,
 		ipv4_irdy => ipv4rx_irdy,
 		ipv4_data => ipv4rx_data,

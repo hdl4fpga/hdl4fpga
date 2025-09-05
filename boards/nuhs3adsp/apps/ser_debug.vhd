@@ -100,7 +100,7 @@ begin
 	miiipoe_i : entity hdl4fpga.mii_ipoe
 	port map (
 		tp       => tp,
-		mii_clk  => mii_rxc,
+		miirx_clk  => mii_rxc,
 		miirx_frm  => mii_rxdv,
 		miirx_irdy => mii_rxdv,
 		miirx_data => mii_rxd,
