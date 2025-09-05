@@ -79,8 +79,8 @@ architecture def of eth_tx is
 
 	signal min_frm     : std_logic;
 	alias  min_irdy    is sha_frm;
-	signal min_trdy    : std_logic := '1';
-	constant min_data  : std_logic_vector(mii_data'range) := (others => '0');
+	constant min_trdy  : std_logic := '1';
+	alias  min_data    is pyl_data;
 
 	signal fcs_frm     : std_logic;
 	signal fcs_irdy    : std_logic;
@@ -91,14 +91,12 @@ architecture def of eth_tx is
     signal pyl_act     : std_logic;
 
 	signal g : std_logic_vector(fcs_crc'range);
-	signal crc_shf : std_logic;
 
 	signal crc_frm  : std_logic;
-	alias  crc_irdy is crc_frm;
-	signal crc_trdy : std_logic := '1';
+	signal crc_irdy : std_logic;
+	alias  crc_trdy is crc_irdy;
 	alias  crc_data is fcs_crc(mii_data'range);
 
-	signal xxx : std_logic;
 begin
 
 	decode_frm <= pyl_frm or pyl_irdy;
@@ -177,10 +175,8 @@ begin
 		ethtyp_data when ethtyp_frm='1' else
 		pyl_data    when    pyl_frm='1' else
 		pyl_data    when   pyl_irdy='1' else
-		min_data    when    min_frm='1' else
 		(pyl_data'range => '-');
 
-	crc_trdy <= crc_frm or crc_irdy;
 	process (min_frm, decode_fin, decode_trdy, pyl_frm, pyl_irdy, mii_clk)
 		variable shr : unsigned(0 to fcs_crc'length/mii_data'length);
 	begin
@@ -189,9 +185,8 @@ begin
 				shr(0) := pyl_frm or (min_frm and not decode_last);
 				shr := rotate_left(shr, 1);
 			end if;
-			crc_frm <= shr(0);
-			crc_shf <= not pyl_frm and pyl_irdy and (not min_frm or decode_last);
-			xxx <= shr(shr'right);
+			crc_irdy <= shr(0);
+			crc_frm <= not pyl_frm and pyl_irdy and (not min_frm or decode_last);
 		end if;
 
 		if decode_fin='1' then
@@ -202,18 +197,16 @@ begin
 			else
 				pyl_trdy <= '0';
 			end if;
+		elsif (not pyl_frm and pyl_irdy)='1' then
+			pyl_trdy <= '0';
+		elsif (min_frm and decode_trdy)='1' then
+			pyl_trdy <= '1';
 		else
-			if (not pyl_frm and pyl_irdy)='1' then
-				pyl_trdy <= '0';
-			elsif (min_frm and decode_trdy)='1' then
-				pyl_trdy <= '1';
-			else
-				pyl_trdy <= '0';
-			end if;
+			pyl_trdy <= '0';
 		end if;
 	end process;
 
-	g <= x"04c11db7" when crc_shf='0' else x"00000000";
+	g <= x"04c11db7" when crc_frm='0' else x"00000000";
 	fcs_e : entity hdl4fpga.crc
 	port map (
 		g    => g,
@@ -239,6 +232,7 @@ begin
 		sha_trdy    when    sha_frm='1' else
 		ethtyp_trdy when ethtyp_frm='1' else
 		pyl_trdy    when    pyl_frm='1' else
+		pyl_trdy    when    pyl_irdy='1' else
 		crc_trdy    when    crc_frm='1' else
 		'0';
 		
@@ -247,7 +241,6 @@ begin
 		ethda_data  when  ethda_frm='1' else
 		sha_data    when    sha_frm='1' else
 		ethtyp_data when ethtyp_frm='1' else
-		pyl_data    when    pyl_frm='1' else
-		min_data    when    xxx='1' else
-		crc_data;
+		crc_data    when    crc_frm='1' else
+		pyl_data;
 end;
