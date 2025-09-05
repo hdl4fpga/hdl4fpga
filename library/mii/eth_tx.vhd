@@ -98,6 +98,7 @@ architecture def of eth_tx is
 	signal crc_trdy : std_logic := '1';
 	alias  crc_data is fcs_crc(mii_data'range);
 
+	signal xxx : std_logic;
 begin
 
 	decode_frm <= pyl_frm or pyl_irdy;
@@ -190,6 +191,7 @@ begin
 			end if;
 			crc_frm <= shr(0);
 			crc_shf <= not pyl_frm and pyl_irdy and (not min_frm or decode_last);
+			xxx <= shr(shr'right);
 		end if;
 
 		if decode_fin='1' then
@@ -246,6 +248,6 @@ begin
 		sha_data    when    sha_frm='1' else
 		ethtyp_data when ethtyp_frm='1' else
 		pyl_data    when    pyl_frm='1' else
-		min_data    when    min_frm='1' else
+		min_data    when    xxx='1' else
 		crc_data;
 end;
