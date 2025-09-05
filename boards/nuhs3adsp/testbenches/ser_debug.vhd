@@ -157,7 +157,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"00_00_00_00_00_00"    & -- arp_sha  
 			"00_00_00_00"          & -- arp_spa  
 			"00_00_00_00_00_00"    & -- arp_tha  
-			"c0_a8_00_2e,"         & -- arp_tpa  
+			"c0_a8_00_0e,"         & -- arp_tpa  
 		"icmp:0x"                  &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS

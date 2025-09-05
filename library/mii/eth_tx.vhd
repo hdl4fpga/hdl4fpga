@@ -34,7 +34,6 @@ entity eth_tx is
 	generic (
 		sha         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-
 		mii_clk     : in  std_logic;
 		mii_frm     : buffer std_logic;
 		mii_irdy    : buffer std_logic;
@@ -55,7 +54,6 @@ entity eth_tx is
 		ethtyp_irdy : buffer std_logic;
 		ethtyp_trdy : in  std_logic := '1';
 		ethtyp_data : in  std_logic_vector);
-
 end;
 
 architecture def of eth_tx is
@@ -86,16 +84,15 @@ architecture def of eth_tx is
 	signal fcs_irdy    : std_logic;
 	signal fcs_trdy    : std_logic;
 	signal fcs_data    : std_logic_vector(mii_data'range);
-	signal fcs_crc     : std_logic_vector(0 to 32-1);
+	signal fcs_g       : std_logic_vector(0 to 32-1);
+	signal fcs_crc     : std_logic_vector(fcs_g'range);
+
+	signal crc_frm     : std_logic;
+	signal crc_irdy    : std_logic;
+	alias  crc_trdy    is crc_irdy;
+	alias  crc_data    is fcs_crc(mii_data'range);
 
     signal pyl_act     : std_logic;
-
-	signal g : std_logic_vector(fcs_crc'range);
-
-	signal crc_frm  : std_logic;
-	signal crc_irdy : std_logic;
-	alias  crc_trdy is crc_irdy;
-	alias  crc_data is fcs_crc(mii_data'range);
 
 begin
 
@@ -206,10 +203,10 @@ begin
 		end if;
 	end process;
 
-	g <= x"04c11db7" when crc_frm='0' else x"00000000";
+	fcs_g <= x"04c11db7" when crc_frm='0' else x"00000000";
 	fcs_e : entity hdl4fpga.crc
 	port map (
-		g    => g,
+		g    => fcs_g,
 		clk  => mii_clk,
 		frm  => fcs_frm,
 		irdy => fcs_irdy,
@@ -232,7 +229,7 @@ begin
 		sha_trdy    when    sha_frm='1' else
 		ethtyp_trdy when ethtyp_frm='1' else
 		pyl_trdy    when    pyl_frm='1' else
-		pyl_trdy    when    pyl_irdy='1' else
+		pyl_trdy    when   pyl_irdy='1' else
 		crc_trdy    when    crc_frm='1' else
 		'0';
 		
