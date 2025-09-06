@@ -92,16 +92,6 @@ begin
 		crc_sb <= q and not dll_frm;
 	end process;
 
-	-- serlzr_i : entity hdl4fpga.serlzr
-	-- port map (
-		-- src_clk   => mii_clk,
-		-- src_frm   => crc_frm,
-		-- src_irdy  => crc_irdy,
-		-- src_data  => crc_rem,
-		-- dst_clk   => mii_clk,
-		-- dst_irdy  => dll_irdy,
-		-- dst_data  => crc_data);
-
 	crc_equ <= '1' when crc_rem=x"38fb2284" else '0';
 
 	dll_trdy <=

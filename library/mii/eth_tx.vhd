@@ -99,7 +99,7 @@ begin
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => "{"                                                 &
-			"prmb:" & "64"                                     & ',' &
+			"prmb:" & string'(hdo(frames)**".format.mac.prmb") & ',' &
 			" tha:" & string'(hdo(frames)**".format.mac.hwda") & ',' &
 			" sha:" & string'(hdo(frames)**".format.mac.hwsa") & ',' &
 			"type:" & string'(hdo(frames)**".format.mac.type") & ',' &

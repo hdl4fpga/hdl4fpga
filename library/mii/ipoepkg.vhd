@@ -31,6 +31,7 @@ package ipoepkg is
 	constant frames : string := compact("{" &
 		"format:{"                  &
 			"mac:{"                 &
+				"    prmb:64,"      &
 				"    hwda:48,"      &
 				"    hwsa:48,"      &
 				"    type:16},"     &
