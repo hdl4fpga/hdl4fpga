@@ -1314,7 +1314,6 @@ $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__dll_decode) \
-		$(HDL4FPGA__serlzr) \
 		$(HDL4FPGA__mii_rxpre) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -1520,12 +1519,12 @@ $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 	$(VCOM) -93 -work hdl4fpga ../mii/mii_ipoe.vhd
 
 $(HDL4FPGA__mii_rxpre) \
-$(HDL4FPGA__mii_rxpre__def) : ../mii/mii_rxpre.vhd \
+$(HDL4FPGA__mii_rxpre__def) : ../mii/mii_prmb.vhd \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii/mii_rxpre.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii/mii_prmb.vhd
 
 $(HDL4FPGA__mul_ser) \
 $(HDL4FPGA__mul_ser__def) : ../basic/mul_ser.vhd \
