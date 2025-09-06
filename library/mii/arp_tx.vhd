@@ -46,7 +46,6 @@ entity arp_tx is
 		arp_irdy : buffer std_logic := '0';
 		arp_trdy : in  std_logic := '1';
 		arp_data : buffer std_logic_vector);
-
 end;
 
 architecture def of arp_tx is
@@ -79,9 +78,9 @@ architecture def of arp_tx is
 	signal decode_data : std_logic_vector(arp_data'range);
 
 	alias  rom_frm is decode_frm;
-	signal rom_irdy     : std_logic;
-	signal rom_trdy     : std_logic;
-	signal rom_data     : std_logic_vector(arp_data'range);
+	signal rom_irdy    : std_logic;
+	signal rom_trdy    : std_logic;
+	signal rom_data    : std_logic_vector(arp_data'range);
 
 begin
 
@@ -138,7 +137,7 @@ begin
 		tpa_irdy   => tpa_irdy,
 		tpa_trdy   => pa_trdy);
 
-	pa_frm  <= spa_frm  or tpa_frm;
+	pa_frm  <= spa_frm or tpa_frm;
 	pa_irdy <= 
 		spa_irdy when spa_frm='1' else 
 		tpa_irdy when tpa_frm='1' else 
@@ -204,7 +203,6 @@ begin
 			else
 				arp_frm <= decode_frm and not decode_last;
 			end if;
-			-- arp_data <= decode_data;
 		end if;
 	end process;
 
