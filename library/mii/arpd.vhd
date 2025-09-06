@@ -115,7 +115,7 @@ begin
 		begin
 			if rising_edge(miirx_clk) then
 				if (tparx_frm or tparx_irdy)='0' then
-					if lat1='1' then
+					if (lat1 and tpa_equ)='1' then
 						tx_req <= not tx_rdy;
 					end if;
 				end if;
