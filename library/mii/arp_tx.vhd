@@ -73,6 +73,7 @@ architecture def of arp_tx is
 
 	signal decode_frm  : std_logic;
 	signal decode_irdy : std_logic;
+	signal decode_trdy : std_logic;
 	signal decode_last : std_logic;
 	signal decode_fin  : std_logic;
 	signal decode_data : std_logic_vector(arp_data'range);
@@ -90,12 +91,17 @@ begin
 			if (tx_rdy xor tx_req)='1' then
 				if (decode_last and not arp_frm and arp_irdy and arp_trdy)='1' then
 					tx_rdy <= tx_req;
+					decode_frm <= '0';
+				else
+					decode_frm <= '1';
 				end if;
+			else
+				decode_frm <= '0';
 			end if;
 		end if;
 	end process;
 
-	decode_frm <= (tx_rdy xor tx_req);
+	decode_trdy <= arp_trdy or not arp_irdy;
 	decode_i : entity hdl4fpga.arp_decode
 	port map (
 		mii_clk    => mii_clk,
@@ -106,28 +112,28 @@ begin
 		arp_fin    => decode_fin,
 		htype_frm  => htype_frm,
 		htype_irdy => htype_irdy,
-		htype_trdy => arp_trdy,
+		htype_trdy => decode_trdy,
 		ptype_frm  => ptype_frm,
 		ptype_irdy => ptype_irdy,
-		ptype_trdy => arp_trdy,
+		ptype_trdy => decode_trdy,
 		hlen_frm   => hlen_frm ,
 		hlen_irdy  => hlen_irdy,
-		hlen_trdy  => arp_trdy,
+		hlen_trdy  => decode_trdy,
 		plen_frm   => plen_frm,
 		plen_irdy  => plen_irdy,
-		plen_trdy  => arp_trdy,
+		plen_trdy  => decode_trdy,
 		oper_frm   => oper_frm,
 		oper_irdy  => oper_irdy,
-		oper_trdy  => arp_trdy,
+		oper_trdy  => decode_trdy,
 		sha_frm    => sha_frm,
 		sha_irdy   => sha_irdy,
-		sha_trdy   => arp_trdy,
+		sha_trdy   => decode_trdy,
 		spa_frm    => spa_frm,
 		spa_irdy   => spa_irdy,
 		spa_trdy   => pa_trdy,
 		tha_frm    => tha_frm,
 		tha_irdy   => tha_irdy,
-		tha_trdy   => arp_trdy,
+		tha_trdy   => decode_trdy,
 		tpa_frm    => tpa_frm,
 		tpa_irdy   => tpa_irdy,
 		tpa_trdy   => pa_trdy);
@@ -139,13 +145,13 @@ begin
 		'0';
 
 	rom_irdy <= 
-		arp_trdy and htype_irdy when htype_frm='1' else 
-		arp_trdy and ptype_irdy when ptype_frm='1' else 
-		arp_trdy and hlen_irdy  when  hlen_frm='1' else 
-		arp_trdy and plen_irdy  when  plen_frm='1' else 
-		arp_trdy and oper_irdy  when  oper_frm='1' else 
-		arp_trdy and sha_irdy   when   sha_frm='1' else 
-		arp_trdy and tha_irdy   when   tha_frm='1' else 
+		decode_trdy and htype_irdy when htype_frm='1' else 
+		decode_trdy and ptype_irdy when ptype_frm='1' else 
+		decode_trdy and hlen_irdy  when  hlen_frm='1' else 
+		decode_trdy and plen_irdy  when  plen_frm='1' else 
+		decode_trdy and oper_irdy  when  oper_frm='1' else 
+		decode_trdy and sha_irdy   when   sha_frm='1' else 
+		decode_trdy and tha_irdy   when   tha_frm='1' else 
 		'0';
 
 	rom_i : entity hdl4fpga.sio_rom
@@ -171,7 +177,7 @@ begin
 		tha_irdy when  tha_frm='1' else
 		pa_irdy  when   pa_frm='1' else
 		rom_trdy when rom_irdy='1' else
-		(tx_rdy xor tx_req);
+		decode_frm;
 
 	decode_data <= 
 		tha_data when tha_frm='1' else
@@ -198,7 +204,7 @@ begin
 			else
 				arp_frm <= decode_frm and not decode_last;
 			end if;
-			arp_data <= decode_data;
+			-- arp_data <= decode_data;
 		end if;
 	end process;
 
