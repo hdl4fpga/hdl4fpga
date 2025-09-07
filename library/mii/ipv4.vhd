@@ -38,7 +38,6 @@ entity ipv4 is
 		ipv4rx_trdy : out std_logic := '1';
 		ipv4rx_data : in  std_logic_vector;
 		tp        : out std_logic_vector(1 to 32));
-
 end;
 
 architecture def of ipv4 is
@@ -47,7 +46,6 @@ architecture def of ipv4 is
 	signal proto_frm   : std_logic;
 	signal proto_irdy  : std_logic;
 	signal proto_trdy  : std_logic;
-	signal icmp_equ    : std_logic;
 	signal icmprx_frm  : std_logic;
 	signal icmprx_irdy : std_logic;
 	signal icmprx_trdy : std_logic;
@@ -67,8 +65,10 @@ begin
 		proto_irdy => proto_irdy);  
 
 	pa_b : block
-		signal so_data : std_logic_vector(ipv4rx_data'range);
-		signal pa_equ  : std_logic;
+		signal so_data  : std_logic_vector(ipv4rx_data'range);
+		signal icmp_equ : std_logic;
+		signal udp_equ  : std_logic;
+		signal pa_equ   : std_logic;
 	begin
 		mem_i : entity hdl4fpga.sio_ram
 		generic map (
@@ -91,7 +91,7 @@ begin
 			sl_data => ipv4rx_data,
 			equ     => pa_equ);
 
-		icmpproto_cmp_i : entity hdl4fpga.mii_cmp
+		icmpproto_i : entity hdl4fpga.mii_cmp
 		generic map (
 			bitdata => reverse(hdo(frames)**".data.ipv4.proto.icmp",8))
 		port map (
@@ -101,6 +101,17 @@ begin
 			trdy    => proto_trdy,
 			data    => ipv4rx_data,
 			equ     => icmp_equ);
+
+		udproto_i : entity hdl4fpga.mii_cmp
+		generic map (
+			bitdata => reverse(hdo(frames)**".data.ipv4.proto.udp",8))
+		port map (
+			mii_clk => miirx_clk,
+			frm     => proto_frm,
+			irdy    => proto_irdy,
+			trdy    => proto_trdy,
+			data    => ipv4rx_data,
+			equ     => udp_equ);
 
 		process (miirx_clk)
 			variable icmp_vld : std_logic := '0';
@@ -123,7 +134,6 @@ begin
 
 			end if;
 		end process;
-
 	end block;
 
 	tp(1) <= icmprx_frm;
