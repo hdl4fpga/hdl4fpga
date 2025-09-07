@@ -33,7 +33,7 @@ entity icmpd is
 		miirx_clk   : in  std_logic;
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
-		icmprx_trdy : out std_logic;
+		icmprx_trdy : buffer std_logic := '1';
 		icmprx_data : in  std_logic_vector;
 
 		miitx_clk   : in  std_logic;
@@ -119,6 +119,28 @@ begin
 			end process;
 		end block;
 	end block;
+
+	process (miirx_clk, miitx_clk)
+		type arrange is array(natural range <>) of std_logic_vector(icmprx_data'range);
+		variable rx_cntr : unsigned(0 to 4);
+		variable tx_cntr : unsigned(rx_cntr'range);
+		variable mem : arrange(0 to 4);
+	begin
+		if rising_edge(miirx_clk) then
+			if (icmprx_frm or (icmprx_irdy and icmprx_trdy))='1' then
+				mem(to_integer(rx_cntr)) := icmprx_data;
+				rx_cntr := rx_cntr + 1;
+			end if;
+		end if;
+		if rising_edge(miitx_clk) then
+			if (tx_rdy xor tx_req)='1' then
+				icmptx_frm  <= '1';
+				icmptx_irdy <= '1';
+				icmptx_data <= mem(to_integer(tx_cntr));
+				tx_cntr     := tx_cntr + 1;
+			end if;
+		end if;
+	end process;
 
 	rply_b : block
 		signal type_frm   : std_logic;

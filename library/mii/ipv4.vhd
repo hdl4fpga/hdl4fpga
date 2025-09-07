@@ -131,7 +131,6 @@ begin
 				end if;
 				icmprx_frm  <= ipv4rx_frm and pa_vld and icmp_vld;
 				icmprx_data <= ipv4rx_data;
-
 			end if;
 		end process;
 	end block;
