@@ -124,7 +124,7 @@ begin
 		type arrange is array(natural range <>) of std_logic_vector(icmprx_data'range);
 		variable rx_cntr : unsigned(0 to 4);
 		variable tx_cntr : unsigned(rx_cntr'range);
-		variable mem : arrange(0 to 4);
+		variable mem : arrange(0 to 2**rx_cntr'length-1);
 	begin
 		if rising_edge(miirx_clk) then
 			if (icmprx_frm or (icmprx_irdy and icmprx_trdy))='1' then
