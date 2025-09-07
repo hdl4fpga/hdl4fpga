@@ -98,7 +98,7 @@ begin
 			mii_clk => miirx_clk,
 			frm     => proto_frm,
 			irdy    => proto_irdy,
-			trdy    => proto_trdy,
+			trdy    => open,
 			data    => ipv4rx_data,
 			equ     => icmp_equ);
 
@@ -109,7 +109,7 @@ begin
 			mii_clk => miirx_clk,
 			frm     => proto_frm,
 			irdy    => proto_irdy,
-			trdy    => proto_trdy,
+			trdy    => open,
 			data    => ipv4rx_data,
 			equ     => udp_equ);
 

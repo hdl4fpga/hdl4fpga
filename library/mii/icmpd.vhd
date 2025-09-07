@@ -29,216 +29,73 @@ use hdl4fpga.ipoepkg.all;
 
 entity icmpd is
 	port (
-		mii_clk     : in  std_logic;
-
-		dll_frm     : in  std_logic;
-		dll_irdy    : in  std_logic;
-		net_irdy    : in  std_logic;
-		fcs_sb      : in  std_logic;
-		fcs_vld     : in  std_logic;
-
+		miirx_clk   : in  std_logic;
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
-		icmprx_data : in  std_logic_vector;
-		icmptx_frm  : buffer std_logic;
-		icmptx_irdy : buffer std_logic;
-		icmptx_trdy : in  std_logic := '1';
-		icmptx_end  : buffer std_logic;
-		icmptx_data : out std_logic_vector);
+		icmprx_trdy : out std_logic;
+		icmprx_data : in  std_logic_vector);
 end;
 
 architecture def of icmpd is
 
-	signal icmpdata_frm   : std_logic;
-	signal icmpdata_irdy   : std_logic;
-	signal icmpdata_trdy   : std_logic;
-	signal icmpdatatx_trdy : std_logic;
+	signal typerx_frm   : std_logic;
+	signal coderx_frm   : std_logic;
+	signal chksumrx_frm : std_logic;
+	signal idrx_frm     : std_logic;
+	signal seqrx_frm    : std_logic;
+	signal pylrx_frm    : std_logic;
 
-	signal icmpcoderx_frm  : std_logic;
-	signal icmpcoderx_irdy : std_logic;
-	signal icmptyperx_frm  : std_logic;
-	signal icmptyperx_irdy : std_logic;
-	signal icmpcksmrx_frm  : std_logic;
-	signal icmpcksmrx_irdy : std_logic;
-	signal icmpplrx_irdy   : std_logic;
-
-	signal icmprx_id       : std_logic_vector(0 to 16-1);
-	signal icmprx_seq      : std_logic_vector(0 to 16-1);
-
-	signal icmppl_irdy     : std_logic;
-	signal icmpcksmtx_frm  : std_logic;
-	signal icmppltx_frm    : std_logic := '0';
-	signal icmppltx_irdy   : std_logic;
-	signal icmppltx_trdy   : std_logic;
-	signal icmppltx_end    : std_logic;
-	signal icmppltx_data   : std_logic_vector(icmptx_data'range);
-
-	signal cksmrx_data     : std_logic_vector(icmprx_data'range);
-	signal src_data        : std_logic_vector(0 to icmprx_data'length);
-	signal dst_data        : std_logic_vector(0 to icmptx_data'length);
-	signal src_tag         : std_logic_vector(0 to 0);
-	signal dst_tag         : std_logic_vector(0 to 0);
-	alias rx_cy            : std_logic is src_tag(0);
-	alias tx_cy            : std_logic is dst_tag(0);
-
-	signal miirx_frm       : std_logic;
-
-	signal memrx_frm       : std_logic;
-	alias rx_meta          : std_logic is src_data(0);
-	alias tx_meta          : std_logic is dst_data(0);
-	alias memrx_data       : std_logic_vector(icmprx_data'range) is src_data(1 to icmprx_data'length);
-	alias memtx_data       : std_logic_vector(icmptx_data'range) is dst_data(1 to icmptx_data'length);
-	signal tx_irdy         : std_logic;
+	signal cyrx         : std_logic;
 begin
 
-	icmprqst_rx_e : entity hdl4fpga.icmprqst_rx
+	icmprx_i : entity hdl4fpga.frame_decode
+	generic map (
+		frame => hdo(frames)**".format.icmp",
+		size  => icmp_data'length)
 	port map (
-		mii_clk       => mii_clk,
-		icmp_frm      => icmprx_frm,
-		icmp_data     => icmprx_data,
-		icmp_irdy     => icmprx_irdy,
-
-		icmpcode_frm  => icmpcoderx_frm,
-		icmpcode_irdy => icmpcoderx_irdy,
-		icmptype_frm  => icmptyperx_frm,
-		icmptype_irdy => icmptyperx_irdy,
-		icmpcksm_frm  => icmpcksmrx_frm,
-		icmpcksm_irdy => icmpcksmrx_irdy,
-		icmppl_irdy   => icmpplrx_irdy);
+		clk     => miirx_clk,
+		frm     => icmprx_frm,
+		irdy    => icmprx_irdy,
+		act(0)  => typerx_frm,
+		act(1)  => coderx_frm,
+		act(2)  => chksumrx_frm,
+		act(3)  => idrx_frm,
+		act(4)  => seqrx_frm,
+		act(5)  => pylrx_frm);
 
 	cksmrx_b : block
-		signal ci : std_logic;
-		signal co : std_logic;
-		signal data : std_logic_vector(icmprx_data'range);
+		alias  chksumrx_irdy is chksum_frm;
 		signal adj_data : std_logic_vector(icmprx_data'range);
-		constant mux_data : std_logic_vector := icmptype_rqst & icmpcode_rqst;
 	begin
 
-		-- This is because GHDL. The worst vhdl compiler ever
-		-- Exception TYPES.INTERNAL_ERROR raised
-		-- Exception information:
-		-- raised TYPES.INTERNAL_ERROR : vhdl-errors.adb:30
-
-		mux_e : entity hdl4fpga.sio_mux
+		rom_i : entity hdl4fpga.sio_rom
+		generic map (
+			bitdata => reverse(
+				std_logic_vector'(hdo(frames)**".data.icmp.rqst.type") &
+				std_logic_vector'(hdo(frames)**".data.icmp.rqst.code"), 8))
 		port map (
-			-- mux_data => icmptype_rqst & icmpcode_rqst,
-			mux_data => mux_data,
-			sio_clk  => mii_clk,
-			sio_frm  => dll_frm,
-			sio_irdy => icmpcksmrx_irdy,
-			sio_trdy => open,
-			so_data  => adj_data);
+			so_clk  => mii_clk,
+			so_frm  => chksum_frm,
+			so_irdy => chksum_irdy,
+			so_trdy => open,
+			so_data => adj_data);
 
 		process (mii_clk)
+			variable sum : unsigned(0 to miirx_data'length+1);
+			variable op1 : unsigned(sum'range);
+			variable op2 : unsigned(sum'range);
 		begin
 			if rising_edge(mii_clk) then
-				if dll_frm='0' then
-					ci <= '0';
-				elsif icmpcksmrx_irdy='1' then
-					ci <= co;
-					rx_cy <= co;
+				op1 := unsigned'('0' & reverse(icmprx_data) & '1');
+				op2 := unsigned'('0' & ajd_data             & cyrx);
+				sum := op1 + op2;
+				if icmprx_frm='0' then
+					cyrx := '0';
+				elsif chksumrx_frm='1' then
+					cyrx := sum(0);
 				end if;
 			end if;
 		end process;
-		data <= reverse(icmprx_data);
-		rx_sum_e : entity hdl4fpga.adder
-		port map (
-			ci  => ci,
-			a   => data,
-			b   => adj_data,
-			s   => cksmrx_data,
-			co  => co);
-	end block;
-
-	memrx_data <=
---		x"f1" when icmpcoderx_frm='1' else
---		x"f2" when icmptyperx_frm='1' else
-		(icmptx_data'range => '0') when icmpcoderx_frm='1' else
-		(icmptx_data'range => '0') when icmptyperx_frm='1' else
-		cksmrx_data                when icmpcksmrx_frm='1' else
-		icmprx_data;
-
-	icmpdata_irdy <= dll_irdy or net_irdy or icmprx_irdy;
-	rx_meta       <= icmprx_irdy;
-
-	buffer_b : block
-		signal miirx_end : std_logic;
-		signal commit    : std_logic;
-		signal rollback  : std_logic;
-		signal icmp_req  : std_logic := '0';
-		signal icmp_rdy  : std_logic := '0';
-		signal delay_req : std_logic;
-	begin
-
-		process (mii_clk)
-		begin
-			if rising_edge(mii_clk) then
-				if to_bit(icmp_req xor icmp_rdy)='0' then
-					if tx_irdy='1' then
-						icmp_req <= not icmp_rdy;
-					end if;
-				elsif (icmppltx_end and icmppltx_trdy)='1' then
-					icmp_rdy <= icmp_req;
-				end if;
-			end if;
-		end process;
-
-		frm_delay_e : entity hdl4fpga.latency
-		generic map (
-			n => 1,
-			d => (0 => 2))
-		port map (
-			clk => mii_clk,
-			di(0) => icmp_req,
-			do(0) => delay_req);
-
-
-		rollback <= (fcs_sb and not fcs_vld) or not icmpdata_frm;
-		cmmt_p : process (fcs_vld, fcs_sb, mii_clk)
-			variable q : std_logic;
-			variable c : std_logic;
-		begin
-			if rising_edge(mii_clk) then
-				if dll_frm='0' then
-					q := '0';
-					c := '1';
-				elsif icmpdata_irdy='1' and icmpdata_trdy='0' then
-					c := '0';
-					q := '0';
-				elsif icmprx_frm='1' then
-					q := c;
-				end if;
-			end if;
-			commit <= fcs_sb and fcs_vld and q;
-		end process;
-
-
-		icmpdata_frm <= dll_frm or fcs_sb;
-		icmppltx_frm <= to_stdulogic(to_bit(icmp_rdy) xor to_bit(delay_req));
-		buffer_e : entity hdl4fpga.txn_buffer
-		generic map (
-			m => 8)
-		port map (
-			src_clk  => mii_clk,
-			src_frm  => icmpdata_frm,
-			src_irdy => icmpdata_irdy,
-			src_trdy => icmpdata_trdy,
-			src_end  => open,
-			src_tag  => src_tag,
-			src_data => src_data,
-
-			rollback => rollback,
-			commit   => commit,
-			avail    => tx_irdy,
-
-			dst_clk  => mii_clk,
-			dst_frm  => icmppltx_frm,
-			dst_irdy => icmppltx_trdy,
-			dst_trdy => icmppltx_irdy,
-			dst_end  => icmppltx_end,
-			dst_tag  => dst_tag,
-			dst_data => dst_data);
-
 	end block;
 
 	cksmtx_b : block

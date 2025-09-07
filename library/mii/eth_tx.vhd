@@ -91,7 +91,7 @@ architecture def of eth_tx is
 	alias  crc_trdy    is crc_irdy;
 	alias  crc_data    is fcs_crc(mii_data'range);
 
-    signal pyl_act     : std_logic;
+    signal act5        : std_logic;
 
 begin
 
@@ -117,7 +117,7 @@ begin
 		act(2) => sha_frm,
 		act(3) => ethtyp_frm,
 		act(4) => pad_frm,
-		act(5) => pyl_act);
+		act(5) => act5);
 	ethda_irdy  <= ethda_frm;
 	ethtyp_irdy <= ethtyp_frm;
 
