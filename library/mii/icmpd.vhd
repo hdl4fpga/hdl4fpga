@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -33,118 +34,137 @@ entity icmpd is
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
 		icmprx_trdy : out std_logic;
-		icmprx_data : in  std_logic_vector);
+		icmprx_data : in  std_logic_vector;
+
+		miitx_clk   : in  std_logic;
+		icmptx_frm  : buffer std_logic;
+		icmptx_irdy : buffer std_logic;
+		icmptx_trdy : in  std_logic := '0';
+		icmptx_data : out std_logic_vector);
 end;
 
 architecture def of icmpd is
-
-	signal typerx_frm   : std_logic;
-	signal coderx_frm   : std_logic;
-	signal chksumrx_frm : std_logic;
-	signal idrx_frm     : std_logic;
-	signal seqrx_frm    : std_logic;
-	signal pylrx_frm    : std_logic;
-
 	signal cyrx         : std_logic;
+
+	signal tx_req      : std_logic := '0';
+	signal tx_rdy      : std_logic := '0';
 begin
 
-	icmprx_i : entity hdl4fpga.frame_decode
-	generic map (
-		frame => hdo(frames)**".format.icmp",
-		size  => icmp_data'length)
-	port map (
-		clk     => miirx_clk,
-		frm     => icmprx_frm,
-		irdy    => icmprx_irdy,
-		act(0)  => typerx_frm,
-		act(1)  => coderx_frm,
-		act(2)  => chksumrx_frm,
-		act(3)  => idrx_frm,
-		act(4)  => seqrx_frm,
-		act(5)  => pylrx_frm);
-
-	cksmrx_b : block
-		alias  chksumrx_irdy is chksum_frm;
-		signal adj_data : std_logic_vector(icmprx_data'range);
+	process (miirx_clk)
 	begin
-
-		rom_i : entity hdl4fpga.sio_rom
-		generic map (
-			bitdata => reverse(
-				std_logic_vector'(hdo(frames)**".data.icmp.rqst.type") &
-				std_logic_vector'(hdo(frames)**".data.icmp.rqst.code"), 8))
-		port map (
-			so_clk  => mii_clk,
-			so_frm  => chksum_frm,
-			so_irdy => chksum_irdy,
-			so_trdy => open,
-			so_data => adj_data);
-
-		process (mii_clk)
-			variable sum : unsigned(0 to miirx_data'length+1);
-			variable op1 : unsigned(sum'range);
-			variable op2 : unsigned(sum'range);
-		begin
-			if rising_edge(mii_clk) then
-				op1 := unsigned'('0' & reverse(icmprx_data) & '1');
-				op2 := unsigned'('0' & ajd_data             & cyrx);
-				sum := op1 + op2;
-				if icmprx_frm='0' then
-					cyrx := '0';
-				elsif chksumrx_frm='1' then
-					cyrx := sum(0);
+		if rising_edge(miirx_clk) then
+			if (tx_req xor tx_rdy)='0' then
+				if icmprx_frm='1' then
+					tx_req <= not tx_rdy;
 				end if;
 			end if;
-		end process;
-	end block;
+		end if;
+	end process;
 
-	cksmtx_b : block
-		signal ci   : std_logic;
-		signal co   : std_logic;
-		signal data : std_logic_vector(icmptx_data'range);
-		constant kk : std_logic_vector := (0 to icmptx_data'length-1 => '0');
+	rqst_b : block
+		signal type_frm   : std_logic;
+		signal code_frm   : std_logic;
+		signal chksum_frm : std_logic;
+		signal id_frm     : std_logic;
+		signal seq_frm    : std_logic;
+		signal pyl_frm    : std_logic;
 	begin
-		process (icmpcksmtx_frm, mii_clk)
-			variable cy : std_logic;
+		icmprx_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => hdo(frames)**".format.icmp",
+			size  => icmprx_data'length)
+		port map (
+			clk    => miirx_clk,
+			frm    => icmprx_frm,
+			irdy   => icmprx_irdy,
+			act(0) => type_frm,
+			act(1) => code_frm,
+			act(2) => chksum_frm,
+			act(3) => id_frm,
+			act(4) => seq_frm,
+			act(5) => pyl_frm);
+
+		chksum_b : block
+			alias  chksum_irdy is chksum_frm;
+			signal adj_data : std_logic_vector(icmprx_data'range);
 		begin
-			if rising_edge(mii_clk) then
-				if icmpcksmtx_frm='0' then
-					cy := tx_cy;
-				elsif icmpcksmtx_frm='1' then
-					if (icmppltx_irdy and icmptx_trdy)='1' then
-						cy := co;
+
+			rom_i : entity hdl4fpga.sio_rom
+			generic map (
+				bitdata => 
+					std_logic_vector'(hdo(frames)**".data.icmp.rqst.type") &
+					std_logic_vector'(hdo(frames)**".data.icmp.rqst.code"))
+			port map (
+				so_clk  => miirx_clk,
+				so_frm  => chksum_frm,
+				so_irdy => chksum_irdy,
+				so_trdy => open,
+				so_data => adj_data);
+
+			process (miirx_clk)
+				variable sum : unsigned(0 to icmprx_data'length+1);
+				variable op1 : unsigned(sum'range);
+				variable op2 : unsigned(sum'range);
+			begin
+				if rising_edge(miirx_clk) then
+					op1 := unsigned('0' & reverse(icmprx_data) & '1');
+					op2 := unsigned('0' & adj_data             & cyrx);
+					sum := op1 + op2;
+					if icmprx_frm='0' then
+						cyrx <= '0';
+					elsif chksum_frm='1' then
+						cyrx <= sum(0);
 					end if;
 				end if;
-			end if;
-			ci <= setif(icmpcksmtx_frm='1', cy, '0');
-		end process;
-
-		tx_sum_e : entity hdl4fpga.adder
-		port map (
-			ci  => ci,
-			a   => memtx_data,
-			b   => kk,
-			s   => data,
-			co  => co);
-		icmppltx_data <= data when icmpcksmtx_frm='0' else reverse(data);
+			end process;
+		end block;
 	end block;
 
-	icmprply_e : entity hdl4fpga.icmprply_tx
-	port map (
-		mii_clk   => mii_clk,
+	rply_b : block
+		signal type_frm   : std_logic;
+		signal code_frm   : std_logic;
+		signal chksum_frm : std_logic;
+		signal id_frm     : std_logic;
+		signal seq_frm    : std_logic;
+		signal pyl_frm    : std_logic;
+	begin
 
-		pl_frm    => icmppltx_frm,
-		pl_irdy   => icmppltx_irdy,
-		pl_trdy   => icmppltx_trdy,
-		pl_end    => icmppltx_end,
-		pl_data   => icmppltx_data,
+		chksumtx_b : block
+		begin
+			process (miitx_clk)
+				variable sum : unsigned(0 to icmptx_data'length+1);
+				variable op1 : unsigned(sum'range);
+				variable op2 : unsigned(sum'range);
+				variable cy  : std_logic;
+			begin
+				if rising_edge(miitx_clk) then
+					op1 := unsigned'('0' & (icmptx_data'range => '0') & '1');
+					op2 := unsigned'('0' & "0"             & cy);
+					sum := op1 + op2;
+					if icmptx_frm='0' then
+						cy := '0';
+					elsif chksum_frm='1' then
+						cy := sum(0);
+					end if;
+				end if;
+			end process;
+		end block;
 
-		icmpcksm_frm => icmpcksmtx_frm,
-		metatx_end => tx_meta,
-		icmp_frm  => icmptx_frm,
-		icmp_irdy => icmptx_irdy,
-		icmp_trdy => icmptx_trdy,
-		icmp_end  => icmptx_end,
-		icmp_data => icmptx_data);
+		icmptx_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => hdo(frames)**".format.icmp",
+			size  => icmptx_data'length)
+		port map (
+			clk    => miitx_clk,
+			frm    => icmptx_frm,
+			irdy   => icmptx_irdy,
+			act(0) => type_frm,
+			act(1) => code_frm,
+			act(2) => chksum_frm,
+			act(3) => id_frm,
+			act(4) => seq_frm,
+			act(5) => pyl_frm);
+
+	end block;
 
 end;

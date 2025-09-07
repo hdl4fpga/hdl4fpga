@@ -33,8 +33,6 @@ entity arpd is
 		hwaddr   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		miirx_clk     : in  std_logic;
-		tx_req        : buffer std_logic := '0';
-		tx_rdy        : buffer std_logic := '0';
 
 		arprx_frm     : in  std_logic;
 		arprx_irdy    : in  std_logic;
@@ -66,14 +64,13 @@ architecture def of arpd is
 	signal tparx_trdy : std_logic := '1';
 	signal tparx_data : std_logic_vector(arprx_data'range);
 
-	signal arptx_rdy : std_logic := '0';
-	signal arptx_req : std_logic := '0';
-
 	signal spatx_frm   : std_logic;
 	signal spatx_irdy  : std_logic;
 	signal spatx_trdy  : std_logic;
 	signal spatx_data  : std_logic_vector(arptx_data'range);
 
+	signal tx_req      : std_logic := '0';
+	signal tx_rdy      : std_logic := '0';
 begin
 
 	arprx_i : entity hdl4fpga.arp_decode
