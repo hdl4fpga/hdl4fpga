@@ -57,13 +57,13 @@ end;
 architecture def of eth_rx is
 begin
 
-	prmb_i : entity hdl4fpga.mii_rxpre
+	prmb_i : entity hdl4fpga.mii_prmb
 	port map (
 		mii_clk  => mii_clk,
 		mii_frm  => mii_frm,
 		mii_irdy => mii_irdy,
 		mii_data => mii_data,
-		mii_pre  => dll_frm);
+		dll_frm  => dll_frm);
 
 	dllrx_i : entity hdl4fpga.dll_decode
 	port map (

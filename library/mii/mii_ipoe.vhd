@@ -30,8 +30,8 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
 	generic (
-		ipaddr : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
-		hwaddr : std_logic_vector := x"00_40_00_01_02_03");
+		ipv4addr : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
+		hwaddr   : std_logic_vector := x"00_40_00_01_02_03");
 	port (
 		miirx_clk    : in  std_logic;
 		miirx_frm  : in  std_logic;
@@ -48,7 +48,6 @@ entity mii_ipoe is
 		miitx_data : out std_logic_vector;
 
 		tp         : buffer std_logic_vector(1 to 32) := (others => '0'));
-
 end;
 
 architecture def of mii_ipoe is
@@ -88,8 +87,6 @@ architecture def of mii_ipoe is
 	signal ipv4rx_frm    : std_logic;
 	alias  ipv4rx_irdy is ipv4rx_frm;
 	signal ipv4rx_data   : std_logic_vector(miirx_data'range);
-
-	signal ipv4da_frm    : std_logic;
 
 	signal ethtyptx_frm  : std_logic := '0';
 	signal ethtyptx_irdy : std_logic := '0';
@@ -175,7 +172,8 @@ begin
 
 	arpd_i : entity hdl4fpga.arpd
 	generic map (
-		hwaddr => hwaddr)
+		ipv4addr => ipv4addr,
+		hwaddr   => hwaddr)
 	port map (
 		miirx_clk     => miirx_clk,
 
@@ -256,13 +254,14 @@ begin
 		end if;
 	end process;
 
-	ipv4rx_i : entity hdl4fpga.ipv4_decode
+	ipv4_i : entity hdl4fpga.ipv4
+	generic map (
+		ipv4addr => ipv4addr)
 	port map (
-		mii_clk   => miirx_clk,
-		ipv4_frm  => ipv4rx_frm,
-		ipv4_irdy => ipv4rx_irdy,
-		ipv4_data => ipv4rx_data,
-		da_frm    => ipv4da_frm);
-	tp(1) <= arptpa_frm or arptha_frm;
-	tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
+		tp => tp,
+		miirx_clk   => miirx_clk,
+		ipv4rx_frm  => ipv4rx_frm,
+		ipv4rx_irdy => ipv4rx_irdy,
+		ipv4rx_data => ipv4rx_data);
+
 end;

@@ -183,25 +183,35 @@ begin
 		pa_data  when  pa_frm='1' else
 		rom_data;
 
-	process (mii_clk)
+	frm_p : process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if decode_frm='0' then
+				arp_frm <= '0';
+			else
+				arp_frm <= decode_frm and not decode_last;
+			end if;
+		end if;
+	end process;
+
+	irdy_p : process (mii_clk)
+	begin
+		if rising_edge(mii_clk) then
+			if (not arp_frm and (arp_irdy and arp_trdy))='1' then
+				arp_irdy <= '0';
+			elsif not decode_last='1' then
+				arp_irdy <= decode_irdy;
+			end if;
+		end if;
+	end process;
+
+	data_p : process (mii_clk)
 	begin
 		if rising_edge(mii_clk) then
 			if (decode_irdy and arp_trdy)='1' then
 				arp_data <= decode_data;
 			elsif (decode_irdy and not arp_irdy)='1'then
 				arp_data <= decode_data;
-			end if;
-
-			if (not arp_frm and (arp_irdy and arp_trdy))='1' then
-				arp_irdy <= '0';
-			elsif not decode_last='1' then
-				arp_irdy <= decode_irdy;
-			end if;
-
-			if decode_frm='0' then
-				arp_frm <= '0';
-			else
-				arp_frm <= decode_frm and not decode_last;
 			end if;
 		end if;
 	end process;

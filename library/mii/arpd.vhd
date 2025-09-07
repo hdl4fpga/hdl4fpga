@@ -29,8 +29,8 @@ use hdl4fpga.ipoepkg.all;
 
 entity arpd is
 	generic (
-		ipaddr : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
-		hwaddr : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		ipv4addr : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
+		hwaddr   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		miirx_clk     : in  std_logic;
 		tx_req        : buffer std_logic := '0';
@@ -91,7 +91,7 @@ begin
 	begin
 		ipsa_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => reverse(ipaddr,8))
+			bitdata => reverse(ipv4addr,8))
 		port map (
 			si_data => arprx_data,
 			so_clk  => miirx_clk,
@@ -147,7 +147,7 @@ begin
 
 	spatx_e : entity hdl4fpga.sio_ram
 	generic map (
-		bitdata => reverse(ipaddr,8))
+		bitdata => reverse(ipv4addr,8))
 	port map (
 		si_clk  => miirx_clk,
 		si_data => arprx_data,

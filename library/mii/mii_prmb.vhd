@@ -26,17 +26,17 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity mii_rxpre is
+entity mii_prmb is
     port (
 		mii_clk  : in  std_logic;
 		mii_frm  : in  std_logic;
 		mii_irdy : in  std_logic;
 		mii_trdy : out std_logic := '1';
         mii_data : in std_logic_vector;
-		mii_pre  : buffer std_logic);
+		dll_frm  : buffer std_logic);
 end;
 
-architecture def of mii_rxpre is
+architecture def of mii_prmb is
 begin
 	process(mii_frm, mii_clk)
 		variable vld  : std_logic;
@@ -66,7 +66,7 @@ begin
 					end loop;
 				end if;
 			end if;
-			mii_pre <= mii_frm and vld;
+			dll_frm <= mii_frm and vld;
 		end if;
 	end process;
 end;
