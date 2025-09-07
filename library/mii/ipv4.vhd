@@ -126,8 +126,6 @@ begin
 
 	end block;
 
-	-- tp(1) <= ipv4rx_frm;
-	-- tp(2 to 2+ipv4rx_data'length-1) <= ipv4rx_data;
 	tp(1) <= icmprx_frm;
 	tp(2 to 2+ipv4rx_data'length-1) <= icmprx_data;
 end;
