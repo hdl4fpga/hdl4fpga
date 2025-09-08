@@ -88,6 +88,11 @@ architecture def of mii_ipoe is
 	alias  ipv4rx_irdy is ipv4rx_frm;
 	signal ipv4rx_data   : std_logic_vector(miirx_data'range);
 
+	signal ipv4tx_frm    : std_logic;
+	signal ipv4tx_irdy   : std_logic;
+	signal ipv4tx_trdy   : std_logic := '1';
+	signal ipv4tx_data   : std_logic_vector(miitx_data'range);
+
 	signal ethtyptx_frm  : std_logic := '0';
 	signal ethtyptx_irdy : std_logic := '0';
 	signal ethtyptx_trdy : std_logic := '0';
@@ -262,6 +267,11 @@ begin
 		miirx_clk   => miirx_clk,
 		ipv4rx_frm  => ipv4rx_frm,
 		ipv4rx_irdy => ipv4rx_irdy,
-		ipv4rx_data => ipv4rx_data);
+		ipv4rx_data => ipv4rx_data,
+		miitx_clk   => miitx_clk,
+		ipv4tx_frm  => ipv4tx_frm,
+		ipv4tx_irdy => ipv4tx_irdy,
+		ipv4tx_trdy => ipv4tx_trdy,
+		ipv4tx_data => ipv4tx_data);
 
 end;

@@ -102,10 +102,10 @@ package ipoepkg is
 			"icmp:{"                &
 				"reply:{"           &
 					"code:0x00,"    &
-					"type:0x08},"   &
+					"type:0x00},"   &
 				"rqst:{"            &
 					"code:0x00,"    &
-					"type:0x00}},"  &
+					"type:0x08}},"  &
 			"dhcp:{"                &
 				"op:{"              &
 					"offer:0x02}}}}");

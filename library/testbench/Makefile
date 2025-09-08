@@ -1430,6 +1430,7 @@ $(HDL4FPGA__icmp_decode__def) : ../mii/icmp_decode.vhd \
 
 $(HDL4FPGA__icmpd) \
 $(HDL4FPGA__icmpd__def) : ../mii/icmpd.vhd \
+		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__sio_rom) \
 		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__ipoepkg) \
@@ -1458,6 +1459,7 @@ $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 
 $(HDL4FPGA__ipv4) \
 $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
+		$(HDL4FPGA__icmpd) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__sio_cmp) \
 		$(HDL4FPGA__sio_ram) \

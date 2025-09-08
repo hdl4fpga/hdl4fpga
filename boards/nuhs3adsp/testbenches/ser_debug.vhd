@@ -168,15 +168,15 @@ architecture nuhs3adsp_serdebug of testbench is
 			"0000"                 & -- IP Header Checksum
 			"ffffffff"             & -- IP Source IP address
 			"c0a8000e"             & -- IP Destiantion IP Address
-			"12345678"             &
-			"12345678"             &
-			"12345678"             &
-			"12345678"             &
-			"12345678"             &
-			"12345678"             &
-			"12345678"             &
-			"aaaaaaaa"             &
-			"ffffffff}";
+			"ffffffff"             &
+			"ffffffff"             &
+			"ffffffff"             &
+			"ffffffff"             &
+			"ffffffff"             &
+			"ffffffff"             &
+			"ffffffff"             &
+			"ffffffff"             &
+			"12345678}";
 begin
 
 	mii_rxc <= mii_refclk after 5 ps;
@@ -189,7 +189,7 @@ begin
 	sw1 <= '1', '0' after 1 us;
 
 	xxx_b : block
-		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".arp");
+		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".icmp");
 		signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
 	begin
 		process (mii_rxc)

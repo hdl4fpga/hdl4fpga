@@ -37,6 +37,11 @@ entity ipv4 is
 		ipv4rx_irdy : in  std_logic;
 		ipv4rx_trdy : out std_logic := '1';
 		ipv4rx_data : in  std_logic_vector;
+		miitx_clk   : in  std_logic;
+		ipv4tx_frm  : buffer std_logic;
+		ipv4tx_irdy : buffer std_logic;
+		ipv4tx_trdy : in  std_logic := '1';
+		ipv4tx_data : out std_logic_vector;
 		tp        : out std_logic_vector(1 to 32));
 end;
 
@@ -134,6 +139,20 @@ begin
 			end if;
 		end process;
 	end block;
+
+	arpd_i : entity hdl4fpga.icmpd
+	port map (
+		miirx_clk   => miirx_clk,
+		icmprx_frm  => icmprx_frm,
+		icmprx_irdy => icmprx_frm,
+		icmprx_trdy => open,
+		icmprx_data => icmprx_data,
+
+		miitx_clk   => miitx_clk,
+		icmptx_frm  => ipv4tx_frm,
+		icmptx_irdy => ipv4tx_irdy,
+		icmptx_trdy => ipv4tx_trdy,
+		icmptx_data => ipv4tx_data);
 
 	tp(1) <= icmprx_frm;
 	tp(2 to 2+ipv4rx_data'length-1) <= icmprx_data;
