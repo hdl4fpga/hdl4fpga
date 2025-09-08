@@ -36,32 +36,45 @@ entity ipv4 is
 		tharx_frm   : in  std_logic;
 		tharx_irdy  : in  std_logic;
 		tharx_trdy  : out std_logic := '1';
-		tharx_data  : in  std_logic_vector;
 		ipv4rx_frm  : in  std_logic;
 		ipv4rx_irdy : in  std_logic;
 		ipv4rx_trdy : out std_logic := '1';
 		ipv4rx_data : in  std_logic_vector;
 		miitx_clk   : in  std_logic;
+
+		thatx_frm   : buffer std_logic;
+		thatx_irdy  : buffer std_logic;
+		thatx_trdy  : in  std_logic := '1';
+
 		ipv4tx_frm  : buffer std_logic;
 		ipv4tx_irdy : buffer std_logic;
 		ipv4tx_trdy : in  std_logic := '1';
 		ipv4tx_data : out std_logic_vector;
-		tp        : out std_logic_vector(1 to 32));
+		tp          : out std_logic_vector(1 to 32));
 end;
 
 architecture def of ipv4 is
-	signal ipv4da_frm     : std_logic;
-	signal ipv4da_irdy    : std_logic;
-	signal proto_frm      : std_logic;
-	signal proto_irdy     : std_logic;
-	signal proto_trdy     : std_logic;
-	signal icmptharx_frm  : std_logic;
-	signal icmptharx_irdy : std_logic;
-	signal icmptharx_trdy : std_logic;
-	signal icmprx_frm     : std_logic;
-	signal icmprx_irdy    : std_logic;
-	signal icmprx_trdy    : std_logic;
-	signal icmprx_data    : std_logic_vector(ipv4rx_data'range);
+	signal ipv4da_frm  : std_logic;
+	signal ipv4da_irdy : std_logic;
+	signal sparx_frm  : std_logic;
+	signal sparx_irdy : std_logic;
+	signal proto_frm   : std_logic;
+	signal proto_irdy  : std_logic;
+	signal proto_trdy  : std_logic;
+	signal tha1rx_frm  : std_logic;
+	signal tha1rx_irdy : std_logic;
+	signal tha1rx_trdy : std_logic := '1';
+	signal tparx_frm   : std_logic;
+	signal tparx_irdy  : std_logic;
+	signal tparx_trdy  : std_logic := '1';
+	signal icmprx_frm  : std_logic;
+	signal icmprx_irdy : std_logic;
+	signal icmprx_trdy : std_logic;
+	signal icmprx_data : std_logic_vector(ipv4rx_data'range);
+
+	signal tpatx_frm   : std_logic;
+	signal tpatx_irdy  : std_logic;
+	signal tpatx_trdy  : std_logic := '1';
 begin
 
 	ipv4rx_i : entity hdl4fpga.ipv4_decode
@@ -72,8 +85,22 @@ begin
 		ipv4_data  => ipv4rx_data,
 		da_frm     => ipv4da_frm,
 		da_irdy    => ipv4da_irdy,
+		sa_frm     => sparx_frm,
+		sa_irdy    => sparx_irdy,
 		proto_frm  => proto_frm,
 		proto_irdy => proto_irdy);  
+
+	process (miirx_clk)
+		variable icmp_vld : std_logic := '0';
+		variable pa_vld   : std_logic := '0';
+	begin
+		if rising_edge(miirx_clk) then
+			tha1rx_frm  <= tharx_frm;
+			tha1rx_irdy <= tharx_irdy;
+			tparx_frm   <= sparx_frm;
+			tparx_irdy  <= sparx_irdy;
+		end if;
+	end process;
 
 	pa_b : block
 		signal so_data  : std_logic_vector(ipv4rx_data'range);
@@ -140,10 +167,8 @@ begin
 						pa_vld := '1';
 					end if;
 				end if;
-				icmptharx_frm  <= tharx_frm;
-				icmptharx_irdy <= tharx_irdy;
-				icmprx_frm     <= ipv4rx_frm and pa_vld and icmp_vld;
-				icmprx_data    <= ipv4rx_data;
+				icmprx_frm  <= ipv4rx_frm and pa_vld and icmp_vld;
+				icmprx_data <= ipv4rx_data;
 			end if;
 		end process;
 	end block;
@@ -151,15 +176,27 @@ begin
 	arpd_i : entity hdl4fpga.icmpd
 	port map (
 		miirx_clk   => miirx_clk,
-		tharx_frm   => icmptharx_frm,
-		tharx_irdy  => icmptharx_irdy,
-		tharx_trdy  => icmptharx_trdy,
+		tharx_frm   => tha1rx_frm,
+		tharx_irdy  => tha1rx_irdy,
+		tharx_trdy  => tha1rx_trdy,
+		tparx_frm   => tparx_frm,
+		tparx_irdy  => tparx_irdy,
+		tparx_trdy  => tparx_trdy,
 		icmprx_frm  => icmprx_frm,
 		icmprx_irdy => icmprx_frm,
 		icmprx_trdy => open,
 		icmprx_data => icmprx_data,
 
 		miitx_clk   => miitx_clk,
+
+		thatx_frm   => thatx_frm,
+		thatx_irdy  => thatx_irdy,
+		thatx_trdy  => thatx_trdy,
+
+		tpatx_frm   => tpatx_frm,
+		tpatx_irdy  => tpatx_irdy,
+		tpatx_trdy  => tpatx_trdy,
+
 		icmptx_frm  => ipv4tx_frm,
 		icmptx_irdy => ipv4tx_irdy,
 		icmptx_trdy => ipv4tx_trdy,

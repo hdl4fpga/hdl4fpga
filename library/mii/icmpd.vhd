@@ -36,12 +36,25 @@ entity icmpd is
 		tharx_irdy  : in  std_logic;
 		tharx_trdy  : buffer std_logic := '1';
 
+		tparx_frm   : in  std_logic;
+		tparx_irdy  : in  std_logic;
+		tparx_trdy  : buffer std_logic := '1';
+
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
 		icmprx_trdy : buffer std_logic := '1';
 		icmprx_data : in  std_logic_vector;
 
 		miitx_clk   : in  std_logic;
+
+		thatx_frm   : buffer std_logic;
+		thatx_irdy  : buffer std_logic;
+		thatx_trdy  : in  std_logic := '1';
+
+		tpatx_frm   : buffer std_logic;
+		tpatx_irdy  : buffer std_logic;
+		tpatx_trdy  : in  std_logic := '1';
+
 		icmptx_frm  : buffer std_logic;
 		icmptx_irdy : buffer std_logic;
 		icmptx_trdy : in  std_logic := '1';
@@ -120,14 +133,17 @@ begin
 					op1 := unsigned('0' & reverse(icmprx_data) & '1');
 					op2 := unsigned('0' & adj_data             & cy);
 					sum := op1 + op2;
-					if icmprx_frm='0' then
-						cy := '0';
-					elsif chksum_frm='1' then
-						cy := sum(0);
+					if chksum_frm='1' then
 						wr_data <= std_logic_vector(sum(1 to icmprx_data'length));
 					else
-						co <= cy;
 						wr_data <= icmprx_data;
+					end if;
+					if chksum_frm='1' then
+						cy := sum(0);
+					elsif icmprx_frm='1' then
+						co <= cy;
+					else
+						cy := '0';
 					end if;
 				end if;
 			end process;
@@ -140,15 +156,21 @@ begin
 	begin
 		process (miirx_clk)
 			variable active : std_logic;
-			variable cntr   : unsigned(wr_addr'range);
+			variable cntr   : unsigned(wr_addr'range) := (others => '0');
 		begin
 			if rising_edge(miirx_clk) then
+				wr_addr <= std_logic_vector(cntr);
+				if (tharx_frm or (tharx_irdy and tharx_trdy))='1' then
+					cntr := cntr + 1;
+				elsif (tparx_frm or (tparx_irdy and tparx_trdy))='1' then
+					cntr := cntr + 1;
+				elsif (icmprx_frm or (icmprx_irdy and icmprx_trdy))='1' then
+					cntr := cntr + 1;
+				end if;
 				if (icmprx_frm or (icmprx_irdy and icmprx_trdy))='1' then
-					wr_addr <= std_logic_vector(cntr);
-					cntr    := cntr + 1;
-					active  := '1';
+					active := '1';
 				elsif active='1' then
-					active  := '0';
+					active := '0';
 				end if;
 			end if;
 		end process;

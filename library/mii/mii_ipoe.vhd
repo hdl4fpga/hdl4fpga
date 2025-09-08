@@ -277,7 +277,6 @@ begin
 
 		tharx_frm   => ipv4tharx_frm,
 		tharx_irdy  => ipv4tharx_irdy,
-		tharx_data  => ipv4rx_data,
 
 		ipv4rx_frm  => ipv4rx_frm,
 		ipv4rx_irdy => ipv4rx_irdy,

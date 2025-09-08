@@ -146,7 +146,7 @@ architecture nuhs3adsp_serdebug of testbench is
 		"mac:0x"                   &
 		    "55555555555555d5"     &
 			"00_40_00_01_02_03"    & -- mac source address
-			"00_27_0e_0f_f5_95,"   & -- mac source address
+			"0f_27_0e_0f_f5_95,"   & -- mac source address
 		"arp:0x"                   &
 			"0806"                 & -- mac type
 			"0000"                 & -- arp_htype
@@ -166,7 +166,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"0000"                 & -- IP Fragmentation
 			"0501"                 & -- IP TTL, protocol
 			"0000"                 & -- IP Header Checksum
-			"ffffffff"             & -- IP Source IP address
+			"ac1000f0"             & -- IP Source IP address
 			"c0a8000e"             & -- IP Destiantion IP Address
 			"ffffffff"             &
 			"ffffffff"             &
