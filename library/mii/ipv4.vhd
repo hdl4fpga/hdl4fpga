@@ -50,19 +50,18 @@ entity ipv4 is
 end;
 
 architecture def of ipv4 is
-	signal ipv4da_frm  : std_logic;
-	signal ipv4da_irdy : std_logic;
-	signal proto_frm   : std_logic;
-	signal proto_irdy  : std_logic;
-	signal proto_trdy  : std_logic;
+	signal ipv4da_frm     : std_logic;
+	signal ipv4da_irdy    : std_logic;
+	signal proto_frm      : std_logic;
+	signal proto_irdy     : std_logic;
+	signal proto_trdy     : std_logic;
 	signal icmptharx_frm  : std_logic;
 	signal icmptharx_irdy : std_logic;
 	signal icmptharx_trdy : std_logic;
-	signal icmprx_frm  : std_logic;
-	signal icmprx_irdy : std_logic;
-	signal icmprx_trdy : std_logic;
-	signal icmprx_data : std_logic_vector(ipv4rx_data'range);
-
+	signal icmprx_frm     : std_logic;
+	signal icmprx_irdy    : std_logic;
+	signal icmprx_trdy    : std_logic;
+	signal icmprx_data    : std_logic_vector(ipv4rx_data'range);
 begin
 
 	ipv4rx_i : entity hdl4fpga.ipv4_decode
@@ -141,11 +140,10 @@ begin
 						pa_vld := '1';
 					end if;
 				end if;
-				icmptharx_frm <= tharx_frm;
+				icmptharx_frm  <= tharx_frm;
 				icmptharx_irdy <= tharx_irdy;
-
-				icmprx_frm  <= ipv4rx_frm and pa_vld and icmp_vld;
-				icmprx_data <= ipv4rx_data;
+				icmprx_frm     <= ipv4rx_frm and pa_vld and icmp_vld;
+				icmprx_data    <= ipv4rx_data;
 			end if;
 		end process;
 	end block;

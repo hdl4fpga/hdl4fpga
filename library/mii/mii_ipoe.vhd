@@ -263,8 +263,8 @@ begin
 			end if;
 			ipv4tharx_frm  <= ethsa_frm;
 			ipv4tharx_irdy <= ethsa_irdy;
-			ipv4rx_frm  <= ethpyl_frm and da_vld and typ_vld;
-			ipv4rx_data <= miirx_data;
+			ipv4rx_frm     <= ethpyl_frm and da_vld and typ_vld;
+			ipv4rx_data    <= miirx_data;
 		end if;
 	end process;
 
@@ -275,9 +275,9 @@ begin
 		tp => tp,
 		miirx_clk   => miirx_clk,
 
-		tharx_frm  => ipv4tharx_frm,
-		tharx_irdy => ipv4tharx_irdy,
-		tharx_data => ipv4rx_data,
+		tharx_frm   => ipv4tharx_frm,
+		tharx_irdy  => ipv4tharx_irdy,
+		tharx_data  => ipv4rx_data,
 
 		ipv4rx_frm  => ipv4rx_frm,
 		ipv4rx_irdy => ipv4rx_irdy,
