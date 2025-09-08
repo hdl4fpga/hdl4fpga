@@ -109,26 +109,29 @@ begin
 		fifo_cmmt  <= hdlcfcsrx_sb and     hdlcfcsrx_vld;
 		fifo_rllbk <= (hdlcfcsrx_sb and not hdlcfcsrx_vld) or not hdlcrx_frm;
 
-		fifo_e : entity hdl4fpga.txn_buffer
-		generic map (
-			m => unsigned_num_bits(mem_size/hdlcrx_data'length-1))
-		port map (
-			src_clk  => uart_clk,
-			src_frm  => hdlcrx_frm,
-			src_irdy => hdlcrx_irdy,
-			src_trdy => open,
-			src_data => hdlcrx_data,
-
-			rollback => fifo_rllbk,
-			commit   => fifo_cmmt,
-			avail    => fifo_avail,
-
-			dst_clk  => uart_clk,
-			dst_frm  => rx_frm,
-			dst_irdy => rx_trdy,
-			dst_trdy => fifoo_trdy,
-			dst_end  => rx_end,
-			dst_data => rx_data);
+		assert false
+			report "txn_buffer"
+			severity FAILURE;
+		-- fifo_e : entity hdl4fpga.txn_buffer
+		-- generic map (
+		-- 	m => unsigned_num_bits(mem_size/hdlcrx_data'length-1))
+		-- port map (
+		-- 	src_clk  => uart_clk,
+		-- 	src_frm  => hdlcrx_frm,
+		-- 	src_irdy => hdlcrx_irdy,
+		-- 	src_trdy => open,
+		-- 	src_data => hdlcrx_data,
+		--
+		-- 	rollback => fifo_rllbk,
+		-- 	commit   => fifo_cmmt,
+		-- 	avail    => fifo_avail,
+		--
+		-- 	dst_clk  => uart_clk,
+		-- 	dst_frm  => rx_frm,
+		-- 	dst_irdy => rx_trdy,
+		-- 	dst_trdy => fifoo_trdy,
+		-- 	dst_end  => rx_end,
+		-- 	dst_data => rx_data);
 
 		rx_frm_p : process (sio_clk)
 		begin

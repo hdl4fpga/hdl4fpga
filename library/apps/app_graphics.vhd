@@ -276,24 +276,27 @@ begin
 
 		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
-		metafifo_e : entity hdl4fpga.txn_buffer
-		generic map (
-			debug => false,
-			m => 8)
-		port map (
-			tp => tp_meta,
-			src_clk  => sin_clk,
-			src_frm  => rgtr_frm,
-			src_irdy => metaram_irdy,
-			src_data => metaram_data,
-
-			avail    => meta_avail,
-			dst_clk  => sout_clk,
-			dst_frm  => sout_frm,
-			dst_irdy => sout_trdy,
-			dst_trdy => meta_trdy,
-			dst_end  => meta_end,
-			dst_data => meta_data);
+		assert false
+			report "txn_buffer"
+			severity FAILURE;
+		-- metafifo_e : entity hdl4fpga.txn_buffer
+		-- generic map (
+		-- 	debug => false,
+		-- 	m => 8)
+		-- port map (
+		-- 	tp => tp_meta,
+		-- 	src_clk  => sin_clk,
+		-- 	src_frm  => rgtr_frm,
+		-- 	src_irdy => metaram_irdy,
+		-- 	src_data => metaram_data,
+		--
+		-- 	avail    => meta_avail,
+		-- 	dst_clk  => sout_clk,
+		-- 	dst_frm  => sout_frm,
+		-- 	dst_irdy => sout_trdy,
+		-- 	dst_trdy => meta_trdy,
+		-- 	dst_end  => meta_end,
+		-- 	dst_data => meta_data);
 
 		rx_b : block
 			signal ctlr_di_rdy: std_logic;

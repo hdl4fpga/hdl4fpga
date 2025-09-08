@@ -63,18 +63,21 @@ architecture beh of sio_sin is
 	signal stt : states;
 
 begin
+	assert false
+		report "serdes"
+		severity FAILURE;
 
-	byte_e : entity hdl4fpga.serdes
-	generic map (
-		debug => debug)
-	port map (
-		serdes_clk => sin_clk,
-		serdes_frm => sin_frm,
-		ser_irdy   => sin_irdy,
-		ser_data   => sin_data,
-
-		des_irdy   => des8_irdy,
-		des_data   => des8_data);
+	-- byte_e : entity hdl4fpga.serdes
+	-- generic map (
+	-- 	debug => debug)
+	-- port map (
+	-- 	serdes_clk => sin_clk,
+	-- 	serdes_frm => sin_frm,
+	-- 	ser_irdy   => sin_irdy,
+	-- 	ser_data   => sin_data,
+	--
+	-- 	des_irdy   => des8_irdy,
+	-- 	des_data   => des8_data);
 	rev8_data <= reverse(des8_data);
 
 	tp(1) <= sin_frm;

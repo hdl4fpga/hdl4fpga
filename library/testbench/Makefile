@@ -100,10 +100,6 @@ HDL4FPGA__uart_tx__def = $(LIB_HDL4FPGA)/uart_tx/def.dat
 HDL4FPGA__uart_tx = $(LIB_HDL4FPGA)/uart_tx/_primary.dat
 HDL4FPGA__uart_rx__def = $(LIB_HDL4FPGA)/uart_rx/def.dat
 HDL4FPGA__uart_rx = $(LIB_HDL4FPGA)/uart_rx/_primary.dat
-HDL4FPGA__txn_buffer__def = $(LIB_HDL4FPGA)/txn_buffer/def.dat
-HDL4FPGA__txn_buffer = $(LIB_HDL4FPGA)/txn_buffer/_primary.dat
-HDL4FPGA__tx_manchester__def = $(LIB_HDL4FPGA)/tx_manchester/def.dat
-HDL4FPGA__tx_manchester = $(LIB_HDL4FPGA)/tx_manchester/_primary.dat
 HDL4FPGA__tmds_encoder__def = $(LIB_HDL4FPGA)/tmds_encoder/def.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
@@ -140,8 +136,6 @@ HDL4FPGA__sio_cmp__def = $(LIB_HDL4FPGA)/sio_cmp/def.dat
 HDL4FPGA__sio_cmp = $(LIB_HDL4FPGA)/sio_cmp/_primary.dat
 HDL4FPGA__serlzr__def = $(LIB_HDL4FPGA)/serlzr/def.dat
 HDL4FPGA__serlzr = $(LIB_HDL4FPGA)/serlzr/_primary.dat
-HDL4FPGA__serdes__def = $(LIB_HDL4FPGA)/serdes/def.dat
-HDL4FPGA__serdes = $(LIB_HDL4FPGA)/serdes/_primary.dat
 HDL4FPGA__ser_display__def = $(LIB_HDL4FPGA)/ser_display/def.dat
 HDL4FPGA__ser_display = $(LIB_HDL4FPGA)/ser_display/_primary.dat
 HDL4FPGA__ser_debug__def = $(LIB_HDL4FPGA)/ser_debug/def.dat
@@ -219,8 +213,6 @@ HDL4FPGA__scopeio_amp__beh = $(LIB_HDL4FPGA)/scopeio_amp/beh.dat
 HDL4FPGA__scopeio_amp = $(LIB_HDL4FPGA)/scopeio_amp/_primary.dat
 HDL4FPGA__scopeio__beh = $(LIB_HDL4FPGA)/scopeio/beh.dat
 HDL4FPGA__scopeio = $(LIB_HDL4FPGA)/scopeio/_primary.dat
-HDL4FPGA__rx_manchester__def = $(LIB_HDL4FPGA)/rx_manchester/def.dat
-HDL4FPGA__rx_manchester = $(LIB_HDL4FPGA)/rx_manchester/_primary.dat
 HDL4FPGA__rom7seg__mixed = $(LIB_HDL4FPGA)/rom7seg/mixed.dat
 HDL4FPGA__rom7seg = $(LIB_HDL4FPGA)/rom7seg/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
@@ -339,8 +331,6 @@ HDL4FPGA__dfs2dfs__behavioral = $(LIB_HDL4FPGA)/dfs2dfs/behavioral.dat
 HDL4FPGA__dfs2dfs = $(LIB_HDL4FPGA)/dfs2dfs/_primary.dat
 HDL4FPGA__devmux__def = $(LIB_HDL4FPGA)/devmux/def.dat
 HDL4FPGA__devmux = $(LIB_HDL4FPGA)/devmux/_primary.dat
-HDL4FPGA__desser__mux = $(LIB_HDL4FPGA)/desser/mux.dat
-HDL4FPGA__desser = $(LIB_HDL4FPGA)/desser/_primary.dat
 HDL4FPGA__dbdbblsrl_ser__beh = $(LIB_HDL4FPGA)/dbdbblsrl_ser/beh.dat
 HDL4FPGA__dbdbblsrl_ser = $(LIB_HDL4FPGA)/dbdbblsrl_ser/_primary.dat
 HDL4FPGA__dbdbbl_srlfix__def = $(LIB_HDL4FPGA)/dbdbbl_srlfix/def.dat
@@ -490,10 +480,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__uart_tx) \
     $(HDL4FPGA__uart_rx__def) \
     $(HDL4FPGA__uart_rx) \
-    $(HDL4FPGA__txn_buffer__def) \
-    $(HDL4FPGA__txn_buffer) \
-    $(HDL4FPGA__tx_manchester__def) \
-    $(HDL4FPGA__tx_manchester) \
     $(HDL4FPGA__tmds_encoder__def) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
@@ -530,8 +516,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sio_cmp) \
     $(HDL4FPGA__serlzr__def) \
     $(HDL4FPGA__serlzr) \
-    $(HDL4FPGA__serdes__def) \
-    $(HDL4FPGA__serdes) \
     $(HDL4FPGA__ser_display__def) \
     $(HDL4FPGA__ser_display) \
     $(HDL4FPGA__ser_debug__def) \
@@ -609,8 +593,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__scopeio_amp) \
     $(HDL4FPGA__scopeio__beh) \
     $(HDL4FPGA__scopeio) \
-    $(HDL4FPGA__rx_manchester__def) \
-    $(HDL4FPGA__rx_manchester) \
     $(HDL4FPGA__rom7seg__mixed) \
     $(HDL4FPGA__rom7seg) \
     $(HDL4FPGA__rom__def) \
@@ -729,8 +711,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dfs2dfs) \
     $(HDL4FPGA__devmux__def) \
     $(HDL4FPGA__devmux) \
-    $(HDL4FPGA__desser__mux) \
-    $(HDL4FPGA__desser) \
     $(HDL4FPGA__dbdbblsrl_ser__beh) \
     $(HDL4FPGA__dbdbblsrl_ser) \
     $(HDL4FPGA__dbdbbl_srlfix__def) \
@@ -1067,14 +1047,6 @@ $(HDL4FPGA__dbdbblsrl_ser__beh) : ../basic/dbdbbl.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../basic/dbdbbl.vhd
-
-$(HDL4FPGA__desser) \
-$(HDL4FPGA__desser__mux) : ../basic/desser.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/desser.vhd
 
 $(HDL4FPGA__devmux) \
 $(HDL4FPGA__devmux__def) : ../basic/devmux.vhd \
@@ -2163,14 +2135,6 @@ $(HDL4FPGA__ser_display__def) : ../video/ser_display.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../video/ser_display.vhd
 
-$(HDL4FPGA__serdes) \
-$(HDL4FPGA__serdes__def) : ../basic/serdes.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/serdes.vhd
-
 $(HDL4FPGA__serlzr) \
 $(HDL4FPGA__serlzr__def) : ../basic/serlzr.vhd \
 		$(HDL4FPGA__barrel) \
@@ -2341,24 +2305,6 @@ $(HDL4FPGA__tmds_encoder__def) : ../video/tmds_encoder.vhd \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -93 -work hdl4fpga ../video/tmds_encoder.vhd
-
-$(HDL4FPGA__rx_manchester) \
-$(HDL4FPGA__rx_manchester__def) \
-$(HDL4FPGA__tx_manchester) \
-$(HDL4FPGA__tx_manchester__def) : ../mii/manchester.vhd \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/manchester.vhd
-
-$(HDL4FPGA__txn_buffer) \
-$(HDL4FPGA__txn_buffer__def) : ../basic/txn_buffer.vhd \
-		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/txn_buffer.vhd
 
 $(HDL4FPGA__uart_rx) \
 $(HDL4FPGA__uart_rx__def) : ../uart/uart_rx.vhd \

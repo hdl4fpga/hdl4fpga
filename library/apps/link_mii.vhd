@@ -175,17 +175,20 @@ begin
 		-- so_trdy    => so_trdy,
 		-- so_data    => so_data);
 	
-	desser_e: entity hdl4fpga.desser
-	port map (
-		desser_clk => mii_txc,
-	
-		des_frm  => miitx_frm,
-		des_irdy => miitx_irdy,
-		des_trdy => miitx_trdy,
-		des_data => miitx_data,
-	
-		ser_irdy => open,
-		ser_data => mii_txd);
+	assert false
+		report "serializer"
+		severity FAILURE;
+	-- desser_e: entity hdl4fpga.desser
+	-- port map (
+	-- 	desser_clk => mii_txc,
+	--
+	-- 	des_frm  => miitx_frm,
+	-- 	des_irdy => miitx_irdy,
+	-- 	des_trdy => miitx_trdy,
+	-- 	des_data => miitx_data,
+	--
+	-- 	ser_irdy => open,
+	-- 	ser_data => mii_txd);
 	
 	mii_txen <= miitx_frm and not miitx_end;
 end;

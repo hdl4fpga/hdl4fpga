@@ -61,18 +61,21 @@ architecture def of so_data is
 
 begin
 
-	desser_e : entity hdl4fpga.desser
-	port map (
-		desser_clk => sio_clk,
-
-		des_frm    => si_frm,
-		des_irdy   => si_irdy,
-		des_trdy   => si_trdy,
-		des_data   => si_data,
-
-		ser_irdy   => ser_irdy,
-		ser_trdy   => ser_trdy,
-		ser_data   => ser_data);
+	assert false
+		report "serilzer"
+		severity FAILURE;
+	-- desser_e : entity hdl4fpga.desser
+	-- port map (
+	-- 	desser_clk => sio_clk,
+	--
+	-- 	des_frm    => si_frm,
+	-- 	des_irdy   => si_irdy,
+	-- 	des_trdy   => si_trdy,
+	-- 	des_data   => si_data,
+	--
+	-- 	ser_irdy   => ser_irdy,
+	-- 	ser_trdy   => ser_trdy,
+	-- 	ser_data   => ser_data);
 
 	process(sio_clk)
 	begin
@@ -150,17 +153,20 @@ begin
 		ser_data                                             when st_data;
 
 	so_frm <= to_stdulogic(to_bit(si_frm));
-	dessero_e : entity hdl4fpga.desser
-	port map (
-		desser_clk => sio_clk,
-
-		des_frm    => si_frm,
-		des_irdy   => deso_irdy,
-		des_trdy   => deso_trdy,
-		des_data   => deso_data,
-
-		ser_irdy   => so_irdy,
-		ser_trdy   => so_trdy,
-		ser_data   => so_data);
+	assert false
+		report "serilzer"
+		severity FAILURE;
+	-- dessero_e : entity hdl4fpga.desser
+	-- port map (
+	-- 	desser_clk => sio_clk,
+	--
+	-- 	des_frm    => si_frm,
+	-- 	des_irdy   => deso_irdy,
+	-- 	des_trdy   => deso_trdy,
+	-- 	des_data   => deso_data,
+	--
+	-- 	ser_irdy   => so_irdy,
+	-- 	ser_trdy   => so_trdy,
+	-- 	ser_data   => so_data);
 
 end;
