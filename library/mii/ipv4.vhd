@@ -33,6 +33,10 @@ entity ipv4 is
 		ipv4addr    : std_logic_vector);
 	port (
 		miirx_clk   : in  std_logic;
+		tharx_frm   : in  std_logic;
+		tharx_irdy  : in  std_logic;
+		tharx_trdy  : out std_logic := '1';
+		tharx_data  : in  std_logic_vector;
 		ipv4rx_frm  : in  std_logic;
 		ipv4rx_irdy : in  std_logic;
 		ipv4rx_trdy : out std_logic := '1';
@@ -51,6 +55,9 @@ architecture def of ipv4 is
 	signal proto_frm   : std_logic;
 	signal proto_irdy  : std_logic;
 	signal proto_trdy  : std_logic;
+	signal icmptharx_frm  : std_logic;
+	signal icmptharx_irdy : std_logic;
+	signal icmptharx_trdy : std_logic;
 	signal icmprx_frm  : std_logic;
 	signal icmprx_irdy : std_logic;
 	signal icmprx_trdy : std_logic;
@@ -134,6 +141,9 @@ begin
 						pa_vld := '1';
 					end if;
 				end if;
+				icmptharx_frm <= tharx_frm;
+				icmptharx_irdy <= tharx_irdy;
+
 				icmprx_frm  <= ipv4rx_frm and pa_vld and icmp_vld;
 				icmprx_data <= ipv4rx_data;
 			end if;
@@ -143,6 +153,9 @@ begin
 	arpd_i : entity hdl4fpga.icmpd
 	port map (
 		miirx_clk   => miirx_clk,
+		tharx_frm   => icmptharx_frm,
+		tharx_irdy  => icmptharx_irdy,
+		tharx_trdy  => icmptharx_trdy,
 		icmprx_frm  => icmprx_frm,
 		icmprx_irdy => icmprx_frm,
 		icmprx_trdy => open,

@@ -58,6 +58,8 @@ architecture def of mii_ipoe is
 
 	signal ethda_frm     : std_logic;
 	signal ethda_irdy    : std_logic;
+	signal ethsa_frm     : std_logic;
+	signal ethsa_irdy    : std_logic;
 	signal ethda_equ     : std_logic;
 	signal bcstda_equ    : std_logic;
 	signal ethtyp_frm    : std_logic;
@@ -83,6 +85,9 @@ architecture def of mii_ipoe is
 
 	signal arptha_frm    : std_logic;
 	signal arptpa_frm    : std_logic;
+
+	signal ipv4tharx_frm  : std_logic;
+	signal ipv4tharx_irdy : std_logic;
 
 	signal ipv4rx_frm    : std_logic;
 	alias  ipv4rx_irdy is ipv4rx_frm;
@@ -114,6 +119,8 @@ begin
 
 		da_frm   => ethda_frm,
 		da_irdy  => ethda_irdy,
+		sa_frm   => ethsa_frm,
+		sa_irdy  => ethsa_irdy,
 		typ_frm  => ethtyp_frm,
 		typ_irdy => ethtyp_irdy,
 		pyl_frm  => ethpyl_frm,
@@ -254,6 +261,8 @@ begin
 					typ_vld := '1';
 				end if;
 			end if;
+			ipv4tharx_frm  <= ethsa_frm;
+			ipv4tharx_irdy <= ethsa_irdy;
 			ipv4rx_frm  <= ethpyl_frm and da_vld and typ_vld;
 			ipv4rx_data <= miirx_data;
 		end if;
@@ -265,6 +274,11 @@ begin
 	port map (
 		tp => tp,
 		miirx_clk   => miirx_clk,
+
+		tharx_frm  => ipv4tharx_frm,
+		tharx_irdy => ipv4tharx_irdy,
+		tharx_data => ipv4rx_data,
+
 		ipv4rx_frm  => ipv4rx_frm,
 		ipv4rx_irdy => ipv4rx_irdy,
 		ipv4rx_data => ipv4rx_data,
