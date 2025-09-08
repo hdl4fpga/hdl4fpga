@@ -120,27 +120,59 @@ begin
 		end block;
 	end block;
 
-	process (miirx_clk, miitx_clk)
-		type arrange is array(natural range <>) of std_logic_vector(icmprx_data'range);
-		variable rx_cntr : unsigned(0 to 4);
-		variable tx_cntr : unsigned(rx_cntr'range);
-		variable mem : arrange(0 to 2**rx_cntr'length-1);
+	mem_b : block
+		signal wr_pkt : std_logic_vector(0 to 4);
+		signal rd_pkt : std_logic_vector(0 to 4);
+		signal wr_xxx : std_logic_vector(0 to 4);
+		signal rd_xxx : std_logic_vector(0 to 4);
 	begin
-		if rising_edge(miirx_clk) then
-			if (icmprx_frm or (icmprx_irdy and icmprx_trdy))='1' then
-				mem(to_integer(rx_cntr)) := icmprx_data;
-				rx_cntr := rx_cntr + 1;
+		process (miirx_clk)
+			variable yyy : std_logic;
+		begin
+			if rising_edge(miirx_clk) then
+				if (icmprx_frm or (icmprx_irdy and icmprx_trdy))='1' then
+					wr_xxx <= std_logic_vector(unsigned(wr_xxx) + 1);
+					yyy := '1';
+				elsif yyy='1' then
+					wr_pkt <= std_logic_vector(unsigned(wr_pkt) + 1);
+					yyy := '0';
+				end if;
 			end if;
-		end if;
-		if rising_edge(miitx_clk) then
-			if (tx_rdy xor tx_req)='1' then
-				icmptx_frm  <= '1';
-				icmptx_irdy <= '1';
-				icmptx_data <= mem(to_integer(tx_cntr));
-				tx_cntr     := tx_cntr + 1;
+		end process;
+
+		meta_i : entity hdl4fpga.dpram
+		port map (
+			wr_clk  => miirx_clk,
+			wr_addr => wr_pkt,
+			wr_data => wr_xxx,
+			rd_clk  => miirx_clk,
+			rd_addr => rd_pkt,
+			rd_data => rd_xxx);
+
+		data_i : entity hdl4fpga.dpram
+		port map (
+			wr_clk  => miirx_clk,
+			wr_addr => wr_xxx,
+			wr_data => icmprx_data,
+			rd_clk  => miitx_clk,
+			rd_addr => rd_xxx,
+			rd_data => icmptx_data);
+
+		process (miitx_clk)
+			variable yyy : std_logic;
+		begin
+			if rising_edge(miitx_clk) then
+				if (icmptx_frm or (icmptx_irdy and icmptx_trdy))='1' then
+					rd_xxx <= std_logic_vector(unsigned(rd_xxx) + 1);
+					yyy := '1';
+				elsif yyy='1' then
+					wr_pkt <= std_logic_vector(unsigned(wr_pkt) + 1);
+					yyy := '0';
+				end if;
 			end if;
-		end if;
-	end process;
+		end process;
+
+	end block;
 
 	rply_b : block
 		signal type_frm   : std_logic;
