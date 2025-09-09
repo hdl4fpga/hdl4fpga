@@ -26,82 +26,37 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity mii_buffer is
+entity mii_buffer is -- skid buffer
+	generic (
+		latency : natural := 1);
 	port (
-		io_clk : in  std_logic;
-		i_frm  : in  std_logic;
-		i_irdy : in  std_logic;
-		i_trdy : out std_logic;
-		i_data : in  std_logic_vector;
-		i_end  : in  std_logic;
-		o_frm  : buffer std_logic;
-		o_irdy : buffer std_logic;
-		o_trdy : in  std_logic;
-		o_data : out std_logic_vector;
-		o_end  : buffer std_logic);
+		clk : in std_logic;
+		src_irdy : in  std_logic;
+		src_trdy : out std_logic;
+		src_data : in  std_logic_vector;
+		dst_irdy : buffer std_logic;
+		dst_trdy : in  std_logic;
+		dst_data : out std_logic_vector);
 end;
 
 architecture def of mii_buffer is
-
-	signal src_trdy : std_logic;
-	signal src_irdy : std_logic;
-	signal src_data : std_logic_vector(0 to i_data'length+1-1);
-	signal dst_data : std_logic_vector(src_data'range);
-
-	signal src_end : std_logic;
 begin
 
-	process (io_clk)
+	process (dst_tdry, clk)
+		variable irdy_shr : unsigned(0 to latency-1);
+		variable data_shr : unsigned(0 to latency*src_data'length-1);
 	begin
-		if rising_edge(io_clk) then
-			if i_frm='1' then
-				if (i_irdy and src_trdy)='1' then
-					src_end <= i_end;
-				end if;
-			else
-				src_end <= '0';
+		if rising_edge(clk) then
+			if (not irdy_shr(0) or dst_trdy)='1' then
+				irdy_shr(0) := src_irdy;
+				irdy_shr := rotate_left(irdy_shr, 1);
+				data_shr(0 to src_data'length-1) := unsigned(src_data);
+				data_shr := rotate_left(data_shr, src_data'length);
 			end if;
+			dst_irdy <= irdy_shr(0);
+			dst_data <= std_logic_vector(dst_data(0 to dst_data'length-1));
 		end if;
-	end process;
-
-	i_trdy <= 
-		src_trdy when i_end='0' else
-		src_trdy when o_end='1' and o_trdy='1' else
-		'0';
-
-		
-	src_irdy <= 
-		   '0' when   i_frm='0' else
-		i_irdy when src_end='0' else
-		'0';
-
-	src_data <= i_end & i_data;
-	buffer_e : entity hdl4fpga.fifo
-	generic map (
-		latency   => 1,
-		max_depth => 2,
-		check_sov => true,
-		check_dov => true)
-	port map(
-		src_clk  => io_clk,
-		src_irdy => src_irdy,
-		-- src_trdy => i_trdy,
-		src_trdy => src_trdy,
-		src_data => src_data,
-		dst_clk  => io_clk,
-		dst_irdy => o_irdy,
-		dst_trdy => o_trdy,
-		dst_data => dst_data);
-
-	o_frm <= o_irdy and i_frm;
-	process (dst_data)
-		variable data : unsigned(dst_data'range);
-	begin
-		data   := unsigned(dst_data);
-		o_end  <= data(0);
-		data   := data sll 1;
-		o_data <= std_logic_vector(data(0 to o_data'length-1));
-		data   := data sll o_data'length;
+		src_trdy <= irdy_shr(0) and dst_trdy;
 	end process;
 
 end;

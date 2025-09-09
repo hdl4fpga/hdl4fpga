@@ -55,9 +55,9 @@ entity icmpd is
 		tpatx_irdy  : buffer std_logic;
 		tpatx_trdy  : in  std_logic := '1';
 
-		icmptx_frm  : buffer std_logic;
-		icmptx_irdy : buffer std_logic;
-		icmptx_trdy : in  std_logic := '1';
+		icmptx_frm  : buffer std_logic := '0';
+		icmptx_irdy : buffer std_logic := '0';
+		icmptx_trdy : in  std_logic := '0';
 		icmptx_data : out std_logic_vector);
 end;
 
@@ -69,19 +69,6 @@ architecture def of icmpd is
 	signal wr_data : std_logic_vector(icmprx_data'range);
 	signal rd_data : std_logic_vector(icmptx_data'range);
 begin
-
-	process (miirx_clk)
-	begin
-		if rising_edge(miirx_clk) then
-			if (tx_req xor tx_rdy)='0' then
-				if icmprx_frm='1' then
-					icmptx_frm <= '1';
-					icmptx_irdy <= '1';
-					tx_req <= not tx_rdy;
-				end if;
-			end if;
-		end if;
-	end process;
 
 	rqst_b : block
 		signal type_frm   : std_logic;
@@ -148,6 +135,18 @@ begin
 				end if;
 			end process;
 		end block;
+
+		process (miirx_clk)
+		begin
+			if rising_edge(miirx_clk) then
+				if (tx_req xor tx_rdy)='0' then
+					if icmprx_frm='1' then
+						tx_req <= not tx_rdy;
+					end if;
+				end if;
+			end if;
+		end process;
+
 	end block;
 
 	mem_b : block
@@ -160,14 +159,14 @@ begin
 		begin
 			if rising_edge(miirx_clk) then
 				wr_addr <= std_logic_vector(cntr);
-				if (tharx_frm or (tharx_irdy and tharx_trdy))='1' then
+				if (tharx_irdy and tharx_trdy)='1' then
 					cntr := cntr + 1;
-				elsif (tparx_frm or (tparx_irdy and tparx_trdy))='1' then
+				elsif (tparx_irdy and tparx_trdy)='1' then
 					cntr := cntr + 1;
-				elsif (icmprx_frm or (icmprx_irdy and icmprx_trdy))='1' then
+				elsif (icmprx_irdy and icmprx_trdy)='1' then
 					cntr := cntr + 1;
 				end if;
-				if (icmprx_frm or (icmprx_irdy and icmprx_trdy))='1' then
+				if (icmprx_irdy and icmprx_trdy)='1' then
 					active := '1';
 				elsif active='1' then
 					active := '0';
@@ -187,7 +186,7 @@ begin
 		icmptx_data <= rd_data;
 		process (miitx_clk)
 			variable active : std_logic;
-			variable cntr   : unsigned(rd_addr'range);
+			variable cntr   : unsigned(rd_addr'range) := (others => '0');
 		begin
 			if rising_edge(miitx_clk) then
 				if (icmptx_frm or (icmptx_irdy and icmptx_trdy))='1' then
@@ -209,7 +208,52 @@ begin
 		signal id_frm     : std_logic;
 		signal seq_frm    : std_logic;
 		signal pyl_frm    : std_logic;
+
+		signal decode_frm  : std_logic;
+		signal decode_irdy : std_logic;
+		signal decode_trdy : std_logic;
+		signal decode_last : std_logic;
+		signal decode_fin  : std_logic;
+		signal decode_data : std_logic_vector(icmptx_data'range);
+
 	begin
+
+		process (miirx_clk)
+			type states is (s_tha, s_tpa, s_icmp);
+			variable state : states;
+		begin
+			if rising_edge(miirx_clk) then
+				if (tx_req xor tx_rdy)='1' then
+
+					case state is
+					when s_tha  => 
+						if thatx_irdy='0' then
+							mem_irdy ='1';
+							thatx_irdy 
+						elsif (thatx_irdy and thatx_trdy)='1' then
+						end if;
+					when s_tpa  =>
+					when s_icmp =>
+					end case;
+				end if;
+			end if;
+		end process;
+
+		decode_irdy <= '1';
+		icmptx_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => hdo(frames)**".format.icmp",
+			size  => icmptx_data'length)
+		port map (
+			clk    => miitx_clk,
+			frm    => decode_frm,
+			irdy   => decode_irdy,
+			act(0) => type_frm,
+			act(1) => code_frm,
+			act(2) => chksum_frm,
+			act(3) => id_frm,
+			act(4) => seq_frm,
+			act(5) => pyl_frm);
 
 		chksumtx_b : block
 		begin
@@ -232,20 +276,39 @@ begin
 			end process;
 		end block;
 
-		icmptx_i : entity hdl4fpga.frame_decode
-		generic map (
-			frame => hdo(frames)**".format.icmp",
-			size  => icmptx_data'length)
-		port map (
-			clk    => miitx_clk,
-			frm    => icmptx_frm,
-			irdy   => icmptx_irdy,
-			act(0) => type_frm,
-			act(1) => code_frm,
-			act(2) => chksum_frm,
-			act(3) => id_frm,
-			act(4) => seq_frm,
-			act(5) => pyl_frm);
+		decode_data <= rd_data;
+		frm_p : process (miitx_clk)
+		begin
+			if rising_edge(miitx_clk) then
+				if decode_frm='0' then
+					icmptx_frm <= '0';
+				else
+					icmptx_frm <= decode_frm and not decode_last;
+				end if;
+			end if;
+		end process;
+
+		irdy_p : process (miitx_clk)
+		begin
+			if rising_edge(miitx_clk) then
+				if (not icmptx_frm and (icmptx_irdy and icmptx_trdy))='1' then
+					icmptx_irdy <= '0';
+				elsif not decode_last='1' then
+					icmptx_irdy <= decode_irdy;
+				end if;
+			end if;
+		end process;
+
+		data_p : process (miitx_clk)
+		begin
+			if rising_edge(miitx_clk) then
+				if (decode_irdy and icmptx_trdy)='1' then
+					icmptx_data <= decode_data;
+				elsif (decode_irdy and not icmptx_irdy)='1'then
+					icmptx_data <= decode_data;
+				end if;
+			end if;
+		end process;
 
 	end block;
 

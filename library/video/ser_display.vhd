@@ -95,18 +95,15 @@ begin
 		video_vton   => video_von);
 	von <= video_hon and video_von;
 
-	assert false
-		report "serializer"
-		severity FAILURE;
-	-- serdes_e : entity hdl4fpga.serdes
-	-- port map (
-	-- 	serdes_clk => phy_clk,
-	-- 	serdes_frm => phy_frm,
-	-- 	ser_irdy   => phy_irdy,
-	-- 	ser_data   => phy_data,
-	--
-	-- 	des_irdy   => des_irdy,
-	-- 	des_data   => des_data);
+	sellzr_i : entity hdl4fpga.serlzr
+	port map (
+		src_clk   => phy_clk,
+		src_frm   => phy_frm,
+		src_irdy  => phy_irdy,
+		src_data  => phy_data,
+		dst_clk   => phy_clk,
+		dst_irdy  => des_irdy,
+		dst_data  => des_data);
 
 	process(phy_clk)
 		variable code  : std_logic_vector(cga_codes'length-1 downto 0);
@@ -146,8 +143,8 @@ begin
 	generic map (
 		display_width  => display_width,
 		display_height => display_height,
-		cga_bitdata     => cga_bitdata,
-		font_bitdata    => psf1cp850x8x16,
+		cga_bitdata    => cga_bitdata,
+		font_bitdata   => psf1cp850x8x16,
 		font_height    => font_height,
 		font_width     => font_width)
 	port map (
