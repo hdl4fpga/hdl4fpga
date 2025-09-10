@@ -94,21 +94,26 @@ begin
 			act(5) => pyl_frm);
 
 		chksum_b : block
-			alias  chksum_irdy is chksum_frm;
-			signal adj_data : std_logic_vector(icmprx_data'range);
+			alias  chksum_irdy is icmprx_irdy;
+			signal rom_frm  : std_logic;
+			alias  rom_irdy is icmprx_irdy;
+
+			signal rom_data : std_logic_vector(icmprx_data'range);
+			signal diff_chksum : unsigned(0 to hdo(frames)**".format.icmp.chksum"-1);
 		begin
 
+			rom_frm <= type_frm or code_frm;
 			rom_i : entity hdl4fpga.sio_rom
 			generic map (
 				bitdata => 
-					std_logic_vector'(hdo(frames)**".data.icmp.rqst.type") &
-					std_logic_vector'(hdo(frames)**".data.icmp.rqst.code"))
+					std_logic_vector'(hdo(frames)**".data.icmp.rply.type") &
+					std_logic_vector'(hdo(frames)**".data.icmp.rply.code"))
 			port map (
 				so_clk  => miirx_clk,
-				so_frm  => chksum_frm,
-				so_irdy => chksum_irdy,
+				so_frm  => rom_frm,
+				so_irdy => rom_irdy,
 				so_trdy => open,
-				so_data => adj_data);
+				so_data => rom_data);
 
 			process (icmprx_frm,miirx_clk)
 				variable cy  : std_logic;
@@ -118,18 +123,23 @@ begin
 			begin
 				if rising_edge(miirx_clk) then
 					op1 := unsigned('0' & reverse(icmprx_data) & '1');
-					op2 := unsigned('0' & adj_data             & cy);
+					op2 := unsigned('0' & diff_chksum          & cy);
 					sum := op1 + op2;
 					if chksum_frm='1' then
 						wr_data <= std_logic_vector(sum(1 to icmprx_data'length));
-					else
-						wr_data <= icmprx_data;
+					elsif (type_frm or code_frm)='1' then
+						wr_data <= rom_data;
 					end if;
-					if chksum_frm='1' then
-						cy := sum(0);
-					elsif icmprx_frm='1' then
-						co <= cy;
+					if icmprx_frm='1' then
+						if (chksum_frm or chksum_irdy)='1' then
+							cy := sum(0);
+							co <= cy;
+							diff_chksum <= rotate_left(diff_chksum, icmprx_data'length);
+						end if;
 					else
+						diff_chksum <=
+							unsigned'(hdo(frames)**".data.icmp.rqst.type") + 
+							unsigned'(hdo(frames)**".data.icmp.rqst.code");
 						cy := '0';
 					end if;
 				end if;
@@ -227,7 +237,7 @@ begin
 					case state is
 					when s_tha  => 
 						if thatx_irdy='0' then
-							mem_irdy ='1';
+							mem_irdy <='1';
 							thatx_irdy 
 						elsif (thatx_irdy and thatx_trdy)='1' then
 						end if;

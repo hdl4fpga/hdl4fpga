@@ -88,6 +88,12 @@ package hdo is
 	function "**" (
 		constant object : hdo;
 		constant path   : string)
+		return unsigned;
+
+	impure --|note 
+	function "**" (
+		constant object : hdo;
+		constant path   : string)
 		return character;
 
 	impure --|note 
@@ -1530,6 +1536,15 @@ package body hdo is
 			end if;
 		end if;
 		return 'X';
+	end;
+
+	impure --|note 
+	function "**" (
+		constant object : hdo;
+		constant path : string)
+		return unsigned is
+	begin
+		return unsigned(std_logic_vector'(resolve(string(object) & path)));
 	end;
 
 	impure --|note 
