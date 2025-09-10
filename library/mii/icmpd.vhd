@@ -224,7 +224,6 @@ begin
 		begin
 			if rising_edge(miirx_clk) then
 				if (tx_req xor tx_rdy)='1' then
-
 					case state is
 					when s_tha  => 
 						if thatx_irdy='0' then
@@ -239,7 +238,10 @@ begin
 			end if;
 		end process;
 
-		decode_irdy <= '1';
+		decode_irdy <=
+			src_trdy when scr_frm or src_irdy else
+			'0';
+
 		icmptx_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => hdo(frames)**".format.icmp",
@@ -275,6 +277,18 @@ begin
 				end if;
 			end process;
 		end block;
+
+		buffer_i : entity hdl4fpga.mii_buffer
+		port map (
+			clk => miitx_clk,
+			src_frm  => buffer_frm,
+			src_irdy => buffer_irdy,
+			src_tdy  => buffer_trdy,
+			src_data => buffer_data,
+			dst_frm  => icmptx_frm,
+			dst_irdy => icmptx_irdy,
+			dst_trdy => icmptx_trdy,
+			dst_data => icmptx_data);
 
 		decode_data <= rd_data;
 		frm_p : process (miitx_clk)
