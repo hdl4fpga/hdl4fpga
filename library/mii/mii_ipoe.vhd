@@ -282,6 +282,11 @@ begin
 		ipv4rx_irdy => ipv4rx_irdy,
 		ipv4rx_data => ipv4rx_data,
 		miitx_clk   => miitx_clk,
+
+		thatx_frm   => '0',
+		thatx_irdy  => '0',
+		thatx_trdy  => open,
+
 		ipv4tx_frm  => ipv4tx_frm,
 		ipv4tx_irdy => ipv4tx_irdy,
 		ipv4tx_trdy => ipv4tx_trdy,

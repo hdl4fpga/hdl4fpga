@@ -47,13 +47,13 @@ entity icmpd is
 
 		miitx_clk   : in  std_logic;
 
-		thatx_frm   : buffer std_logic;
-		thatx_irdy  : buffer std_logic;
-		thatx_trdy  : in  std_logic := '1';
+		thatx_frm   : in  std_logic;
+		thatx_irdy  : in  std_logic;
+		thatx_trdy  : out std_logic := '1';
 
-		tpatx_frm   : buffer std_logic;
-		tpatx_irdy  : buffer std_logic;
-		tpatx_trdy  : in  std_logic := '1';
+		tpatx_frm   : in  std_logic;
+		tpatx_irdy  : in  std_logic;
+		tpatx_trdy  : out std_logic := '1';
 
 		icmptx_frm  : buffer std_logic := '0';
 		icmptx_irdy : buffer std_logic := '0';
@@ -74,13 +74,14 @@ begin
 		signal type_frm   : std_logic;
 		signal code_frm   : std_logic;
 		signal chksum_frm : std_logic;
-		signal id_frm     : std_logic;
-		signal seq_frm    : std_logic;
 		signal pyl_frm    : std_logic;
 	begin
 		icmprx_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => hdo(frames)**".format.icmp",
+			frame => '{'                                                      &
+				"  type:" & string'(hdo(frames)**".format.icmp.type")   & ',' &
+				"  code:" & string'(hdo(frames)**".format.icmp.code")   & ',' &
+				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}',
 			size  => icmprx_data'length)
 		port map (
 			clk    => miirx_clk,
@@ -89,9 +90,7 @@ begin
 			act(0) => type_frm,
 			act(1) => code_frm,
 			act(2) => chksum_frm,
-			act(3) => id_frm,
-			act(4) => seq_frm,
-			act(5) => pyl_frm);
+			act(3) => pyl_frm);
 
 		chksum_b : block
 			alias  chksum_irdy is icmprx_irdy;
@@ -212,51 +211,35 @@ begin
 	end block;
 
 	rply_b : block
-		signal type_frm   : std_logic;
-		signal code_frm   : std_logic;
-		signal chksum_frm : std_logic;
-		signal id_frm     : std_logic;
-		signal seq_frm    : std_logic;
-		signal pyl_frm    : std_logic;
+		signal lead_frm     : std_logic;
+		signal chksum_frm  : std_logic;
+		signal pyl_frm     : std_logic;
 
 		signal decode_frm  : std_logic;
 		signal decode_irdy : std_logic;
 		signal decode_trdy : std_logic;
-		signal decode_last : std_logic;
-		signal decode_fin  : std_logic;
 		signal decode_data : std_logic_vector(icmptx_data'range);
 
 	begin
 
-		process (miirx_clk)
-			type states is (s_tha, s_tpa, s_icmp);
-			variable state : states;
-		begin
-			if rising_edge(miirx_clk) then
-				if (tx_req xor tx_rdy)='1' then
-					case state is
-					when s_tha  => 
-					when s_tpa  =>
-					when s_icmp =>
-					end case;
-				end if;
-			end if;
-		end process;
-
 		icmptx_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => hdo(frames)**".format.icmp",
+			frame => '{'                                                &
+				"lead:" & natural'image(
+					hdo(frames)**".format.arp.tha"  +
+					hdo(frames)**".format.arp.tpa"  +
+					hdo(frames)**".format.icmp.type" +
+					hdo(frames)**".format.icmp.code")                   & ',' &
+				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}',
 			size  => icmptx_data'length)
 		port map (
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
-			act(0) => type_frm,
-			act(1) => code_frm,
-			act(2) => chksum_frm,
-			act(3) => id_frm,
-			act(4) => seq_frm,
-			act(5) => pyl_frm);
+			trdy  => decode_trdy,
+			act(0) => lead_frm,
+			act(1) => chksum_frm,
+			act(2) => pyl_frm);
 
 		chksumtx_b : block
 		begin
@@ -279,51 +262,15 @@ begin
 			end process;
 		end block;
 
-		-- buffer_i : entity hdl4fpga.mii_buffer
-		-- port map (
-		-- 	clk => miitx_clk,
-		-- 	src_frm  => buffer_frm,
-		-- 	src_irdy => buffer_irdy,
-		-- 	src_tdy  => buffer_trdy,
-		-- 	src_data => buffer_data,
-		-- 	dst_frm  => icmptx_frm,
-		-- 	dst_irdy => icmptx_irdy,
-		-- 	dst_trdy => icmptx_trdy,
-		-- 	dst_data => icmptx_data);
-		--
-		decode_data <= rd_data;
-		frm_p : process (miitx_clk)
-		begin
-			if rising_edge(miitx_clk) then
-				if decode_frm='0' then
-					icmptx_frm <= '0';
-				else
-					icmptx_frm <= decode_frm and not decode_last;
-				end if;
-			end if;
-		end process;
-
-		irdy_p : process (miitx_clk)
-		begin
-			if rising_edge(miitx_clk) then
-				if (not icmptx_frm and (icmptx_irdy and icmptx_trdy))='1' then
-					icmptx_irdy <= '0';
-				elsif not decode_last='1' then
-					icmptx_irdy <= decode_irdy;
-				end if;
-			end if;
-		end process;
-
-		data_p : process (miitx_clk)
-		begin
-			if rising_edge(miitx_clk) then
-				if (decode_irdy and icmptx_trdy)='1' then
-					icmptx_data <= decode_data;
-				elsif (decode_irdy and not icmptx_irdy)='1'then
-					icmptx_data <= decode_data;
-				end if;
-			end if;
-		end process;
+		buffer_i : entity hdl4fpga.mii_buffer
+		port map (
+			clk => miitx_clk,
+			src_irdy => decode_irdy,
+			src_trdy => decode_trdy,
+			src_data => decode_data,
+			dst_irdy => icmptx_irdy,
+			dst_trdy => icmptx_trdy,
+			dst_data => icmptx_data);
 
 	end block;
 

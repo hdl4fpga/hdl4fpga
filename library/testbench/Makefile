@@ -235,6 +235,8 @@ HDL4FPGA__mii_ipoe__def = $(LIB_HDL4FPGA)/mii_ipoe/def.dat
 HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
 HDL4FPGA__mii_cmp__def = $(LIB_HDL4FPGA)/mii_cmp/def.dat
 HDL4FPGA__mii_cmp = $(LIB_HDL4FPGA)/mii_cmp/_primary.dat
+HDL4FPGA__mii_buffer__def = $(LIB_HDL4FPGA)/mii_buffer/def.dat
+HDL4FPGA__mii_buffer = $(LIB_HDL4FPGA)/mii_buffer/_primary.dat
 HDL4FPGA__link_mii__graphics = $(LIB_HDL4FPGA)/link_mii/graphics.dat
 HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
 HDL4FPGA__link_hdlc__def = $(LIB_HDL4FPGA)/link_hdlc/def.dat
@@ -615,6 +617,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_ipoe) \
     $(HDL4FPGA__mii_cmp__def) \
     $(HDL4FPGA__mii_cmp) \
+    $(HDL4FPGA__mii_buffer__def) \
+    $(HDL4FPGA__mii_buffer) \
     $(HDL4FPGA__link_mii__graphics) \
     $(HDL4FPGA__link_mii) \
     $(HDL4FPGA__link_hdlc__def) \
@@ -832,7 +836,6 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(HDL4FPGA__sio_dmahdsk) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__sio_rgtr) \
-		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__videopkg) \
 		$(IEEE__math_real) \
@@ -1490,7 +1493,6 @@ $(HDL4FPGA__link_hdlc__def) : ../apps/link_hdlc.vhd \
 
 $(HDL4FPGA__link_mii) \
 $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
-		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__hdo) \
@@ -1500,6 +1502,14 @@ $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../apps/link_mii.vhd
+
+$(HDL4FPGA__mii_buffer) \
+$(HDL4FPGA__mii_buffer__def) : ../mii/mii_buffer.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/mii_buffer.vhd
 
 $(HDL4FPGA__mii_cmp) \
 $(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \
@@ -1600,7 +1610,6 @@ $(HDL4FPGA__scopeio__beh) : ../scope/scopeio.vhd \
 		$(HDL4FPGA__sio_dmahdsk) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__sio_rgtr) \
-		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__sdram_stream) \
 		$(HDL4FPGA__dvi) \
 		$(HDL4FPGA__scopeio_video) \
@@ -2119,7 +2128,7 @@ $(HDL4FPGA__ser_display) \
 $(HDL4FPGA__ser_display__def) : ../video/ser_display.vhd \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__cga_adapter) \
-		$(HDL4FPGA__serdes) \
+		$(HDL4FPGA__serlzr) \
 		$(HDL4FPGA__video_sync) \
 		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__bcdfonts) \
@@ -2210,7 +2219,6 @@ $(HDL4FPGA__sio_hdlc) \
 $(HDL4FPGA__sio_hdlc__def) : ../sio/sio_hdlc.vhd \
 		$(HDL4FPGA__sio_flow) \
 		$(HDL4FPGA__hdlcdll_tx) \
-		$(HDL4FPGA__txn_buffer) \
 		$(HDL4FPGA__hdlcdll_rx) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
@@ -2263,7 +2271,6 @@ $(HDL4FPGA__sio_rom__def) : ../sio/sio_rom.vhd \
 
 $(HDL4FPGA__sio_sin) \
 $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
-		$(HDL4FPGA__serdes) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
@@ -2272,7 +2279,6 @@ $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
 
 $(HDL4FPGA__so_data) \
 $(HDL4FPGA__so_data__def) : ../sio/so_data.vhd \
-		$(HDL4FPGA__desser) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \

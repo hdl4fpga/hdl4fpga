@@ -42,9 +42,9 @@ entity ipv4 is
 		ipv4rx_data : in  std_logic_vector;
 		miitx_clk   : in  std_logic;
 
-		thatx_frm   : buffer std_logic;
-		thatx_irdy  : buffer std_logic;
-		thatx_trdy  : in  std_logic := '1';
+		thatx_frm   : in  std_logic;
+		thatx_irdy  : in  std_logic;
+		thatx_trdy  : out std_logic := '1';
 
 		ipv4tx_frm  : buffer std_logic;
 		ipv4tx_irdy : buffer std_logic;

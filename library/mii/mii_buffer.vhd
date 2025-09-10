@@ -42,7 +42,7 @@ end;
 architecture def of mii_buffer is
 begin
 
-	process (dst_tdry, clk)
+	process (dst_trdy, clk)
 		variable irdy_shr : unsigned(0 to latency-1);
 		variable data_shr : unsigned(0 to latency*src_data'length-1);
 	begin
@@ -54,7 +54,7 @@ begin
 				data_shr := rotate_left(data_shr, src_data'length);
 			end if;
 			dst_irdy <= irdy_shr(0);
-			dst_data <= std_logic_vector(dst_data(0 to dst_data'length-1));
+			dst_data <= std_logic_vector(data_shr(0 to dst_data'length-1));
 		end if;
 		src_trdy <= irdy_shr(0) and dst_trdy;
 	end process;
