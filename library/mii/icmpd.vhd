@@ -98,7 +98,8 @@ begin
 			alias  rom_irdy is icmprx_irdy;
 
 			signal rom_data : std_logic_vector(icmprx_data'range);
-			signal diff_chksum : unsigned(0 to hdo(frames)**".format.icmp.chksum"-1);
+			signal chksum_diff : unsigned(0 to hdo(frames)**".format.icmp.chksum"-1);
+			alias  chksum_miib : unsigned(icmprx_data'range) is chksum_diff(0 to icmprx_data'length-1);
 		begin
 
 			rom_frm <= type_frm or code_frm;
@@ -122,7 +123,7 @@ begin
 			begin
 				if rising_edge(miirx_clk) then
 					op1 := unsigned('0' & reverse(icmprx_data) & '1');
-					op2 := unsigned('0' & diff_chksum          & cy);
+					op2 := unsigned('0' & chksum_miib           & cy);
 					sum := op1 + op2;
 					if chksum_frm='1' then
 						wr_data <= std_logic_vector(sum(1 to icmprx_data'length));
@@ -133,12 +134,12 @@ begin
 						if (chksum_frm or chksum_irdy)='1' then
 							cy := sum(0);
 							co <= cy;
-							diff_chksum <= rotate_left(diff_chksum, icmprx_data'length);
+							chksum_diff <= rotate_left(chksum_diff, icmprx_data'length);
 						end if;
 					else
-						-- diff_chksum <=
-						-- 	unsigned'(hdo(frames)**".data.icmp.rqst.type") + 
-						-- 	unsigned'(hdo(frames)**".data.icmp.rqst.code");
+						chksum_miib <=
+							resize(unsigned'(hdo(frames)**".data.icmp.rqst.type"), chksum_miib'length) + 
+							resize(unsigned'(hdo(frames)**".data.icmp.rqst.code"), chksum_miib'length);
 						cy := '0';
 					end if;
 				end if;
