@@ -105,8 +105,8 @@ begin
 			rom_i : entity hdl4fpga.sio_rom
 			generic map (
 				bitdata => 
-					std_logic_vector'(hdo(frames)**".data.icmp.rply.type") &
-					std_logic_vector'(hdo(frames)**".data.icmp.rply.code"))
+					std_logic_vector'(hdo(frames)**".data.icmp.reply.type") &
+					std_logic_vector'(hdo(frames)**".data.icmp.reply.code"))
 			port map (
 				so_clk  => miirx_clk,
 				so_frm  => rom_frm,
@@ -136,9 +136,9 @@ begin
 							diff_chksum <= rotate_left(diff_chksum, icmprx_data'length);
 						end if;
 					else
-						diff_chksum <=
-							unsigned'(hdo(frames)**".data.icmp.rqst.type") + 
-							unsigned'(hdo(frames)**".data.icmp.rqst.code");
+						-- diff_chksum <=
+						-- 	unsigned'(hdo(frames)**".data.icmp.rqst.type") + 
+						-- 	unsigned'(hdo(frames)**".data.icmp.rqst.code");
 						cy := '0';
 					end if;
 				end if;
@@ -211,7 +211,7 @@ begin
 	end block;
 
 	rply_b : block
-		signal lead_frm     : std_logic;
+		signal lead_frm    : std_logic;
 		signal chksum_frm  : std_logic;
 		signal pyl_frm     : std_logic;
 
@@ -219,6 +219,7 @@ begin
 		signal decode_irdy : std_logic;
 		signal decode_trdy : std_logic;
 		signal decode_data : std_logic_vector(icmptx_data'range);
+		signal buffer_trdy : std_logic;
 
 	begin
 
@@ -265,12 +266,19 @@ begin
 		buffer_i : entity hdl4fpga.mii_buffer
 		port map (
 			clk => miitx_clk,
+			src_frm  => decode_frm,
 			src_irdy => decode_irdy,
 			src_trdy => decode_trdy,
 			src_data => decode_data,
+			dst_frm  => icmptx_frm,
 			dst_irdy => icmptx_irdy,
-			dst_trdy => icmptx_trdy,
+			dst_trdy => buffer_trdy,
 			dst_data => icmptx_data);
+
+		buffer_trdy <= 
+			thatx_irdy when thatx_frm='1' else
+			tpatx_irdy when tpatx_frm='1' else
+			icmptx_trdy;
 
 	end block;
 

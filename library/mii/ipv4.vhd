@@ -173,7 +173,7 @@ begin
 		end process;
 	end block;
 
-	arpd_i : entity hdl4fpga.icmpd
+	icmpd_i : entity hdl4fpga.icmpd
 	port map (
 		miirx_clk   => miirx_clk,
 		tharx_frm   => tha1rx_frm,
