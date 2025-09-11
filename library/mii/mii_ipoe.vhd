@@ -230,7 +230,8 @@ begin
 		ethda_frm   => thatx_frm,
 		ethda_irdy  => thatx_irdy,
 		ethda_trdy  => thatx_trdy,
-		ethda_data  => thatx_data,
+		-- ethda_data  => thatx_data,
+		ethda_data  => ipv4tx_data,
 
 		ethtyp_frm  => ethtyptx_frm,
 		ethtyp_irdy => ethtyptx_irdy,
@@ -288,9 +289,9 @@ begin
 		ipv4rx_data => ipv4rx_data,
 		miitx_clk   => miitx_clk,
 
-		thatx_frm   => '0',
-		thatx_irdy  => '0',
-		thatx_trdy  => open,
+		thatx_frm   => thatx_frm,
+		thatx_irdy  => thatx_irdy,
+		thatx_trdy  => thatx_trdy,
 
 		ipv4tx_frm  => ipv4tx_frm,
 		ipv4tx_irdy => ipv4tx_irdy,
