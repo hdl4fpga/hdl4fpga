@@ -113,7 +113,6 @@ begin
 			signal chksum_diff : unsigned(0 to hdo(frames)**".format.icmp.chksum"-1);
 			alias  chksum_miib : unsigned(icmprx_data'range) is chksum_diff(0 to icmprx_data'length-1);
 		begin
-
 			process (icmprx_frm, miirx_clk)
 				variable cy  : std_logic;
 				variable sum : unsigned(0 to icmprx_data'length+1);
@@ -121,16 +120,8 @@ begin
 				variable op2 : unsigned(sum'range);
 			begin
 				if rising_edge(miirx_clk) then
-					op1 := unsigned('0' & reverse(icmprx_data) & '1');
-					op2 := unsigned('0' & chksum_miib           & cy);
-					sum := op1 + op2;
-					if chksum_frm='1' then
-						wr_data <= std_logic_vector(sum(1 to icmprx_data'length));
-					elsif (type_frm or code_frm)='1' then
-						wr_data <= rom_data;
-					end if;
 					if icmprx_frm='1' then
-						if (chksum_frm or chksum_irdy)='1' then
+						if (chksum_frm and chksum_irdy)='1' then
 							cy := sum(0);
 							co <= cy;
 							chksum_diff <= rotate_left(chksum_diff, icmprx_data'length);
@@ -140,6 +131,17 @@ begin
 							resize(unsigned'(hdo(frames)**".data.icmp.rqst.type"), chksum_diff'length) + 
 							resize(unsigned'(hdo(frames)**".data.icmp.rqst.code"), chksum_diff'length);
 						cy := '0';
+					end if;
+					op1 := unsigned('0' & reverse(icmprx_data) & '1');
+					op2 := unsigned('0' & chksum_miib          & cy);
+					sum := op1 + op2;
+
+					if (chksum_frm and icmprx_irdy)='1' then
+						wr_data <= std_logic_vector(sum(1 to icmprx_data'length));
+					elsif ((type_frm or code_frm) and icmprx_irdy)='1' then
+						wr_data <= rom_data;
+					else 
+						wr_data <= icmprx_data;
 					end if;
 				end if;
 			end process;
@@ -192,7 +194,6 @@ begin
 			rd_addr => rd_addr,
 			rd_data => rd_data);
 
-		icmptx_data <= rd_data;
 		process (miitx_clk)
 			variable active : std_logic;
 			variable cntr   : unsigned(rd_addr'range) := (others => '0');
@@ -223,6 +224,10 @@ begin
 
 	begin
 
+		decode_frm <= (tx_rdy xor tx_req);
+		decode_irdy <= decode_frm;
+		decode_data <= rd_data;
+
 		icmptx_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => '{'                                                &
@@ -237,7 +242,7 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
-			trdy  => decode_trdy,
+			trdy   => decode_trdy,
 			act(0) => lead_frm,
 			act(1) => chksum_frm,
 			act(2) => pyl_frm);
