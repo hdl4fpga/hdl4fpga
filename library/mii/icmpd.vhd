@@ -75,6 +75,9 @@ begin
 		signal code_frm   : std_logic;
 		signal chksum_frm : std_logic;
 		signal pyl_frm    : std_logic;
+		signal rom_frm  : std_logic;
+		alias  rom_irdy is icmprx_irdy;
+		signal rom_data : std_logic_vector(icmprx_data'range);
 	begin
 		icmprx_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -92,30 +95,26 @@ begin
 			act(2) => chksum_frm,
 			act(3) => pyl_frm);
 
+		rom_frm <= type_frm or code_frm;
+		rom_i : entity hdl4fpga.sio_rom
+		generic map (
+			bitdata => 
+				std_logic_vector'(hdo(frames)**".data.icmp.reply.type") &
+				std_logic_vector'(hdo(frames)**".data.icmp.reply.code"))
+		port map (
+			so_clk  => miirx_clk,
+			so_frm  => rom_frm,
+			so_irdy => rom_irdy,
+			so_trdy => open,
+			so_data => rom_data);
+
 		chksum_b : block
 			alias  chksum_irdy is icmprx_irdy;
-			signal rom_frm  : std_logic;
-			alias  rom_irdy is icmprx_irdy;
-
-			signal rom_data : std_logic_vector(icmprx_data'range);
 			signal chksum_diff : unsigned(0 to hdo(frames)**".format.icmp.chksum"-1);
 			alias  chksum_miib : unsigned(icmprx_data'range) is chksum_diff(0 to icmprx_data'length-1);
 		begin
 
-			rom_frm <= type_frm or code_frm;
-			rom_i : entity hdl4fpga.sio_rom
-			generic map (
-				bitdata => 
-					std_logic_vector'(hdo(frames)**".data.icmp.reply.type") &
-					std_logic_vector'(hdo(frames)**".data.icmp.reply.code"))
-			port map (
-				so_clk  => miirx_clk,
-				so_frm  => rom_frm,
-				so_irdy => rom_irdy,
-				so_trdy => open,
-				so_data => rom_data);
-
-			process (icmprx_frm,miirx_clk)
+			process (icmprx_frm, miirx_clk)
 				variable cy  : std_logic;
 				variable sum : unsigned(0 to icmprx_data'length+1);
 				variable op1 : unsigned(sum'range);
@@ -137,9 +136,9 @@ begin
 							chksum_diff <= rotate_left(chksum_diff, icmprx_data'length);
 						end if;
 					else
-						chksum_miib <=
-							resize(unsigned'(hdo(frames)**".data.icmp.rqst.type"), chksum_miib'length) + 
-							resize(unsigned'(hdo(frames)**".data.icmp.rqst.code"), chksum_miib'length);
+						chksum_diff <=
+							resize(unsigned'(hdo(frames)**".data.icmp.rqst.type"), chksum_diff'length) + 
+							resize(unsigned'(hdo(frames)**".data.icmp.rqst.code"), chksum_diff'length);
 						cy := '0';
 					end if;
 				end if;
