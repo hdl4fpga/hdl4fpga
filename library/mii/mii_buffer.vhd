@@ -50,7 +50,7 @@ begin
 		variable data_shr : unsigned(0 to latency*src_data'length-1);
 	begin
 		if rising_edge(clk) then
-			if (not irdy_shr(0) or dst_trdy)='1' then
+			if (not irdy_shr(0) or dst_trdy)/='0' then
 				frm_shr(0) := src_frm;
 				frm_shr := rotate_left(frm_shr, 1);
 				irdy_shr(0) := src_irdy;
@@ -63,11 +63,15 @@ begin
 			dst_data <= std_logic_vector(data_shr(0 to dst_data'length-1));
 		end if;
 		if src_frm='1' then
-			src_trdy <= not irdy_shr(0) or dst_trdy;
-		elsif frm_shr(0)='1' then
-			src_trdy <= '0';
-		else
+			if irdy_shr(0)/='1' then
+				src_trdy <= '1';
+			else
+				src_trdy <= dst_trdy;
+			end if;
+		elsif frm_shr(0)/='1' then
 			src_trdy <= dst_trdy;
+		else
+			src_trdy <= '0';
 		end if;
 	end process;
 

@@ -66,7 +66,9 @@ architecture def of icmpd is
 
 	signal tx_req  : std_logic := '0';
 	signal tx_rdy  : std_logic := '0';
+	signal wr_addr : std_logic_vector(0 to 4) := (others => '0');
 	signal wr_data : std_logic_vector(icmprx_data'range);
+	signal rd_addr : std_logic_vector(0 to 4) := (others => '0');
 	signal rd_data : std_logic_vector(icmptx_data'range);
 begin
 
@@ -148,6 +150,21 @@ begin
 		end block;
 
 		process (miirx_clk)
+			variable cntr   : unsigned(wr_addr'range) := (others => '0');
+		begin
+			if rising_edge(miirx_clk) then
+				if (tharx_irdy and tharx_trdy)='1' then
+					cntr := cntr + 1;
+				elsif (tparx_irdy and tparx_trdy)='1' then
+					cntr := cntr + 1;
+				elsif (icmprx_irdy and icmprx_trdy)='1' then
+					cntr := cntr + 1;
+				end if;
+				wr_addr <= std_logic_vector(cntr);
+			end if;
+		end process;
+
+		process (miirx_clk)
 		begin
 			if rising_edge(miirx_clk) then
 				if (tx_req xor tx_rdy)='0' then
@@ -160,56 +177,14 @@ begin
 
 	end block;
 
-	mem_b : block
-		signal wr_addr : std_logic_vector(0 to 4) := (others => '0');
-		signal rd_addr : std_logic_vector(0 to 4) := (others => '0');
-	begin
-		process (miirx_clk)
-			variable active : std_logic;
-			variable cntr   : unsigned(wr_addr'range) := (others => '0');
-		begin
-			if rising_edge(miirx_clk) then
-				wr_addr <= std_logic_vector(cntr);
-				if (tharx_irdy and tharx_trdy)='1' then
-					cntr := cntr + 1;
-				elsif (tparx_irdy and tparx_trdy)='1' then
-					cntr := cntr + 1;
-				elsif (icmprx_irdy and icmprx_trdy)='1' then
-					cntr := cntr + 1;
-				end if;
-				if (icmprx_irdy and icmprx_trdy)='1' then
-					active := '1';
-				elsif active='1' then
-					active := '0';
-				end if;
-			end if;
-		end process;
-
-		data_i : entity hdl4fpga.dpram
-		port map (
-			wr_clk  => miirx_clk,
-			wr_addr => wr_addr,
-			wr_data => wr_data,
-			rd_clk  => miitx_clk,
-			rd_addr => rd_addr,
-			rd_data => rd_data);
-
-		process (miitx_clk)
-			variable active : std_logic;
-			variable cntr   : unsigned(rd_addr'range) := (others => '0');
-		begin
-			if rising_edge(miitx_clk) then
-				if (icmptx_frm or (icmptx_irdy and icmptx_trdy))='1' then
-					rd_addr <= std_logic_vector(cntr);
-					cntr    := cntr + 1;
-					active  := '1';
-				elsif active='1' then
-					active  := '0';
-				end if;
-			end if;
-		end process;
-
-	end block;
+	data_i : entity hdl4fpga.dpram
+	port map (
+		wr_clk  => miirx_clk,
+		wr_addr => wr_addr,
+		wr_data => wr_data,
+		rd_clk  => miitx_clk,
+		rd_addr => rd_addr,
+		rd_data => rd_data);
 
 	rply_b : block
 		signal lead_frm    : std_logic;
@@ -220,13 +195,30 @@ begin
 		signal decode_irdy : std_logic;
 		signal decode_trdy : std_logic;
 		signal decode_data : std_logic_vector(icmptx_data'range);
+
+		signal buffer_irdy : std_logic;
 		signal buffer_trdy : std_logic;
 
 	begin
 
-		decode_frm <= (tx_rdy xor tx_req);
-		decode_irdy <= decode_frm;
+		decode_frm  <= (tx_rdy xor tx_req);
+		decode_irdy <= 
+			'1'         when   lead_frm='1' else
+			'1'         when chksum_frm='1' else
+			buffer_trdy when    pyl_frm='1' else
+			'0';
 		decode_data <= rd_data;
+
+		process (rd_addr , miitx_clk)
+			variable cntr   : unsigned(rd_addr'range) := (others => '0');
+		begin
+			if rising_edge(miitx_clk) then
+				if ((decode_frm or decode_trdy) and decode_irdy)='1' then
+					cntr    := cntr + 1;
+				end if;
+				rd_addr <= std_logic_vector(cntr);
+			end if;
+		end process;
 
 		icmptx_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -242,7 +234,6 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
-			trdy   => decode_trdy,
 			act(0) => lead_frm,
 			act(1) => chksum_frm,
 			act(2) => pyl_frm);

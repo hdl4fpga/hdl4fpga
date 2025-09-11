@@ -217,10 +217,15 @@ begin
 		mii_trdy    => miitx_trdy,
 		mii_data    => miitx_data,
 
-		pyl_frm     => arptx_frm,
-		pyl_irdy    => arptx_irdy,
-		pyl_trdy    => arptx_trdy,
-		pyl_data    => arptx_data,
+		-- pyl_frm     => arptx_frm,
+		-- pyl_irdy    => arptx_irdy,
+		-- pyl_trdy    => arptx_trdy,
+		-- pyl_data    => arptx_data,
+
+		pyl_frm     => ipv4tx_frm,
+		pyl_irdy    => ipv4tx_irdy,
+		pyl_trdy    => ipv4tx_trdy,
+		pyl_data    => ipv4tx_data,
 
 		ethda_frm   => thatx_frm,
 		ethda_irdy  => thatx_irdy,
