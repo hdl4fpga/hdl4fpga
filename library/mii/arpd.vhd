@@ -63,12 +63,12 @@ architecture def of arpd is
 begin
 
 	rx_b : block
-		signal tpa_frm    : std_logic;
+		signal tpa_frm  : std_logic;
 		alias  tpa_irdy is tpa_frm;
-		signal tpa_trdy   : std_logic := '1';
-		signal tpa_data   : std_logic_vector(arprx_data'range);
-		signal pyl_frm    : std_logic;
-		signal dscrd_act0 : std_logic;
+		signal tpa_trdy : std_logic := '1';
+		signal tpa_data : std_logic_vector(arprx_data'range);
+		signal pyl_frm  : std_logic;
+		signal discard  : std_logic;
 	begin
 
 		decode_i : entity hdl4fpga.frame_decode
@@ -89,7 +89,7 @@ begin
 			clk    => miirx_clk,
 			frm    => arprx_frm,
 			irdy   => arprx_irdy,
-			act(0) => discard_act0,
+			act(0) => discard,
 			act(1) => tpa_frm,
 			act(2) => pyl_frm);
 
@@ -133,10 +133,10 @@ begin
 	end block;
 
 	tx_b : block
-		signal spatx_frm   : std_logic;
-		signal spatx_irdy  : std_logic;
-		signal spatx_trdy  : std_logic;
-		signal spatx_data  : std_logic_vector(arptx_data'range);
+		signal spa_frm   : std_logic;
+		signal spa_irdy  : std_logic;
+		signal spa_trdy  : std_logic;
+		signal spa_data  : std_logic_vector(arptx_data'range);
 	begin
 		ethtyptx_i : entity hdl4fpga.sio_rom
 		generic map (
@@ -158,7 +158,7 @@ begin
 			so_trdy => thatx_trdy,
 			so_data => thatx_data);
 
-		spatx_e : entity hdl4fpga.sio_ram
+		spa_e : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => reverse(ipv4addr,8))
 		port map (
@@ -166,10 +166,10 @@ begin
 			si_data => arprx_data,
 		
 			so_clk  => miitx_clk,
-			so_frm  => spatx_frm,
-			so_irdy => spatx_irdy,
-			so_trdy => spatx_trdy,
-			so_data => spatx_data);
+			so_frm  => spa_frm,
+			so_irdy => spa_irdy,
+			so_trdy => spa_trdy,
+			so_data => spa_data);
 
 		arptx_e : entity hdl4fpga.arp_tx
 		generic map (
@@ -179,10 +179,10 @@ begin
 			tx_req   => tx_req,
 			tx_rdy   => tx_rdy,
 
-			pa_frm   => spatx_frm,
-			pa_irdy  => spatx_irdy,
-			pa_trdy  => spatx_trdy,
-			pa_data  => spatx_data,
+			pa_frm   => spa_frm,
+			pa_irdy  => spa_irdy,
+			pa_trdy  => spa_trdy,
+			pa_data  => spa_data,
 
 			arp_frm  => arptx_frm,
 			arp_irdy => arptx_irdy,
