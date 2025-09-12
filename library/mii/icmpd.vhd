@@ -66,9 +66,9 @@ architecture def of icmpd is
 
 	signal tx_req  : std_logic := '0';
 	signal tx_rdy  : std_logic := '0';
-	signal wr_addr : std_logic_vector(0 to 4) := (others => '0');
+	signal wr_addr : std_logic_vector(0 to 10-1);
 	signal wr_data : std_logic_vector(icmprx_data'range);
-	signal rd_addr : std_logic_vector(0 to 4) := (others => '0');
+	signal rd_addr : std_logic_vector(wr_addr'range);
 	signal rd_data : std_logic_vector(icmptx_data'range);
 begin
 
@@ -203,9 +203,9 @@ begin
 
 		decode_frm  <= (tx_rdy xor tx_req);
 		decode_irdy <= 
-			'1'         when   lead_frm='1' else
-			'1'         when chksum_frm='1' else
-			buffer_trdy when    pyl_frm='1' else
+			decode_trdy when   lead_frm='1' else
+			decode_trdy when chksum_frm='1' else
+			decode_trdy when    pyl_frm='1' else
 			'0';
 		decode_data <= rd_data;
 
@@ -224,8 +224,8 @@ begin
 		generic map (
 			frame => '{'                                                &
 				"lead:" & natural'image(
-					hdo(frames)**".format.arp.tha"  +
-					hdo(frames)**".format.arp.tpa"  +
+					hdo(frames)**".format.arp.tha"   +
+					hdo(frames)**".format.arp.tpa"   +
 					hdo(frames)**".format.icmp.type" +
 					hdo(frames)**".format.icmp.code")                   & ',' &
 				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}',

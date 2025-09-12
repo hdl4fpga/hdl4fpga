@@ -54,19 +54,14 @@ entity ipv4 is
 end;
 
 architecture def of ipv4 is
-	signal ipv4da_frm  : std_logic;
-	signal ipv4da_irdy : std_logic;
-	signal sparx_frm  : std_logic;
-	signal sparx_irdy : std_logic;
-	signal proto_frm   : std_logic;
-	signal proto_irdy  : std_logic;
-	signal proto_trdy  : std_logic;
+
 	signal tha1rx_frm  : std_logic;
 	signal tha1rx_irdy : std_logic;
 	signal tha1rx_trdy : std_logic := '1';
 	signal tparx_frm   : std_logic;
-	signal tparx_irdy  : std_logic;
+	alias  tparx_irdy  is tparx_frm;
 	signal tparx_trdy  : std_logic := '1';
+
 	signal icmprx_frm  : std_logic;
 	signal icmprx_irdy : std_logic;
 	signal icmprx_trdy : std_logic;
@@ -75,102 +70,181 @@ architecture def of ipv4 is
 	signal tpatx_frm   : std_logic;
 	signal tpatx_irdy  : std_logic;
 	signal tpatx_trdy  : std_logic := '1';
+
 begin
 
-	ipv4rx_i : entity hdl4fpga.ipv4_decode
-	port map (
-		mii_clk    => miirx_clk,
-		ipv4_frm   => ipv4rx_frm,
-		ipv4_irdy  => ipv4rx_irdy,
-		ipv4_data  => ipv4rx_data,
-		da_frm     => ipv4da_frm,
-		da_irdy    => ipv4da_irdy,
-		sa_frm     => sparx_frm,
-		sa_irdy    => sparx_irdy,
-		proto_frm  => proto_frm,
-		proto_irdy => proto_irdy);  
-
-	process (miirx_clk)
-		variable icmp_vld : std_logic := '0';
-		variable pa_vld   : std_logic := '0';
+	rx_b : block
+		signal proto_frm  : std_logic;
+		signal proto_irdy : std_logic;
+		signal proto_trdy : std_logic;
+		signal spa_frm    : std_logic;
+		signal ipv4da_frm : std_logic;
+		alias  ipv4da_irdy is ipv4da_frm;
+		signal pyl_frm    : std_logic;
+		signal act0       : std_logic;
+		signal act1       : std_logic;
 	begin
-		if rising_edge(miirx_clk) then
-			tha1rx_frm  <= tharx_frm;
-			tha1rx_irdy <= tharx_irdy;
-			tparx_frm   <= sparx_frm;
-			tparx_irdy  <= sparx_irdy;
-		end if;
-	end process;
-
-	pa_b : block
-		signal so_data  : std_logic_vector(ipv4rx_data'range);
-		signal icmp_equ : std_logic;
-		signal udp_equ  : std_logic;
-		signal pa_equ   : std_logic;
-	begin
-		mem_i : entity hdl4fpga.sio_ram
+		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
-			bitdata => reverse(ipv4addr,8))
+			frame => '{'                                                         &
+				"           lead:" & natural'image(
+					hdo(frames)**".format.ipv4.verihl"  +
+					hdo(frames)**".format.ipv4.tos"     +  
+					hdo(frames)**".format.ipv4.length"  +
+					hdo(frames)**".format.ipv4.ident"   +
+					hdo(frames)**".format.ipv4.flgsfrg" +
+					hdo(frames)**".format.ipv4.ttl")                             & ',' &
+				"          proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
+				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
+				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
+				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}',
+			size  => ipv4tx_data'length)
 		port map (
-			si_data => ipv4rx_data,
-			so_clk  => miirx_clk,
-			so_frm  => ipv4da_frm,
-			so_irdy => ipv4da_irdy,
-			so_trdy => open,
-			so_data => so_data);
-
-		cmp_i : entity hdl4fpga.sio_cmp
-		port map (
-			clk     => miirx_clk,
-			mr_frm  => ipv4da_frm,
-			mr_irdy => ipv4da_irdy,
-			mr_trdy => open,
-			mr_data => so_data,
-			sl_data => ipv4rx_data,
-			equ     => pa_equ);
-
-		icmpproto_i : entity hdl4fpga.mii_cmp
-		generic map (
-			bitdata => reverse(hdo(frames)**".data.ipv4.proto.icmp",8))
-		port map (
-			mii_clk => miirx_clk,
-			frm     => proto_frm,
-			irdy    => proto_irdy,
-			trdy    => open,
-			data    => ipv4rx_data,
-			equ     => icmp_equ);
-
-		udproto_i : entity hdl4fpga.mii_cmp
-		generic map (
-			bitdata => reverse(hdo(frames)**".data.ipv4.proto.udp",8))
-		port map (
-			mii_clk => miirx_clk,
-			frm     => proto_frm,
-			irdy    => proto_irdy,
-			trdy    => open,
-			data    => ipv4rx_data,
-			equ     => udp_equ);
+			clk    => miirx_clk,
+			frm    => ipv4tx_frm,
+			irdy   => ipv4tx_irdy,
+			act(0) => act0,
+			act(1) => proto_frm,
+			act(2) => act1,
+			act(3) => spa_frm,
+			act(4) => ipv4da_frm,
+			act(5) => pyl_frm);
 
 		process (miirx_clk)
 			variable icmp_vld : std_logic := '0';
 			variable pa_vld   : std_logic := '0';
 		begin
 			if rising_edge(miirx_clk) then
-				if (ipv4rx_frm or ipv4rx_irdy)='0' then
-					 icmp_vld := '0';
-					 pa_vld   := '0';
-				else
-					if (not icmp_vld and icmp_equ)='1' then
-						icmp_vld := '1';
-					end if;
-					if (not pa_vld and pa_equ)='1' then
-						pa_vld := '1';
-					end if;
-				end if;
-				icmprx_frm  <= ipv4rx_frm and pa_vld and icmp_vld;
-				icmprx_data <= ipv4rx_data;
+				tha1rx_frm  <= tharx_frm;
+				tha1rx_irdy <= tharx_irdy;
+				tparx_frm   <= spa_frm;
 			end if;
 		end process;
+
+		pa_b : block
+			signal so_data  : std_logic_vector(ipv4rx_data'range);
+			signal icmp_equ : std_logic;
+			signal udp_equ  : std_logic;
+			signal pa_equ   : std_logic;
+		begin
+			mem_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => reverse(ipv4addr,8))
+			port map (
+				si_data => ipv4rx_data,
+				so_clk  => miirx_clk,
+				so_frm  => ipv4da_frm,
+				so_irdy => ipv4da_irdy,
+				so_trdy => open,
+				so_data => so_data);
+
+			cmp_i : entity hdl4fpga.sio_cmp
+			port map (
+				clk     => miirx_clk,
+				mr_frm  => ipv4da_frm,
+				mr_irdy => ipv4da_irdy,
+				mr_trdy => open,
+				mr_data => so_data,
+				sl_data => ipv4rx_data,
+				equ     => pa_equ);
+
+			icmpproto_i : entity hdl4fpga.mii_cmp
+			generic map (
+				bitdata => reverse(hdo(frames)**".data.ipv4.proto.icmp",8))
+			port map (
+				mii_clk => miirx_clk,
+				frm     => proto_frm,
+				irdy    => proto_irdy,
+				trdy    => open,
+				data    => ipv4rx_data,
+				equ     => icmp_equ);
+
+			udproto_i : entity hdl4fpga.mii_cmp
+			generic map (
+				bitdata => reverse(hdo(frames)**".data.ipv4.proto.udp",8))
+			port map (
+				mii_clk => miirx_clk,
+				frm     => proto_frm,
+				irdy    => proto_irdy,
+				trdy    => open,
+				data    => ipv4rx_data,
+				equ     => udp_equ);
+
+			process (miirx_clk)
+				variable icmp_vld : std_logic := '0';
+				variable pa_vld   : std_logic := '0';
+			begin
+				if rising_edge(miirx_clk) then
+					if (ipv4rx_frm or ipv4rx_irdy)='0' then
+						 icmp_vld := '0';
+						 pa_vld   := '0';
+					else
+						if (not icmp_vld and icmp_equ)='1' then
+							icmp_vld := '1';
+						end if;
+						if (not pa_vld and pa_equ)='1' then
+							pa_vld := '1';
+						end if;
+					end if;
+					icmprx_frm  <= ipv4rx_frm and pa_vld and icmp_vld;
+					icmprx_data <= ipv4rx_data;
+				end if;
+			end process;
+		end block;
+	end block;
+
+	tx_b : block
+		signal verihltos_frm : std_logic;
+		signal length_frm : std_logic;
+		signal identflgsfrgttl_frm : std_logic;
+		signal proto_frm  : std_logic;
+		signal chksum_frm : std_logic;
+		signal sa_frm     : std_logic;
+		alias  sa_irdy is sa_frm; 
+		signal sa_data    : std_logic_vector(ipv4rx_data'range);
+		signal da_frm     : std_logic;
+		signal pyl_frm    : std_logic;
+	begin
+		ipv4_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => '{'                                                         &
+				"      verihltos:" & natural'image(
+					hdo(frames)**".format.ipv4.verihl"  +
+					hdo(frames)**".format.ipv4.tos")                             & ',' & 
+				"         length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				"identflgsfrgttl:" & natural'image(
+					hdo(frames)**".format.ipv4.ident"   +
+					hdo(frames)**".format.ipv4.flgsfrg" +
+					hdo(frames)**".format.ipv4.ttl")                             & ',' &
+				"          proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
+				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
+				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
+				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}',
+			size  => ipv4tx_data'length)
+		port map (
+			clk    => miitx_clk,
+			frm    => ipv4tx_frm,
+			irdy   => ipv4tx_irdy,
+			act(0) => verihltos_frm,
+			act(1) => length_frm,
+			act(2) => identflgsfrgttl_frm,
+			act(3) => proto_frm,
+			act(4) => chksum_frm,
+			act(5) => sa_frm,
+			act(6) => da_frm,
+			act(7) => pyl_frm);
+
+		spa_i : entity hdl4fpga.sio_ram
+		generic map (
+			bitdata => reverse(ipv4addr,8))
+		port map (
+			si_data => ipv4rx_data,
+			so_clk  => miitx_clk,
+			so_frm  => sa_frm,
+			so_irdy => sa_irdy,
+			so_trdy => open,
+			so_data => sa_data);
+
 	end block;
 
 	icmpd_i : entity hdl4fpga.icmpd
