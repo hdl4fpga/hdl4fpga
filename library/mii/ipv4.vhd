@@ -48,7 +48,7 @@ entity ipv4 is
 
 		ipv4tx_frm  : buffer std_logic;
 		ipv4tx_irdy : buffer std_logic;
-		ipv4tx_trdy : in  std_logic := '1';
+		ipv4tx_trdy : in  std_logic;
 		ipv4tx_data : out std_logic_vector;
 		tp          : out std_logic_vector(1 to 32));
 end;
@@ -75,8 +75,7 @@ begin
 
 	rx_b : block
 		signal proto_frm  : std_logic;
-		signal proto_irdy : std_logic;
-		signal proto_trdy : std_logic;
+		alias  proto_irdy is proto_frm;
 		signal spa_frm    : std_logic;
 		signal ipv4da_frm : std_logic;
 		alias  ipv4da_irdy is ipv4da_frm;
@@ -101,8 +100,8 @@ begin
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miirx_clk,
-			frm    => ipv4tx_frm,
-			irdy   => ipv4tx_irdy,
+			frm    => ipv4rx_frm,
+			irdy   => ipv4rx_irdy,
 			act(0) => act0,
 			act(1) => proto_frm,
 			act(2) => act1,
@@ -245,6 +244,8 @@ begin
 			so_trdy => open,
 			so_data => sa_data);
 
+		tpatx_frm  <= sa_frm;
+		tpatx_irdy <= sa_irdy;
 	end block;
 
 	icmpd_i : entity hdl4fpga.icmpd
