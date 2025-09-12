@@ -323,8 +323,8 @@ HDL4FPGA__dmactlr__def = $(LIB_HDL4FPGA)/dmactlr/def.dat
 HDL4FPGA__dmactlr = $(LIB_HDL4FPGA)/dmactlr/_primary.dat
 HDL4FPGA__dmacntr__def = $(LIB_HDL4FPGA)/dmacntr/def.dat
 HDL4FPGA__dmacntr = $(LIB_HDL4FPGA)/dmacntr/_primary.dat
-HDL4FPGA__dll_decode__def = $(LIB_HDL4FPGA)/dll_decode/def.dat
-HDL4FPGA__dll_decode = $(LIB_HDL4FPGA)/dll_decode/_primary.dat
+HDL4FPGA__dll_rx__def = $(LIB_HDL4FPGA)/dll_rx/def.dat
+HDL4FPGA__dll_rx = $(LIB_HDL4FPGA)/dll_rx/_primary.dat
 HDL4FPGA__dfs2dfs__behavioral = $(LIB_HDL4FPGA)/dfs2dfs/behavioral.dat
 HDL4FPGA__dfs2dfs = $(LIB_HDL4FPGA)/dfs2dfs/_primary.dat
 HDL4FPGA__devmux__def = $(LIB_HDL4FPGA)/devmux/def.dat
@@ -699,8 +699,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dmactlr) \
     $(HDL4FPGA__dmacntr__def) \
     $(HDL4FPGA__dmacntr) \
-    $(HDL4FPGA__dll_decode__def) \
-    $(HDL4FPGA__dll_decode) \
+    $(HDL4FPGA__dll_rx__def) \
+    $(HDL4FPGA__dll_rx) \
     $(HDL4FPGA__dfs2dfs__behavioral) \
     $(HDL4FPGA__dfs2dfs) \
     $(HDL4FPGA__devmux__def) \
@@ -1043,8 +1043,8 @@ $(HDL4FPGA__dfs2dfs__behavioral) : ../xilinx/dfs2dfs.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfs2dfs.vhd
 
-$(HDL4FPGA__dll_decode) \
-$(HDL4FPGA__dll_decode__def) : ../mii/dll_decode.vhd \
+$(HDL4FPGA__dll_rx) \
+$(HDL4FPGA__dll_rx__def) : ../mii/dll_rx.vhd \
 		$(HDL4FPGA__crc) \
 		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__base) \
@@ -1053,7 +1053,7 @@ $(HDL4FPGA__dll_decode__def) : ../mii/dll_decode.vhd \
 		$(IEEE__numeric_std) \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
-	$(VCOM) -93 -work hdl4fpga ../mii/dll_decode.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii/dll_rx.vhd
 
 $(HDL4FPGA__dmacntr) \
 $(HDL4FPGA__dmacntr__def) : ../sdram/dmacntr.vhd \
@@ -1274,7 +1274,7 @@ $(HDL4FPGA__eth_rx) \
 $(HDL4FPGA__eth_rx__def) : ../mii/eth_rx.vhd \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__hdo) \
-		$(HDL4FPGA__dll_decode) \
+		$(HDL4FPGA__dll_rx) \
 		$(HDL4FPGA__mii_prmb) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \

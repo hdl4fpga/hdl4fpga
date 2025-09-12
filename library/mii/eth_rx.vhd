@@ -65,7 +65,7 @@ begin
 		mii_data => mii_data,
 		dll_frm  => dll_frm);
 
-	dllrx_i : entity hdl4fpga.dll_decode
+	dllrx_i : entity hdl4fpga.dll_rx
 	port map (
 		mii_clk  => mii_clk,
 		dll_frm  => dll_frm,

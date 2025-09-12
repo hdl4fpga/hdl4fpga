@@ -29,7 +29,7 @@ library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.ipoepkg.all;
 
-entity dll_decode is
+entity dll_rx is
 	port (
 		mii_clk  : in  std_logic;
 		dll_frm  : in  std_logic;
@@ -56,7 +56,7 @@ entity dll_decode is
 
 end;
 
-architecture def of dll_decode is
+architecture def of dll_rx is
 	signal irdy : std_logic;
 begin
 
