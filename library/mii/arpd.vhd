@@ -73,7 +73,7 @@ begin
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => '{' &
+			frame => compact('{' &
 				"discard:" & natural'image(
 					hdo(frames)**".format.arp.htype" +
 					hdo(frames)**".format.arp.ptype" +
@@ -83,7 +83,7 @@ begin
 					hdo(frames)**".format.arp.sha"   +
 					hdo(frames)**".format.arp.spa"   +
 					hdo(frames)**".format.arp.tha")  & ',' &
-				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}',
+				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}'),
 			size  => arprx_data'length)
 		port map (
 			clk    => miirx_clk,
