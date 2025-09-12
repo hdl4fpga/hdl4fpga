@@ -47,7 +47,7 @@ package ipoepkg is
     		"ipv4:{"                &
     			"  verihl:8,"       &
     			"     tos:8,"       &
-    			"  legnth:16,"      &
+    			"  length:16,"      &
     			"   ident:16,"      &
     			" flgsfrg:16,"      &
     			"     ttl:8,"       &

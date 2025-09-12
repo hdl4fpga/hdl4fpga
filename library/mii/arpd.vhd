@@ -83,7 +83,7 @@ begin
 					hdo(frames)**".format.arp.oper"  +
 					hdo(frames)**".format.arp.sha"   +
 					hdo(frames)**".format.arp.spa"   +
-					hdo(frames)**".format.arp.tha")  &
+					hdo(frames)**".format.arp.tha")  & ',' &
 				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}',
 			size  => arprx_data'length)
 		port map (

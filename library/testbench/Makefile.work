@@ -98,8 +98,8 @@ WORK__testbench__serlzr = $(LIB_WORK)/testbench/serlzr.dat
 WORK__testbench__usbfrwk = $(LIB_WORK)/testbench/usbfrwk.dat
 WORK__testbench__usbhostfrwk = $(LIB_WORK)/testbench/usbhostfrwk.dat
 WORK__testbench__sdram_init_tb = $(LIB_WORK)/testbench/sdram_init_tb.dat
-WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench__orangecrab_graphics = $(LIB_WORK)/testbench/orangecrab_graphics.dat
+WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__sdram_init__def = $(LIB_WORK)/sdram_init/def.dat
 WORK__sdram_init = $(LIB_WORK)/sdram_init/_primary.dat
@@ -155,8 +155,8 @@ whole_library :     $(WORK__usb_tb__def) \
     $(WORK__testbench__usbfrwk) \
     $(WORK__testbench__usbhostfrwk) \
     $(WORK__testbench__sdram_init_tb) \
-    $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench__orangecrab_graphics) \
+    $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench) \
     $(WORK__sdram_init__def) \
     $(WORK__sdram_init) \
@@ -268,7 +268,7 @@ $(WORK__nuhs3adsp__ser_debug) : ../../boards/nuhs3adsp/apps/ser_debug.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 ../../boards/nuhs3adsp/apps/ser_debug.vhd
+	$(VCOM) -93  ../../boards/nuhs3adsp/apps/ser_debug.vhd
 
 $(WORK__orangecrab) : ../../boards/orangecrab/common/orangecrab.vhd \
 		$(IEEE__std_logic_arith) \
@@ -318,6 +318,17 @@ $(WORK__testbench) : testbench.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
 
+$(WORK__testbench__nuhs3adsp_serdebug) : ../../boards/nuhs3adsp/testbenches/ser_debug.vhd \
+		$(HDL4FPGA__rom) \
+		$(WORK__testbench) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(IEEE__std_logic_1164) \
+		$(STD__textio) \
+		$(HDL4FPGA__hdo)
+	$(VCOM) -93  ../../boards/nuhs3adsp/testbenches/ser_debug.vhd
+
 $(WORK__orangecrab_graphics_md) \
 $(WORK__orangecrab_graphics_structure_md) \
 $(WORK__testbench__orangecrab_graphics) : /home/msagre/work/hdl4fpga/boards/orangecrab/testbenches/graphics.vhd \
@@ -335,17 +346,6 @@ $(WORK__testbench__orangecrab_graphics) : /home/msagre/work/hdl4fpga/boards/oran
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
 	$(VCOM) -93 /home/msagre/work/hdl4fpga/boards/orangecrab/testbenches/graphics.vhd
-
-$(WORK__testbench__nuhs3adsp_serdebug) : ../../boards/nuhs3adsp/testbenches/ser_debug.vhd \
-		$(HDL4FPGA__rom) \
-		$(WORK__testbench) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(STD__textio) \
-		$(HDL4FPGA__hdo)
-	$(VCOM) -93 ../../boards/nuhs3adsp/testbenches/ser_debug.vhd
 
 $(WORK__testbench__sdram_init_tb) : sdram_init_tb.vhd \
 		$(HDL4FPGA__sdrampkg) \
