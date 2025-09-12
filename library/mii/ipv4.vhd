@@ -86,7 +86,7 @@ begin
 	begin
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => '{'                                                         &
+			frame => compact('{'                                                         &
 				"           lead:" & natural'image(
 					hdo(frames)**".format.ipv4.verihl"  +
 					hdo(frames)**".format.ipv4.tos"     +  
@@ -97,7 +97,7 @@ begin
 				"          proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
 				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
 				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
-				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}',
+				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}'),
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miirx_clk,
@@ -207,7 +207,7 @@ begin
 	begin
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => '{'                                                         &
+			frame => compact('{'                                                         &
 				"      verihltos:" & natural'image(
 					hdo(frames)**".format.ipv4.verihl"  +
 					hdo(frames)**".format.ipv4.tos")                             & ',' & 
@@ -219,7 +219,7 @@ begin
 				"          proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
 				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
 				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
-				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}',
+				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}'),
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miitx_clk,

@@ -63,13 +63,12 @@ architecture def of arpd is
 begin
 
 	rx_b : block
-		signal tpa_frm  : std_logic;
+		signal tpa_frm    : std_logic;
 		alias  tpa_irdy is tpa_frm;
-		signal tpa_trdy : std_logic := '1';
-		signal tpa_data : std_logic_vector(arprx_data'range);
-
-		signal act0    : std_logic;
-		signal pyl_frm : std_logic;
+		signal tpa_trdy   : std_logic := '1';
+		signal tpa_data   : std_logic_vector(arprx_data'range);
+		signal pyl_frm    : std_logic;
+		signal dscrd_act0 : std_logic;
 	begin
 
 		decode_i : entity hdl4fpga.frame_decode
@@ -90,7 +89,7 @@ begin
 			clk    => miirx_clk,
 			frm    => arprx_frm,
 			irdy   => arprx_irdy,
-			act(0) => act0,
+			act(0) => discard_act0,
 			act(1) => tpa_frm,
 			act(2) => pyl_frm);
 
