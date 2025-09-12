@@ -50,7 +50,7 @@ entity arpd is
 
 		miitx_clk     : in  std_logic;
 		arptx_frm     : buffer std_logic := '0';
-		arptx_irdy    : out std_logic := '0';
+		arptx_irdy    : buffer std_logic := '0';
 		arptx_trdy    : in  std_logic := '1';
 		arptx_data    : out std_logic_vector;
 
@@ -133,10 +133,30 @@ begin
 	end block;
 
 	tx_b : block
-		signal spa_frm   : std_logic;
-		signal spa_irdy  : std_logic;
-		signal spa_trdy  : std_logic;
-		signal spa_data  : std_logic_vector(arptx_data'range);
+		signal rom_frm : std_logic;
+		alias rom_irdy is rom_frm;
+		signal rom_trdy    : std_logic;
+		signal rom_data    : std_logic_vector(arptx_data'range);
+
+		signal spa_frm : std_logic;
+		signal tpa_frm : std_logic;
+		signal tha_frm : std_logic;
+		alias tha_irdy is tha_frm;
+		constant tha_data : std_logic_vector := (arptx_data'range => '1');
+
+		signal pyl_frm : std_logic;
+
+		signal decode_frm  : std_logic;
+		signal decode_irdy : std_logic;
+		signal decode_trdy : std_logic;
+		signal decode_last : std_logic;
+		signal decode_data : std_logic_vector(arptx_data'range);
+
+		signal pa_frm   : std_logic;
+		signal pa_irdy  : std_logic;
+		signal pa_trdy  : std_logic;
+		signal pa_data  : std_logic_vector(arptx_data'range);
+
 	begin
 		ethtyptx_i : entity hdl4fpga.sio_rom
 		generic map (
@@ -166,28 +186,104 @@ begin
 			si_data => arprx_data,
 		
 			so_clk  => miitx_clk,
-			so_frm  => spa_frm,
-			so_irdy => spa_irdy,
-			so_trdy => spa_trdy,
-			so_data => spa_data);
+			so_frm  => pa_frm,
+			so_irdy => pa_irdy,
+			so_trdy => pa_trdy,
+			so_data => pa_data);
 
-		arptx_e : entity hdl4fpga.arp_tx
+		process (miitx_clk)
+		begin
+			if rising_edge(miitx_clk) then
+				if (tx_rdy xor tx_req)='1' then
+					if (decode_last and not arptx_frm and arptx_irdy and arptx_trdy)='1' then
+						tx_rdy <= tx_req;
+						decode_frm <= '0';
+					else
+						decode_frm <= '1';
+					end if;
+				else
+					decode_frm <= '0';
+				end if;
+			end if;
+		end process;
+
+		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			sha      => hwaddr)
+			frame => '{'                                             &
+				"    rom:" & natural'image(
+					hdo(frames)**".format.arp.htype" +
+					hdo(frames)**".format.arp.ptype" +
+					hdo(frames)**".format.arp.hlen"  +
+					hdo(frames)**".format.arp.plen"  +
+					hdo(frames)**".format.arp.oper"  +
+					hdo(frames)**".format.arp.sha")                  & ',' &
+				"    spa:" & string'(hdo(frames)**".format.arp.spa") & ',' &
+				"    tha:" & string'(hdo(frames)**".format.arp.tha") & ',' &
+				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}',
+			size  => arptx_data'length)
 		port map (
-			mii_clk  => miitx_clk,
-			tx_req   => tx_req,
-			tx_rdy   => tx_rdy,
+			clk    => miitx_clk,
+			frm    => decode_frm,
+			irdy   => decode_irdy,
+			last   => decode_last,
+			act(0) => rom_frm,
+			act(1) => spa_frm,
+			act(2) => tha_frm,
+			act(3) => tpa_frm,
+			act(4) => pyl_frm);
+		pa_frm  <= spa_frm or tpa_frm;
+		pa_irdy <= spa_frm or tpa_frm;
 
-			pa_frm   => spa_frm,
-			pa_irdy  => spa_irdy,
-			pa_trdy  => spa_trdy,
-			pa_data  => spa_data,
+		decode_irdy <= 
+			tha_irdy and decode_trdy when tha_frm='1' else
+			pa_irdy  and decode_trdy when  pa_frm='1' else
+			rom_irdy and decode_trdy when rom_frm='1' else
+			tha_irdy and decode_trdy when tha_frm='1' else
+			'0';
 
-			arp_frm  => arptx_frm,
-			arp_irdy => arptx_irdy,
-			arp_trdy => arptx_trdy,
-			arp_data => arptx_data);
+		rom_irdy <= 
+			decode_trdy when rom_frm='1' else
+			'0';
+
+		rom_i : entity hdl4fpga.sio_rom
+		generic map (
+			bitdata => reverse(
+				std_logic_vector'(hdo(frames)**".data.arp.htype")      &
+				std_logic_vector'(hdo(frames)**".data.arp.ptype")      &
+				std_logic_vector'(hdo(frames)**".data.arp.hlen")       &
+				std_logic_vector'(hdo(frames)**".data.arp.plen")       &
+				std_logic_vector'(hdo(frames)**".data.arp.oper.reply") &
+				hwaddr,8))
+		port map (
+			so_clk  => miitx_clk,
+			so_frm  => rom_frm,
+			so_irdy => rom_irdy,
+			so_trdy => rom_trdy,
+			so_data => rom_data);
+
+		decode_data <= 
+			rom_data when rom_frm='1' else
+			pa_data  when  pa_frm='1' else
+			tha_data when tha_frm='1' else
+			(others => '-');
+
+		buffer_b : block
+			signal buffer_frm : std_logic;
+		begin
+			buffer_frm  <= decode_frm and not decode_last;
+			buffer_i : entity hdl4fpga.mii_buffer
+			port map (
+				clk => miitx_clk,
+				src_frm  => buffer_frm,
+				src_irdy => decode_irdy,
+				src_trdy => decode_trdy,
+				src_data => decode_data,
+				dst_frm  => arptx_frm,
+				dst_irdy => arptx_irdy,
+				dst_trdy => arptx_trdy,
+				dst_data => arptx_data);
+		end block;
+
 	end block;
 
 end;
