@@ -372,8 +372,6 @@ HDL4FPGA__arpd__def = $(LIB_HDL4FPGA)/arpd/def.dat
 HDL4FPGA__arpd = $(LIB_HDL4FPGA)/arpd/_primary.dat
 HDL4FPGA__arp_tx__def = $(LIB_HDL4FPGA)/arp_tx/def.dat
 HDL4FPGA__arp_tx = $(LIB_HDL4FPGA)/arp_tx/_primary.dat
-HDL4FPGA__arp_decode__def = $(LIB_HDL4FPGA)/arp_decode/def.dat
-HDL4FPGA__arp_decode = $(LIB_HDL4FPGA)/arp_decode/_primary.dat
 HDL4FPGA__arbiter__mix = $(LIB_HDL4FPGA)/arbiter/mix.dat
 HDL4FPGA__arbiter = $(LIB_HDL4FPGA)/arbiter/_primary.dat
 HDL4FPGA__app_graphics__mix = $(LIB_HDL4FPGA)/app_graphics/mix.dat
@@ -750,8 +748,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__arpd) \
     $(HDL4FPGA__arp_tx__def) \
     $(HDL4FPGA__arp_tx) \
-    $(HDL4FPGA__arp_decode__def) \
-    $(HDL4FPGA__arp_decode) \
     $(HDL4FPGA__arbiter__mix) \
     $(HDL4FPGA__arbiter) \
     $(HDL4FPGA__app_graphics__mix) \
@@ -847,28 +843,18 @@ $(HDL4FPGA__arbiter__mix) : ../basic/arbiter.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../basic/arbiter.vhd
 
-$(HDL4FPGA__arp_decode) \
-$(HDL4FPGA__arp_decode__def) : ../mii/arp_decode.vhd \
-		$(HDL4FPGA__frame_decode) \
-		$(HDL4FPGA__base) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__hdo) \
-		$(IEEE__numeric_std) \
-		$(IEEE__std_logic_1164) \
-		$(STD__textio)
-	$(VCOM) -93 -work hdl4fpga ../mii/arp_decode.vhd
-
 $(HDL4FPGA__arp_tx) \
-$(HDL4FPGA__arp_tx__def) : ../mii//arp_tx.vhd \
+$(HDL4FPGA__arp_tx__def) : ../mii/arp_tx.vhd \
+		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__sio_rom) \
-		$(HDL4FPGA__arp_decode) \
+		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
 		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii//arp_tx.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii/arp_tx.vhd
 
 $(HDL4FPGA__arpd) \
 $(HDL4FPGA__arpd__def) : ../mii/arpd.vhd \
@@ -876,7 +862,7 @@ $(HDL4FPGA__arpd__def) : ../mii/arpd.vhd \
 		$(HDL4FPGA__sio_rom) \
 		$(HDL4FPGA__sio_cmp) \
 		$(HDL4FPGA__sio_ram) \
-		$(HDL4FPGA__arp_decode) \
+		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \

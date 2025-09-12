@@ -58,119 +58,137 @@ entity arpd is
 end;
 
 architecture def of arpd is
-
-	signal tparx_frm  : std_logic;
-	signal tparx_irdy : std_logic;
-	signal tparx_trdy : std_logic := '1';
-	signal tparx_data : std_logic_vector(arprx_data'range);
-
-	signal spatx_frm   : std_logic;
-	signal spatx_irdy  : std_logic;
-	signal spatx_trdy  : std_logic;
-	signal spatx_data  : std_logic_vector(arptx_data'range);
-
 	signal tx_req      : std_logic := '0';
 	signal tx_rdy      : std_logic := '0';
 begin
 
-	arprx_i : entity hdl4fpga.arp_decode
-	port map (
-		mii_clk  => miirx_clk,
-		arp_frm  => arprx_frm,
-		arp_irdy => arprx_irdy,
-		arp_data => arprx_data,
-		tpa_frm  => tparx_frm,
-		tpa_irdy => tparx_irdy,
-		tpa_trdy => tparx_trdy);
+	rx_b : block
+		signal tpa_frm  : std_logic;
+		alias  tpa_irdy is tpa_frm;
+		signal tpa_trdy : std_logic := '1';
+		signal tpa_data : std_logic_vector(arprx_data'range);
 
-	tpacmp_b : block
-		signal tpa_equ : std_logic;
+		signal act0    : std_logic;
+		signal pyl_frm : std_logic;
 	begin
-		ipsa_i : entity hdl4fpga.sio_ram
+
+		decode_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => '{' &
+				"discard:" & natural'image(
+					hdo(frames)**".format.arp.htype" +
+					hdo(frames)**".format.arp.ptype" +
+					hdo(frames)**".format.arp.hlen"  +
+					hdo(frames)**".format.arp.plen"  +
+					hdo(frames)**".format.arp.oper"  +
+					hdo(frames)**".format.arp.sha"   +
+					hdo(frames)**".format.arp.spa"   +
+					hdo(frames)**".format.arp.tha")  &
+				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}',
+			size  => arprx_data'length)
+		port map (
+			clk    => miirx_clk,
+			frm    => arprx_frm,
+			irdy   => arprx_irdy,
+			act(0) => act0,
+			act(1) => tpa_frm,
+			act(2) => pyl_frm);
+
+		tpacmp_b : block
+			signal tpa_equ : std_logic;
+		begin
+			ipsa_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => reverse(ipv4addr,8))
+			port map (
+				si_data => arprx_data,
+				so_clk  => miirx_clk,
+				so_frm  => tpa_frm,
+				so_irdy => tpa_irdy,
+				so_trdy => tpa_trdy,
+				so_data => tpa_data);
+
+			cmp_i : entity hdl4fpga.sio_cmp
+			port map (
+				clk     => miirx_clk,
+				mr_frm  => tpa_frm,
+				mr_irdy => tpa_irdy,
+				-- mr_trdy => tpa_trdy,
+				mr_data => tpa_data,
+				sl_data => arprx_data,
+				equ     => tpa_equ);
+
+			process (miirx_clk)
+				variable lat1 : std_logic;
+			begin
+				if rising_edge(miirx_clk) then
+					if (tpa_frm or tpa_irdy)='0' then
+						if (lat1 and tpa_equ)='1' then
+							tx_req <= not tx_rdy;
+						end if;
+					end if;
+					lat1 := (tpa_frm or tpa_irdy);
+				end if;
+			end process;
+		end block;
+	end block;
+
+	tx_b : block
+		signal spatx_frm   : std_logic;
+		signal spatx_irdy  : std_logic;
+		signal spatx_trdy  : std_logic;
+		signal spatx_data  : std_logic_vector(arptx_data'range);
+	begin
+		ethtyptx_i : entity hdl4fpga.sio_rom
+		generic map (
+			bitdata => reverse(hdo(frames)**".data.mac.type.arp",8))
+		port map (
+			so_clk  => miitx_clk,
+			so_frm  => ethtyptx_frm,
+			so_irdy => ethtyptx_irdy,
+			so_trdy => ethtyptx_trdy,
+			so_data => ethtyptx_data);
+
+		thatx_i : entity hdl4fpga.sio_rom
+		generic map (
+			bitdata => reverse(x"ff_ff_ff_ff_ff_ff", 8))
+		port map (
+			so_clk  => miitx_clk,
+			so_frm  => thatx_frm,
+			so_irdy => thatx_irdy,
+			so_trdy => thatx_trdy,
+			so_data => thatx_data);
+
+		spatx_e : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => reverse(ipv4addr,8))
 		port map (
+			si_clk  => miirx_clk,
 			si_data => arprx_data,
-			so_clk  => miirx_clk,
-			so_frm  => tparx_frm,
-			so_irdy => tparx_irdy,
-			so_trdy => tparx_trdy,
-			so_data => tparx_data);
+		
+			so_clk  => miitx_clk,
+			so_frm  => spatx_frm,
+			so_irdy => spatx_irdy,
+			so_trdy => spatx_trdy,
+			so_data => spatx_data);
 
-		cmp_i : entity hdl4fpga.sio_cmp
+		arptx_e : entity hdl4fpga.arp_tx
+		generic map (
+			sha      => hwaddr)
 		port map (
-			clk     => miirx_clk,
-			mr_frm  => tparx_frm,
-			mr_irdy => tparx_irdy,
-			-- mr_trdy => tparx_trdy,
-			mr_data => tparx_data,
-			sl_data => arprx_data,
-			equ     => tpa_equ);
+			mii_clk  => miitx_clk,
+			tx_req   => tx_req,
+			tx_rdy   => tx_rdy,
 
-		process (miirx_clk)
-			variable lat1 : std_logic;
-		begin
-			if rising_edge(miirx_clk) then
-				if (tparx_frm or tparx_irdy)='0' then
-					if (lat1 and tpa_equ)='1' then
-						tx_req <= not tx_rdy;
-					end if;
-				end if;
-				lat1 := (tparx_frm or tparx_irdy);
-			end if;
-		end process;
+			pa_frm   => spatx_frm,
+			pa_irdy  => spatx_irdy,
+			pa_trdy  => spatx_trdy,
+			pa_data  => spatx_data,
 
+			arp_frm  => arptx_frm,
+			arp_irdy => arptx_irdy,
+			arp_trdy => arptx_trdy,
+			arp_data => arptx_data);
 	end block;
-
-	ethtyptx_i : entity hdl4fpga.sio_rom
-	generic map (
-		bitdata => reverse(hdo(frames)**".data.mac.type.arp",8))
-	port map (
-        so_clk  => miitx_clk,
-		so_frm  => ethtyptx_frm,
-		so_irdy => ethtyptx_irdy,
-		so_trdy => ethtyptx_trdy,
-		so_data => ethtyptx_data);
-
-	thatx_i : entity hdl4fpga.sio_rom
-	generic map (
-		bitdata => reverse(x"ff_ff_ff_ff_ff_ff", 8))
-	port map (
-        so_clk  => miitx_clk,
-		so_frm  => thatx_frm,
-		so_irdy => thatx_irdy,
-		so_trdy => thatx_trdy,
-		so_data => thatx_data);
-
-	spatx_e : entity hdl4fpga.sio_ram
-	generic map (
-		bitdata => reverse(ipv4addr,8))
-	port map (
-		si_clk  => miirx_clk,
-		si_data => arprx_data,
-	
-		so_clk  => miitx_clk,
-		so_frm  => spatx_frm,
-		so_irdy => spatx_irdy,
-		so_trdy => spatx_trdy,
-		so_data => spatx_data);
-
-	arptx_e : entity hdl4fpga.arp_tx
-	generic map (
-		sha      => hwaddr)
-	port map (
-		mii_clk  => miitx_clk,
-		tx_req   => tx_req,
-		tx_rdy   => tx_rdy,
-
-		pa_frm   => spatx_frm,
-		pa_irdy  => spatx_irdy,
-		pa_trdy  => spatx_trdy,
-		pa_data  => spatx_data,
-
-		arp_frm  => arptx_frm,
-		arp_irdy => arptx_irdy,
-		arp_trdy => arptx_trdy,
-		arp_data => arptx_data);
 
 end;

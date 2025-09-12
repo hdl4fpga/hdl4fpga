@@ -49,36 +49,21 @@ entity arp_tx is
 end;
 
 architecture def of arp_tx is
-	signal htype_frm   : std_logic;
-	signal htype_irdy  : std_logic;
-	signal ptype_frm   : std_logic;
-	signal ptype_irdy  : std_logic;
-	signal hlen_frm    : std_logic;
-	signal hlen_irdy   : std_logic;
-	signal plen_frm    : std_logic;
-	signal plen_irdy   : std_logic;
-	signal oper_frm    : std_logic;
-	signal oper_irdy   : std_logic;
-	signal sha_frm     : std_logic;
-	signal sha_irdy    : std_logic;
-	signal spa_frm     : std_logic;
-	signal spa_irdy    : std_logic;
-	signal tha_frm     : std_logic;
-	signal tha_irdy    : std_logic;
-	signal tha_trdy    : std_logic;
-	signal tha_data    : std_logic_vector(arp_data'range);
-	signal tpa_frm     : std_logic;
-	signal tpa_irdy    : std_logic;
+	signal rom_frm : std_logic;
+	alias rom_irdy is rom_frm;
+	signal spa_frm : std_logic;
+	signal tpa_frm : std_logic;
+	signal tha_frm : std_logic;
+	alias tha_irdy is tha_frm;
+	constant tha_data : std_logic_vector := (arp_data'range => '1');
+	signal pyl_frm : std_logic;
 
 	signal decode_frm  : std_logic;
 	signal decode_irdy : std_logic;
 	signal decode_trdy : std_logic;
 	signal decode_last : std_logic;
-	signal decode_fin  : std_logic;
 	signal decode_data : std_logic_vector(arp_data'range);
 
-	alias  rom_frm is decode_frm;
-	signal rom_irdy    : std_logic;
 	signal rom_trdy    : std_logic;
 	signal rom_data    : std_logic_vector(arp_data'range);
 
@@ -100,57 +85,42 @@ begin
 		end if;
 	end process;
 
-	decode_trdy <= arp_trdy or not arp_irdy;
-	decode_i : entity hdl4fpga.arp_decode
+	decode_i : entity hdl4fpga.frame_decode
+	generic map (
+		frame => '{'                                             &
+			"    rom:" & natural'image(
+				hdo(frames)**".format.arp.htype" +
+				hdo(frames)**".format.arp.ptype" +
+				hdo(frames)**".format.arp.hlen"  +
+				hdo(frames)**".format.arp.plen"  +
+				hdo(frames)**".format.arp.oper"  +
+				hdo(frames)**".format.arp.sha")                  & ',' &
+			"    spa:" & string'(hdo(frames)**".format.arp.spa") & ',' &
+			"    tha:" & string'(hdo(frames)**".format.arp.tha") & ',' &
+			"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}',
+		size  => arp_data'length)
 	port map (
-		mii_clk    => mii_clk,
-		arp_frm    => decode_frm,
-		arp_irdy   => decode_irdy,
-		arp_data   => decode_data,
-		arp_last   => decode_last,
-		arp_fin    => decode_fin,
-		htype_frm  => htype_frm,
-		htype_irdy => htype_irdy,
-		htype_trdy => decode_trdy,
-		ptype_frm  => ptype_frm,
-		ptype_irdy => ptype_irdy,
-		ptype_trdy => decode_trdy,
-		hlen_frm   => hlen_frm ,
-		hlen_irdy  => hlen_irdy,
-		hlen_trdy  => decode_trdy,
-		plen_frm   => plen_frm,
-		plen_irdy  => plen_irdy,
-		plen_trdy  => decode_trdy,
-		oper_frm   => oper_frm,
-		oper_irdy  => oper_irdy,
-		oper_trdy  => decode_trdy,
-		sha_frm    => sha_frm,
-		sha_irdy   => sha_irdy,
-		sha_trdy   => decode_trdy,
-		spa_frm    => spa_frm,
-		spa_irdy   => spa_irdy,
-		spa_trdy   => pa_trdy,
-		tha_frm    => tha_frm,
-		tha_irdy   => tha_irdy,
-		tha_trdy   => decode_trdy,
-		tpa_frm    => tpa_frm,
-		tpa_irdy   => tpa_irdy,
-		tpa_trdy   => pa_trdy);
-
+		clk    => mii_clk,
+		frm    => decode_frm,
+		irdy   => decode_irdy,
+		last   => decode_last,
+		act(0) => rom_frm,
+		act(1) => spa_frm,
+		act(2) => tha_frm,
+		act(3) => tpa_frm,
+		act(4) => pyl_frm);
 	pa_frm  <= spa_frm or tpa_frm;
-	pa_irdy <= 
-		spa_irdy when spa_frm='1' else 
-		tpa_irdy when tpa_frm='1' else 
+	pa_irdy <= spa_frm or tpa_frm;
+
+	decode_irdy <= 
+		tha_irdy and decode_trdy when tha_frm='1' else
+		pa_irdy  and decode_trdy when  pa_frm='1' else
+		rom_irdy and decode_trdy when rom_frm='1' else
+		tha_irdy and decode_trdy when tha_frm='1' else
 		'0';
 
 	rom_irdy <= 
-		decode_trdy and htype_irdy when htype_frm='1' else 
-		decode_trdy and ptype_irdy when ptype_frm='1' else 
-		decode_trdy and hlen_irdy  when  hlen_frm='1' else 
-		decode_trdy and plen_irdy  when  plen_frm='1' else 
-		decode_trdy and oper_irdy  when  oper_frm='1' else 
-		decode_trdy and sha_irdy   when   sha_frm='1' else 
-		decode_trdy and tha_irdy   when   tha_frm='1' else 
+		decode_trdy when rom_frm='1' else
 		'0';
 
 	rom_i : entity hdl4fpga.sio_rom
@@ -161,59 +131,35 @@ begin
 			std_logic_vector'(hdo(frames)**".data.arp.hlen")       &
 			std_logic_vector'(hdo(frames)**".data.arp.plen")       &
 			std_logic_vector'(hdo(frames)**".data.arp.oper.reply") &
-			sha                                                    &
-			x"ff_ff_ff_ff_ff_ff", 8)) -- Target Hardware Address
+			sha,8))
 	port map (
         so_clk  => mii_clk,
-		so_frm  => decode_frm,
+		so_frm  => rom_frm,
 		so_irdy => rom_irdy,
 		so_trdy => rom_trdy,
 		so_data => rom_data);
 
-	tha_trdy <= tha_frm and tha_irdy;
-	tha_data <= (arp_data'range => '1');
-	decode_irdy <= 
-		tha_irdy when  tha_frm='1' else
-		pa_irdy  when   pa_frm='1' else
-		rom_trdy when rom_irdy='1' else
-		decode_frm;
-
 	decode_data <= 
-		tha_data when tha_frm='1' else
+		rom_data when rom_frm='1' else
 		pa_data  when  pa_frm='1' else
-		rom_data;
+		tha_data when tha_frm='1' else
+		(others => '-');
 
-	frm_p : process (mii_clk)
+	buffer_b : block
+		signal buffer_frm : std_logic;
 	begin
-		if rising_edge(mii_clk) then
-			if decode_frm='0' then
-				arp_frm <= '0';
-			else
-				arp_frm <= decode_frm and not decode_last;
-			end if;
-		end if;
-	end process;
-
-	irdy_p : process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if (not arp_frm and (arp_irdy and arp_trdy))='1' then
-				arp_irdy <= '0';
-			elsif not decode_last='1' then
-				arp_irdy <= decode_irdy;
-			end if;
-		end if;
-	end process;
-
-	data_p : process (mii_clk)
-	begin
-		if rising_edge(mii_clk) then
-			if (decode_irdy and arp_trdy)='1' then
-				arp_data <= decode_data;
-			elsif (decode_irdy and not arp_irdy)='1'then
-				arp_data <= decode_data;
-			end if;
-		end if;
-	end process;
+		buffer_frm  <= decode_frm and not decode_last;
+		buffer_i : entity hdl4fpga.mii_buffer
+		port map (
+			clk => mii_clk,
+			src_frm  => buffer_frm,
+			src_irdy => decode_irdy,
+			src_trdy => decode_trdy,
+			src_data => decode_data,
+			dst_frm  => arp_frm,
+			dst_irdy => arp_irdy,
+			dst_trdy => arp_trdy,
+			dst_data => arp_data);
+	end block;
 
 end;
