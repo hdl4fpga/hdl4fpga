@@ -79,6 +79,7 @@ architecture def of ipv4 is
 	signal tpatx_frm   : std_logic;
 	signal tpatx_irdy  : std_logic;
 	signal tpatx_trdy  : std_logic := '1';
+	signal tpatx_data  : std_logic_vector(ipv4tx_data'range);
 	signal icmptx_trdy : std_logic;
 	signal icmptx_data : std_logic_vector(ipv4tx_data'range);
 
@@ -213,6 +214,7 @@ begin
 		alias  sa_irdy is sa_frm; 
 		signal sa_data     : std_logic_vector(ipv4rx_data'range);
 		signal da_frm      : std_logic;
+		alias  da_irdy is da_frm;
 		signal pyl_frm     : std_logic;
 		signal decode_irdy : std_logic;
 		alias  rom_frm is ipv4tx_frm;
@@ -265,14 +267,14 @@ begin
 			variable shr : unsigned(0 to hdo(frames)**".format.ipv4.length"-1);
 		begin
 			if rising_edge(miitx_clk) then
-				length_data <= std_logic_vector(shr(0 to length_data'length-1));
 				if length_frm='1' then
 					if decode_irdy='1' then
 						shr := rotate_left(shr, length_data'length);
 					end if;
 				else
-					shr := (others => '1');
+					shr := reverse(x"1234",8);
 				end if;
+				length_data <= std_logic_vector(shr(0 to length_data'length-1));
 			end if;
 		end process;
 
@@ -296,6 +298,17 @@ begin
 			so_trdy => open,
 			so_data => rom_data);
 
+		mem_i : entity hdl4fpga.sio_ram
+		generic map (
+			bitdata => reverse(ipv4addr,8))
+		port map (
+			si_data => ipv4rx_data,
+			so_clk  => miirx_clk,
+			so_frm  => sa_frm,
+			so_irdy => sa_irdy,
+			so_trdy => open,
+			so_data => sa_data);
+
 		spa_i : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => reverse(ipv4addr,8))
@@ -307,13 +320,16 @@ begin
 			so_trdy => open,
 			so_data => sa_data);
 
-		tpatx_frm  <= sa_frm;
-		tpatx_irdy <= sa_irdy;
+		tpatx_frm  <= da_frm;
+		tpatx_irdy <= da_irdy;
 		ipv4tx_data <= 
 			rom_data    when       verihltos_frm='1' else
 			rom_data    when identflgsfrgttl_frm='1' else
 			length_data when          length_frm='1' else
-			(ipv4tx_data'range => '-');
+			sa_data     when              sa_frm='1' else
+			tpatx_data  when              da_frm='1' else
+			icmptx_data when             pyl_frm='1' else
+			icmptx_data;
 	end block;
 
 	icmpd_i : entity hdl4fpga.icmpd
@@ -340,6 +356,7 @@ begin
 		tpatx_frm   => tpatx_frm,
 		tpatx_irdy  => tpatx_irdy,
 		tpatx_trdy  => tpatx_trdy,
+		tpatx_data  => tpatx_data,
 
 		icmptx_frm  => ipv4tx_frm,
 		icmptx_irdy => ipv4tx_irdy,

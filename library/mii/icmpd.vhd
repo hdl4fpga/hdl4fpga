@@ -55,6 +55,7 @@ entity icmpd is
 		tpatx_frm   : in  std_logic;
 		tpatx_irdy  : in  std_logic;
 		tpatx_trdy  : out std_logic := '1';
+		tpatx_data  : out std_logic_vector;
 
 		icmptx_frm  : buffer std_logic := '0';
 		icmptx_irdy : buffer std_logic := '0';
@@ -196,7 +197,9 @@ begin
 		signal decode_irdy : std_logic;
 		signal decode_trdy : std_logic;
 		signal decode_data : std_logic_vector(icmptx_data'range);
+		signal decode_last : std_logic;
 
+		signal buffer_frm  : std_logic;
 		signal buffer_irdy : std_logic;
 		signal buffer_trdy : std_logic;
 
@@ -215,7 +218,7 @@ begin
 		begin
 			if rising_edge(miitx_clk) then
 				if ((decode_frm or decode_trdy) and decode_irdy)='1' then
-					cntr    := cntr + 1;
+					cntr := cntr + 1;
 				end if;
 				rd_addr <= std_logic_vector(cntr);
 			end if;
@@ -235,6 +238,7 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
+			last   => decode_last,
 			act(0) => lead_frm,
 			act(1) => chksum_frm,
 			act(2) => pyl_frm);
@@ -260,11 +264,13 @@ begin
 			end process;
 		end block;
 
+		buffer_frm  <= decode_frm when unsigned(rd_addr) < unsigned(wr_addr)-1 else '0';
+		buffer_irdy <= decode_frm;
 		buffer_i : entity hdl4fpga.mii_buffer
 		port map (
 			clk => miitx_clk,
-			src_frm  => decode_frm,
-			src_irdy => decode_irdy,
+			src_frm  => buffer_frm,
+			src_irdy => buffer_irdy,
 			src_trdy => decode_trdy,
 			src_data => decode_data,
 			dst_frm  => icmptx_frm,
@@ -279,6 +285,7 @@ begin
 		thatx_trdy <= thatx_irdy;
 		thatx_data <= icmptx_data;
 		tpatx_trdy <= tpatx_irdy;
+		tpatx_data <= icmptx_data;
 
 	end block;
 

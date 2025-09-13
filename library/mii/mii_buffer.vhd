@@ -36,7 +36,7 @@ entity mii_buffer is -- skid buffer
 		src_trdy : out std_logic;
 		src_data : in  std_logic_vector;
 		dst_frm  : buffer std_logic;
-		dst_irdy : buffer std_logic;
+		dst_irdy : out std_logic;
 		dst_trdy : in  std_logic;
 		dst_data : out std_logic_vector);
 end;
