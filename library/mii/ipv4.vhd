@@ -70,6 +70,7 @@ architecture def of ipv4 is
 	signal tpatx_frm   : std_logic;
 	signal tpatx_irdy  : std_logic;
 	signal tpatx_trdy  : std_logic := '1';
+	signal icmptx_trdy : std_logic;
 
 begin
 
@@ -193,6 +194,7 @@ begin
 	end block;
 
 	tx_b : block
+		signal decode_irdy : std_logic;
 		signal verihltos_frm : std_logic;
 		signal length_frm : std_logic;
 		signal identflgsfrgttl_frm : std_logic;
@@ -204,6 +206,7 @@ begin
 		signal da_frm     : std_logic;
 		signal pyl_frm    : std_logic;
 	begin
+		decode_irdy <= ipv4tx_irdy and ipv4tx_trdy;
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => compact('{'                                                         &
@@ -223,7 +226,7 @@ begin
 		port map (
 			clk    => miitx_clk,
 			frm    => ipv4tx_frm,
-			irdy   => ipv4tx_irdy,
+			irdy   => decode_irdy,
 			act(0) => verihltos_frm,
 			act(1) => length_frm,
 			act(2) => identflgsfrgttl_frm,
@@ -232,6 +235,7 @@ begin
 			act(5) => sa_frm,
 			act(6) => da_frm,
 			act(7) => pyl_frm);
+		icmptx_trdy <= pyl_frm;
 
 		spa_i : entity hdl4fpga.sio_ram
 		generic map (
@@ -274,7 +278,7 @@ begin
 
 		icmptx_frm  => ipv4tx_frm,
 		icmptx_irdy => ipv4tx_irdy,
-		icmptx_trdy => ipv4tx_trdy,
+		icmptx_trdy => icmptx_trdy,
 		icmptx_data => ipv4tx_data);
 
 	tp(1) <= icmprx_frm;

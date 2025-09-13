@@ -153,6 +153,7 @@ begin
 			variable cntr   : unsigned(wr_addr'range) := (others => '0');
 		begin
 			if rising_edge(miirx_clk) then
+				wr_addr <= std_logic_vector(cntr);
 				if (tharx_irdy and tharx_trdy)='1' then
 					cntr := cntr + 1;
 				elsif (tparx_irdy and tparx_trdy)='1' then
@@ -160,7 +161,6 @@ begin
 				elsif (icmprx_irdy and icmprx_trdy)='1' then
 					cntr := cntr + 1;
 				end if;
-				wr_addr <= std_logic_vector(cntr);
 			end if;
 		end process;
 
