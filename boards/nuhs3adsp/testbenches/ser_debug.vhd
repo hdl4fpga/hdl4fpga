@@ -168,7 +168,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"0000"                 & -- IP Header Checksum
 			"ac1000f0"             & -- IP Source IP address
 			"c0a8000e"             & -- IP Destiantion IP Address
-			"ffffffff"             &
+			"12345678"             &
 			"ffffffff"             &
 			"ffffffff"             &
 			"ffffffff"             &
