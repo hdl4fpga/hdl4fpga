@@ -50,6 +50,7 @@ entity icmpd is
 		thatx_frm   : in  std_logic;
 		thatx_irdy  : in  std_logic;
 		thatx_trdy  : out std_logic := '1';
+		thatx_data  : out std_logic_vector;
 
 		tpatx_frm   : in  std_logic;
 		tpatx_irdy  : in  std_logic;
@@ -58,7 +59,7 @@ entity icmpd is
 		icmptx_frm  : buffer std_logic := '0';
 		icmptx_irdy : buffer std_logic := '0';
 		icmptx_trdy : in  std_logic := '0';
-		icmptx_data : out std_logic_vector);
+		icmptx_data : buffer std_logic_vector);
 end;
 
 architecture def of icmpd is
@@ -275,8 +276,9 @@ begin
 			thatx_irdy when thatx_frm='1' else
 			tpatx_irdy when tpatx_frm='1' else
 			icmptx_trdy;
-		tpatx_trdy <= tpatx_irdy;
 		thatx_trdy <= thatx_irdy;
+		thatx_data <= icmptx_data;
+		tpatx_trdy <= tpatx_irdy;
 
 	end block;
 

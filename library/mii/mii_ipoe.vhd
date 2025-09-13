@@ -182,32 +182,32 @@ begin
 		end if;
 	end process;
 
-	arpd_i : entity hdl4fpga.arpd
-	generic map (
-		ipv4addr => ipv4addr,
-		hwaddr   => hwaddr)
-	port map (
-		miirx_clk     => miirx_clk,
-
-		arprx_frm     => arprx_frm,
-		arprx_irdy    => arprx_irdy,
-		arprx_data    => arprx_data,
-
-		thatx_frm     => thatx_frm,
-		thatx_irdy    => thatx_irdy,
-		thatx_trdy    => thatx_trdy,
-		thatx_data    => thatx_data,
-
-		ethtyptx_frm  => ethtyptx_frm,
-		ethtyptx_irdy => ethtyptx_irdy,
-		ethtyptx_trdy => ethtyptx_trdy,
-		ethtyptx_data => ethtyptx_data,
-
-		miitx_clk     => miitx_clk,
-		arptx_frm     => arptx_frm,
-		arptx_irdy    => arptx_irdy,
-		arptx_trdy    => arptx_trdy,
-		arptx_data    => arptx_data);
+	-- arpd_i : entity hdl4fpga.arpd
+	-- generic map (
+	-- 	ipv4addr => ipv4addr,
+	-- 	hwaddr   => hwaddr)
+	-- port map (
+	-- 	miirx_clk     => miirx_clk,
+	--
+	-- 	arprx_frm     => arprx_frm,
+	-- 	arprx_irdy    => arprx_irdy,
+	-- 	arprx_data    => arprx_data,
+	--
+	-- 	thatx_frm     => thatx_frm,
+	-- 	thatx_irdy    => thatx_irdy,
+	-- 	thatx_trdy    => thatx_trdy,
+	-- 	thatx_data    => thatx_data,
+	--
+	-- 	ethtyptx_frm  => ethtyptx_frm,
+	-- 	ethtyptx_irdy => ethtyptx_irdy,
+	-- 	ethtyptx_trdy => ethtyptx_trdy,
+	-- 	ethtyptx_data => ethtyptx_data,
+	--
+	-- 	miitx_clk     => miitx_clk,
+	-- 	arptx_frm     => arptx_frm,
+	-- 	arptx_irdy    => arptx_irdy,
+	-- 	arptx_trdy    => arptx_trdy,
+	-- 	arptx_data    => arptx_data);
 
 	ethtx_i : entity hdl4fpga.eth_tx
 	port map (
@@ -230,8 +230,7 @@ begin
 		ethda_frm   => thatx_frm,
 		ethda_irdy  => thatx_irdy,
 		ethda_trdy  => thatx_trdy,
-		-- ethda_data  => thatx_data,
-		ethda_data  => ipv4tx_data,
+		ethda_data  => thatx_data,
 
 		ethtyp_frm  => ethtyptx_frm,
 		ethtyp_irdy => ethtyptx_irdy,
@@ -287,15 +286,22 @@ begin
 		ipv4rx_frm  => ipv4rx_frm,
 		ipv4rx_irdy => ipv4rx_irdy,
 		ipv4rx_data => ipv4rx_data,
-		miitx_clk   => miitx_clk,
 
-		thatx_frm   => thatx_frm,
-		thatx_irdy  => thatx_irdy,
-		thatx_trdy  => thatx_trdy,
+		miitx_clk     => miitx_clk,
 
-		ipv4tx_frm  => ipv4tx_frm,
-		ipv4tx_irdy => ipv4tx_irdy,
-		ipv4tx_trdy => ipv4tx_trdy,
-		ipv4tx_data => ipv4tx_data);
+		thatx_frm     => thatx_frm,
+		thatx_irdy    => thatx_irdy,
+		thatx_trdy    => thatx_trdy,
+		thatx_data    => thatx_data,
+
+		ethtyptx_frm  => ethtyptx_frm,
+		ethtyptx_irdy => ethtyptx_irdy,
+		ethtyptx_trdy => ethtyptx_trdy,
+		ethtyptx_data => ethtyptx_data,
+
+		ipv4tx_frm    => ipv4tx_frm,
+		ipv4tx_irdy   => ipv4tx_irdy,
+		ipv4tx_trdy   => ipv4tx_trdy,
+		ipv4tx_data   => ipv4tx_data);
 
 end;

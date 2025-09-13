@@ -96,7 +96,12 @@ package ipoepkg is
 			    " oper:{"           &
 					"reply:0x0002}}," &
     		"ipv4:{"                &
-				"proto:{"           &
+				" verihl:0x45,"     &
+				"    tos:0x00,"     & 
+				"  ident:0x0000,"   &
+				"flgsfrg:0x0000,"   &
+				"    ttl:0x05,"     &
+				"  proto:{"         &
 					"icmp:0x01,"    &
 					" udp:0x11}},"  &
 			"icmp:{"                &
