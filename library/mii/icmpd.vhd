@@ -70,6 +70,7 @@ architecture def of icmpd is
 	signal tx_rdy  : std_logic := '0';
 	signal wr_addr : std_logic_vector(0 to 10-1);
 	signal wr_data : std_logic_vector(icmprx_data'range);
+	signal cmp_addr : unsigned(wr_addr'range);
 	signal rd_addr : std_logic_vector(wr_addr'range);
 	signal rd_data : std_logic_vector(icmptx_data'range);
 begin
@@ -208,19 +209,19 @@ begin
 		process (miitx_clk)
 		begin
 			if rising_edge(miitx_clk) then
-				decode_frm <= (tx_rdy xor tx_req);
 				if (tx_req xor tx_rdy)='1' then
-					if icmptx_frm='0' then
-						if decode_fin ='1' then
-							if icmptx_irdy='0' then
-								decode_frm <= '0';
-								tx_rdy <= tx_req;
-							elsif icmptx_trdy='1' then
-								decode_frm <= '0';
-								tx_rdy <= tx_req;
-							end if;
-						end if;
+					if decode_fin='0' then
+						decode_frm <= '1';
+					elsif icmptx_frm='1' then
+						decode_frm <= '1';
+					elsif (icmptx_irdy and not icmptx_trdy)='1' then
+						decode_frm <= '1';
+					else
+						decode_frm <= '0';
+						tx_rdy <= tx_req;
 					end if;
+				else
+					decode_frm <= '0';
 				end if;
 			end if;
 		end process;
@@ -283,7 +284,7 @@ begin
 			end process;
 		end block;
 
-		buffer_frm  <= decode_frm when unsigned(rd_addr) < unsigned(wr_addr)-1 else '0';
+		buffer_frm  <= decode_frm when unsigned(rd_addr) /= unsigned(wr_addr)-1 else '0';
 		buffer_irdy <= decode_frm;
 		buffer_i : entity hdl4fpga.mii_buffer
 		port map (

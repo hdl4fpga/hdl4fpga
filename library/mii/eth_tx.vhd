@@ -149,15 +149,18 @@ begin
 		so_trdy => sha_trdy,
 		so_data => sha_data);
 
-	fcs_frm  <= 
-		'0' when   prmb_frm='1' else
-		'1' when  ethda_frm='1' else
-		'1' when    sha_frm='1' else
-		'1' when ethtyp_frm='1' else
-		'1' when    pyl_frm='1' else
-		'1' when    pad_frm='1' else
-		'1' when    pyl_frm='1' else
-		crc_frm;
+	fcs_frm_p : process (ethda_frm, mii_clk)
+		variable frm : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if ethda_frm='1' then
+				frm := '1';
+			elsif ((pyl_frm or pyl_irdy) and (pyl_frm or not pyl_trdy))='0' then
+				frm := '0';
+			end if;
+		end if;
+		fcs_frm <= ethda_frm or frm;
+	end process;
 
 	fcs_irdy <=
 		'0'         when   prmb_frm='1' else
@@ -214,23 +217,23 @@ begin
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	mii_frm  <= 
-		'1' when   prmb_frm='1' else
-		'1' when  ethda_frm='1' else
-		'1' when    sha_frm='1' else
-		'1' when ethtyp_frm='1' else
-		'1' when    pyl_frm='1' else
-		'1' when   pyl_irdy='1' else
-		'0';
+	mii_frm_p : process (prmb_frm, mii_clk)
+		variable frm : std_logic;
+	begin
+		if rising_edge(mii_clk) then
+			if prmb_frm='1' then
+				frm := '1';
+			elsif ((pyl_frm or pyl_irdy) and (pyl_frm or not pyl_trdy))='0' then
+				frm := '0';
+			end if;
+		end if;
+		mii_frm <= prmb_frm or frm;
+	end process;
 
 	mii_irdy <=
-		prmb_trdy   when   prmb_frm='1' else
-		ethda_trdy  when  ethda_frm='1' else
-		sha_trdy    when    sha_frm='1' else
-		ethtyp_trdy when ethtyp_frm='1' else
-		pyl_trdy    when    pyl_frm='1' else
-		pyl_trdy    when   pyl_irdy='1' else
-		crc_trdy    when    crc_frm='1' else
+		prmb_trdy when prmb_frm='1' else
+		fcs_irdy  when  fcs_frm='1' else
+		crc_trdy  when  crc_frm='1' else
 		'0';
 		
 	mii_data <= 

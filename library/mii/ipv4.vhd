@@ -298,18 +298,7 @@ begin
 			so_trdy => open,
 			so_data => rom_data);
 
-		mem_i : entity hdl4fpga.sio_ram
-		generic map (
-			bitdata => reverse(ipv4addr,8))
-		port map (
-			si_data => ipv4rx_data,
-			so_clk  => miirx_clk,
-			so_frm  => sa_frm,
-			so_irdy => sa_irdy,
-			so_trdy => open,
-			so_data => sa_data);
-
-		spa_i : entity hdl4fpga.sio_ram
+		pa_i : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => reverse(ipv4addr,8))
 		port map (
