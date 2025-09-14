@@ -273,11 +273,13 @@ begin
 		end if;
 	end process;
 
+	tp(1) <= miirx_frm;
+	tp(2 to 2+miirx_data'length-1) <= miirx_data;
 	ipv4_i : entity hdl4fpga.ipv4
 	generic map (
 		ipv4addr => ipv4addr)
 	port map (
-		tp => tp,
+		-- tp => tp,
 		miirx_clk   => miirx_clk,
 
 		tharx_frm   => ipv4tharx_frm,
