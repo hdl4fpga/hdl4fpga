@@ -35,7 +35,7 @@ entity mii_buffer is -- skid buffer
 		src_irdy : in  std_logic;
 		src_trdy : out std_logic;
 		src_data : in  std_logic_vector;
-		dst_frm  : buffer std_logic;
+		dst_frm  : out std_logic;
 		dst_irdy : out std_logic;
 		dst_trdy : in  std_logic;
 		dst_data : out std_logic_vector);
@@ -50,7 +50,9 @@ begin
 		variable data_shr : unsigned(0 to latency*src_data'length-1);
 	begin
 		if rising_edge(clk) then
-			if (not irdy_shr(0) or dst_trdy)/='0' then
+			if (not frm_shr(0) and irdy_shr(0) and dst_trdy)='1' then
+				irdy_shr := (others =>'0');
+			elsif (not irdy_shr(0) or dst_trdy)/='0' then
 				frm_shr(0) := src_frm;
 				frm_shr := rotate_left(frm_shr, 1);
 				irdy_shr(0) := src_irdy;

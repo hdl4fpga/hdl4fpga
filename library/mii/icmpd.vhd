@@ -287,6 +287,21 @@ begin
 		tpatx_trdy <= tpatx_irdy;
 		tpatx_data <= icmptx_data;
 
+		process (miitx_clk)
+		begin
+			if rising_edge(miitx_clk) then
+				if (tx_req xor tx_rdy)='1' then
+					if icmptx_frm='0' then
+						if icmptx_irdy='0' then
+							tx_rdy <= tx_req;
+						elsif icmptx_trdy='1' then
+							tx_rdy <= tx_req;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
+
 	end block;
 
 end;

@@ -261,7 +261,7 @@ begin
 			act(5) => sa_frm,
 			act(6) => da_frm,
 			act(7) => pyl_frm);
-		icmptx_trdy <= pyl_frm;
+		icmptx_trdy <= pyl_frm or (ipv4tx_irdy and ipv4tx_trdy);
 
 		length_p : process (miitx_clk)
 			variable shr : unsigned(0 to hdo(frames)**".format.ipv4.length"-1);
