@@ -112,9 +112,12 @@ begin
 	-- mii_txd <= (others =>'Z');
 
 	ser_clk  <= mii_rxc;
-	ser_frm  <= tp(1);
-	ser_irdy <= tp(1);
-	ser_data <= tp(2 to 2+mii_rxd'length-1);
+	ser_frm  <= mii_rxdv;
+	ser_irdy <= mii_rxdv;
+	ser_data <= mii_rxd;
+	-- ser_frm  <= tp(1);
+	-- ser_irdy <= tp(1);
+	-- ser_data <= tp(2 to 2+mii_rxd'length-1);
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

@@ -200,7 +200,13 @@ begin
 	   				elsif dst_trdy='1' then
 						if src_irdy='1' then
 							shr := shift_left(shr, src_data'length);
-							shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
+							-- Xilinx 14.7 synthesys bug
+							-- shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(fifo_data), fifo_data));
+							if lsdfirst then
+								shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
+							else
+								shr(src_data'length-1 downto 0) := unsigned(fifo_data);
+							end if;
 							acc := acc + (src_data'length - dst_data'length);
 							fifo_trdy <= '1';
 							dst_irdy  <= '1';
@@ -244,7 +250,13 @@ begin
 						dst_irdy  <= '1';
 	   				elsif dst_trdy='1' then
 						if src_irdy='1' then
-							shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
+							-- Xilinx 14.7 synthesys bug
+							-- shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
+							if not lsdfirst then
+								shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
+							else
+								shr(src_data'length-1 downto 0) := unsigned(fifo_data);
+							end if;
 							acc := acc + (src_data'length - dst_data'length);
 							fifo_trdy <= '1';
 							dst_irdy  <= '1';
@@ -285,7 +297,13 @@ begin
 							fifo_irdy <= '0';
 						end if;
 						shr := shift_left(shr, src_data'length);
-						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+						-- Xilinx 14.7 synthesys bug
+						-- shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+						if lsdfirst then
+							shr(src_data'length-1 downto 0) := unsigned(reverse(src_data));
+						else
+							shr(src_data'length-1 downto 0) := unsigned(src_data);
+						end if;
 					end if;
 					shf  <= std_logic_vector(acc and to_unsigned(mm(1) mod src_data'length, acc'length));
 					rgtr <= std_logic_vector(shr);
@@ -335,7 +353,13 @@ begin
 							full := '0';
 						end if;
 						shr := shift_left(shr, src_data'length);
-						shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+						-- Xilinx 14.7 synthesys bug
+						-- shr(src_data'length-1 downto 0) := unsigned(setif(lsdfirst,reverse(src_data), src_data));
+						if lsdfirst then
+							shr(src_data'length-1 downto 0) := unsigned(reverse(src_data));
+						else
+							shr(src_data'length-1 downto 0) := unsigned(src_data);
+						end if;
 						if full='1' then
 							rgtr <= std_logic_vector(shr);
 						end if;
