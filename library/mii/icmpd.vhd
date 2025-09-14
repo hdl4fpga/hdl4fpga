@@ -205,7 +205,26 @@ begin
 
 	begin
 
-		decode_frm  <= (tx_rdy xor tx_req);
+		process (miitx_clk)
+		begin
+			if rising_edge(miitx_clk) then
+				decode_frm <= (tx_rdy xor tx_req);
+				if (tx_req xor tx_rdy)='1' then
+					if icmptx_frm='0' then
+						if decode_fin ='1' then
+							if icmptx_irdy='0' then
+								decode_frm <= '0';
+								tx_rdy <= tx_req;
+							elsif icmptx_trdy='1' then
+								decode_frm <= '0';
+								tx_rdy <= tx_req;
+							end if;
+						end if;
+					end if;
+				end if;
+			end if;
+		end process;
+
 		decode_irdy <= 
 			decode_trdy when   lead_frm='1' else
 			decode_trdy when chksum_frm='1' else
@@ -286,23 +305,6 @@ begin
 		thatx_data <= icmptx_data;
 		tpatx_trdy <= tpatx_irdy;
 		tpatx_data <= icmptx_data;
-
-		process (miitx_clk)
-		begin
-			if rising_edge(miitx_clk) then
-				if (tx_req xor tx_rdy)='1' then
-					if icmptx_frm='0' then
-						if decode_fin ='1' then
-							if icmptx_irdy='0' then
-								tx_rdy <= tx_req;
-							elsif icmptx_trdy='1' then
-								tx_rdy <= tx_req;
-							end if;
-						end if;
-					end if;
-				end if;
-			end if;
-		end process;
 
 	end block;
 
