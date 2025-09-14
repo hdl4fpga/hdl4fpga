@@ -197,7 +197,7 @@ begin
 		signal decode_irdy : std_logic;
 		signal decode_trdy : std_logic;
 		signal decode_data : std_logic_vector(icmptx_data'range);
-		signal decode_last : std_logic;
+		signal decode_fin  : std_logic;
 
 		signal buffer_frm  : std_logic;
 		signal buffer_irdy : std_logic;
@@ -238,7 +238,7 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
-			last   => decode_last,
+			fin    => decode_fin ,
 			act(0) => lead_frm,
 			act(1) => chksum_frm,
 			act(2) => pyl_frm);
@@ -292,10 +292,12 @@ begin
 			if rising_edge(miitx_clk) then
 				if (tx_req xor tx_rdy)='1' then
 					if icmptx_frm='0' then
-						if icmptx_irdy='0' then
-							tx_rdy <= tx_req;
-						elsif icmptx_trdy='1' then
-							tx_rdy <= tx_req;
+						if decode_fin ='1' then
+							if icmptx_irdy='0' then
+								tx_rdy <= tx_req;
+							elsif icmptx_trdy='1' then
+								tx_rdy <= tx_req;
+							end if;
 						end if;
 					end if;
 				end if;

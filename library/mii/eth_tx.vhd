@@ -156,7 +156,7 @@ begin
 		'1' when ethtyp_frm='1' else
 		'1' when    pyl_frm='1' else
 		'1' when    pad_frm='1' else
-		'1' when (pyl_frm or pyl_irdy)='1' else
+		'1' when    pyl_frm='1' else
 		crc_frm;
 
 	fcs_irdy <=
