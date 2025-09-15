@@ -156,25 +156,25 @@ begin
 			variable init : boolean;
 		begin
 			if rising_edge(miirx_clk) then
-				if (tharx_irdy and tharx_trdy)='1' then
-					if init then
-						cntr := (others => '0');
-					else
-						cntr := cntr + 1;
-					end if;
-				elsif (tparx_irdy and tparx_trdy)='1' then
-					cntr := cntr + 1;
-				elsif (icmprx_irdy and icmprx_trdy)='1' then
-					cntr := cntr + 1;
-				end if;
 				if tharx_frm='1' then
 					if (tharx_irdy and tharx_trdy)='1' then
+						cntr := (others => '0');
 						init := false;
 					end if;
 				else
 					init := true;
 				end if;
 				wr_addr <= std_logic_vector(cntr);
+				if (tharx_irdy and tharx_trdy)='1' then
+					cntr := cntr + 1;
+					wr_ena <= '1';
+				elsif (tparx_irdy and tparx_trdy)='1' then
+					cntr := cntr + 1;
+					wr_ena <= '1';
+				elsif (icmprx_irdy and icmprx_trdy)='1' then
+					cntr := cntr + 1;
+					wr_ena <= '1';
+				end if;
 			end if;
 		end process;
 
@@ -198,6 +198,7 @@ begin
 	data_i : entity hdl4fpga.dpram
 	port map (
 		wr_clk  => miirx_clk,
+		wr_ena  => wr_ena,
 		wr_addr => wr_addr,
 		wr_data => wr_data,
 		rd_clk  => miitx_clk,
