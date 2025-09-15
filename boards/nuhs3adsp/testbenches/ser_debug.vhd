@@ -176,6 +176,8 @@ architecture nuhs3adsp_serdebug of testbench is
 			"ffffffff"             &
 			"ffffffff"             &
 			"ffffffff"             &
+			"ffffffff"             &
+			"ffffffff"             &
 			"9999995a}";
 begin
 
@@ -189,7 +191,7 @@ begin
 	sw1 <= '1', '0' after 1 us;
 
 	tb_b : block
-		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".arp");
+		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".icmp");
 		signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
 	begin
 		process (mii_rxc)

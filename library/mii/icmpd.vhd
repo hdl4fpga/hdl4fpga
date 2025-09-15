@@ -70,7 +70,6 @@ architecture def of icmpd is
 	signal tx_rdy  : std_logic := '0';
 	signal wr_addr : std_logic_vector(0 to 10-1);
 	signal wr_data : std_logic_vector(icmprx_data'range);
-	signal cmp_addr : unsigned(wr_addr'range);
 	signal rd_addr : std_logic_vector(wr_addr'range);
 	signal rd_data : std_logic_vector(icmptx_data'range);
 begin
@@ -152,27 +151,43 @@ begin
 			end process;
 		end block;
 
-		process (miirx_clk)
-			variable cntr   : unsigned(wr_addr'range) := (others => '0');
+		process (icmprx_irdy, miirx_clk)
+			variable cntr : unsigned(wr_addr'range) := (others => '0');
+			variable init : boolean;
 		begin
 			if rising_edge(miirx_clk) then
-				wr_addr <= std_logic_vector(cntr);
 				if (tharx_irdy and tharx_trdy)='1' then
-					cntr := cntr + 1;
+					if init then
+						cntr := (others => '0');
+					else
+						cntr := cntr + 1;
+					end if;
 				elsif (tparx_irdy and tparx_trdy)='1' then
 					cntr := cntr + 1;
 				elsif (icmprx_irdy and icmprx_trdy)='1' then
 					cntr := cntr + 1;
 				end if;
+				if tharx_frm='1' then
+					if (tharx_irdy and tharx_trdy)='1' then
+						init := false;
+					end if;
+				else
+					init := true;
+				end if;
+				wr_addr <= std_logic_vector(cntr);
 			end if;
 		end process;
 
 		process (miirx_clk)
+			variable q : std_logic;
 		begin
 			if rising_edge(miirx_clk) then
 				if (tx_req xor tx_rdy)='0' then
 					if icmprx_frm='1' then
+						q := '1';
+					elsif q = '1' then
 						tx_req <= not tx_rdy;
+						q := '0';
 					end if;
 				end if;
 			end if;
@@ -194,8 +209,8 @@ begin
 		signal chksum_frm  : std_logic;
 		signal pyl_frm     : std_logic;
 
-		signal decode_frm  : std_logic;
-		signal decode_irdy : std_logic;
+		signal decode_frm  : std_logic := '0';
+		signal decode_irdy : std_logic := '0';
 		signal decode_trdy : std_logic;
 		signal decode_data : std_logic_vector(icmptx_data'range);
 		signal decode_fin  : std_logic;
@@ -231,7 +246,7 @@ begin
 			decode_trdy when chksum_frm='1' else
 			decode_trdy when    pyl_frm='1' else
 			'0';
-		decode_data <= rd_data;
+		decode_data <= (decode_data'range => '0'); --rd_data;
 
 		process (rd_addr , miitx_clk)
 			variable cntr   : unsigned(rd_addr'range) := (others => '0');
@@ -239,6 +254,8 @@ begin
 			if rising_edge(miitx_clk) then
 				if ((decode_frm or decode_trdy) and decode_irdy)='1' then
 					cntr := cntr + 1;
+				elsif (icmptx_frm or icmptx_irdy)='0' then
+					cntr := (others => '0');
 				end if;
 				rd_addr <= std_logic_vector(cntr);
 			end if;
@@ -303,7 +320,7 @@ begin
 			tpatx_irdy when tpatx_frm='1' else
 			icmptx_trdy;
 		thatx_trdy <= thatx_irdy;
-		thatx_data <= icmptx_data;
+		thatx_data <= (thatx_data'range => '1'); --icmptx_data;
 		tpatx_trdy <= tpatx_irdy;
 		tpatx_data <= icmptx_data;
 

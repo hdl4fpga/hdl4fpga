@@ -45,7 +45,7 @@ architecture def of mii_buffer is
 begin
 
 	process (src_frm, dst_trdy, clk)
-		variable frm_shr  : unsigned(0 to latency-1);
+		variable frm_shr  : unsigned(0 to latency-1) := (others => '0');
 		variable irdy_shr : unsigned(0 to latency-1) := (others => '0');
 		variable data_shr : unsigned(0 to latency*src_data'length-1);
 	begin
