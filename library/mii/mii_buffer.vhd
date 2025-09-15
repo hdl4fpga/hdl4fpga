@@ -46,13 +46,13 @@ begin
 
 	process (src_frm, dst_trdy, clk)
 		variable frm_shr  : unsigned(0 to latency-1);
-		variable irdy_shr : unsigned(0 to latency-1);
+		variable irdy_shr : unsigned(0 to latency-1) := (others => '0');
 		variable data_shr : unsigned(0 to latency*src_data'length-1);
 	begin
 		if rising_edge(clk) then
 			if (not frm_shr(0) and irdy_shr(0) and dst_trdy)='1' then
 				irdy_shr := (others =>'0');
-			elsif (not irdy_shr(0) or dst_trdy)/='0' then
+			elsif (not irdy_shr(0) or dst_trdy)='1' then
 				frm_shr(0) := src_frm;
 				frm_shr := rotate_left(frm_shr, 1);
 				irdy_shr(0) := src_irdy;
@@ -65,12 +65,12 @@ begin
 			dst_data <= std_logic_vector(data_shr(0 to dst_data'length-1));
 		end if;
 		if src_frm='1' then
-			if irdy_shr(0)/='1' then
+			if irdy_shr(0)='0' then
 				src_trdy <= '1';
 			else
 				src_trdy <= dst_trdy;
 			end if;
-		elsif frm_shr(0)/='1' then
+		elsif (frm_shr(0) or irdy_shr(0))='1' then
 			src_trdy <= dst_trdy;
 		else
 			src_trdy <= '0';

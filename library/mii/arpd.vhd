@@ -134,7 +134,7 @@ begin
 
 	tx_b : block
 		signal rom_frm : std_logic;
-		alias rom_irdy is rom_frm;
+		signal rom_irdy : std_logic;
 		signal rom_trdy    : std_logic;
 		signal rom_data    : std_logic_vector(arptx_data'range);
 
@@ -265,7 +265,7 @@ begin
 			rom_data when rom_frm='1' else
 			pa_data  when  pa_frm='1' else
 			tha_data when tha_frm='1' else
-			(others => '-');
+			(decode_data'range => '-');
 
 		buffer_b : block
 			signal buffer_frm : std_logic;
