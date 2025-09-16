@@ -82,10 +82,11 @@ architecture def of ipv4 is
 	signal ipv4lentx_frm  : std_logic;
 	signal ipv4lentx_irdy : std_logic;
 	signal ipv4lentx_trdy : std_logic;
+
 	signal tpatx_frm      : std_logic;
 	signal tpatx_irdy     : std_logic;
 	signal tpatx_trdy     : std_logic := '1';
-	signal tpatx_data     : std_logic_vector(ipv4tx_data'range);
+
 	signal icmptx_trdy    : std_logic;
 	signal icmptx_data    : std_logic_vector(ipv4tx_data'range);
 
@@ -223,6 +224,7 @@ begin
 		signal verihltos_frm : std_logic;
 		signal identflgsfrgttl_frm : std_logic;
 		signal length_frm  : std_logic;
+		alias  length_irdy is length_frm;
 		signal proto_frm   : std_logic;
 		signal chksum_frm  : std_logic;
 		signal sa_frm      : std_logic;
@@ -325,14 +327,17 @@ begin
 			so_trdy => open,
 			so_data => sa_data);
 
-		tpatx_frm  <= da_frm;
-		tpatx_irdy <= da_irdy;
+		tpatx_frm      <= da_frm;
+		tpatx_irdy     <= da_irdy;
+		ipv4lentx_frm  <= length_frm;
+		ipv4lentx_irdy <= length_irdy;
+
 		ipv4tx_data <= 
 			rom_data    when       verihltos_frm='1' else
 			rom_data    when identflgsfrgttl_frm='1' else
 			icmptx_data when          length_frm='1' else
 			sa_data     when              sa_frm='1' else
-			tpatx_data  when              da_frm='1' else
+			icmptx_data when              da_frm='1' else
 			icmptx_data when             pyl_frm='1' else
 			icmptx_data;
 	end block;
@@ -365,6 +370,7 @@ begin
 		tpatx_frm   => tpatx_frm,
 		tpatx_irdy  => tpatx_irdy,
 		tpatx_trdy  => tpatx_trdy,
+
 		ipv4lentx_frm  => ipv4lentx_frm,
 		ipv4lentx_irdy => ipv4lentx_irdy,
 		ipv4lentx_trdy => ipv4lentx_trdy,
