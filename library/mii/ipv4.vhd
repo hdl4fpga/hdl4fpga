@@ -205,6 +205,9 @@ begin
 	end block;
 
 	tx_b : block
+		signal decode_frm  : std_logic;
+		signal decode_irdy : std_logic;
+		signal decode_fin  : std_logic;
 		signal verihltos_frm : std_logic;
 		signal identflgsfrgttl_frm : std_logic;
 		signal length_frm  : std_logic;
@@ -216,7 +219,6 @@ begin
 		signal da_frm      : std_logic;
 		alias  da_irdy is da_frm;
 		signal pyl_frm     : std_logic;
-		signal decode_irdy : std_logic;
 		alias  rom_frm is ipv4tx_frm;
 		signal rom_irdy    : std_logic;
 		signal rom_data    : std_logic_vector(ipv4rx_data'range);
@@ -232,6 +234,7 @@ begin
 			so_trdy => ethtyptx_trdy,
 			so_data => ethtyptx_data);
 
+		decode_frm  <= (ipv4tx_frm or  ipv4tx_irdy);
 		decode_irdy <= ipv4tx_irdy and ipv4tx_trdy;
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -251,8 +254,9 @@ begin
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miitx_clk,
-			frm    => ipv4tx_frm,
+			frm    => decode_frm,
 			irdy   => decode_irdy,
+			fin    => decode_fin,
 			act(0) => verihltos_frm,
 			act(1) => length_frm,
 			act(2) => identflgsfrgttl_frm,
@@ -261,7 +265,7 @@ begin
 			act(5) => sa_frm,
 			act(6) => da_frm,
 			act(7) => pyl_frm);
-		icmptx_trdy <= pyl_frm or (ipv4tx_irdy and ipv4tx_trdy);
+		icmptx_trdy <= (pyl_frm or decode_fin) and ipv4tx_irdy and ipv4tx_trdy;
 
 		length_p : process (miitx_clk)
 			variable shr : unsigned(0 to hdo(frames)**".format.ipv4.length"-1);

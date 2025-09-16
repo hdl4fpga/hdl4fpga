@@ -157,14 +157,16 @@ begin
 			variable init : boolean;
 		begin
 			if rising_edge(miirx_clk) then
-				if (tharx_irdy and tharx_trdy)='1' then
-					if not init then
-						init := true;
-						cntr := (others => '0');
-					else
-						cntr := cntr + 1;
+				if tharx_frm='1' then
+					if (tharx_irdy and tharx_trdy)='1' then
+						if not init then
+							init := true;
+							cntr := (others => '0');
+						else
+							cntr := cntr + 1;
+						end if;
+						wr_ena <= '1';
 					end if;
-					wr_ena <= '1';
 				else 
 					init := false;
 					if (tparx_irdy and tparx_trdy)='1' then
@@ -251,14 +253,15 @@ begin
 			decode_trdy when    pyl_frm='1' else
 			'0';
 		decode_data <= rd_data;
-		-- decode_data <= (decode_data'range => '0');
 
 		process (rd_addr , miitx_clk)
 			variable cntr   : unsigned(rd_addr'range) := (others => '0');
 		begin
 			if rising_edge(miitx_clk) then
 				if ((decode_frm or decode_trdy) and decode_irdy)='1' then
-					cntr := cntr + 1;
+					-- if rd_addr /= wr_addr then
+						cntr := cntr + 1;
+					-- end if;
 				elsif (icmptx_frm or icmptx_irdy)='0' then
 					cntr := (others => '0');
 				end if;
@@ -326,7 +329,6 @@ begin
 			icmptx_trdy;
 		thatx_trdy <= thatx_irdy;
 		thatx_data <= icmptx_data;
-		-- thatx_data <= (thatx_data'range => '1'); --icmptx_data;
 		tpatx_trdy <= tpatx_irdy;
 		tpatx_data <= icmptx_data;
 

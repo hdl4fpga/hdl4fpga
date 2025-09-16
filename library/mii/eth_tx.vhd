@@ -217,9 +217,6 @@ begin
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	-- assert fcs_crc(4 to 8-1) /= x"6"
-	-- 	report LF& "*************************** hola"
-	-- 	severity warning;
 	mii_frm_p : process (prmb_frm, mii_clk)
 		variable frm : std_logic;
 	begin
