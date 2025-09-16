@@ -316,7 +316,28 @@ begin
 			so_trdy => open,
 			so_data => rom_data);
 
-		pa_i : entity hdl4fpga.sio_ram
+		da_b : block
+			signal si_frm  : std_logic;
+			signal si_irdy : std_logic;
+			signal si_data : std_logic_vector(da_data'range);
+		begin
+			dpa_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => reverse(ipv4addr,8))
+			port map (
+				si_clk  => miitx_clk,
+				si_frm  => si_frm,
+				si_irdy => si_irdy,
+				si_trdy => open,
+				si_data => si_data,
+				so_clk  => miitx_clk,
+				so_frm  => da_frm,
+				so_irdy => da_irdy,
+				so_trdy => open,
+				so_data => da_data);
+		end block;
+
+		spa_i : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => reverse(ipv4addr,8))
 		port map (

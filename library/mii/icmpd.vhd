@@ -334,8 +334,8 @@ begin
 
 		buffer_trdy <= 
 			thatx_irdy     when     thatx_frm='1' else
-			tpatx_irdy     when     tpatx_frm='1' else
 			ipv4lentx_irdy when ipv4lentx_frm='1' else
+			tpatx_irdy     when     tpatx_frm='1' else
 			icmptx_trdy;
 
 		thatx_trdy  <= thatx_irdy;
