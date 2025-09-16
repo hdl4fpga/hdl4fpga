@@ -64,71 +64,83 @@ end;
 
 architecture def of ipv4 is
 
-	signal tha1rx_frm  : std_logic;
-	signal tha1rx_irdy : std_logic;
-	signal tha1rx_trdy : std_logic := '1';
-	signal tparx_frm   : std_logic;
+	signal tha1rx_frm     : std_logic;
+	signal tha1rx_irdy    : std_logic;
+	signal tha1rx_trdy    : std_logic := '1';
+	signal ipv4lenrx_frm  : std_logic;
+	alias  ipv4lenrx_irdy is ipv4lenrx_frm;
+	signal ipv4lenrx_trdy : std_logic := '1';
+	signal tparx_frm      : std_logic;
 	alias  tparx_irdy  is tparx_frm;
-	signal tparx_trdy  : std_logic := '1';
+	signal tparx_trdy     : std_logic := '1';
 
-	signal icmprx_frm  : std_logic;
-	signal icmprx_irdy : std_logic;
-	signal icmprx_trdy : std_logic;
-	signal icmprx_data : std_logic_vector(ipv4rx_data'range);
+	signal icmprx_frm     : std_logic;
+	signal icmprx_irdy    : std_logic;
+	signal icmprx_trdy    : std_logic;
+	signal icmprx_data    : std_logic_vector(ipv4rx_data'range);
 
-	signal tpatx_frm   : std_logic;
-	signal tpatx_irdy  : std_logic;
-	signal tpatx_trdy  : std_logic := '1';
-	signal tpatx_data  : std_logic_vector(ipv4tx_data'range);
-	signal icmptx_trdy : std_logic;
-	signal icmptx_data : std_logic_vector(ipv4tx_data'range);
+	signal ipv4lentx_frm  : std_logic;
+	signal ipv4lentx_irdy : std_logic;
+	signal ipv4lentx_trdy : std_logic;
+	signal tpatx_frm      : std_logic;
+	signal tpatx_irdy     : std_logic;
+	signal tpatx_trdy     : std_logic := '1';
+	signal tpatx_data     : std_logic_vector(ipv4tx_data'range);
+	signal icmptx_trdy    : std_logic;
+	signal icmptx_data    : std_logic_vector(ipv4tx_data'range);
 
 begin
 
 	rx_b : block
+		signal length_frm : std_logic;
 		signal proto_frm  : std_logic;
 		alias  proto_irdy is proto_frm;
 		signal spa_frm    : std_logic;
 		signal ipv4da_frm : std_logic;
 		alias  ipv4da_irdy is ipv4da_frm;
 		signal pyl_frm    : std_logic;
-		signal act0       : std_logic;
-		signal act1       : std_logic;
+		signal discard0   : std_logic;
+		signal discard2   : std_logic;
+		signal chksum     : std_logic;
 	begin
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                                                         &
-				"           lead:" & natural'image(
+			frame => compact('{'                                                        &
+				"         discard:" & natural'image(
 					hdo(frames)**".format.ipv4.verihl"  +
-					hdo(frames)**".format.ipv4.tos"     +  
-					hdo(frames)**".format.ipv4.length"  +
+					hdo(frames)**".format.ipv4.tos")                              & ',' &
+				"          length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				"         discard:" & natural'image(
 					hdo(frames)**".format.ipv4.ident"   +
 					hdo(frames)**".format.ipv4.flgsfrg" +
-					hdo(frames)**".format.ipv4.ttl")                             & ',' &
-				"          proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
-				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
-				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
-				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}'),
+					hdo(frames)**".format.ipv4.ttl")                              & ',' &
+				"          proto:" & string'(hdo(frames)**".format.ipv4.proto")   & ',' &
+				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum")  & ',' &
+				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")      & ',' &
+				"             da:" & string'(hdo(frames)**".format.ipv4.da")      & '}'),
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miirx_clk,
 			frm    => ipv4rx_frm,
 			irdy   => ipv4rx_irdy,
-			act(0) => act0,
-			act(1) => proto_frm,
-			act(2) => act1,
-			act(3) => spa_frm,
-			act(4) => ipv4da_frm,
-			act(5) => pyl_frm);
+			act(0) => discard0,
+			act(1) => length_frm,
+			act(2) => discard2,
+			act(3) => proto_frm,
+			act(4) => chksum,
+			act(5) => spa_frm,
+			act(6) => ipv4da_frm,
+			act(7) => pyl_frm);
 
 		process (miirx_clk)
 			variable icmp_vld : std_logic := '0';
 			variable pa_vld   : std_logic := '0';
 		begin
 			if rising_edge(miirx_clk) then
-				tha1rx_frm  <= tharx_frm;
-				tha1rx_irdy <= tharx_irdy;
-				tparx_frm   <= spa_frm;
+				tha1rx_frm    <= tharx_frm;
+				tha1rx_irdy   <= tharx_irdy;
+				ipv4lenrx_frm <= length_frm;
+				tparx_frm     <= spa_frm;
 			end if;
 		end process;
 
@@ -318,7 +330,7 @@ begin
 		ipv4tx_data <= 
 			rom_data    when       verihltos_frm='1' else
 			rom_data    when identflgsfrgttl_frm='1' else
-			length_data when          length_frm='1' else
+			icmptx_data when          length_frm='1' else
 			sa_data     when              sa_frm='1' else
 			tpatx_data  when              da_frm='1' else
 			icmptx_data when             pyl_frm='1' else
@@ -334,6 +346,10 @@ begin
 		tparx_frm   => tparx_frm,
 		tparx_irdy  => tparx_irdy,
 		tparx_trdy  => tparx_trdy,
+		ipv4lenrx_frm  => ipv4lenrx_frm,
+		ipv4lenrx_irdy => ipv4lenrx_irdy,
+		ipv4lenrx_trdy => ipv4lenrx_trdy,
+
 		icmprx_frm  => icmprx_frm,
 		icmprx_irdy => icmprx_frm,
 		icmprx_trdy => open,
@@ -349,7 +365,9 @@ begin
 		tpatx_frm   => tpatx_frm,
 		tpatx_irdy  => tpatx_irdy,
 		tpatx_trdy  => tpatx_trdy,
-		tpatx_data  => tpatx_data,
+		ipv4lentx_frm  => ipv4lentx_frm,
+		ipv4lentx_irdy => ipv4lentx_irdy,
+		ipv4lentx_trdy => ipv4lentx_trdy,
 
 		icmptx_frm  => ipv4tx_frm,
 		icmptx_irdy => ipv4tx_irdy,

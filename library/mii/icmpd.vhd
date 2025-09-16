@@ -40,6 +40,10 @@ entity icmpd is
 		tparx_irdy  : in  std_logic;
 		tparx_trdy  : buffer std_logic := '1';
 
+		ipv4lenrx_frm  : in  std_logic;
+		ipv4lenrx_irdy : in  std_logic;
+		ipv4lenrx_trdy : buffer std_logic := '1';
+
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
 		icmprx_trdy : buffer std_logic := '1';
@@ -55,7 +59,11 @@ entity icmpd is
 		tpatx_frm   : in  std_logic;
 		tpatx_irdy  : in  std_logic;
 		tpatx_trdy  : out std_logic := '1';
-		tpatx_data  : out std_logic_vector;
+
+		ipv4lentx_frm  : in  std_logic;
+		ipv4lentx_irdy : in  std_logic;
+		ipv4lentx_trdy : out std_logic := '1';
+
 
 		icmptx_frm  : buffer std_logic := '0';
 		icmptx_irdy : buffer std_logic := '0';
@@ -173,6 +181,9 @@ begin
 						cntr := cntr + 1;
 						wr_ena <= '1';
 					elsif (icmprx_irdy and icmprx_trdy)='1' then
+						cntr := cntr + 1;
+						wr_ena <= '1';
+					elsif (ipv4lenrx_irdy and ipv4lenrx_trdy)='1' then
 						cntr := cntr + 1;
 						wr_ena <= '1';
 					else
@@ -322,13 +333,14 @@ begin
 			dst_data => icmptx_data);
 
 		buffer_trdy <= 
-			thatx_irdy when thatx_frm='1' else
-			tpatx_irdy when tpatx_frm='1' else
+			thatx_irdy     when     thatx_frm='1' else
+			tpatx_irdy     when     tpatx_frm='1' else
+			ipv4lentx_irdy when ipv4lentx_frm='1' else
 			icmptx_trdy;
-		thatx_trdy <= thatx_irdy;
-		thatx_data <= icmptx_data;
-		tpatx_trdy <= tpatx_irdy;
-		tpatx_data <= icmptx_data;
+
+		thatx_trdy  <= thatx_irdy;
+		thatx_data  <= icmptx_data;
+		tpatx_trdy  <= tpatx_irdy;
 
 	end block;
 
