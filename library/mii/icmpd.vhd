@@ -259,9 +259,7 @@ begin
 		begin
 			if rising_edge(miitx_clk) then
 				if ((decode_frm or decode_trdy) and decode_irdy)='1' then
-					-- if rd_addr /= wr_addr then
-						cntr := cntr + 1;
-					-- end if;
+					cntr := cntr + 1;
 				elsif (icmptx_frm or icmptx_irdy)='0' then
 					cntr := (others => '0');
 				end if;
