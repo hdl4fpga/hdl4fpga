@@ -70,6 +70,7 @@ architecture def of icmpd is
 	signal tx_rdy  : std_logic := '0';
 	signal wr_addr : std_logic_vector(0 to 10-1);
 	signal wr_data : std_logic_vector(icmprx_data'range);
+	signal wr_ena  : std_logic;
 	signal rd_addr : std_logic_vector(wr_addr'range);
 	signal rd_data : std_logic_vector(icmptx_data'range);
 begin
@@ -156,25 +157,27 @@ begin
 			variable init : boolean;
 		begin
 			if rising_edge(miirx_clk) then
-				if tharx_frm='1' then
-					if (tharx_irdy and tharx_trdy)='1' then
+				if (tharx_irdy and tharx_trdy)='1' then
+					if not init then
+						init := true;
 						cntr := (others => '0');
-						init := false;
+					else
+						cntr := cntr + 1;
 					end if;
-				else
-					init := true;
+					wr_ena <= '1';
+				else 
+					init := false;
+					if (tparx_irdy and tparx_trdy)='1' then
+						cntr := cntr + 1;
+						wr_ena <= '1';
+					elsif (icmprx_irdy and icmprx_trdy)='1' then
+						cntr := cntr + 1;
+						wr_ena <= '1';
+					else
+						wr_ena <= '0';
+					end if;
 				end if;
 				wr_addr <= std_logic_vector(cntr);
-				if (tharx_irdy and tharx_trdy)='1' then
-					cntr := cntr + 1;
-					wr_ena <= '1';
-				elsif (tparx_irdy and tparx_trdy)='1' then
-					cntr := cntr + 1;
-					wr_ena <= '1';
-				elsif (icmprx_irdy and icmprx_trdy)='1' then
-					cntr := cntr + 1;
-					wr_ena <= '1';
-				end if;
 			end if;
 		end process;
 
@@ -247,7 +250,8 @@ begin
 			decode_trdy when chksum_frm='1' else
 			decode_trdy when    pyl_frm='1' else
 			'0';
-		decode_data <= (decode_data'range => '0'); --rd_data;
+		decode_data <= rd_data;
+		-- decode_data <= (decode_data'range => '0');
 
 		process (rd_addr , miitx_clk)
 			variable cntr   : unsigned(rd_addr'range) := (others => '0');
@@ -302,7 +306,7 @@ begin
 			end process;
 		end block;
 
-		buffer_frm  <= decode_frm when unsigned(rd_addr) /= unsigned(wr_addr)-1 else '0';
+		buffer_frm  <= decode_frm when unsigned(rd_addr) /= unsigned(wr_addr) else '0';
 		buffer_irdy <= decode_frm;
 		buffer_i : entity hdl4fpga.mii_buffer
 		port map (
@@ -321,7 +325,8 @@ begin
 			tpatx_irdy when tpatx_frm='1' else
 			icmptx_trdy;
 		thatx_trdy <= thatx_irdy;
-		thatx_data <= (thatx_data'range => '1'); --icmptx_data;
+		thatx_data <= icmptx_data;
+		-- thatx_data <= (thatx_data'range => '1'); --icmptx_data;
 		tpatx_trdy <= tpatx_irdy;
 		tpatx_data <= icmptx_data;
 
