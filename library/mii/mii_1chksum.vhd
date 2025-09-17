@@ -26,76 +26,56 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity mii_1cksm is
+entity mii_1chksum is
 	generic (
-		n    : natural;
-		init : std_logic_vector := (0 to 0 => '0'));
+		n      : natural := 16;
+		init   : std_logic_vector := (0 to 0 => '0'));
 	port (
-		mii_clk   : in  std_logic;
-		mii_frm   : in  std_logic := '1';
-		mii_irdy  : in  std_logic;
-		mii_trdy  : out std_logic := '1';
-		mii_end   : in  std_logic := '0';
-		mii_empty : out std_logic;
-		mii_data  : in  std_logic_vector;
-		mii_cksm  : buffer std_logic_vector);
+		clk    : in  std_logic;
+		frm    : in  std_logic := '1';
+		irdy   : in  std_logic;
+		trdy   : out std_logic := '1';
+		data   : in  std_logic_vector;
+		chksum : buffer std_logic_vector);
 end;
 
-architecture beh of mii_1cksm is
-
-	signal ci  : std_logic;
-	signal op1 : std_logic_vector(mii_data'length-1 downto 0);
-	signal op2 : std_logic_vector(mii_data'length-1 downto 0);
-	signal co  : std_logic;
-	signal sum : std_logic_vector(n-1 downto 0);
-	signal acc : std_logic_vector(n-1 downto 0);
-
+architecture beh of mii_1chksum is
 begin
 
-	op1 <= acc(mii_cksm'length-1 downto 0);
-	op2 <= 
-		(op2'range => '0') when mii_irdy='0' else
-		(op2'range => '0') when mii_end='1'  else
-		reverse(mii_data);
+	process (frm, irdy, clk)
+		variable sum : unsigned(0 to data'length+1);
+		variable op1 : unsigned(sum'range);
+		variable op2 : unsigned(sum'range);
+		variable acc : unsigned(0 to n-1);
+		variable cy  : std_logic;
 
-	adder_e : entity hdl4fpga.adder
-	port map (
-		ci  => ci,
-		a   => op1,
-		b   => op2,
-		s   => mii_cksm,
-		co  => co);
-
-	process (sum, mii_clk)
+		variable active : std_logic;
 	begin
-		if rising_edge(mii_clk) then
-			if mii_frm='0' then
-				ci  <= '0';
-				acc <= std_logic_vector(resize(unsigned(init), acc'length));
-			elsif mii_irdy='1' then
-				ci  <= co;
-				acc <= sum;
+		if rising_edge(clk) then
+			if ((active or frm) and irdy)='1' then
+				acc := rotate_right(acc, data'length);
+				op1 := unsigned'('0' & acc(0 to data'length-1) & '1');
+				op2 := unsigned'('0' & unsigned(data) & cy);
+				sum := op1 + op2;
+				acc := sum(1 to data'length);
+				cy  := sum(0);
 			end if;
-		end if;
-	end process;
-
-	sum <= mii_cksm & acc(acc'length-1 downto mii_data'length);
-
-	process (mii_clk)
-		variable cntr : unsigned(0 to unsigned_num_bits(n/mii_cksm'length-1));
-	begin
-		if rising_edge(mii_clk) then
-			if mii_frm='0' then
-				cntr := to_unsigned(n/mii_cksm'length-1, cntr'length);
-			elsif mii_irdy='1' then
-				if mii_end='1' then
-					if cntr(0)='0' then
-						cntr := cntr - 1;
-					end if;
+			if frm='0' then
+				if irdy='0' then
+					active := '0';
+				elsif active='1' then
+					active := '0';
 				end if;
+			elsif irdy='1' then
+				active := '1';
 			end if;
-			mii_empty <= cntr(0);
+			if active='0' then
+				acc := resize(unsigned(init), acc'length);
+				cy  := '0';
+			end if;
+			chksum <= std_logic_vector(acc);
 		end if;
+		trdy <= (frm or active) and irdy;
 	end process;
 
 end;

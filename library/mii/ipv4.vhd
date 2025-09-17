@@ -316,6 +316,10 @@ begin
 			so_trdy => open,
 			so_data => rom_data);
 
+		chksum_b : block
+		begin
+		end block;
+
 		da_b : block
 			signal si_frm  : std_logic;
 			signal si_irdy : std_logic;
