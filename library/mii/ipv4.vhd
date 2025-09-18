@@ -93,7 +93,7 @@ architecture def of ipv4 is
 	signal icmptx_data    : std_logic_vector(ipv4tx_data'range);
 
 	signal icmpthatx_frm  : std_logic;
-	signal icmpthatx_irdy : std_logic;
+	alias  icmpthatx_irdy is icmpthatx_frm;
 	signal icmpthatx_trdy : std_logic := '1';
 	signal icmpthatx_data : std_logic_vector;
 
@@ -254,11 +254,6 @@ begin
 		signal rom_data    : std_logic_vector(ipv4rx_data'range);
 		signal length_data : std_logic_vector(ipv4rx_data'range);
 	begin
-		decode_irdy <= 
-			decode_trdy when    tha_frm='1' else
-			decode_trdy when chksum_frm='1' else
-			decode_trdy when    pyl_frm='1' else
-			'0';
 		ethtyptx_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(hdo(frames)**".data.mac.type.ipv4",8))
@@ -270,7 +265,12 @@ begin
 			so_data => ethtyptx_data);
 
 		decode_frm  <= (ipv4tx_frm or  ipv4tx_irdy);
-		decode_irdy <= ipv4tx_irdy and ipv4tx_trdy;
+		decode_irdy <= 
+			icmpthatx_trdy when    tha_frm='1' else
+			decode_trdy    when chksum_frm='1' else
+			decode_trdy    when    pyl_frm='1' else
+			'0';
+
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => compact('{'                                                       &
@@ -302,6 +302,7 @@ begin
 			act(6) => sa_frm,
 			act(7) => da_frm,
 			act(8) => pyl_frm);
+		icmpthatx_frm  <= tha_frm;
 		icmptx_trdy <= (pyl_frm or decode_fin) and ipv4tx_irdy and ipv4tx_trdy;
 
 		length_p : process (miitx_clk)
