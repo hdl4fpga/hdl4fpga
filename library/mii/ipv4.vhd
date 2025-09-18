@@ -273,7 +273,6 @@ begin
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => compact('{'                                                       &
-				"            tha:" & string'(hdo(frames)**".format.mac.tha") & ',' &
 				"      verihltos:" & natural'image(
 					hdo(frames)**".format.ipv4.verihl"  +
 					hdo(frames)**".format.ipv4.tos")                             & ',' & 
@@ -292,15 +291,14 @@ begin
 			frm    => decode_frm,
 			irdy   => decode_irdy,
 			fin    => decode_fin,
-			act(0) => tha_frm,
-			act(1) => verihltos_frm,
-			act(2) => length_frm,
-			act(3) => identflgsfrgttl_frm,
-			act(4) => proto_frm,
-			act(5) => chksum_frm,
-			act(6) => sa_frm,
-			act(7) => da_frm,
-			act(8) => pyl_frm);
+			act(0) => verihltos_frm,
+			act(1) => length_frm,
+			act(2) => identflgsfrgttl_frm,
+			act(3) => proto_frm,
+			act(4) => chksum_frm,
+			act(5) => sa_frm,
+			act(6) => da_frm,
+			act(7) => pyl_frm);
 		icmpthatx_frm  <= tha_frm;
 		icmptx_trdy <= (pyl_frm or decode_fin) and ipv4tx_irdy and ipv4tx_trdy;
 
@@ -334,20 +332,37 @@ begin
 			so_trdy => open,
 			so_data => rom_data);
 
-		-- chksum_b : block
-		-- 	signal decode_frm  : std_logic;
-		-- 	signal decode_irdy : std_logic;
-		-- 	signal decode_fin  : std_logic;
-		-- begin
-		-- 	mii_1chksum : entity hld4fpga.mii_1chksum
-		-- 	port map (
-		-- 		clk => miitx_clk,
-		-- 		frm  => ,
-		-- 		irdy => ,
-		-- 		trdy => ,
-		-- 		data => icmptx_data,
-		-- 		chksum =>)
-		-- end block;
+		chksum_b : block
+			signal decode_frm  : std_logic;
+			signal decode_irdy : std_logic;
+			signal decode_fin  : std_logic;
+		begin
+			chksum_i : entity hdl4fpga.frame_decode
+			generic map (
+				frame => compact('{'                                                       &
+					"   tha:" & string'(hdo(frames)**".format.mac.tha") & ',' &
+					"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+					"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
+					"    da:" & string'(hdo(frames)**".format.ipv4.da")     & '}'),
+				size  => ipv4tx_data'length)
+			port map (
+				clk    => miitx_clk,
+				frm    => decode_frm,
+				irdy   => decode_irdy,
+				fin    => decode_fin,
+				act(0) => tha_frm,
+				act(7) => length_frm,
+				act(7) => tpa_frm,
+				act(8) => pyl_frm);
+			mii_1chksum : entity hld4fpga.mii_1chksum
+			port map (
+				clk => miitx_clk,
+				frm  => ,
+				irdy => ,
+				trdy => ,
+				data => icmptx_data,
+				chksum =>)
+		end block;
 
 		spa_i : entity hdl4fpga.sio_ram
 		generic map (
