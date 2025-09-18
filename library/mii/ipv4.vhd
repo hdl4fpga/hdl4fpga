@@ -270,7 +270,6 @@ begin
 			decode_trdy    when chksum_frm='1' else
 			decode_trdy    when    pyl_frm='1' else
 			'0';
-
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => compact('{'                                                       &
@@ -382,7 +381,10 @@ begin
 			signal buffer_trdy : std_logic;
 		begin
 			buffer_frm  <= icmptx_frm;
-			buffer_irdy <= decode_frm;
+			buffer_irdy <= 
+				icmpthatx_trdy when tha_frm='1' else 
+				decode_frm;
+
 			buffer_i : entity hdl4fpga.mii_buffer
 			port map (
 				clk => miitx_clk,
