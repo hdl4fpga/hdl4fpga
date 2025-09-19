@@ -285,12 +285,14 @@ begin
 					std_logic_vector'(hdo(frames)**".data.ipv4.ident")   &
 					std_logic_vector'(hdo(frames)**".data.ipv4.flgsfrg") &
 					std_logic_vector'(hdo(frames)**".data.ipv4.ttl");
+
 			alias  rom_frm is ipv4tx_frm;
 			signal rom_irdy    : std_logic;
 			signal rom_data    : std_logic_vector(ipv4rx_data'range);
 			signal ipv4length_data : std_logic_vector(ipv4rx_data'range);
 			signal ipv4chksum_data : std_logic_vector(ipv4rx_data'range);
 			signal ipv4da_data     : std_logic_vector(ipv4rx_data'range);
+
 		begin
 			decode_frm  <= (ipv4tx_frm or  ipv4tx_irdy);
 			decode_irdy <= 
