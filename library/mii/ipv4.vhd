@@ -227,6 +227,7 @@ begin
 	end block;
 
 	tx_b : block
+		signal decode_trdy : std_logic;
 	begin
 		ethtyptx_i : entity hdl4fpga.sio_rom
 		generic map (
@@ -244,7 +245,8 @@ begin
 			signal hwaddr_last : std_logic;
 			signal pyl_frm     : std_logic;
 		begin
-			hwaddr_frm <= (ipv4tx_frm or  ipv4tx_irdy);
+			hwaddr_frm <= (icmptx_frm or icmptx_irdy);
+			hwaddr_irdy <= icmptx_irdy and decode_trdy;
 			tha_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => compact('{' &
@@ -262,7 +264,6 @@ begin
 		proto_b : block
 			signal decode_frm  : std_logic;
 			signal decode_irdy : std_logic;
-			signal decode_trdy : std_logic;
 			signal decode_fin  : std_logic;
 			signal decode_data : std_logic_vector(ipv4rx_data'range);
 
@@ -294,7 +295,7 @@ begin
 			signal ipv4da_data     : std_logic_vector(ipv4rx_data'range);
 
 		begin
-			decode_frm  <= (ipv4tx_frm or  ipv4tx_irdy);
+			decode_frm  <= (icmptx_frm or  icmptx_irdy);
 			decode_irdy <= 
 				decode_trdy when chksum_frm='1' else
 				decode_trdy when    pyl_frm='1' else
@@ -409,7 +410,7 @@ begin
 					ipv4sa_data when       sa_frm='1' else
 					(chksum_data'range => '0');
 
-				mii_1chksum : entity hdl4fpga.mii_chksum1
+				mii_chksum1_i : entity hdl4fpga.mii_chksum1
 				port map (
 					clk    => miitx_clk,
 					frm    => chksum_frm,
