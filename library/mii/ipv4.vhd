@@ -93,7 +93,7 @@ architecture def of ipv4 is
 	signal icmptx_data    : std_logic_vector(ipv4tx_data'range);
 
 	signal icmpthatx_frm  : std_logic;
-	alias  icmpthatx_irdy is icmpthatx_frm;
+	signal icmpthatx_irdy : std_logic;
 	signal icmpthatx_trdy : std_logic := '1';
 	signal icmpthatx_data : std_logic_vector(thatx_data'range);
 	signal icmpdatx_frm   : std_logic;
@@ -242,11 +242,12 @@ begin
 		hwaddr_b : block
 			signal hwaddr_frm  : std_logic;
 			signal hwaddr_irdy : std_logic;
-			signal hwaddr_last : std_logic;
+			signal hwaddr_fin  : std_logic;
 			signal pyl_frm     : std_logic;
 		begin
-			hwaddr_frm <= (icmptx_frm or icmptx_irdy);
-			hwaddr_irdy <= icmptx_irdy and decode_trdy;
+			hwaddr_frm     <= (icmptx_frm or icmptx_irdy);
+			hwaddr_irdy    <= icmptx_irdy and decode_trdy;
+			icmpthatx_irdy <= decode_trdy when icmpthatx_frm='1' else '0';
 			tha_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => compact('{' &
@@ -256,7 +257,7 @@ begin
 				clk    => miitx_clk,
 				frm    => hwaddr_frm,
 				irdy   => hwaddr_irdy,
-				last   => hwaddr_last,
+				fin    => hwaddr_fin,
 				act(0) => icmpthatx_frm,
 				act(1) => pyl_frm);
 		end block;
@@ -454,6 +455,8 @@ begin
 					decode_frm;
 
 				buffer_i : entity hdl4fpga.mii_buffer
+				generic map (
+					latency => 12)
 				port map (
 					clk => miitx_clk,
 					src_frm  => buffer_frm,
