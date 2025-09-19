@@ -235,10 +235,10 @@ HDL4FPGA__mii_ipoe__def = $(LIB_HDL4FPGA)/mii_ipoe/def.dat
 HDL4FPGA__mii_ipoe = $(LIB_HDL4FPGA)/mii_ipoe/_primary.dat
 HDL4FPGA__mii_cmp__def = $(LIB_HDL4FPGA)/mii_cmp/def.dat
 HDL4FPGA__mii_cmp = $(LIB_HDL4FPGA)/mii_cmp/_primary.dat
+HDL4FPGA__mii_chksum1__beh = $(LIB_HDL4FPGA)/mii_chksum1/beh.dat
+HDL4FPGA__mii_chksum1 = $(LIB_HDL4FPGA)/mii_chksum1/_primary.dat
 HDL4FPGA__mii_buffer__def = $(LIB_HDL4FPGA)/mii_buffer/def.dat
 HDL4FPGA__mii_buffer = $(LIB_HDL4FPGA)/mii_buffer/_primary.dat
-HDL4FPGA__mii_1chksum__beh = $(LIB_HDL4FPGA)/mii_1chksum/beh.dat
-HDL4FPGA__mii_1chksum = $(LIB_HDL4FPGA)/mii_1chksum/_primary.dat
 HDL4FPGA__link_mii__graphics = $(LIB_HDL4FPGA)/link_mii/graphics.dat
 HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
 HDL4FPGA__link_hdlc__def = $(LIB_HDL4FPGA)/link_hdlc/def.dat
@@ -611,10 +611,10 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_ipoe) \
     $(HDL4FPGA__mii_cmp__def) \
     $(HDL4FPGA__mii_cmp) \
+    $(HDL4FPGA__mii_chksum1__beh) \
+    $(HDL4FPGA__mii_chksum1) \
     $(HDL4FPGA__mii_buffer__def) \
     $(HDL4FPGA__mii_buffer) \
-    $(HDL4FPGA__mii_1chksum__beh) \
-    $(HDL4FPGA__mii_1chksum) \
     $(HDL4FPGA__link_mii__graphics) \
     $(HDL4FPGA__link_mii) \
     $(HDL4FPGA__link_hdlc__def) \
@@ -1390,6 +1390,8 @@ $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 $(HDL4FPGA__ipv4) \
 $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
 		$(HDL4FPGA__icmpd) \
+		$(HDL4FPGA__mii_buffer) \
+		$(HDL4FPGA__mii_chksum1) \
 		$(HDL4FPGA__sio_rom) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__sio_cmp) \
@@ -1448,14 +1450,6 @@ $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../apps/link_mii.vhd
 
-$(HDL4FPGA__mii_1chksum) \
-$(HDL4FPGA__mii_1chksum__beh) : ../mii/mii_1chksum.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii/mii_1chksum.vhd
-
 $(HDL4FPGA__mii_buffer) \
 $(HDL4FPGA__mii_buffer__def) : ../mii/mii_buffer.vhd \
 		$(HDL4FPGA__base) \
@@ -1463,6 +1457,14 @@ $(HDL4FPGA__mii_buffer__def) : ../mii/mii_buffer.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../mii/mii_buffer.vhd
+
+$(HDL4FPGA__mii_chksum1) \
+$(HDL4FPGA__mii_chksum1__beh) : ../mii/mii_chksum1.vhd \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/mii_chksum1.vhd
 
 $(HDL4FPGA__mii_cmp) \
 $(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \

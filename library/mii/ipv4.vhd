@@ -248,7 +248,7 @@ begin
 			tha_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => compact('{' &
-					"tha:" & string'(hdo(frames)**".format.mac.hwda")),
+					"tha:" & string'(hdo(frames)**".format.mac.hwda") & '}'),
 				size  => ipv4tx_data'length)
 			port map (
 				clk    => miitx_clk,
@@ -409,7 +409,7 @@ begin
 					ipv4sa_data when       sa_frm='1' else
 					(chksum_data'range => '0');
 
-				mii_1chksum : entity hdl4fpga.mii_1chksum
+				mii_1chksum : entity hdl4fpga.mii_chksum1
 				port map (
 					clk    => miitx_clk,
 					frm    => chksum_frm,
