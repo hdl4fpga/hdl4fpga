@@ -273,7 +273,9 @@ begin
 			signal identflgsfrgttl_frm : std_logic;
 			signal ipv4length_frm  : std_logic;
 			alias  ipv4length_irdy is ipv4length_frm;
-			signal ivp4proto_frm   : std_logic;
+			signal ipv4proto_frm   : std_logic;
+			alias  ipv4proto_irdy   is ipv4proto_frm;
+			signal ipv4proto_data     : std_logic_vector(ipv4rx_data'range);
 			signal chksum_frm  : std_logic;
 			signal ipv4sa_frm      : std_logic;
 			alias  ipv4sa_irdy is ipv4sa_frm; 
@@ -327,7 +329,7 @@ begin
 				act(0) => verihltos_frm,
 				act(1) => ipv4length_frm,
 				act(2) => identflgsfrgttl_frm,
-				act(3) => ivp4proto_frm,
+				act(3) => ipv4proto_frm,
 				act(4) => chksum_frm,
 				act(5) => ipv4sa_frm,
 				act(6) => ipv4da_frm,
@@ -422,6 +424,16 @@ begin
 					chksum => ipv4chksum_data);
 			end block;
 
+			proto_i : entity hdl4fpga.sio_rom
+			generic map (
+				bitdata => reverse (x"c3",8))
+			port map (
+				so_clk  => miitx_clk,
+				so_frm  => ipv4proto_frm,
+				so_irdy => ipv4proto_irdy,
+				so_trdy => open,
+				so_data => ipv4proto_data);
+
 			spa_i : entity hdl4fpga.sio_ram
 			generic map (
 				bitdata => reverse(ipv4addr,8))
@@ -440,7 +452,7 @@ begin
 				icmptx_data     when       icmpthatx_frm='1' else
 				rom_data        when       verihltos_frm='1' else
 				rom_data        when identflgsfrgttl_frm='1' else
-				x"6" when ivp4proto_frm='1' else
+				ipv4proto_data when ipv4proto_frm='1' else
 				x"9" when    chksum_frm='1' else
 				ipv4length_data when      ipv4length_frm='1' else
 				ipv4sa_data     when          ipv4sa_frm='1' else
