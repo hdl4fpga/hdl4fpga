@@ -42,7 +42,26 @@ entity mii_buffer is -- skid buffer
 end;
 
 architecture def of mii_buffer is
+	signal wr_addr : std_logic_vector(0 to 4-1);
+	signal rd_addr : std_logic_vector(wr_addr'range);
+	signal rd_data : std_logic_vector(dst_data'range);
 begin
+
+	-- fifo_i : entity hdl4fpga.dpram
+	-- port map (
+	-- 	wr_clk  => clk,
+	-- 	wr_addr => wr_addr,
+	-- 	wr_data => src_data,
+	-- 	rd_addr => rd_addr,
+	-- 	rd_data => rd_data);
+	--
+	-- process (clk)
+	-- 	variable rd_cntr : unsigned (rd_addr'range);
+	-- 	variable wr_cntr : unsigned (wr_addr'range);
+	-- begin
+	-- 	if rising_edge(clk) then
+	-- 	end if;
+	-- end process;
 
 	process (src_frm, dst_trdy, clk)
 		variable frm_shr  : unsigned(0 to latency-1) := (others => '0');

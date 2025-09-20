@@ -296,7 +296,7 @@ begin
 			signal ipv4da_data     : std_logic_vector(ipv4rx_data'range);
 
 		begin
-			decode_frm  <= (icmptx_frm or  icmptx_irdy);
+			decode_frm  <= '0'; --(icmptx_frm or  icmptx_irdy);
 			decode_irdy <= 
 				decode_trdy when chksum_frm='1' else
 				decode_trdy when    pyl_frm='1' else
@@ -436,6 +436,7 @@ begin
 			tpatx_irdy <= icmpdatx_irdy;
 
 			decode_data <= 
+				icmptx_data when          thatx_frm='1' else
 				rom_data    when       verihltos_frm='1' else
 				rom_data    when identflgsfrgttl_frm='1' else
 				icmptx_data when      ipv4length_frm='1' else
@@ -448,6 +449,7 @@ begin
 				signal buffer_frm  : std_logic;
 				signal buffer_irdy : std_logic;
 				signal buffer_trdy : std_logic;
+				signal dst_trdy    : std_logic;
 			begin
 				buffer_frm  <= icmptx_frm;
 				buffer_irdy <= 
