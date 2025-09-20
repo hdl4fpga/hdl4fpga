@@ -25,6 +25,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 entity mii_chksum1 is
 	generic (
@@ -70,7 +71,7 @@ begin
 				active := '1';
 			end if;
 			if active='0' then
-				acc := resize(unsigned(init), acc'length);
+				acc := unsigned(chksum1(init,n));
 				cy  := '0';
 			end if;
 			chksum <= reverse(std_logic_vector(acc(0 to chksum'length-1)));

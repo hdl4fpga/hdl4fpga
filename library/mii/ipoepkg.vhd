@@ -119,6 +119,11 @@ package ipoepkg is
 		constant ipa : string)
 		return std_logic_vector;
 
+	function chksum1 (
+		constant data : std_logic_vector;
+		constant size : natural)
+		return std_logic_vector;
+
 	function udp_checksummed(
 		constant src  : std_logic_vector(0 to 32-1);
 		constant dst  : std_logic_vector(0 to 32-1);
