@@ -73,7 +73,7 @@ begin
 				acc := resize(unsigned(init), acc'length);
 				cy  := '0';
 			end if;
-			chksum <= std_logic_vector(acc(0 to chksum'length-1));
+			chksum <= reverse(std_logic_vector(acc(0 to chksum'length-1)));
 		end if;
 		trdy <= (frm or active) and irdy;
 	end process;

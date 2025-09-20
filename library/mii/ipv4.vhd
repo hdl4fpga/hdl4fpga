@@ -359,6 +359,7 @@ begin
 				signal chksum_frm  : std_logic;
 				signal chksum_irdy : std_logic;
 				signal chksum_data : std_logic_vector(ipv4rx_data'range);
+				signal act3 : std_logic;
 			begin
 				chksum_frm <= proto_frm;
 				chksum_i : entity hdl4fpga.frame_decode
@@ -375,7 +376,7 @@ begin
 					act(0) => icmplentx_frm,
 					act(1) => icmpdatx_frm,
 					act(2) => sa_frm,
-					act(3) => pyl_frm);
+					act(3) => act3);
 
 				length_i : entity hdl4fpga.sio_ram
 				generic map (
@@ -426,7 +427,7 @@ begin
 
 			proto_i : entity hdl4fpga.sio_rom
 			generic map (
-				bitdata => reverse (x"c3",8))
+				bitdata => reverse (hdo(frames)**".data.ipv4.proto.icmp",8))
 			port map (
 				so_clk  => miitx_clk,
 				so_frm  => ipv4proto_frm,
