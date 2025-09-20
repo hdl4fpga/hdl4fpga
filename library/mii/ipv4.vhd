@@ -276,7 +276,7 @@ begin
 			signal ipv4proto_frm   : std_logic;
 			alias  ipv4proto_irdy   is ipv4proto_frm;
 			signal ipv4proto_data     : std_logic_vector(ipv4rx_data'range);
-			signal chksum_frm  : std_logic;
+			signal ipv4chksum_frm  : std_logic;
 			signal ipv4sa_frm      : std_logic;
 			alias  ipv4sa_irdy is ipv4sa_frm; 
 			signal ipv4sa_data     : std_logic_vector(ipv4rx_data'range);
@@ -301,7 +301,7 @@ begin
 		begin
 			decode_frm  <= proto_frm; -- or icmptx_irdy;
 			decode_irdy <= decode_trdy;
-				-- decode_trdy when chksum_frm='1' else
+				-- decode_trdy when ipv4chksum_frm='1' else
 				-- decode_trdy when    pyl_frm='1' else
 				-- '0';
 
@@ -330,7 +330,7 @@ begin
 				act(1) => ipv4length_frm,
 				act(2) => identflgsfrgttl_frm,
 				act(3) => ipv4proto_frm,
-				act(4) => chksum_frm,
+				act(4) => ipv4chksum_frm,
 				act(5) => ipv4sa_frm,
 				act(6) => ipv4da_frm,
 				act(7) => pyl_frm);
@@ -407,7 +407,7 @@ begin
 					so_trdy => open,
 					so_data => ipv4da_data);
 
-				chksum_irdy <= icmplentx_frm or icmpdatx_frm or sa_frm;
+				chksum_irdy <= icmplentx_frm or icmpdatx_frm or sa_frm or ipv4chksum_frm;
 				chksum_data <=
 					icmptx_data when   icmplentx_frm='1' else
 					icmptx_data when icmpdatx_frm='1' else
@@ -452,11 +452,11 @@ begin
 				icmptx_data     when       icmpthatx_frm='1' else
 				rom_data        when       verihltos_frm='1' else
 				rom_data        when identflgsfrgttl_frm='1' else
-				ipv4proto_data when ipv4proto_frm='1' else
-				x"9" when    chksum_frm='1' else
+				ipv4proto_data  when       ipv4proto_frm='1' else
+				ipv4chksum_data when      ipv4chksum_frm='1' else
 				ipv4length_data when      ipv4length_frm='1' else
 				ipv4sa_data     when          ipv4sa_frm='1' else
-				icmptx_data     when          ipv4da_frm='1' else
+				ipv4da_data     when          ipv4da_frm='1' else
 				icmptx_data     when             pyl_frm='1' else
 				icmptx_data;
 
