@@ -228,6 +228,7 @@ begin
 
 	tx_b : block
 		signal decode_trdy : std_logic;
+		signal proto_frm : std_logic;
 	begin
 		ethtyptx_i : entity hdl4fpga.sio_rom
 		generic map (
@@ -259,7 +260,7 @@ begin
 				irdy   => hwaddr_irdy,
 				fin    => hwaddr_fin,
 				act(0) => icmpthatx_frm,
-				act(1) => pyl_frm);
+				act(1) => proto_frm);
 		end block;
 
 		proto_b : block
@@ -272,7 +273,7 @@ begin
 			signal identflgsfrgttl_frm : std_logic;
 			signal ipv4length_frm  : std_logic;
 			alias  ipv4length_irdy is ipv4length_frm;
-			signal proto_frm   : std_logic;
+			signal ivp4proto_frm   : std_logic;
 			signal chksum_frm  : std_logic;
 			signal ipv4sa_frm      : std_logic;
 			alias  ipv4sa_irdy is ipv4sa_frm; 
@@ -288,7 +289,7 @@ begin
 					std_logic_vector'(hdo(frames)**".data.ipv4.flgsfrg") &
 					std_logic_vector'(hdo(frames)**".data.ipv4.ttl");
 
-			alias  rom_frm is ipv4tx_frm;
+			signal rom_frm     : std_logic;
 			signal rom_irdy    : std_logic;
 			signal rom_data    : std_logic_vector(ipv4rx_data'range);
 			signal ipv4length_data : std_logic_vector(ipv4rx_data'range);
@@ -296,11 +297,11 @@ begin
 			signal ipv4da_data     : std_logic_vector(ipv4rx_data'range);
 
 		begin
-			decode_frm  <= '0'; --(icmptx_frm or  icmptx_irdy);
-			decode_irdy <= 
-				decode_trdy when chksum_frm='1' else
-				decode_trdy when    pyl_frm='1' else
-				'0';
+			decode_frm  <= proto_frm; -- or icmptx_irdy;
+			decode_irdy <= decode_trdy;
+				-- decode_trdy when chksum_frm='1' else
+				-- decode_trdy when    pyl_frm='1' else
+				-- '0';
 
 			ipv4_i : entity hdl4fpga.frame_decode
 			generic map (
@@ -326,7 +327,7 @@ begin
 				act(0) => verihltos_frm,
 				act(1) => ipv4length_frm,
 				act(2) => identflgsfrgttl_frm,
-				act(3) => proto_frm,
+				act(3) => ivp4proto_frm,
 				act(4) => chksum_frm,
 				act(5) => ipv4sa_frm,
 				act(6) => ipv4da_frm,
@@ -335,10 +336,11 @@ begin
 			icmptx_trdy <= (pyl_frm or decode_fin) and ipv4tx_irdy and ipv4tx_trdy;
 
 			rom_irdy <=
-			   '1' and decode_irdy when       verihltos_frm='1' else
-			   '1' and decode_irdy when identflgsfrgttl_frm='1' else
+			   '1' and decode_trdy when       verihltos_frm='1' else
+			   '1' and decode_trdy when identflgsfrgttl_frm='1' else
 			   '0';
 
+			rom_frm  <= proto_frm; -- or icmptx_irdy;
 			rom_i : entity hdl4fpga.sio_rom
 			generic map (
 				bitdata => reverse (rom_bitdata,8))
@@ -350,14 +352,13 @@ begin
 				so_data => rom_data);
 
 			chksum_b : block
-				signal sa_frm : std_logic;
-				signal length_frm  : std_logic;
+				signal sa_frm      : std_logic;
 				signal length_data : std_logic_vector(ipv4rx_data'range);
 				signal chksum_frm  : std_logic;
 				signal chksum_irdy : std_logic;
 				signal chksum_data : std_logic_vector(ipv4rx_data'range);
 			begin
-
+				chksum_frm <= proto_frm;
 				chksum_i : entity hdl4fpga.frame_decode
 				generic map (
 					frame => compact('{'                                                       &
@@ -404,9 +405,9 @@ begin
 					so_trdy => open,
 					so_data => ipv4da_data);
 
-				chksum_irdy <= length_frm or icmpdatx_frm or sa_frm;
+				chksum_irdy <= icmplentx_frm or icmpdatx_frm or sa_frm;
 				chksum_data <=
-					icmptx_data when   length_frm='1' else
+					icmptx_data when   icmplentx_frm='1' else
 					icmptx_data when icmpdatx_frm='1' else
 					ipv4sa_data when       sa_frm='1' else
 					(chksum_data'range => '0');
@@ -436,13 +437,15 @@ begin
 			tpatx_irdy <= icmpdatx_irdy;
 
 			decode_data <= 
-				icmptx_data when          thatx_frm='1' else
-				rom_data    when       verihltos_frm='1' else
-				rom_data    when identflgsfrgttl_frm='1' else
-				icmptx_data when      ipv4length_frm='1' else
-				ipv4sa_data when          ipv4sa_frm='1' else
-				icmptx_data when          ipv4da_frm='1' else
-				icmptx_data when             pyl_frm='1' else
+				icmptx_data     when       icmpthatx_frm='1' else
+				rom_data        when       verihltos_frm='1' else
+				rom_data        when identflgsfrgttl_frm='1' else
+				x"6" when ivp4proto_frm='1' else
+				x"9" when    chksum_frm='1' else
+				ipv4length_data when      ipv4length_frm='1' else
+				ipv4sa_data     when          ipv4sa_frm='1' else
+				icmptx_data     when          ipv4da_frm='1' else
+				icmptx_data     when             pyl_frm='1' else
 				icmptx_data;
 
 			buffer_b : block

@@ -161,7 +161,7 @@ architecture nuhs3adsp_serdebug of testbench is
 		"icmp:0x"                  &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
-			"0000"                 & -- IP Length
+			"1234"                 & -- IP Length
 			"0000"                 & -- IP Identification
 			"0000"                 & -- IP Fragmentation
 			"0501"                 & -- IP TTL, protocol

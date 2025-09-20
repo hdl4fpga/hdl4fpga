@@ -57,7 +57,7 @@ begin
 				op1 := unsigned'('0' & acc(0 to data'length-1) & '1');
 				op2 := unsigned'('0' & unsigned(data) & cy);
 				sum := op1 + op2;
-				acc := sum(1 to data'length);
+				acc(0 to data'length-1) := sum(1 to data'length);
 				cy  := sum(0);
 			end if;
 			if frm='0' then
