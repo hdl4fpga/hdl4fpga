@@ -21,38 +21,38 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-entity mii_busarbtr is
-	generic (
-		n    : natural;
-		m    : natural);
+library hdl4fpga;
+use hdl4fpga.base.all;
+
+entity mii_arbiter is
 	port (
 		clk   : in  std_ulogic;
-		frms  : in  std_logic_vector(0 to n-1);
-		irdys : in  std_logic_vector(0 to n-1);
-		trdys : out std_logic_vector(0 to n-1);
-		gntd  : out std_logic_vector(0 to n-1);
+		frms  : in  std_logic_vector;
+		irdys : in  std_logic_vector;
+		trdys : out std_logic_vector;
+		gntd  : out std_logic_vector;
 		frm   : out std_logic;
 		irdy  : out std_ulogic;
-		trdy  : in  std_ulogic;
-		idata : in  std_logic_vector(0 to n*m-1) := (others => '-');
-		tdata : out std_logic_vector(0 to m-1));
+		trdy  : in  std_ulogic);
 end;
 
-architecture def of mii_busarbtr is
-	signal id : natural range 0 to frms'length-1;
+architecture mix of mii_arbiter is
 begin
-	process (trdy, clk)
+
+	process (frms, irdys, trdy, clk)
 		type states is (s_idle, s_gntd);
 		variable state : states;
+		variable id : natural range frms'range;
 	begin
 		if rising_edge(clk) then
 			case state is
 			when s_idle =>
-				gntd <= (others => '0');
+				gntd <= (gntd'range => '0');
 				for i in frms'range loop
 					if frms(i)='1' then
-						id      <= i;
+						id := i;
 						gntd(i) <= '1';
 						state   := s_gntd;
 						exit;
@@ -60,15 +60,29 @@ begin
 				end loop;
 			when s_gntd =>
 				if (frms(id) or irdys(id) or trdy)='0' then
-					gntd  <= (others => '0');
+					gntd  <= (gntd'range => '0');
 					state := s_idle;
 				end if;
 			end case;
 		end if;
-		trdys     <= (others => '0');
-		trdys(id) <= trdy;
+		frm  <= '0';
+		irdy <= '0';
+		trdys <= (trdys'range => '0');
+		case state is 
+		when s_idle => 
+			for i in frms'range loop
+				if frms(i)='1' then
+					frm  <=  frms(i);
+					irdy <= irdys(i);
+					trdys(i) <= trdy;
+					exit;
+				end if;
+			end loop;
+		when s_gntd =>
+			frm  <=  frms(id);
+			irdy <= irdys(id);
+			trdys(id) <= trdy;
+		end case;
 	end process;
-	frm   <= '1' when  frms /= (frms'range => '0')  else '0';
-	irdy  <= '1' when irdys /= (irdys'range => '0') else '0';
-	tdata <= idata(id*m to (id+1)*m-1);
+
 end;
