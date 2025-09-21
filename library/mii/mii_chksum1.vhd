@@ -54,11 +54,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			if ((active or frm) and irdy)='1' then
-				acc := rotate_right(acc, data'length);
-				op1 := unsigned'('0' & acc(0 to data'length-1) & '1');
-				op2 := unsigned'('0' & unsigned(data) & cy);
+				op1 := unsigned'('0' & reverse(acc(0 to data'length-1)) & '1');
+				op2 := unsigned'('0' & unsigned(reverse(data)) & cy);
 				sum := op1 + op2;
-				acc(0 to data'length-1) := sum(1 to data'length);
+				acc(0 to data'length-1) := reverse(sum(1 to data'length));
+				acc := rotate_left(acc, data'length);
 				cy  := sum(0);
 			end if;
 			if frm='0' then
@@ -71,10 +71,10 @@ begin
 				active := '1';
 			end if;
 			if active='0' then
-				acc := unsigned(chksum1(init,n));
+				acc := unsigned(reverse(chksum1(init,n),n));
 				cy  := '0';
 			end if;
-			chksum <= reverse(std_logic_vector(acc(0 to chksum'length-1)));
+			chksum <= std_logic_vector(acc(0 to chksum'length-1));
 		end if;
 		trdy <= (frm or active) and irdy;
 	end process;

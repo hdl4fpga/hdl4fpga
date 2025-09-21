@@ -1460,6 +1460,8 @@ $(HDL4FPGA__mii_buffer__def) : ../mii/mii_buffer.vhd \
 
 $(HDL4FPGA__mii_chksum1) \
 $(HDL4FPGA__mii_chksum1__beh) : ../mii/mii_chksum1.vhd \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
