@@ -237,6 +237,8 @@ HDL4FPGA__mii_cmp__def = $(LIB_HDL4FPGA)/mii_cmp/def.dat
 HDL4FPGA__mii_cmp = $(LIB_HDL4FPGA)/mii_cmp/_primary.dat
 HDL4FPGA__mii_chksum1__beh = $(LIB_HDL4FPGA)/mii_chksum1/beh.dat
 HDL4FPGA__mii_chksum1 = $(LIB_HDL4FPGA)/mii_chksum1/_primary.dat
+HDL4FPGA__mii_busarbtr__def = $(LIB_HDL4FPGA)/mii_busarbtr/def.dat
+HDL4FPGA__mii_busarbtr = $(LIB_HDL4FPGA)/mii_busarbtr/_primary.dat
 HDL4FPGA__mii_buffer__def = $(LIB_HDL4FPGA)/mii_buffer/def.dat
 HDL4FPGA__mii_buffer = $(LIB_HDL4FPGA)/mii_buffer/_primary.dat
 HDL4FPGA__link_mii__graphics = $(LIB_HDL4FPGA)/link_mii/graphics.dat
@@ -613,6 +615,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_cmp) \
     $(HDL4FPGA__mii_chksum1__beh) \
     $(HDL4FPGA__mii_chksum1) \
+    $(HDL4FPGA__mii_busarbtr__def) \
+    $(HDL4FPGA__mii_busarbtr) \
     $(HDL4FPGA__mii_buffer__def) \
     $(HDL4FPGA__mii_buffer) \
     $(HDL4FPGA__link_mii__graphics) \
@@ -1458,6 +1462,12 @@ $(HDL4FPGA__mii_buffer__def) : ../mii/mii_buffer.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../mii/mii_buffer.vhd
 
+$(HDL4FPGA__mii_busarbtr) \
+$(HDL4FPGA__mii_busarbtr__def) : ../mii/mii_busarbtr.vhd \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/mii_busarbtr.vhd
+
 $(HDL4FPGA__mii_chksum1) \
 $(HDL4FPGA__mii_chksum1__beh) : ../mii/mii_chksum1.vhd \
 		$(HDL4FPGA__hdo) \
@@ -1482,6 +1492,8 @@ $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__ipv4) \
 		$(HDL4FPGA__eth_tx) \
+		$(HDL4FPGA__mii_busarbtr) \
+		$(HDL4FPGA__arpd) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__ipoepkg) \
