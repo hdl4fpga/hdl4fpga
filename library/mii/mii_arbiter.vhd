@@ -32,7 +32,7 @@ entity mii_arbiter is
 		frms  : in  std_logic_vector;
 		irdys : in  std_logic_vector;
 		trdys : out std_logic_vector;
-		gntd  : out std_logic_vector;
+		gntd  : buffer std_logic_vector;
 		frm   : out std_logic;
 		irdy  : out std_ulogic;
 		trdy  : in  std_ulogic);
@@ -41,10 +41,9 @@ end;
 architecture mix of mii_arbiter is
 begin
 
-	process (frms, irdys, trdy, clk)
+	process (clk)
 		type states is (s_idle, s_gntd);
 		variable state : states;
-		variable id : natural range frms'range;
 	begin
 		if rising_edge(clk) then
 			case state is
@@ -52,37 +51,22 @@ begin
 				gntd <= (gntd'range => '0');
 				for i in frms'range loop
 					if frms(i)='1' then
-						id := i;
 						gntd(i) <= '1';
 						state   := s_gntd;
 						exit;
 					end if;
 				end loop;
 			when s_gntd =>
-				if (frms(id) or irdys(id) or trdy)='0' then
+				if ((frms or irdys or (frms'range => trdy)) and gntd)=(frms'range => '0') then
 					gntd  <= (gntd'range => '0');
 					state := s_idle;
 				end if;
 			end case;
 		end if;
-		frm  <= '0';
-		irdy <= '0';
-		trdys <= (trdys'range => '0');
-		case state is 
-		when s_idle => 
-			for i in frms'range loop
-				if frms(i)='1' then
-					frm  <=  frms(i);
-					irdy <= irdys(i);
-					trdys(i) <= trdy;
-					exit;
-				end if;
-			end loop;
-		when s_gntd =>
-			frm  <=  frms(id);
-			irdy <= irdys(id);
-			trdys(id) <= trdy;
-		end case;
 	end process;
+
+	frm   <= '1' when  (frms and gntd) /= (gntd'range => '0') else '0';
+	irdy  <= '1' when (irdys and gntd) /= (gntd'range => '0') else '0';
+	trdys <= (gntd'range => trdy) and gntd;
 
 end;
