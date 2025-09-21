@@ -356,32 +356,37 @@ begin
 				so_data => rom_data);
 
 			chksum_b : block
+				signal decode_frm  : std_logic;
+				signal decode_irdy : std_logic;
 				signal sa_frm      : std_logic;
+				alias  sa_irdy     is sa_frm;
+				signal sa_data     : std_logic_vector(ipv4rx_data'range);
 				signal length_data : std_logic_vector(ipv4rx_data'range);
 				signal chksum_frm  : std_logic;
 				signal chksum_irdy : std_logic;
 				signal chksum_data : std_logic_vector(ipv4rx_data'range);
-				signal act1 : std_logic;
+				signal act3 : std_logic;
 				signal act4 : std_logic;
 			begin
-				chksum_frm <= proto_frm;
+				decode_frm  <= proto_frm;
+				decode_irdy <= decode_frm;
 				chksum_i : entity hdl4fpga.frame_decode
 				generic map (
 					frame => compact('{'                                                       &
 						"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-						" proto:" & string'(hdo(frames)**".format.ipv4.proto") & ',' &
-						"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
-						"    da:" & string'(hdo(frames)**".format.ipv4.da")     & '}'),
+						"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
+						"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & '}'), -- &
+						-- " proto:" & string'(hdo(frames)**".format.ipv4.proto")  & '}'),
 					size  => ipv4tx_data'length)
 				port map (
 					clk    => miitx_clk,
-					frm    => chksum_frm,
-					irdy   => chksum_irdy,
+					frm    => decode_frm,
+					irdy   => decode_irdy,
 					act(0) => icmplentx_frm,
-					act(1) => act1,
-					act(2) => icmpdatx_frm,
-					act(3) => sa_frm,
-					act(4) => act4);
+					act(1) => icmpdatx_frm,
+					act(2) => sa_frm,
+					-- act(3) => act3,
+					act(3) => act4);
 
 				length_i : entity hdl4fpga.sio_ram
 				generic map (
@@ -398,6 +403,17 @@ begin
 					so_trdy => open,
 					so_data => ipv4length_data);
 
+				sa_i : entity hdl4fpga.sio_ram
+				generic map (
+					bitdata => reverse(ipv4addr,8))
+				port map (
+					si_data => ipv4rx_data,
+					so_clk  => miitx_clk,
+					so_frm  => sa_frm,
+					so_irdy => sa_irdy,
+					so_trdy => open,
+					so_data => sa_data);
+
 				da_i : entity hdl4fpga.sio_ram
 				generic map (
 					bitdata => (0 to hdo(frames)**".format.ipv4.da"-1 => '-'))
@@ -413,11 +429,12 @@ begin
 					so_trdy => open,
 					so_data => ipv4da_data);
 
+				chksum_frm  <= proto_frm;
 				chksum_irdy <= icmplentx_frm or icmpdatx_frm or sa_frm or ipv4chksum_frm;
 				chksum_data <=
-					icmptx_data when   icmplentx_frm='1' else
-					icmptx_data when icmpdatx_frm='1' else
-					ipv4sa_data when       sa_frm='1' else
+					icmptx_data when icmplentx_frm='1' else
+					icmptx_data when  icmpdatx_frm='1' else
+					    sa_data when        sa_frm='1' else
 					(chksum_data'range => '0');
 
 				mii_chksum1_i : entity hdl4fpga.mii_chksum1
