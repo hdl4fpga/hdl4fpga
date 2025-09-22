@@ -135,22 +135,22 @@ begin
 				if rising_edge(miirx_clk) then
 					if icmprx_frm='1' then
 						if (chksum_frm and chksum_irdy)='1' then
+							op1 := unsigned('0' & reverse(icmprx_data) & '1');
+							op2 := unsigned('0' & reverse(chksum_miib) & cy);
+							sum := op1 + op2;
 							cy := sum(0);
 							co <= cy;
 							chksum_diff <= rotate_left(chksum_diff, icmprx_data'length);
 						end if;
 					else
 						chksum_diff <=
-							resize(unsigned'(hdo(frames)**".data.icmp.rqst.type"), chksum_diff'length) + 
-							resize(unsigned'(hdo(frames)**".data.icmp.rqst.code"), chksum_diff'length);
+							reverse((hdo(frames)**".data.icmp.rqst.type")) &
+							reverse((hdo(frames)**".data.icmp.rqst.code"));
 						cy := '0';
 					end if;
-					op1 := unsigned('0' & reverse(icmprx_data) & '1');
-					op2 := unsigned('0' & chksum_miib          & cy);
-					sum := op1 + op2;
 
 					if (chksum_frm and icmprx_irdy)='1' then
-						wr_data <= std_logic_vector(sum(1 to icmprx_data'length));
+						wr_data <= std_logic_vector(reverse(sum(1 to icmprx_data'length)));
 					elsif ((type_frm or code_frm) and icmprx_irdy)='1' then
 						wr_data <= rom_data;
 					else 
