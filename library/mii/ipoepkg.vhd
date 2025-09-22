@@ -95,25 +95,34 @@ package ipoepkg is
 			    " plen:0x04,"       &
 			    " oper:{"           &
 					"reply:0x0002}}," &
-    		"ipv4:{"                &
-				" verihl:0x45,"     &
-				"    tos:0x00,"     & 
-				"  ident:0x0000,"   &
-				"flgsfrg:0x0000,"   &
-				"    ttl:0x05,"     &
-				"  proto:{"         &
-					"icmp:0x01,"    &
-					" udp:0x11}},"  &
-			"icmp:{"                &
-				"reply:{"           &
-					"code:0x00,"    &
-					"type:0x00},"   &
-				"rqst:{"            &
-					"code:0x00,"    &
-					"type:0x08}},"  &
-			"dhcp:{"                &
-				"op:{"              &
-					"offer:0x02}}}}");
+    		"ipv4:{"                  &
+				" verihl:0x45,"       &
+				"    tos:0x00,"       & 
+				"  ident:0x0000,"     &
+				"flgsfrg:0x0000,"     &
+				"    ttl:0x05,"       &
+				"  proto:{"           &
+					"icmp:0x01,"      &
+					" udp:0x11}},"    &
+			"icmp:{"                  &
+				"reply:{"             &
+					"code:0x00,"      &
+					"type:0x00},"     &
+				"rqst:{"              &
+					"code:0x00,"      &
+					"type:0x08}},"    &
+			"dhcp:{"                  &
+				"op:{"                &
+					"discover:0x01,"  &
+					   "offer:0x02}," &
+				"xid:{"               &
+					"discover:0x3903f326}," &
+				"magiccookie:{"               &
+					"discover:0x63825363}," &
+				"vendordata:{"               &
+					"discover:0x350101}," &
+				"iprequest:0x320400000000," &
+				"endmark:0xff}}");
 
 	function aton (
 		constant ipa : string)

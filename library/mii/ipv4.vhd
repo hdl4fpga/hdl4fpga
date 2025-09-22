@@ -290,7 +290,6 @@ begin
 					std_logic_vector'(hdo(frames)**".data.ipv4.ident")   &
 					std_logic_vector'(hdo(frames)**".data.ipv4.flgsfrg") &
 					std_logic_vector'(hdo(frames)**".data.ipv4.ttl")     &
-					-- x"00";
 					std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp");
 
 			signal rom_frm     : std_logic;
