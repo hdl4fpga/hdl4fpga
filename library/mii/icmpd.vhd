@@ -72,8 +72,6 @@ entity icmpd is
 end;
 
 architecture def of icmpd is
-	signal co      : std_logic;
-
 	signal tx_req  : std_logic := '0';
 	signal tx_rdy  : std_logic := '0';
 	signal wr_addr : std_logic_vector(0 to 10-1);
@@ -138,8 +136,7 @@ begin
 							op1 := unsigned('0' & reverse(icmprx_data) & '1');
 							op2 := unsigned('0' & reverse(chksum_miib) & cy);
 							sum := op1 + op2;
-							cy := sum(0);
-							co <= cy;
+							cy  := sum(0);
 							chksum_diff <= rotate_left(chksum_diff, icmprx_data'length);
 						end if;
 					else
@@ -296,27 +293,6 @@ begin
 			act(0) => lead_frm,
 			act(1) => chksum_frm,
 			act(2) => pyl_frm);
-
-		chksumtx_b : block
-		begin
-			process (miitx_clk)
-				variable sum : unsigned(0 to icmptx_data'length+1);
-				variable op1 : unsigned(sum'range);
-				variable op2 : unsigned(sum'range);
-				variable cy  : std_logic;
-			begin
-				if rising_edge(miitx_clk) then
-					op1 := unsigned'('0' & (icmptx_data'range => '0') & '1');
-					op2 := unsigned'('0' & (icmptx_data'range => '0') & cy);
-					sum := op1 + op2;
-					if icmptx_frm='0' then
-						cy := '0';
-					elsif chksum_frm='1' then
-						cy := sum(0);
-					end if;
-				end if;
-			end process;
-		end block;
 
 		buffer_frm  <= decode_frm when unsigned(rd_addr) /= unsigned(wr_addr) else '0';
 		buffer_irdy <= decode_frm;
