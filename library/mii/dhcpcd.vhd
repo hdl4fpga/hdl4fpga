@@ -105,9 +105,24 @@ begin
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => '{'                                                       &
-				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
-				"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & '}', -- &
+				"head:" & natural'image(
+					hdo(frames)**"..dhcp.discover.op   "       &
+					hdo(frames)**"..dhcp.discover.htype"       &
+					hdo(frames)**"..dhcp.discover.hlen "       &
+					hdo(frames)**"..dhcp.discover.hops "       &
+					hdo(frames)**"..dhcp.discover.xid")        &
+				"discard:" & natural'image(
+						hdo(frames)**".data.dhcp.discover.op   "       &
+						hdo(frames)**".data.dhcp.discover.htype"       &
+						hdo(frames)**".data.dhcp.discover.hlen "       &
+						hdo(frames)**".data.dhcp.discover.hops "       &
+						hdo(frames)**".data.dhcp.discover.xid")        &
+
+					hdo(frames)**".format.ipv4.verihl"  +
+					hdo(frames)**".format.ipv4.tos")                              & ',' &
+				"length:" & string'(hdo(frames)**".format.dhcp.") & ',' &
+				"    da:" & string'(hdo(frames)**".format.dhcp.da")     & ',' &
+				"    sa:" & string'(hdo(frames)**".format.dhcp.sa")     & '}', -- &
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miitx_clk,
@@ -117,15 +132,19 @@ begin
 			act(1) => icmpdatx_frm,
 			act(2) => sa_frm,
 			act(3) => act4);
-			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
+
 		rom_i : entity hdl4fpga.rom
 		generic map (
 			bitdata => reverse(
-				std_logic_vector'(hdo(frames)**".data.dhcp.discover.op   ")    &
-				std_logic_vector'(hdo(frames)**".data.dhcp.discover.htype") &
-				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen ")  &
-				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops ")  &
-				,8))
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.op   ")       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.htype")       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen ")       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops ")       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.xid")         &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.magiccookie") &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.vendordata")  &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.iprequest")   &
+				std_logic_vector'(hdo(frames)**".data.dhcp.endmark") ,8))
 		port map
 			clk  => miitx_clk,
 			frm  => ,
