@@ -140,10 +140,10 @@ begin
 							chksum_diff <= rotate_left(chksum_diff, icmprx_data'length);
 						end if;
 					else
+						cy := '0';
 						chksum_diff <=
 							reverse((hdo(frames)**".data.icmp.rqst.type")) &
 							reverse((hdo(frames)**".data.icmp.rqst.code"));
-						cy := '0';
 					end if;
 
 					if (chksum_frm and icmprx_irdy)='1' then
