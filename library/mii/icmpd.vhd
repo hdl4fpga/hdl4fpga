@@ -191,16 +191,12 @@ begin
 			end if;
 		end process;
 
-		process (miirx_clk)
-			variable q : std_logic;
+		process (miitx_clk)
 		begin
-			if rising_edge(miirx_clk) then
+			if rising_edge(miitx_clk) then
 				if (tx_req xor tx_rdy)='0' then
 					if icmprx_frm='1' then
-						q := '1';
-					elsif q = '1' then
 						tx_req <= not tx_rdy;
-						q := '0';
 					end if;
 				end if;
 			end if;
