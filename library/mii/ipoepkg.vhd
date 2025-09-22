@@ -115,6 +115,12 @@ package ipoepkg is
 				"op:{"                &
 					"discover:0x01,"  &
 					   "offer:0x02}," &
+				"htype:{"              &
+				    "discover:0x01}," &
+				"hlen:{"              &
+				    "discover:0x06}," &
+				"hops:{"              &
+				    "discover:0x00}," &
 				"xid:{"               &
 					"discover:0x3903f326}," &
 				"magiccookie:{"               &
@@ -124,6 +130,7 @@ package ipoepkg is
 				"iprequest:0x320400000000," &
 				"endmark:0xff}}");
 
+			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
 	function aton (
 		constant ipa : string)
 		return std_logic_vector;

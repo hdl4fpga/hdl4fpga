@@ -83,6 +83,58 @@ architecture def of dhcpcd is
 
 begin
 
+	discover_b : block
+	begin
+    		"dhcp:{"                &
+    			"      op:8,"       &
+    			"   htype:8,"       &
+    			"    hlen:8,"       &
+    			"    hops:8,"       &
+    			"     xid:32,"      &
+    			"    secs:16,"      &
+    			"   flags:16,"      &
+    			"  ciaddr:32,"      &
+    			"  yiaddr:32,"      &
+    			"  siaddr:32,"      &
+    			"  giaddr:32,"      &
+    			" chaddr6:48,"      &
+    			"chaddr10:80,"      &
+    			"  shname:512,"     &
+    			"  fbname:1024,"    &
+    			"  cookie:32}},"    &
+		decode_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => '{'                                                       &
+				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
+				"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & '}', -- &
+			size  => ipv4tx_data'length)
+		port map (
+			clk    => miitx_clk,
+			frm    => decode_frm,
+			irdy   => decode_irdy,
+			act(0) => icmplentx_frm,
+			act(1) => icmpdatx_frm,
+			act(2) => sa_frm,
+			act(3) => act4);
+			x"01010600"  &    -- OP, HTYPE, HLEN,  HOPS
+		rom_i : entity hdl4fpga.rom
+		generic map (
+			bitdata => reverse(
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.op   ")    &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.htype") &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen ")  &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops ")  &
+				,8))
+		port map
+			clk  => miitx_clk,
+			frm  => ,
+			irdy => ,
+			trdy => ,
+			data => );
+
+	end block;
+
 	dhcpoffer_e : entity hdl4fpga.dhcpc_offer
 	port map (
 		mii_clk          => mii_clk,
