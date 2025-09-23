@@ -51,58 +51,29 @@ entity dhcpcd is
 		hwdarx_vld    : in  std_logic;
 
 		dhcpcdtx_frm  : buffer std_logic;
-		dlltx_irdy    : out std_logic;
-		dlltx_end     : in  std_logic;
-		dlltx_data    : out std_logic_vector;
-		netdatx_end   : in  std_logic;
-		netdatx_irdy  : out std_logic;
-		netlentx_end  : in  std_logic;
-		netlentx_irdy : out std_logic;
-		netlentx_data : out std_logic_vector;
-		nettx_end     : in  std_logic;
-
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic;
-		dhcpcdtx_end  : buffer std_logic;
 		dhcpcdtx_data : out std_logic_vector;
 		tp            : out std_logic_vector(1 to 32));
 end;
 
 architecture def of dhcpcd is
 
-	signal dhcpop_irdy       : std_logic;
-	signal dhcpchaddr6_frm   : std_logic;
-	signal dhcpchaddr6_irdy  : std_logic;
-	signal dhcpyia_frm       : std_logic;
-	signal dhcpyia_irdy      : std_logic;
-
-	signal dhcpctx_irdy      : std_logic;
-
-	signal dscbipv4sawr_frm  : std_logic;
-	signal dscbipv4sawr_irdy : std_logic;
-
 begin
 
 	discover_b : block
+		signal decode_frm  : std_logic;
+		signal decode_irdy : std_logic;
+		signal rom0_frm    : std_logic;
+		signal rom2_frm    : std_logic;
+		signal rom3_frm    : std_logic;
+		signal rom_irdy    : std_logic;
+		signal rom_data    : std_logic_vector(dhcpcdtx_data'range);
+		signal discard1    : std_logic;
+		signal discard3    : std_logic;
+		signal discard5    : std_logic;
 	begin
-    		"dhcp:{"                &
-    			"      op:8,"       &
-    			"   htype:8,"       &
-    			"    hlen:8,"       &
-    			"    hops:8,"       &
-    			"     xid:32,"      &
-    			"    secs:16,"      &
-    			"   flags:16,"      &
-    			"  ciaddr:32,"      &
-    			"  yiaddr:32,"      &
-    			"  siaddr:32,"      &
-    			"  giaddr:32,"      &
-    			" chaddr6:48,"      &
-    			"chaddr10:80,"      &
-    			"  shname:512,"     &
-    			"  fbname:1024,"    &
-    			"  cookie:32}},"    &
-		discover_i : entity hdl4fpga.frame_decode
+		decode_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => '{'                                                       &
 				"    rom:" & natural'image(
@@ -126,18 +97,21 @@ begin
 				"    rom:" & natural'image(
 					hdo(frames)**".format.dhcp.cookie"     +
 					hdo(frames)**".format.dhcp.vendordata" +
-					hdo(frames)**".format.dhcp.iprequest" +
+					hdo(frames)**".format.dhcp.iprequest"  +
 					hdo(frames)**".format.dhcp.endmark") & '}',
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
-			act(0) => icmplentx_frm,
-			act(1) => icmpdatx_frm,
-			act(2) => sa_frm,
-			act(3) => act4);
-
+			act(0) => rom0_frm,
+			act(1) => discard1,
+			act(2) => rom2_frm,
+			act(3) => discard3,
+			act(4) => rom4_frm,
+			act(5) => discard5;
+		
+		rom_irdy <= (rom0_frm or rom2_frm or rom4_frm) and dhcpcdtx_trdy);
 		rom_i : entity hdl4fpga.rom
 		generic map (
 			bitdata => reverse(
@@ -152,10 +126,10 @@ begin
 				std_logic_vector'(hdo(frames)**".data.dhcp.endmark") ,8))
 		port map
 			clk  => miitx_clk,
-			frm  => ,
-			irdy => ,
-			trdy => ,
-			data => );
+			frm  => decode_frm,
+			irdy => rom_irdy,
+			trdy => open,
+			data => rom_data);
 
 	end block;
 
