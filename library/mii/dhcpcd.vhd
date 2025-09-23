@@ -120,10 +120,14 @@ begin
 					hdo(frames)**".data.dhcp.giaddr") & ',' &
 				"    rom:" & string'(hdo(frames)**".data.dhcp.chaddr6") & ',' & 
 				"discard:" & natural'image(
-					hdo(frames)**".data.dhcp.chaddr10" +
-					hdo(frames)**".data.dhcp.shname"   +
-					hdo(frames)**".data.dhcp.fbname")  & ',' & 
-				"    rom:" & string'(hdo(frames)**".data.dhcp.cookie") & ',' & 
+					hdo(frames)**".format.dhcp.chaddr10" +
+					hdo(frames)**".format.dhcp.shname"   +
+					hdo(frames)**".format.dhcp.fbname")  & ',' & 
+				"    rom:" & natural'image(
+					hdo(frames)**".format.dhcp.cookie"     +
+					hdo(frames)**".format.dhcp.vendordata" +
+					hdo(frames)**".format.dhcp.iprequest" +
+					hdo(frames)**".format.dhcp.endmark") & '}',
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miitx_clk,
@@ -142,7 +146,7 @@ begin
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen ")       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops ")       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.xid")         &
-				std_logic_vector'(hdo(frames)**".data.dhcp.discover.magiccookie") &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.cookie") &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.vendordata")  &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.iprequest")   &
 				std_logic_vector'(hdo(frames)**".data.dhcp.endmark") ,8))

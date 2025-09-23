@@ -82,7 +82,10 @@ package ipoepkg is
     			"chaddr10:80,"                    &
     			"  shname:512,"                   &
     			"  fbname:1024,"                  &
-    			"  cookie:32}},"                  &
+    			"  cookie:32,"                    &
+    			"vendordata:24,"                  &
+    			"iprequest:48,"                   &
+    			"  endmark:8}},"                  &
 		"data:{"                                  &
     		"mac:{"                               &
 				"type:{"                          &
