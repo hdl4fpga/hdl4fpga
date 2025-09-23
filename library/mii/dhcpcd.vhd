@@ -102,27 +102,28 @@ begin
     			"  shname:512,"     &
     			"  fbname:1024,"    &
     			"  cookie:32}},"    &
-		decode_i : entity hdl4fpga.frame_decode
+		discover_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => '{'                                                       &
-				"head:" & natural'image(
-					hdo(frames)**"..dhcp.discover.op   "       &
-					hdo(frames)**"..dhcp.discover.htype"       &
-					hdo(frames)**"..dhcp.discover.hlen "       &
-					hdo(frames)**"..dhcp.discover.hops "       &
-					hdo(frames)**"..dhcp.discover.xid")        &
+				"    rom:" & natural'image(
+					hdo(frames)**".format.dhcp.op   " +
+					hdo(frames)**".format.dhcp.htype" +
+					hdo(frames)**".format.dhcp.hlen " +
+					hdo(frames)**".format.dhcp.hops " +
+					hdo(frames)**".format.dhcp.xid") & ',' &
 				"discard:" & natural'image(
-						hdo(frames)**".data.dhcp.discover.op   "       &
-						hdo(frames)**".data.dhcp.discover.htype"       &
-						hdo(frames)**".data.dhcp.discover.hlen "       &
-						hdo(frames)**".data.dhcp.discover.hops "       &
-						hdo(frames)**".data.dhcp.discover.xid")        &
-
-					hdo(frames)**".format.ipv4.verihl"  +
-					hdo(frames)**".format.ipv4.tos")                              & ',' &
-				"length:" & string'(hdo(frames)**".format.dhcp.") & ',' &
-				"    da:" & string'(hdo(frames)**".format.dhcp.da")     & ',' &
-				"    sa:" & string'(hdo(frames)**".format.dhcp.sa")     & '}', -- &
+					hdo(frames)**".data.dhcp.secs"    +
+					hdo(frames)**".data.dhcp.flags"   +
+					hdo(frames)**".data.dhcp.ciaddr"  +
+					hdo(frames)**".data.dhcp.yiaddr"  +
+					hdo(frames)**".data.dhcp.siaddr"  +
+					hdo(frames)**".data.dhcp.giaddr") & ',' &
+				"    rom:" & string'(hdo(frames)**".data.dhcp.chaddr6") & ',' & 
+				"discard:" & natural'image(
+					hdo(frames)**".data.dhcp.chaddr10" +
+					hdo(frames)**".data.dhcp.shname"   +
+					hdo(frames)**".data.dhcp.fbname")  & ',' & 
+				"    rom:" & string'(hdo(frames)**".data.dhcp.cookie") & ',' & 
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miitx_clk,
