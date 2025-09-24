@@ -346,6 +346,7 @@ begin
 	-- tp(2 to 2+miirx_data'length-1) <= miirx_data;
 	ipv4_i : entity hdl4fpga.ipv4
 	generic map (
+		hwaddr   => hwaddr,
 		ipv4addr => ipv4addr)
 	port map (
 		tp => tp,

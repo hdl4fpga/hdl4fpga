@@ -118,6 +118,8 @@ package ipoepkg is
 			   "offer:{"                          &
 					"op:0x02},"                   &
 				"discover:{"                      &
+					"        sp:0x0044,"          &
+					"        dp:0x0043,"          &
 					"        op:0x01,"            &
 					"     htype:0x01,"            &
 					"      hlen:0x06,"            &

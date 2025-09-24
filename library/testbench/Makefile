@@ -94,8 +94,6 @@ HDL4FPGA__usbdev__def = $(LIB_HDL4FPGA)/usbdev/def.dat
 HDL4FPGA__usbdev = $(LIB_HDL4FPGA)/usbdev/_primary.dat
 HDL4FPGA__usbcrc__def = $(LIB_HDL4FPGA)/usbcrc/def.dat
 HDL4FPGA__usbcrc = $(LIB_HDL4FPGA)/usbcrc/_primary.dat
-HDL4FPGA__udp_rx__def = $(LIB_HDL4FPGA)/udp_rx/def.dat
-HDL4FPGA__udp_rx = $(LIB_HDL4FPGA)/udp_rx/_primary.dat
 HDL4FPGA__uart_tx__def = $(LIB_HDL4FPGA)/uart_tx/def.dat
 HDL4FPGA__uart_tx = $(LIB_HDL4FPGA)/uart_tx/_primary.dat
 HDL4FPGA__uart_rx__def = $(LIB_HDL4FPGA)/uart_rx/def.dat
@@ -329,6 +327,8 @@ HDL4FPGA__dmacntr__def = $(LIB_HDL4FPGA)/dmacntr/def.dat
 HDL4FPGA__dmacntr = $(LIB_HDL4FPGA)/dmacntr/_primary.dat
 HDL4FPGA__dll_rx__def = $(LIB_HDL4FPGA)/dll_rx/def.dat
 HDL4FPGA__dll_rx = $(LIB_HDL4FPGA)/dll_rx/_primary.dat
+HDL4FPGA__dhcpcd__def = $(LIB_HDL4FPGA)/dhcpcd/def.dat
+HDL4FPGA__dhcpcd = $(LIB_HDL4FPGA)/dhcpcd/_primary.dat
 HDL4FPGA__dfs2dfs__behavioral = $(LIB_HDL4FPGA)/dfs2dfs/behavioral.dat
 HDL4FPGA__dfs2dfs = $(LIB_HDL4FPGA)/dfs2dfs/_primary.dat
 HDL4FPGA__devmux__def = $(LIB_HDL4FPGA)/devmux/def.dat
@@ -472,8 +472,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__usbdev) \
     $(HDL4FPGA__usbcrc__def) \
     $(HDL4FPGA__usbcrc) \
-    $(HDL4FPGA__udp_rx__def) \
-    $(HDL4FPGA__udp_rx) \
     $(HDL4FPGA__uart_tx__def) \
     $(HDL4FPGA__uart_tx) \
     $(HDL4FPGA__uart_rx__def) \
@@ -707,6 +705,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__dmacntr) \
     $(HDL4FPGA__dll_rx__def) \
     $(HDL4FPGA__dll_rx) \
+    $(HDL4FPGA__dhcpcd__def) \
+    $(HDL4FPGA__dhcpcd) \
     $(HDL4FPGA__dfs2dfs__behavioral) \
     $(HDL4FPGA__dfs2dfs) \
     $(HDL4FPGA__devmux__def) \
@@ -1033,6 +1033,18 @@ $(HDL4FPGA__dfs2dfs__behavioral) : ../xilinx/dfs2dfs.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 -work hdl4fpga ../xilinx/dfs2dfs.vhd
+
+$(HDL4FPGA__dhcpcd) \
+$(HDL4FPGA__dhcpcd__def) : ../mii/dhcpcd.vhd \
+		$(HDL4FPGA__sio_rom) \
+		$(HDL4FPGA__frame_decode) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__base) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/dhcpcd.vhd
 
 $(HDL4FPGA__dll_rx) \
 $(HDL4FPGA__dll_rx__def) : ../mii/dll_rx.vhd \
@@ -2299,17 +2311,6 @@ $(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../uart/uart_tx.vhd
-
-$(HDL4FPGA__udp_rx) \
-$(HDL4FPGA__udp_rx__def) : ../mii/udp_rx.vhd \
-		$(HDL4FPGA__frame_decode) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__base) \
-		$(HDL4FPGA__hdo) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../mii/udp_rx.vhd
 
 $(HDL4FPGA__usbcrc) \
 $(HDL4FPGA__usbcrc__def) : ../usb/usbcrc.vhd \

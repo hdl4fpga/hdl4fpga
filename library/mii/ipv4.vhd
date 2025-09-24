@@ -30,7 +30,8 @@ use hdl4fpga.ipoepkg.all;
 
 entity ipv4 is
 	generic (
-		ipv4addr    : std_logic_vector);
+		hwaddr        : std_logic_vector;
+		ipv4addr      : std_logic_vector);
 	port (
 		miirx_clk     : in  std_logic;
 

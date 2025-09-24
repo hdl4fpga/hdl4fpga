@@ -21,6 +21,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
@@ -28,6 +29,8 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 entity dhcpcd is
+	generic (
+		hwaddr        : std_logic_vector(0 to 48-1));
 	port (
 		mii_clk       : in  std_logic;
 		dhcpcdrx_frm  : in  std_logic;
@@ -52,7 +55,7 @@ entity dhcpcd is
 		hwda_equ      : in  std_logic;
 		hwdarx_vld    : in  std_logic;
 
-		miitx_clk       : in  std_logic;
+		miitx_clk     : in  std_logic;
 		dhcpcdtx_frm  : buffer std_logic;
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic;
@@ -61,15 +64,30 @@ entity dhcpcd is
 end;
 
 architecture def of dhcpcd is
-
 begin
 
 	discover_b : block
+		constant tha : std_logic_vector    := x"ff_ff_ff_ff_ff_ff";
+		constant discover_length : natural := 250;
+		constant udp_length : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8,16));
+		constant udp_chksum : std_logic_vector := not chksum1 (
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.sp")         &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.dp")         &
+				udp_length                                                       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.op")         &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.htype")      &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen")       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops")       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.xid")        &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.cookie")     &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.vendordata") &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.iprequest")  &
+				std_logic_vector'(hdo(frames)**".data.dhcp.endmark"), 16);
 		signal decode_frm  : std_logic;
 		signal decode_irdy : std_logic;
-		signal rom0_frm    : std_logic;
-		signal rom2_frm    : std_logic;
-		signal rom4_frm    : std_logic;
+		signal rom0_act    : std_logic;
+		signal rom2_act    : std_logic;
+		signal rom4_act    : std_logic;
 		signal rom_irdy    : std_logic;
 		signal rom_data    : std_logic_vector(dhcpcdtx_data'range);
 		signal discard1    : std_logic;
@@ -80,7 +98,12 @@ begin
 		generic map (
 			frame => '{'                              &
 				"    rom:" & natural'image(
-					hdo(frames)**".format.dhcp.op   " +
+					hdo(frames)**".format.mac.tha"    +
+					hdo(frames)**".format.udp.sp"     +
+					hdo(frames)**".format.udp.dp"     +
+					hdo(frames)**".format.udp.length" +
+					hdo(frames)**".format.udp.chksum" +
+					hdo(frames)**".format.dhcp.op"    +
 					hdo(frames)**".format.dhcp.htype" +
 					hdo(frames)**".format.dhcp.hlen " +
 					hdo(frames)**".format.dhcp.hops " +
@@ -107,21 +130,26 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
-			act(0) => rom0_frm,
+			act(0) => rom0_act,
 			act(1) => discard1,
-			act(2) => rom2_frm,
+			act(2) => rom2_act,
 			act(3) => discard3,
-			act(4) => rom4_frm,
+			act(4) => rom4_act,
 			act(5) => discard5);
 		
-		rom_irdy <= (rom0_frm or rom2_frm or rom4_frm) and dhcpcdtx_trdy;
+		rom_irdy <= (rom0_act or rom2_act or rom4_act) and dhcpcdtx_trdy;
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(
-				std_logic_vector'(hdo(frames)**".data.dhcp.discover.op   ")      &
+				tha                                                              &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.sp")         &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.dp")         &
+				udp_length                                                       &
+				udp_chksum                                                       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.op")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.htype")      &
-				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen ")      &
-				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops ")      &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen")       &
+				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops")       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.xid")        &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.cookie")     &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.vendordata") &
@@ -133,6 +161,12 @@ begin
 			so_irdy => rom_irdy,
 			so_trdy => open,
 			so_data => rom_data);
+
+		dhcpcdtx_data <=
+			rom_data when rom0_act='1' else
+			rom_data when rom2_act='1' else
+			rom_data when rom4_act='1' else
+			(rom_data'range => '0');
 
 	end block;
 
