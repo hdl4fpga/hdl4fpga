@@ -67,7 +67,7 @@ architecture def of dhcpcd is
 begin
 
 	discover_b : block
-		constant tha : std_logic_vector    := x"ff_ff_ff_ff_ff_ff";
+		constant thaddress : std_logic_vector    := x"ff_ff_ff_ff_ff_ff";
 		constant discover_length : natural := 250;
 		constant udp_length : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8,16));
 		constant udp_chksum : std_logic_vector := not chksum1 (
@@ -141,7 +141,7 @@ begin
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(
-				tha                                                              &
+				thaddress                                                              &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.sp")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.dp")         &
 				udp_length                                                       &
