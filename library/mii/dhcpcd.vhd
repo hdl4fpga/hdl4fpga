@@ -32,28 +32,8 @@ entity dhcpcd is
 	generic (
 		hwaddr        : std_logic_vector(0 to 48-1));
 	port (
-		mii_clk       : in  std_logic;
-		dhcpcdrx_frm  : in  std_logic;
-		dhcpcdrx_irdy : in  std_logic;
-		dhcpcdrx_data : in  std_logic_vector;
-
-		arp_req       : buffer std_logic := '0';
-		arp_rdy       : in  std_logic := '0';
-
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : buffer std_logic := '0';
-
-		ipv4sawr_frm  : out std_logic := '0';
-		ipv4sawr_irdy : out std_logic := '0';
-		ipv4sawr_end  : in  std_logic := '1';
-		ipv4sawr_data : out std_logic_vector;
-
-		hwda_frm      : out std_logic;
-		hwda_irdy     : out std_logic;
-		hwda_trdy     : in  std_logic;
-		hwda_last     : in  std_logic;
-		hwda_equ      : in  std_logic;
-		hwdarx_vld    : in  std_logic;
 
 		miitx_clk     : in  std_logic;
 		dhcpcdtx_frm  : buffer std_logic;

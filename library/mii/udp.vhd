@@ -21,20 +21,20 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 entity udp is
+	generic (
+		hwaddr        : std_logic_vector(0 to 48-1));
 	port (
 		tp : out std_logic_vector(1 to 32);
 
-		dhcpcd_req    : in  std_logic := '0';
-		dhcpcd_rdy    : out std_logic := '0';
-		arp_req       : buffer std_logic := '0';
-		arp_rdy       : in  std_logic := '0';
+		dhcpcd_req  : in  std_logic := '0';
+		dhcpcd_rdy  : out std_logic := '0';
 
 		miirx_clk   : in  std_logic;
 
@@ -46,10 +46,15 @@ entity udp is
 		tparx_irdy  : in  std_logic;
 		tparx_trdy  : buffer std_logic := '1';
 
-		pyltx_frm   : out std_logic;
-		pyltx_irdy  : out std_logic;
-		pyltx_trdy  : in  std_logic := '1';
-		pyltx_data  : out std_logic_vector;
+		udprx_frm  : in  std_logic := '0';
+		udprx_irdy : in  std_logic := '0';
+		udprx_trdy : out std_logic := '0';
+		udprx_data : in  std_logic_vector;
+
+		pylrx_frm   : buffer std_logic;
+		pylrx_irdy  : out std_logic;
+		pylrx_trdy  : in  std_logic := '1';
+		pylrx_data  : out std_logic_vector;
 
 		miitx_clk   : in  std_logic;
 
@@ -73,11 +78,16 @@ entity udp is
 end;
 
 architecture def of udp is
+	signal dhcpcdtx_frm  : std_logic;
+	signal dhcpcdtx_irdy : std_logic;
+	signal dhcpcdtx_trdy : std_logic;
+	signal dhcpcdtx_data : std_logic_vector(udptx_data'range);
 begin
 
 	rx_b : block
 		signal meta_frm   : std_logic;
 		signal chksum_frm : std_logic;
+		signal pyl_frm : std_logic;
 	begin
 		udp_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -86,7 +96,7 @@ begin
 					hdo(frames)**".format.udp.sp"  +
 					hdo(frames)**".format.udp.dp"  +         
 					hdo(frames)**".format.udp.length")             & ',' &
-				"chksum:" & string'(hdo(frames)**".format.ipv4.chksum")  & '}')
+				"chksum:" & string'(hdo(frames)**".format.ipv4.chksum")  & '}'),
 			size  => udprx_data'length)
 		port map (
 			clk    => miirx_clk,
@@ -98,5 +108,18 @@ begin
 		pylrx_frm  <= tharx_frm or tparx_frm or meta_frm or chksum_frm;
 		pylrx_irdy <= pylrx_frm;
 	end block;
+
+	dhcpcd_i : entity hdl4fpga.dhcpcd
+	generic map (
+		hwaddr        => hwaddr)
+	port map (
+		dhcpcd_req    => dhcpcd_req,
+		dhcpcd_rdy    => dhcpcd_rdy,
+
+		miitx_clk     => miitx_clk,
+		dhcpcdtx_frm  => dhcpcdtx_frm,
+		dhcpcdtx_irdy => dhcpcdtx_irdy,
+		dhcpcdtx_trdy => dhcpcdtx_trdy,
+		dhcpcdtx_data => dhcpcdtx_data);
 
 end;
