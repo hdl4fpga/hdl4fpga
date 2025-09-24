@@ -36,25 +36,25 @@ entity udp is
 		dhcpcd_req  : in  std_logic := '0';
 		dhcpcd_rdy  : out std_logic := '0';
 
-		miirx_clk   : in  std_logic;
-
-		tharx_frm   : in  std_logic;
-		tharx_irdy  : in  std_logic;
-		tharx_trdy  : buffer std_logic := '1';
-
-		tparx_frm   : in  std_logic;
-		tparx_irdy  : in  std_logic;
-		tparx_trdy  : buffer std_logic := '1';
-
-		udprx_frm  : in  std_logic := '0';
-		udprx_irdy : in  std_logic := '0';
-		udprx_trdy : out std_logic := '0';
-		udprx_data : in  std_logic_vector;
-
-		pylrx_frm   : buffer std_logic;
-		pylrx_irdy  : out std_logic;
-		pylrx_trdy  : in  std_logic := '1';
-		pylrx_data  : out std_logic_vector;
+		-- miirx_clk   : in  std_logic;
+		--
+		-- tharx_frm   : in  std_logic;
+		-- tharx_irdy  : in  std_logic;
+		-- tharx_trdy  : buffer std_logic := '1';
+		--
+		-- tparx_frm   : in  std_logic;
+		-- tparx_irdy  : in  std_logic;
+		-- tparx_trdy  : buffer std_logic := '1';
+		--
+		-- udprx_frm  : in  std_logic := '0';
+		-- udprx_irdy : in  std_logic := '0';
+		-- udprx_trdy : out std_logic := '0';
+		-- udprx_data : in  std_logic_vector;
+		--
+		-- pylrx_frm   : buffer std_logic;
+		-- pylrx_irdy  : out std_logic;
+		-- pylrx_trdy  : in  std_logic := '1';
+		-- pylrx_data  : out std_logic_vector;
 
 		miitx_clk   : in  std_logic;
 
@@ -84,30 +84,30 @@ architecture def of udp is
 	signal dhcpcdtx_data : std_logic_vector(udptx_data'range);
 begin
 
-	rx_b : block
-		signal meta_frm   : std_logic;
-		signal chksum_frm : std_logic;
-		signal pyl_frm : std_logic;
-	begin
-		udp_i : entity hdl4fpga.frame_decode
-		generic map (
-			frame => compact('{' &
-				"  meta:" & natural'image(
-					hdo(frames)**".format.udp.sp"  +
-					hdo(frames)**".format.udp.dp"  +         
-					hdo(frames)**".format.udp.length")             & ',' &
-				"chksum:" & string'(hdo(frames)**".format.ipv4.chksum")  & '}'),
-			size  => udprx_data'length)
-		port map (
-			clk    => miirx_clk,
-			frm    => udprx_frm,
-			irdy   => udprx_irdy,
-			act(0) => meta_frm,
-			act(1) => chksum_frm,
-			act(2) => pyl_frm);
-		pylrx_frm  <= tharx_frm or tparx_frm or meta_frm or chksum_frm;
-		pylrx_irdy <= pylrx_frm;
-	end block;
+	-- rx_b : block
+	-- 	signal meta_frm   : std_logic;
+	-- 	signal chksum_frm : std_logic;
+	-- 	signal pyl_frm : std_logic;
+	-- begin
+	-- 	udp_i : entity hdl4fpga.frame_decode
+	-- 	generic map (
+	-- 		frame => compact('{' &
+	-- 			"  meta:" & natural'image(
+	-- 				hdo(frames)**".format.udp.sp"  +
+	-- 				hdo(frames)**".format.udp.dp"  +         
+	-- 				hdo(frames)**".format.udp.length")             & ',' &
+	-- 			"chksum:" & string'(hdo(frames)**".format.ipv4.chksum")  & '}'),
+	-- 		size  => udprx_data'length)
+	-- 	port map (
+	-- 		clk    => miirx_clk,
+	-- 		frm    => udprx_frm,
+	-- 		irdy   => udprx_irdy,
+	-- 		act(0) => meta_frm,
+	-- 		act(1) => chksum_frm,
+	-- 		act(2) => pyl_frm);
+	-- 	pylrx_frm  <= tharx_frm or tparx_frm or meta_frm or chksum_frm;
+	-- 	pylrx_irdy <= pylrx_frm;
+	-- end block;
 
 	dhcpcd_i : entity hdl4fpga.dhcpcd
 	generic map (
