@@ -77,8 +77,8 @@ begin
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => '{'                              &
-				"    rom:" & natural'image(
-					hdo(frames)**".format.mac.tha"    +
+				"    rom0:" & natural'image(
+					hdo(frames)**".format.mac.hwda"    +
 					hdo(frames)**".format.udp.sp"     +
 					hdo(frames)**".format.udp.dp"     +
 					hdo(frames)**".format.udp.length" +
@@ -88,19 +88,19 @@ begin
 					hdo(frames)**".format.dhcp.hlen " +
 					hdo(frames)**".format.dhcp.hops " +
 					hdo(frames)**".format.dhcp.xid")  & ',' &
-				"discard:" & natural'image(
-					hdo(frames)**".data.dhcp.secs"    +
-					hdo(frames)**".data.dhcp.flags"   +
-					hdo(frames)**".data.dhcp.ciaddr"  +
-					hdo(frames)**".data.dhcp.yiaddr"  +
-					hdo(frames)**".data.dhcp.siaddr"  +
-					hdo(frames)**".data.dhcp.giaddr") & ',' &
-				"    rom:" & string'(hdo(frames)**".data.dhcp.chaddr6") & ',' & 
-				"discard:" & natural'image(
+				"discard0:" & natural'image(
+					hdo(frames)**".format.dhcp.secs"    +
+					hdo(frames)**".format.dhcp.flags"   +
+					hdo(frames)**".format.dhcp.ciaddr"  +
+					hdo(frames)**".format.dhcp.yiaddr"  +
+					hdo(frames)**".format.dhcp.siaddr"  +
+					hdo(frames)**".format.dhcp.giaddr") & ',' &
+					"    rom1:" & string'(hdo(frames)**".format.dhcp.chaddr6") & ',' & 
+				"discard1:" & natural'image(
 					hdo(frames)**".format.dhcp.chaddr10" +
 					hdo(frames)**".format.dhcp.shname"   +
 					hdo(frames)**".format.dhcp.fbname")  & ',' & 
-				"    rom:" & natural'image(
+				"    rom2:" & natural'image(
 					hdo(frames)**".format.dhcp.cookie"     +
 					hdo(frames)**".format.dhcp.vendordata" +
 					hdo(frames)**".format.dhcp.iprequest"  +

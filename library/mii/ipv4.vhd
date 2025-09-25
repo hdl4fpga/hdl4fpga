@@ -600,51 +600,51 @@ begin
 		icmptx_trdy    => icmptx_trdy,
 		icmptx_data    => icmptx_data);
 
-	-- udp_i: entity hdl4fpga.udp
-	-- generic map (
-	-- 	hwaddr => hwaddr)
-	-- port map (
-	-- 	-- miirx_clk   : in  std_logic;
-	-- 	--
-	-- 	-- tharx_frm   : in  std_logic;
-	-- 	-- tharx_irdy  : in  std_logic;
-	-- 	-- tharx_trdy  : buffer std_logic := '1';
-	-- 	--
-	-- 	-- tparx_frm   : in  std_logic;
-	-- 	-- tparx_irdy  : in  std_logic;
-	-- 	-- tparx_trdy  : buffer std_logic := '1';
-	-- 	--
-	-- 	-- udprx_frm  : in  std_logic := '0';
-	-- 	-- udprx_irdy : in  std_logic := '0';
-	-- 	-- udprx_trdy : out std_logic := '0';
-	-- 	-- udprx_data : in  std_logic_vector;
-	-- 	--
-	-- 	-- pylrx_frm   : buffer std_logic;
-	-- 	-- pylrx_irdy  : out std_logic;
-	-- 	-- pylrx_trdy  : in  std_logic := '1';
-	-- 	-- pylrx_data  : out std_logic_vector;
-	--
-	-- 	miitx_clk  => miitx_clk,
-	-- 	dhcpcd_req => dhcpcd_req,
-	-- 	dhcpcd_rdy => dhcpcd_rdy,
-	--
-	-- 	thatx_frm  => udpthatx_frm,
-	-- 	thatx_irdy => udpthatx_irdy,
-	-- 	thatx_trdy => udpthatx_trdy,
-	-- 	thatx_data => udpthatx_data,
-	--
-	-- 	tpatx_frm  => udptpatx_frm,
-	-- 	tpatx_irdy => udptpatx_irdy,
-	-- 	tpatx_trdy => udptpatx_trdy,
-	--
-	-- 	udplentx_frm  => udplentx_frm,
-	-- 	udplentx_irdy => udplentx_irdy,
-	-- 	udplentx_trdy => udplentx_trdy,
-	--
-	-- 	udptx_frm  => udptx_frm,
-	-- 	udptx_irdy => udptx_irdy,
-	-- 	udptx_trdy => udptx_trdy,
-	-- 	udptx_data => udptx_data);
+	udp_i: entity hdl4fpga.udp
+	generic map (
+		hwaddr => hwaddr)
+	port map (
+		-- miirx_clk   : in  std_logic;
+		--
+		-- tharx_frm   : in  std_logic;
+		-- tharx_irdy  : in  std_logic;
+		-- tharx_trdy  : buffer std_logic := '1';
+		--
+		-- tparx_frm   : in  std_logic;
+		-- tparx_irdy  : in  std_logic;
+		-- tparx_trdy  : buffer std_logic := '1';
+		--
+		-- udprx_frm  : in  std_logic := '0';
+		-- udprx_irdy : in  std_logic := '0';
+		-- udprx_trdy : out std_logic := '0';
+		-- udprx_data : in  std_logic_vector;
+		--
+		-- pylrx_frm   : buffer std_logic;
+		-- pylrx_irdy  : out std_logic;
+		-- pylrx_trdy  : in  std_logic := '1';
+		-- pylrx_data  : out std_logic_vector;
+
+		miitx_clk  => miitx_clk,
+		dhcpcd_req => dhcpcd_req,
+		dhcpcd_rdy => dhcpcd_rdy,
+
+		thatx_frm  => udpthatx_frm,
+		thatx_irdy => udpthatx_irdy,
+		thatx_trdy => udpthatx_trdy,
+		thatx_data => udpthatx_data,
+
+		tpatx_frm  => udptpatx_frm,
+		tpatx_irdy => udptpatx_irdy,
+		tpatx_trdy => udptpatx_trdy,
+
+		udplentx_frm  => udplentx_frm,
+		udplentx_irdy => udplentx_irdy,
+		udplentx_trdy => udplentx_trdy,
+
+		udptx_frm  => udptx_frm,
+		udptx_irdy => udptx_irdy,
+		udptx_trdy => udptx_trdy,
+		udptx_data => udptx_data);
 
 	-- tp(1) <= ipv4tx_frm;
 	-- tp(2 to 2+ipv4rx_data'length-1) <= ipv4tx_data;
