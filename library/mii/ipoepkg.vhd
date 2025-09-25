@@ -128,7 +128,7 @@ package ipoepkg is
 					"    cookie:0x63825363,"      &
 					"vendordata:0x350101,"        &
 					" iprequest:0x320400000000}," &
-				"endmark:0xff}}");
+				"endmark:0xff}}}");
 
 	function aton (
 		constant ipa : string)

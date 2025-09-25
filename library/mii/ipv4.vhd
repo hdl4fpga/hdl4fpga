@@ -88,7 +88,7 @@ architecture def of ipv4 is
 	signal icmplentx_trdy : std_logic;
 
 	signal icmptpatx_frm  : std_logic;
-	signal icmptpatx_irdy : std_logic;
+	alias  icmptpatx_irdy is icmptpatx_frm;
 	signal icmptpatx_trdy : std_logic := '1';
 
 	signal icmptx_frm     : std_logic;
@@ -273,17 +273,24 @@ begin
 
 			signal verihltos_frm : std_logic;
 			signal identflgsfrgttl_frm : std_logic;
+
 			signal length_frm  : std_logic;
 			alias  length_irdy is length_frm;
+			signal length_data : std_logic_vector(ipv4rx_data'range);
+
 			signal protoid_frm  : std_logic;
 			alias  protoid_irdy is protoid_frm;
 			signal protoid_data : std_logic_vector(ipv4rx_data'range);
+
 			signal chksum_frm   : std_logic;
+			signal chksum_data  : std_logic_vector(ipv4rx_data'range);
+
 			signal sa_frm       : std_logic;
 			alias  sa_irdy is sa_frm; 
 			signal sa_data      : std_logic_vector(ipv4rx_data'range);
 			signal da_frm       : std_logic;
 			alias  da_irdy is da_frm;
+			signal da_data     : std_logic_vector(ipv4rx_data'range);
 			signal pyl_frm      : std_logic;
 
 			constant rom_bitdata : std_logic_vector := 
@@ -297,9 +304,6 @@ begin
 			signal rom_frm     : std_logic;
 			signal rom_irdy    : std_logic;
 			signal rom_data    : std_logic_vector(ipv4rx_data'range);
-			signal length_data : std_logic_vector(ipv4rx_data'range);
-			signal chksum_data : std_logic_vector(ipv4rx_data'range);
-			signal da_data     : std_logic_vector(ipv4rx_data'range);
 
 
 		begin
@@ -360,17 +364,11 @@ begin
 				signal sa_frm      : std_logic;
 				alias  sa_irdy     is sa_frm;
 				signal sa_data     : std_logic_vector(ipv4rx_data'range);
-				signal length_data : std_logic_vector(ipv4rx_data'range);
 				signal miichksum_frm  : std_logic;
 				signal miichksum_irdy : std_logic;
 				signal miichksum_data : std_logic_vector(ipv4rx_data'range);
 				signal act3 : std_logic;
 				signal act4 : std_logic;
-
-				signal length_frm  : std_logic;
-				alias  length_irdy is length_frm;
-				signal tpa_frm  : std_logic;
-				alias  tpa_irdy is tpa_frm;
 
 			begin
 				decode_frm  <= proto_frm;
@@ -387,8 +385,8 @@ begin
 					clk    => miitx_clk,
 					frm    => decode_frm,
 					irdy   => decode_irdy,
-					act(0) => length_frm,
-					act(1) => tpa_frm,
+					act(0) => icmplentx_frm,
+					act(1) => icmptpatx_frm,
 					act(2) => sa_frm,
 					-- act(3) => act3,
 					act(3) => act4);
@@ -398,8 +396,8 @@ begin
 					bitdata => (0 to hdo(frames)**".format.ipv4.length"-1 => '-'))
 				port map (
 					si_clk  => miitx_clk,
-					si_frm  => length_frm,
-					si_irdy => length_irdy,
+					si_frm  => icmplentx_frm,
+					si_irdy => icmplentx_irdy,
 					si_trdy => open,
 					si_data => icmptx_data,
 					so_clk  => miitx_clk,
@@ -424,8 +422,8 @@ begin
 					bitdata => (0 to hdo(frames)**".format.ipv4.da"-1 => '-'))
 				port map (
 					si_clk  => miitx_clk,
-					si_frm  => tpa_frm,
-					si_irdy => tpa_irdy,
+					si_frm  => icmptpatx_frm,
+					si_irdy => icmptpatx_irdy,
 					si_trdy => open,
 					si_data => icmptx_data,
 					so_clk  => miitx_clk,
@@ -435,10 +433,10 @@ begin
 					so_data => da_data);
 
 				miichksum_frm  <= proto_frm;
-				miichksum_irdy <= length_frm or tpa_frm or sa_frm or chksum_frm;
+				miichksum_irdy <= icmplentx_frm or icmptpatx_frm or sa_frm or chksum_frm;
 				miichksum_data <=
-					icmptx_data when length_frm='1' else
-					icmptx_data when  tpa_frm='1' else
+					icmptx_data when icmplentx_frm='1' else
+					icmptx_data when icmptpatx_frm='1' else
 					    sa_data when        sa_frm='1' else
 					(miichksum_data'range => '0');
 
@@ -453,11 +451,6 @@ begin
 					data   => miichksum_data,
 					chksum => chksum_data);
 
-				icmplentx_frm  <= length_frm;
-				icmplentx_irdy <= length_irdy;
-
-				icmptpatx_frm  <= tpa_frm;
-				icmptpatx_irdy <= tpa_irdy;
 			end block;
 
 			proto_i : entity hdl4fpga.sio_rom
@@ -490,7 +483,7 @@ begin
 				chksum_data   when          chksum_frm='1' else
 				length_data   when          length_frm='1' else
 				sa_data       when              sa_frm='1' else
-				da_data       when          da_frm='1' else
+				da_data       when              da_frm='1' else
 				icmptx_data   when             pyl_frm='1' else
 				icmptx_data;
 
