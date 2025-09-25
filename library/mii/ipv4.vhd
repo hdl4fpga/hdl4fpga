@@ -83,6 +83,11 @@ architecture def of ipv4 is
 	signal icmprx_trdy    : std_logic;
 	signal icmprx_data    : std_logic_vector(ipv4rx_data'range);
 
+	signal ipv4pyltx_frm  : std_logic_vector(0 to 2-1);
+	signal ipv4pyltx_irdy : std_logic_vector(0 to 2-1);
+	signal ipv4pyltx_trdy : std_logic_vector(0 to 2-1) := (others => '1');
+	signal ipv4pyltx_data : std_logic_vector(ipv4tx_data'range);
+
 	signal ipv4thatx_frm  : std_logic_vector(0 to 2-1);
 	signal ipv4thatx_irdy : std_logic_vector(0 to 2-1);
 	signal ipv4thatx_trdy : std_logic_vector(0 to 2-1) := (others => '1');
@@ -102,34 +107,34 @@ architecture def of ipv4 is
 	signal icmpthatx_data : std_logic_vector(thatx_data'range);
 
 	alias  icmplentx_frm  is ipv4lentx_frm(0);
-	alias  icmplentx_irdy is icmplentx_frm;
+	alias  icmplentx_irdy is ipv4lentx_frm(0);
 	alias  icmplentx_trdy is ipv4lentx_trdy(0);
 
-	signal icmptx_frm    : std_logic;
-	signal icmptx_irdy   : std_logic;
-	signal icmptx_trdy   : std_logic;
-	signal icmptx_data   : std_logic_vector(ipv4tx_data'range);
+	alias  icmptpatx_frm  is ipv4tpatx_frm(0);
+	alias  icmptpatx_irdy is ipv4tpatx_frm(0);
+	alias  icmptpatx_trdy is ipv4tpatx_trdy(0);
 
-	alias icmptpatx_frm  is ipv4tpatx_frm(0);
-	alias icmptpatx_irdy is icmptpatx_frm;
-	alias icmptpatx_trdy is ipv4tpatx_trdy(0);
+	alias  icmptx_frm    is ipv4pyltx_frm(0);
+	alias  icmptx_irdy   is ipv4pyltx_irdy(0);
+	alias  icmptx_trdy   is ipv4pyltx_trdy(0);
+	signal icmptx_data   : std_logic_vector(ipv4tx_data'range);
 
 	alias  udpthatx_frm  is ipv4thatx_frm(1);
 	alias  udpthatx_irdy is ipv4thatx_irdy(1);
 	alias  udpthatx_trdy is ipv4thatx_trdy(1);
 	signal udpthatx_data : std_logic_vector(thatx_data'range);
 
-	alias  udplentx_frm  is ipv4lentx_frm(0);
-	alias  udplentx_irdy is udplentx_frm;
-	alias  udplentx_trdy is ipv4lentx_trdy(0);
+	alias  udplentx_frm  is ipv4lentx_frm(1);
+	alias  udplentx_irdy is ipv4lentx_frm(1);
+	alias  udplentx_trdy is ipv4lentx_trdy(1);
 
-	signal udptpatx_frm  : std_logic;
-	alias  udptpatx_irdy is icmptpatx_frm;
+	alias  udptpatx_frm  is ipv4tpatx_frm(1);
+	alias  udptpatx_irdy is ipv4tpatx_frm(1);
 	signal udptpatx_trdy : std_logic := '1';
 
-	signal udptx_frm    : std_logic;
-	signal udptx_irdy   : std_logic;
-	signal udptx_trdy   : std_logic;
+	alias  udptx_frm    is ipv4pyltx_frm(1);
+	alias  udptx_irdy   is ipv4pyltx_irdy(1);
+	alias  udptx_trdy   is ipv4pyltx_trdy(1);
 	signal udptx_data   : std_logic_vector(ipv4tx_data'range);
 
 begin
@@ -595,51 +600,51 @@ begin
 		icmptx_trdy    => icmptx_trdy,
 		icmptx_data    => icmptx_data);
 
-	udp_i: entity hdl4fpga.udp
-	generic map (
-		hwaddr => hwaddr)
-	port map (
-		-- miirx_clk   : in  std_logic;
-		--
-		-- tharx_frm   : in  std_logic;
-		-- tharx_irdy  : in  std_logic;
-		-- tharx_trdy  : buffer std_logic := '1';
-		--
-		-- tparx_frm   : in  std_logic;
-		-- tparx_irdy  : in  std_logic;
-		-- tparx_trdy  : buffer std_logic := '1';
-		--
-		-- udprx_frm  : in  std_logic := '0';
-		-- udprx_irdy : in  std_logic := '0';
-		-- udprx_trdy : out std_logic := '0';
-		-- udprx_data : in  std_logic_vector;
-		--
-		-- pylrx_frm   : buffer std_logic;
-		-- pylrx_irdy  : out std_logic;
-		-- pylrx_trdy  : in  std_logic := '1';
-		-- pylrx_data  : out std_logic_vector;
-
-		miitx_clk  => miitx_clk,
-		dhcpcd_req => dhcpcd_req,
-		dhcpcd_rdy => dhcpcd_rdy,
-
-		thatx_frm  => udpthatx_frm,
-		thatx_irdy => udpthatx_irdy,
-		thatx_trdy => udpthatx_trdy,
-		thatx_data => udpthatx_data,
-
-		tpatx_frm  => udptpatx_frm,
-		tpatx_irdy => udptpatx_irdy,
-		tpatx_trdy => udptpatx_trdy,
-
-		udplentx_frm  => udplentx_frm,
-		udplentx_irdy => udplentx_irdy,
-		udplentx_trdy => udplentx_trdy,
-
-		udptx_frm  => udptx_frm,
-		udptx_irdy => udptx_irdy,
-		udptx_trdy => udptx_trdy,
-		udptx_data => udptx_data);
+	-- udp_i: entity hdl4fpga.udp
+	-- generic map (
+	-- 	hwaddr => hwaddr)
+	-- port map (
+	-- 	-- miirx_clk   : in  std_logic;
+	-- 	--
+	-- 	-- tharx_frm   : in  std_logic;
+	-- 	-- tharx_irdy  : in  std_logic;
+	-- 	-- tharx_trdy  : buffer std_logic := '1';
+	-- 	--
+	-- 	-- tparx_frm   : in  std_logic;
+	-- 	-- tparx_irdy  : in  std_logic;
+	-- 	-- tparx_trdy  : buffer std_logic := '1';
+	-- 	--
+	-- 	-- udprx_frm  : in  std_logic := '0';
+	-- 	-- udprx_irdy : in  std_logic := '0';
+	-- 	-- udprx_trdy : out std_logic := '0';
+	-- 	-- udprx_data : in  std_logic_vector;
+	-- 	--
+	-- 	-- pylrx_frm   : buffer std_logic;
+	-- 	-- pylrx_irdy  : out std_logic;
+	-- 	-- pylrx_trdy  : in  std_logic := '1';
+	-- 	-- pylrx_data  : out std_logic_vector;
+	--
+	-- 	miitx_clk  => miitx_clk,
+	-- 	dhcpcd_req => dhcpcd_req,
+	-- 	dhcpcd_rdy => dhcpcd_rdy,
+	--
+	-- 	thatx_frm  => udpthatx_frm,
+	-- 	thatx_irdy => udpthatx_irdy,
+	-- 	thatx_trdy => udpthatx_trdy,
+	-- 	thatx_data => udpthatx_data,
+	--
+	-- 	tpatx_frm  => udptpatx_frm,
+	-- 	tpatx_irdy => udptpatx_irdy,
+	-- 	tpatx_trdy => udptpatx_trdy,
+	--
+	-- 	udplentx_frm  => udplentx_frm,
+	-- 	udplentx_irdy => udplentx_irdy,
+	-- 	udplentx_trdy => udplentx_trdy,
+	--
+	-- 	udptx_frm  => udptx_frm,
+	-- 	udptx_irdy => udptx_irdy,
+	-- 	udptx_trdy => udptx_trdy,
+	-- 	udptx_data => udptx_data);
 
 	-- tp(1) <= ipv4tx_frm;
 	-- tp(2 to 2+ipv4rx_data'length-1) <= ipv4tx_data;
