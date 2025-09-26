@@ -75,7 +75,9 @@ architecture ser_debug of nuhs3adsp is
 
 	signal tp : std_logic_vector(1 to 32);
 
-	signal hwda_frm : std_logic;
+	signal hwda_frm   : std_logic;
+	signal dhcpcd_req : std_logic;
+	signal dhcpcd_rdy : std_logic;
 begin
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm
@@ -97,9 +99,33 @@ begin
 		clkfx => mii_clk);
 	mii_refclk <= not mii_clk;
 
+	dhcp_btn <= not sw1;
+	dhcp_p : process(mii_txc)
+		type states is (s_request, s_wait);
+		variable state : states;
+	begin
+		if rising_edge(mii_txc) then
+			case state is
+			when s_request =>
+				if dhcp_btn='1' then
+					dhcpcd_req <= not dhcpcd_rdy;
+					state := s_wait;
+				end if;
+			when s_wait =>
+				if to_bit(dhcpcd_req xor dhcpcd_rdy)='0' then
+					if dhcp_btn='0' then
+						state := s_request;
+					end if;
+				end if;
+			end case;
+		end if;
+	end process;
+
 	miiipoe_i : entity hdl4fpga.mii_ipoe
 	port map (
 		tp       => tp,
+		dhcpcd_req => dhcpcd_req,
+		dhcpcd_rdy => dhcpcd_rdy,
 		miirx_clk  => mii_rxc,
 		miirx_frm  => mii_rxdv,
 		miirx_irdy => mii_rxdv,

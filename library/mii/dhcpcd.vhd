@@ -74,11 +74,23 @@ begin
 		signal discard3    : std_logic;
 		signal discard5    : std_logic;
 	begin
+
+		process (miitx_clk)
+		begin
+			if rising_edge(miitx_clk) then
+				if ((dhcpcdtx_frm or dhcpcdtx_trdy) and dhcpcdtx_irdy)='1' then
+				elsif (dhcpcd_rdy xor dhcpcd_req)='1' then
+					dhcpcd_rdy <= dhcpcd_req;
+					decode_frm <= '1';
+				end if;
+			end if;
+		end process;
+
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => '{'                              &
 				"    rom0:" & natural'image(
-					hdo(frames)**".format.mac.hwda"    +
+					hdo(frames)**".format.mac.hwda"   +
 					hdo(frames)**".format.udp.sp"     +
 					hdo(frames)**".format.udp.dp"     +
 					hdo(frames)**".format.udp.length" +

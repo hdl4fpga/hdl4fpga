@@ -33,6 +33,9 @@ entity ipv4 is
 		hwaddr        : std_logic_vector;
 		ipv4addr      : std_logic_vector);
 	port (
+		dhcpcd_req    : in  std_logic := '0';
+		dhcpcd_rdy    : buffer std_logic := '0';
+
 		miirx_clk     : in  std_logic;
 
 		tharx_frm     : in  std_logic;
@@ -44,10 +47,8 @@ entity ipv4 is
 		ipv4rx_trdy   : out std_logic := '1';
 		ipv4rx_data   : in  std_logic_vector;
 
-		miitx_clk     : in  std_logic;
 
-		dhcpcd_req    : in  std_logic := '0';
-		dhcpcd_rdy    : buffer std_logic := '0';
+		miitx_clk     : in  std_logic;
 
 		ethtyptx_frm  : in  std_logic;
 		ethtyptx_irdy : in  std_logic;
@@ -101,6 +102,7 @@ architecture def of ipv4 is
 	signal ipv4tpatx_frms  : std_logic_vector(0 to 2-1);
 	signal ipv4tpatx_irdys : std_logic_vector(0 to 2-1);
 	signal ipv4tpatx_trdys : std_logic_vector(0 to 2-1);
+	signal ipv4tpatx_data  : std_logic_vector(thatx_data'range);
 
 	alias  icmpthatx_frm  is ipv4thatx_frms(0);
 	alias  icmpthatx_irdy is ipv4thatx_irdys(0);
@@ -110,7 +112,6 @@ architecture def of ipv4 is
 	alias  icmplentx_frm  is ipv4lentx_frms(0);
 	alias  icmplentx_irdy is ipv4lentx_irdys(0);
 	alias  icmplentx_trdy is ipv4lentx_trdys(0);
-	signal icmplentx_data  : std_logic_vector(thatx_data'range);
 
 	alias  icmptpatx_frm  is ipv4tpatx_frms(0);
 	alias  icmptpatx_irdy is ipv4tpatx_irdys(0);
@@ -129,7 +130,6 @@ architecture def of ipv4 is
 	alias  udplentx_frm  is ipv4lentx_frms(1);
 	alias  udplentx_irdy is ipv4lentx_irdys(1);
 	alias  udplentx_trdy is ipv4lentx_trdys(1);
-	signal udplentx_data  : std_logic_vector(thatx_data'range);
 
 	alias  udptpatx_frm  is ipv4tpatx_frms(1);
 	alias  udptpatx_irdy is ipv4tpatx_irdys(1);
@@ -287,8 +287,9 @@ begin
 		signal proto_frm      : std_logic;
 	begin
 
-		ipv4lentx_irdys <= ipv4Lentx_frms;
-		ipv4tpatx_irdys <= ipv4tpatx_frms;
+
+		ipv4lentx_irdy <= ipv4Lentx_frm;
+		ipv4tpatx_irdy <= ipv4tpatx_frm;
 
 		arbiter_b : block
 			signal gntd  : std_logic_vector(0 to 2-1);
@@ -322,9 +323,17 @@ begin
 			ipv4lentx_irdys <= gntd and (gntd'range => ipv4lentx_irdy);
 			ipv4lentx_trdy <= '1' when (gntd and ipv4lentx_trdys) /= (gntd'range => '0') else '0';
 			ipv4lentx_data <= 
-				icmplentx_data when gntd(0)='1' else
-				 udplentx_data when gntd(1)='1' else
+				icmptx_data when gntd(0)='1' else
+				 udptx_data when gntd(1)='1' else
 				(ipv4lentx_data'range => '-');
+
+			ipv4tpatx_frms  <= gntd and (gntd'range => ipv4tpatx_frm);
+			ipv4tpatx_irdys <= gntd and (gntd'range => ipv4tpatx_irdy);
+			ipv4tpatx_trdy <= '1' when (gntd and ipv4tpatx_trdys) /= (gntd'range => '0') else '0';
+			ipv4tpatx_data <= 
+				icmptx_data when gntd(0)='1' else
+				 udptx_data when gntd(1)='1' else
+				(ipv4tpatx_data'range => '-');
 
 		end block;
 

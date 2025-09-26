@@ -33,7 +33,10 @@ entity mii_ipoe is
 		ipv4addr : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
 		hwaddr   : std_logic_vector := x"00_40_00_01_02_03");
 	port (
-		miirx_clk    : in  std_logic;
+		dhcpcd_req : in  std_logic := '0';
+		dhcpcd_rdy : buffer std_logic := '0';
+
+		miirx_clk  : in  std_logic;
 		miirx_frm  : in  std_logic;
 		miirx_irdy : in  std_logic := '0';
 		miirx_trdy : out std_logic := '1';
@@ -350,14 +353,17 @@ begin
 		ipv4addr => ipv4addr)
 	port map (
 		tp => tp,
-		miirx_clk   => miirx_clk,
+		dhcpcd_req    => dhcpcd_req,
+		dhcpcd_rdy    => dhcpcd_rdy,
 
-		tharx_frm   => ipv4tharx_frm,
-		tharx_irdy  => ipv4tharx_irdy,
+		miirx_clk     => miirx_clk,
 
-		ipv4rx_frm  => ipv4rx_frm,
-		ipv4rx_irdy => ipv4rx_irdy,
-		ipv4rx_data => ipv4rx_data,
+		tharx_frm     => ipv4tharx_frm,
+		tharx_irdy    => ipv4tharx_irdy,
+
+		ipv4rx_frm    => ipv4rx_frm,
+		ipv4rx_irdy   => ipv4rx_irdy,
+		ipv4rx_data   => ipv4rx_data,
 
 		miitx_clk     => miitx_clk,
 
