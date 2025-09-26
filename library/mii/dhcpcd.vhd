@@ -36,6 +36,12 @@ entity dhcpcd is
 		dhcpcd_rdy    : buffer std_logic := '0';
 
 		miitx_clk     : in  std_logic;
+
+		thatx_frm     : in  std_logic;
+		thatx_irdy    : in  std_logic;
+		thatx_trdy    : buffer std_logic := '1';
+		thatx_data    : out std_logic_vector;
+
 		dhcpcdtx_frm  : buffer std_logic;
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic;
@@ -65,6 +71,7 @@ begin
 				std_logic_vector'(hdo(frames)**".data.dhcp.endmark"), 16);
 		signal decode_frm  : std_logic;
 		signal decode_irdy : std_logic;
+		signal decode_last : std_logic;
 		signal rom0_act    : std_logic;
 		signal rom2_act    : std_logic;
 		signal rom4_act    : std_logic;
@@ -79,12 +86,20 @@ begin
 		begin
 			if rising_edge(miitx_clk) then
 				if ((dhcpcdtx_frm or dhcpcdtx_trdy) and dhcpcdtx_irdy)='1' then
+					decode_frm <= '0';
 				elsif (dhcpcd_rdy xor dhcpcd_req)='1' then
 					dhcpcd_rdy <= dhcpcd_req;
 					decode_frm <= '1';
 				end if;
 			end if;
 		end process;
+
+		dhcpcdtx_frm  <= decode_frm and not decode_last;
+		dhcpcdtx_irdy <= decode_frm;
+		decode_irdy <=
+			   '0'        when decode_frm='0' else
+			   thatx_irdy when thatx_frm='1' else
+			   dhcpcdtx_trdy;
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -122,6 +137,7 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
+			last   => decode_last,
 			act(0) => rom0_act,
 			act(1) => discard1,
 			act(2) => rom2_act,
@@ -129,7 +145,10 @@ begin
 			act(4) => rom4_act,
 			act(5) => discard5);
 		
-		rom_irdy <= (rom0_act or rom2_act or rom4_act) and dhcpcdtx_trdy;
+		rom_irdy <= 
+			thatx_irdy and thatx_trdy when thatx_frm='1' else
+			(rom0_act or rom2_act or rom4_act) and dhcpcdtx_trdy;
+
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(
@@ -159,6 +178,10 @@ begin
 			rom_data when rom2_act='1' else
 			rom_data when rom4_act='1' else
 			(rom_data'range => '0');
+
+		
+		thatx_trdy <= thatx_irdy;
+		thatx_data <= rom_data;
 
 	end block;
 

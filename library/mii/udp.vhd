@@ -34,7 +34,7 @@ entity udp is
 		tp : out std_logic_vector(1 to 32);
 
 		dhcpcd_req  : in  std_logic := '0';
-		dhcpcd_rdy  : out std_logic := '0';
+		dhcpcd_rdy  : buffer std_logic := '0';
 
 		-- miirx_clk   : in  std_logic;
 		--
@@ -117,6 +117,11 @@ begin
 		dhcpcd_rdy    => dhcpcd_rdy,
 
 		miitx_clk     => miitx_clk,
+		thatx_frm     => thatx_frm,
+		thatx_irdy    => thatx_irdy,
+		thatx_trdy    => thatx_trdy,
+		thatx_data    => thatx_data,
+
 		dhcpcdtx_frm  => dhcpcdtx_frm,
 		dhcpcdtx_irdy => dhcpcdtx_irdy,
 		dhcpcdtx_trdy => dhcpcdtx_trdy,
