@@ -305,27 +305,26 @@ begin
 				irdy  => ipv4pyltx_irdy,
 				trdy  => ipv4pyltx_trdy);
 
+			ipv4pyltx_data <= 
+				icmptx_data  when gntd(0)='1' else
+				udptx_data when gntd(1)='1' else
+				(ipv4pyltx_data'range => '-');
 
-		ipv4pyltx_data <= 
-			icmptx_data  when gntd(0)='1' else
-			udptx_data when gntd(1)='1' else
-			(ipv4pyltx_data'range => '-');
+			ipv4thatx_frms  <= gntd and (gntd'range => ipv4thatx_frm);
+			ipv4thatx_irdys <= gntd and (gntd'range => ipv4thatx_irdy);
+			ipv4thatx_trdy <= '1' when (gntd and ipv4thatx_trdys) /= (gntd'range => '0') else '0';
+			ipv4thatx_data <= 
+				icmpthatx_data when gntd(0)='1' else
+				 udpthatx_data when gntd(1)='1' else
+				(ipv4thatx_data'range => '-');
 
-		ipv4thatx_frms  <= gntd and (gntd'range => ipv4thatx_frm);
-		ipv4thatx_irdys <= gntd and (gntd'range => ipv4thatx_irdy);
-		ipv4thatx_trdy <= '1' when (gntd and ipv4thatx_trdys) /= (gntd'range => '0') else '0';
-		ipv4thatx_data <= 
-			icmpthatx_data when gntd(0)='1' else
-			 udpthatx_data when gntd(1)='1' else
-			(ipv4thatx_data'range => '-');
-
-		ipv4lentx_frms  <= gntd and (gntd'range => ipv4lentx_frm);
-		ipv4lentx_irdys <= gntd and (gntd'range => ipv4lentx_irdy);
-		ipv4lentx_trdy <= '1' when (gntd and ipv4lentx_trdys) /= (gntd'range => '0') else '0';
-		ipv4lentx_data <= 
-			icmplentx_data when gntd(0)='1' else
-			 udplentx_data when gntd(1)='1' else
-			(ipv4lentx_data'range => '-');
+			ipv4lentx_frms  <= gntd and (gntd'range => ipv4lentx_frm);
+			ipv4lentx_irdys <= gntd and (gntd'range => ipv4lentx_irdy);
+			ipv4lentx_trdy <= '1' when (gntd and ipv4lentx_trdys) /= (gntd'range => '0') else '0';
+			ipv4lentx_data <= 
+				icmplentx_data when gntd(0)='1' else
+				 udplentx_data when gntd(1)='1' else
+				(ipv4lentx_data'range => '-');
 
 		end block;
 
