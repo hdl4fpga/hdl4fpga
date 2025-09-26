@@ -96,6 +96,7 @@ architecture def of ipv4 is
 	signal ipv4lentx_frms  : std_logic_vector(0 to 2-1);
 	signal ipv4lentx_irdys : std_logic_vector(0 to 2-1);
 	signal ipv4lentx_trdys : std_logic_vector(0 to 2-1);
+	signal ipv4lentx_data  : std_logic_vector(thatx_data'range);
 
 	signal ipv4tpatx_frms  : std_logic_vector(0 to 2-1);
 	signal ipv4tpatx_irdys : std_logic_vector(0 to 2-1);
@@ -109,6 +110,7 @@ architecture def of ipv4 is
 	alias  icmplentx_frm  is ipv4lentx_frms(0);
 	alias  icmplentx_irdy is ipv4lentx_irdys(0);
 	alias  icmplentx_trdy is ipv4lentx_trdys(0);
+	signal icmplentx_data  : std_logic_vector(thatx_data'range);
 
 	alias  icmptpatx_frm  is ipv4tpatx_frms(0);
 	alias  icmptpatx_irdy is ipv4tpatx_irdys(0);
@@ -127,6 +129,7 @@ architecture def of ipv4 is
 	alias  udplentx_frm  is ipv4lentx_frms(1);
 	alias  udplentx_irdy is ipv4lentx_irdys(1);
 	alias  udplentx_trdy is ipv4lentx_trdys(1);
+	signal udplentx_data  : std_logic_vector(thatx_data'range);
 
 	alias  udptpatx_frm  is ipv4tpatx_frms(1);
 	alias  udptpatx_irdy is ipv4tpatx_irdys(1);
@@ -301,6 +304,28 @@ begin
 				frm   => ipv4pyltx_frm,
 				irdy  => ipv4pyltx_irdy,
 				trdy  => ipv4pyltx_trdy);
+
+
+		ipv4pyltx_data <= 
+			icmptx_data  when gntd(0)='1' else
+			udptx_data when gntd(1)='1' else
+			(ipv4pyltx_data'range => '-');
+
+		ipv4thatx_frms  <= gntd and (gntd'range => ipv4thatx_frm);
+		ipv4thatx_irdys <= gntd and (gntd'range => ipv4thatx_irdy);
+		ipv4thatx_trdy <= '1' when (gntd and ipv4thatx_trdys) /= (gntd'range => '0') else '0';
+		ipv4thatx_data <= 
+			icmpthatx_data when gntd(0)='1' else
+			 udpthatx_data when gntd(1)='1' else
+			(ipv4thatx_data'range => '-');
+
+		ipv4lentx_frms  <= gntd and (gntd'range => ipv4lentx_frm);
+		ipv4lentx_irdys <= gntd and (gntd'range => ipv4lentx_irdy);
+		ipv4lentx_trdy <= '1' when (gntd and ipv4lentx_trdys) /= (gntd'range => '0') else '0';
+		ipv4lentx_data <= 
+			icmplentx_data when gntd(0)='1' else
+			 udplentx_data when gntd(1)='1' else
+			(ipv4lentx_data'range => '-');
 
 		end block;
 
