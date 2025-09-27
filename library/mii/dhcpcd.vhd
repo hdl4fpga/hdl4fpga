@@ -64,8 +64,11 @@ begin
 		constant thaddress : std_logic_vector  := x"ff_ff_ff_ff_ff_ff";
 		constant tpaddress : std_logic_vector  := x"ff_ff_ff_ff";
 		constant discover_length : natural := 250;
-		constant udp_length : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8,16));
-		constant udp_chksum : std_logic_vector := not chksum1 (
+		constant udp_length  : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8,16));
+		constant ipv4_length : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8+20,16));
+		constant udp_chksum  : std_logic_vector := not chksum1 (
+				x"00" & std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp")   &
+				udp_length                                                       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.sp")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.dp")         &
 				udp_length                                                       &
@@ -74,6 +77,7 @@ begin
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen")       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops")       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.xid")        &
+				hwaddr                                                           &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.cookie")     &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.vendordata") &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.iprequest")  &
@@ -94,13 +98,19 @@ begin
 		process (miitx_clk)
 		begin
 			if rising_edge(miitx_clk) then
-				if ((dhcpcdtx_frm or dhcpcdtx_trdy) and dhcpcdtx_irdy)='0' then
-					if (dhcpcd_rdy xor dhcpcd_req)='1' then
-						dhcpcd_rdy <= dhcpcd_req;
+				if (dhcpcd_req xor dhcpcd_rdy)='1' then
+					if decode_last='0' then
+						decode_frm <= '1';
+					elsif dhcpcdtx_frm='1' then
+						decode_frm <= '1';
+					elsif (dhcpcdtx_irdy and not dhcpcdtx_trdy)='1' then
 						decode_frm <= '1';
 					else
 						decode_frm <= '0';
+						dhcpcd_rdy <= dhcpcd_req;
 					end if;
+				else
+					decode_frm <= '0';
 				end if;
 			end if;
 		end process;
@@ -123,6 +133,7 @@ begin
 					hdo(frames)**".format.ipv4.da"    +
 					hdo(frames)**".format.udp.sp"     +
 					hdo(frames)**".format.udp.dp"     +
+					hdo(frames)**".format.udp.length" +
 					hdo(frames)**".format.udp.chksum" +
 					hdo(frames)**".format.dhcp.op"    +
 					hdo(frames)**".format.dhcp.htype" +
@@ -170,10 +181,11 @@ begin
 		generic map (
 			bitdata => reverse(
 				thaddress                                                        &
-				udp_length                                                       &
+				ipv4_length                                                      &
 				tpaddress                                                        &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.sp")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.dp")         &
+				udp_length                                                       &
 				udp_chksum                                                       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.op")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.htype")      &

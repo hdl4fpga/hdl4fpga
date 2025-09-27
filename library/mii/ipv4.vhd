@@ -404,7 +404,7 @@ begin
 					std_logic_vector'(hdo(frames)**".data.ipv4.ident")   &
 					std_logic_vector'(hdo(frames)**".data.ipv4.flgsfrg") &
 					std_logic_vector'(hdo(frames)**".data.ipv4.ttl")     &
-					std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp");
+					std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp");
 
 			signal rom_frm     : std_logic;
 			signal rom_irdy    : std_logic;
@@ -514,7 +514,8 @@ begin
 
 				sa_i : entity hdl4fpga.sio_ram
 				generic map (
-					bitdata => reverse(ipv4addr,8))
+					bitdata => reverse(x"00_00_00_00",8))
+					-- bitdata => reverse(ipv4addr,8))
 				port map (
 					si_data => ipv4rx_data,
 					so_clk  => miitx_clk,
@@ -543,7 +544,7 @@ begin
 				miichksum_data <=
 					ipv4pyltx_data when ipv4lentx_frm='1' else
 					ipv4pyltx_data when ipv4tpatx_frm='1' else
-					    sa_data when        sa_frm='1' else
+					       sa_data when        sa_frm='1' else
 					(miichksum_data'range => '0');
 
 				mii_chksum1_i : entity hdl4fpga.mii_chksum1
@@ -561,7 +562,7 @@ begin
 
 			proto_i : entity hdl4fpga.sio_rom
 			generic map (
-				bitdata => reverse (hdo(frames)**".data.ipv4.proto.icmp",8))
+				bitdata => reverse (hdo(frames)**".data.ipv4.proto.udp",8))
 			port map (
 				so_clk  => miitx_clk,
 				so_frm  => protoid_frm,
@@ -571,7 +572,8 @@ begin
 
 			spa_i : entity hdl4fpga.sio_ram
 			generic map (
-				bitdata => reverse(ipv4addr,8))
+					bitdata => reverse(x"00_00_00_00",8))
+				-- bitdata => reverse(ipv4addr,8))
 			port map (
 				si_data => ipv4rx_data,
 				so_clk  => miitx_clk,
