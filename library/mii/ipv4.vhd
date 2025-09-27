@@ -706,9 +706,9 @@ begin
 		tpatx_irdy => udptpatx_irdy,
 		tpatx_trdy => udptpatx_trdy,
 
-		udplentx_frm  => udplentx_frm,
-		udplentx_irdy => udplentx_irdy,
-		udplentx_trdy => udplentx_trdy,
+		lentx_frm  => udplentx_frm,
+		lentx_irdy => udplentx_irdy,
+		lentx_trdy => udplentx_trdy,
 
 		udptx_frm  => udptx_frm,
 		udptx_irdy => udptx_irdy,

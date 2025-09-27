@@ -56,28 +56,36 @@ entity udp is
 		-- pylrx_trdy  : in  std_logic := '1';
 		-- pylrx_data  : out std_logic_vector;
 
-		miitx_clk   : in  std_logic;
+		miitx_clk     : in  std_logic;
 
-		thatx_frm   : in  std_logic;
-		thatx_irdy  : in  std_logic;
-		thatx_trdy  : out std_logic := '1';
-		thatx_data  : out std_logic_vector;
+		thatx_frm     : in  std_logic;
+		thatx_irdy    : in  std_logic;
+		thatx_trdy    : out std_logic := '1';
+		thatx_data    : out std_logic_vector;
 
-		tpatx_frm   : in  std_logic;
-		tpatx_irdy  : in  std_logic;
-		tpatx_trdy  : out std_logic := '1';
+		tpatx_frm     : in  std_logic;
+		tpatx_irdy    : in  std_logic;
+		tpatx_trdy    : out std_logic := '1';
 
-		udplentx_frm  : out std_logic;
-		udplentx_irdy : out std_logic;
-		udplentx_trdy : in  std_logic := '1';
+		lentx_frm  : in std_logic;
+		lentx_irdy : in std_logic;
+		lentx_trdy : out std_logic := '1';
 
-		udptx_frm  : buffer std_logic := '0';
-		udptx_irdy : buffer std_logic := '0';
-		udptx_trdy : in  std_logic := '0';
-		udptx_data : buffer std_logic_vector);
+		udptx_frm     : buffer std_logic := '0';
+		udptx_irdy    : buffer std_logic := '0';
+		udptx_trdy    : in  std_logic := '0';
+		udptx_data    : buffer std_logic_vector);
 end;
 
 architecture def of udp is
+	signal dhcpcdlentx_frm  : std_logic;
+	signal dhcpcdlentx_irdy : std_logic;
+	signal dhcpcdlentx_trdy : std_logic;
+
+	signal dhcpcdtpatx_frm  : std_logic;
+	signal dhcpcdtpatx_irdy : std_logic;
+	signal dhcpcdtpatx_trdy : std_logic;
+
 	signal dhcpcdtx_frm  : std_logic;
 	signal dhcpcdtx_irdy : std_logic;
 	signal dhcpcdtx_trdy : std_logic;
@@ -122,9 +130,29 @@ begin
 		thatx_trdy    => thatx_trdy,
 		thatx_data    => thatx_data,
 
+		lentx_frm     => dhcpcdlentx_frm,
+		lentx_irdy    => dhcpcdlentx_irdy,
+		lentx_trdy    => dhcpcdlentx_trdy,
+
+		tpatx_frm     => dhcpcdtpatx_frm,
+		tpatx_irdy    => dhcpcdtpatx_irdy,
+		tpatx_trdy    => dhcpcdtpatx_trdy,
+
 		dhcpcdtx_frm  => dhcpcdtx_frm,
 		dhcpcdtx_irdy => dhcpcdtx_irdy,
 		dhcpcdtx_trdy => dhcpcdtx_trdy,
 		dhcpcdtx_data => dhcpcdtx_data);
 
+		dhcpcdlentx_frm  <= lentx_frm;
+		dhcpcdlentx_irdy <= lentx_irdy;
+		lentx_trdy       <= dhcpcdlentx_trdy;
+
+		dhcpcdtpatx_frm  <= tpatx_frm;
+		dhcpcdtpatx_irdy <= tpatx_irdy;
+		tpatx_trdy    <= dhcpcdtpatx_trdy;
+
+		udptx_frm        <= dhcpcdtx_frm;
+		udptx_irdy       <= dhcpcdtx_irdy;
+		dhcpcdtx_trdy    <= udptx_trdy ;
+		udptx_data       <= dhcpcdtx_data;
 end;

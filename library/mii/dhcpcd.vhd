@@ -42,6 +42,14 @@ entity dhcpcd is
 		thatx_trdy    : buffer std_logic := '1';
 		thatx_data    : out std_logic_vector;
 
+		lentx_frm     : in  std_logic;
+		lentx_irdy    : in  std_logic;
+		lentx_trdy    : buffer std_logic := '1';
+
+		tpatx_frm     : in  std_logic;
+		tpatx_irdy    : in  std_logic;
+		tpatx_trdy    : buffer std_logic := '1';
+
 		dhcpcdtx_frm  : buffer std_logic;
 		dhcpcdtx_irdy : buffer std_logic;
 		dhcpcdtx_trdy : in  std_logic;
@@ -54,6 +62,7 @@ begin
 
 	discover_b : block
 		constant thaddress : std_logic_vector  := x"ff_ff_ff_ff_ff_ff";
+		constant tpaddress : std_logic_vector  := x"ff_ff_ff_ff";
 		constant discover_length : natural := 250;
 		constant udp_length : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8,16));
 		constant udp_chksum : std_logic_vector := not chksum1 (
@@ -69,7 +78,7 @@ begin
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.vendordata") &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.iprequest")  &
 				std_logic_vector'(hdo(frames)**".data.dhcp.endmark"), 16);
-		signal decode_frm  : std_logic;
+		signal decode_frm  : std_logic := '0';
 		signal decode_irdy : std_logic;
 		signal decode_last : std_logic;
 		signal rom0_act    : std_logic;
@@ -85,11 +94,13 @@ begin
 		process (miitx_clk)
 		begin
 			if rising_edge(miitx_clk) then
-				if ((dhcpcdtx_frm or dhcpcdtx_trdy) and dhcpcdtx_irdy)='1' then
-					decode_frm <= '0';
-				elsif (dhcpcd_rdy xor dhcpcd_req)='1' then
-					dhcpcd_rdy <= dhcpcd_req;
-					decode_frm <= '1';
+				if ((dhcpcdtx_frm or dhcpcdtx_trdy) and dhcpcdtx_irdy)='0' then
+					if (dhcpcd_rdy xor dhcpcd_req)='1' then
+						dhcpcd_rdy <= dhcpcd_req;
+						decode_frm <= '1';
+					else
+						decode_frm <= '0';
+					end if;
 				end if;
 			end if;
 		end process;
@@ -98,7 +109,9 @@ begin
 		dhcpcdtx_irdy <= decode_frm;
 		decode_irdy <=
 			   '0'        when decode_frm='0' else
-			   thatx_irdy when thatx_frm='1' else
+			   thatx_irdy when  thatx_frm='1' else
+			   lentx_irdy when  lentx_frm='1' else
+			   tpatx_irdy when  tpatx_frm='1' else
 			   dhcpcdtx_trdy;
 
 		decode_i : entity hdl4fpga.frame_decode
@@ -106,9 +119,10 @@ begin
 			frame => '{'                              &
 				"    rom0:" & natural'image(
 					hdo(frames)**".format.mac.hwda"   +
+					hdo(frames)**".format.udp.length" +
+					hdo(frames)**".format.ipv4.da"    +
 					hdo(frames)**".format.udp.sp"     +
 					hdo(frames)**".format.udp.dp"     +
-					hdo(frames)**".format.udp.length" +
 					hdo(frames)**".format.udp.chksum" +
 					hdo(frames)**".format.dhcp.op"    +
 					hdo(frames)**".format.dhcp.htype" +
@@ -146,22 +160,27 @@ begin
 			act(5) => discard5);
 		
 		rom_irdy <= 
+			'0'        when decode_frm='0' else
 			thatx_irdy and thatx_trdy when thatx_frm='1' else
+			lentx_irdy and lentx_trdy when lentx_frm='1' else
+			tpatx_irdy and tpatx_trdy when tpatx_frm='1' else
 			(rom0_act or rom2_act or rom4_act) and dhcpcdtx_trdy;
 
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(
-				thaddress                                                              &
+				thaddress                                                        &
+				udp_length                                                       &
+				tpaddress                                                        &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.sp")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.dp")         &
-				udp_length                                                       &
 				udp_chksum                                                       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.op")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.htype")      &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hlen")       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.hops")       &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.xid")        &
+				hwaddr &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.cookie")     &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.vendordata") &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.iprequest")  &
@@ -178,10 +197,12 @@ begin
 			rom_data when rom2_act='1' else
 			rom_data when rom4_act='1' else
 			(rom_data'range => '0');
-
 		
 		thatx_trdy <= thatx_irdy;
 		thatx_data <= rom_data;
+
+		lentx_trdy <= lentx_irdy;
+		tpatx_trdy <= tpatx_irdy;
 
 	end block;
 

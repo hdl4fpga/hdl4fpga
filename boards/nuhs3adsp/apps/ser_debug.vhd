@@ -76,8 +76,8 @@ architecture ser_debug of nuhs3adsp is
 	signal tp : std_logic_vector(1 to 32);
 
 	signal hwda_frm   : std_logic;
-	signal dhcpcd_req : std_logic;
-	signal dhcpcd_rdy : std_logic;
+	signal dhcpcd_req : std_logic := '0';
+	signal dhcpcd_rdy : std_logic := '0';
 begin
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm

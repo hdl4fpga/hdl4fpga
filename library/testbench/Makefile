@@ -1409,10 +1409,12 @@ $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 
 $(HDL4FPGA__ipv4) \
 $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
+		$(HDL4FPGA__udp) \
 		$(HDL4FPGA__icmpd) \
 		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__mii_chksum1) \
 		$(HDL4FPGA__sio_rom) \
+		$(HDL4FPGA__mii_arbiter) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__sio_cmp) \
 		$(HDL4FPGA__sio_ram) \
@@ -2319,7 +2321,6 @@ $(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \
 $(HDL4FPGA__udp) \
 $(HDL4FPGA__udp__def) : ../mii/udp.vhd \
 		$(HDL4FPGA__dhcpcd) \
-		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
