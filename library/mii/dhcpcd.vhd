@@ -35,6 +35,11 @@ entity dhcpcd is
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : buffer std_logic := '0';
 
+		updpa_frm     : out std_logic;
+		updpa_irdy    : out std_logic;
+		updpa_trdy    : in  std_logic := '1';
+		updpa_data    : out std_logic_vector;
+
 		miitx_clk     : in  std_logic;
 
 		thatx_frm     : in  std_logic;

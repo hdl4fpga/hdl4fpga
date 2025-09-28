@@ -140,6 +140,11 @@ architecture def of ipv4 is
 	alias  udptx_trdy   is ipv4pyltx_trdys(1);
 	signal udptx_data   : std_logic_vector(ipv4tx_data'range);
 
+	signal updpa_frm  : std_logic;
+	signal updpa_irdy : std_logic;
+	signal updpa_trdy : std_logic;
+	signal updpa_data : std_logic_vector(ipv4tx_data'range);
+
 begin
 	rx_b : block
 		signal length_frm : std_logic;
@@ -701,10 +706,15 @@ begin
 		-- pylrx_trdy  : in  std_logic := '1';
 		-- pylrx_data  : out std_logic_vector;
 
-		miitx_clk  => miitx_clk,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
 
+		updpa_frm     => updpa_frm,
+		updpa_irdy    => updpa_irdy,
+		updpa_trdy    => updpa_trdy,
+		updpa_data    => updpa_data,
+
+		miitx_clk  => miitx_clk,
 		thatx_frm  => udpthatx_frm,
 		thatx_irdy => udpthatx_irdy,
 		thatx_trdy => udpthatx_trdy,
