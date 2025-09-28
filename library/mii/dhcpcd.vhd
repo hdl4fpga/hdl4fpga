@@ -126,7 +126,7 @@ begin
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => '{'                              &
+			frame => compact('{'                      &
 				"    rom0:" & natural'image(
 					hdo(frames)**".format.mac.hwda"   +
 					hdo(frames)**".format.udp.length" +
@@ -156,7 +156,7 @@ begin
 					hdo(frames)**".format.dhcp.cookie"     +
 					hdo(frames)**".format.dhcp.vendordata" +
 					hdo(frames)**".format.dhcp.iprequest"  +
-					hdo(frames)**".format.dhcp.endmark") & '}',
+					hdo(frames)**".format.dhcp.endmark") & '}'),
 			size  => dhcpcdtx_data'length)
 		port map (
 			clk    => miitx_clk,

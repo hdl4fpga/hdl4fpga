@@ -285,14 +285,16 @@ begin
 
 		signal decode_trdy    : std_logic;
 		signal proto_frm      : std_logic;
-	begin
+		signal gntd           : std_logic_vector(0 to 2-1);
 
+		alias icmp_gntd is gntd(0);
+		alias udp_gntd  is gntd(1);
+	begin
 
 		ipv4lentx_irdy <= ipv4Lentx_frm;
 		ipv4tpatx_irdy <= ipv4tpatx_frm;
 
 		arbiter_b : block
-			signal gntd  : std_logic_vector(0 to 2-1);
 		begin
 
 			arbiter_i : entity hdl4fpga.mii_arbiter
@@ -403,13 +405,11 @@ begin
 					std_logic_vector'(hdo(frames)**".data.ipv4.tos")     &
 					std_logic_vector'(hdo(frames)**".data.ipv4.ident")   &
 					std_logic_vector'(hdo(frames)**".data.ipv4.flgsfrg") &
-					std_logic_vector'(hdo(frames)**".data.ipv4.ttl")     &
-					std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp");
+					std_logic_vector'(hdo(frames)**".data.ipv4.ttl");
 
 			signal rom_frm     : std_logic;
 			signal rom_irdy    : std_logic;
 			signal rom_data    : std_logic_vector(ipv4rx_data'range);
-
 
 		begin
 
@@ -470,11 +470,13 @@ begin
 				signal sa_frm      : std_logic;
 				alias  sa_irdy     is sa_frm;
 				signal sa_data     : std_logic_vector(ipv4rx_data'range);
-				signal miichksum_frm  : std_logic;
-				signal miichksum_irdy : std_logic;
-				signal miichksum_data : std_logic_vector(ipv4rx_data'range);
+				constant miichksum_icmp : std_logic_vector := chksum1(reverse(reverse(rom_bitdata & std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp"),16),8), 16);
+				constant miichksum_udp  : std_logic_vector := chksum1(reverse(reverse(rom_bitdata & std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp"), 16),8), 16);
+				signal miichksum_init   : std_logic_vector(0 to 16-1);
+				signal miichksum_frm    : std_logic;
+				signal miichksum_irdy   : std_logic;
+				signal miichksum_data   : std_logic_vector(ipv4rx_data'range);
 				signal act3 : std_logic;
-				signal act4 : std_logic;
 
 			begin
 				decode_frm  <= proto_frm;
@@ -485,7 +487,6 @@ begin
 						"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 						"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 						"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & '}'), -- &
-						-- " proto:" & string'(hdo(frames)**".format.ipv4.proto")  & '}'),
 					size  => ipv4tx_data'length)
 				port map (
 					clk    => miitx_clk,
@@ -494,8 +495,7 @@ begin
 					act(0) => ipv4lentx_frm,
 					act(1) => ipv4tpatx_frm,
 					act(2) => sa_frm,
-					-- act(3) => act3,
-					act(3) => act4);
+					act(3) => act3);
 
 				length_i : entity hdl4fpga.sio_ram
 				generic map (
@@ -547,10 +547,10 @@ begin
 					       sa_data when        sa_frm='1' else
 					(miichksum_data'range => '0');
 
+				miichksum_init <= (miichksum_udp and udp_gntd) or (miichksum_icmp and icmp_gntd);
 				mii_chksum1_i : entity hdl4fpga.mii_chksum1
-				generic map (
-					init => reverse(reverse(rom_bitdata,16),8))
 				port map (
+					init   => miichksum_init,
 					clk    => miitx_clk,
 					frm    => miichksum_frm,
 					irdy   => miichksum_irdy,
@@ -560,15 +560,31 @@ begin
 
 			end block;
 
-			proto_i : entity hdl4fpga.sio_rom
-			generic map (
-				bitdata => reverse (hdo(frames)**".data.ipv4.proto.udp",8))
-			port map (
-				so_clk  => miitx_clk,
-				so_frm  => protoid_frm,
-				so_irdy => protoid_irdy,
-				so_trdy => open,
-				so_data => protoid_data);
+			process (miitx_clk)
+				variable shr : unsigned(0 to hdo(frames)**".format.ipv4.proto"-1);
+			begin
+				if rising_edge(miitx_clk) then
+					if protoid_frm='0' then
+						shr := unsigned(
+							(std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp") and icmp_gntd) or
+							(std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp")  and udp_gntd));
+						shr := reverse(shr,8);
+					elsif protoid_irdy='1' then
+						shr := rotate_left(shr, ipv4tx_data'length);
+					end if;
+					protoid_data <= std_logic_vector(shr(0 to ipv4tx_data'length-1));
+				end if;
+			end process;
+
+			-- proto_i : entity hdl4fpga.sio_rom
+			-- generic map (
+			-- 	bitdata => reverse (hdo(frames)**".data.ipv4.proto.udp",8))
+			-- port map (
+			-- 	so_clk  => miitx_clk,
+			-- 	so_frm  => protoid_frm,
+			-- 	so_irdy => protoid_irdy,
+			-- 	so_trdy => open,
+			-- 	so_data => protoid_data);
 
 			spa_i : entity hdl4fpga.sio_ram
 			generic map (

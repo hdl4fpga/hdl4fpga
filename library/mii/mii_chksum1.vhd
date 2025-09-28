@@ -28,10 +28,8 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 entity mii_chksum1 is
-	generic (
-		n      : natural := 16;
-		init   : std_logic_vector := (0 to 0 => '0'));
 	port (
+		init   : in  std_logic_vector;
 		clk    : in  std_logic;
 		frm    : in  std_logic := '1';
 		irdy   : in  std_logic;
@@ -47,7 +45,7 @@ begin
 		variable sum : unsigned(0 to data'length+1);
 		variable op1 : unsigned(sum'range);
 		variable op2 : unsigned(sum'range);
-		variable acc : unsigned(0 to n-1);
+		variable acc : unsigned(0 to init'length-1);
 		variable cy  : std_logic;
 
 		variable active : std_logic;
@@ -71,7 +69,7 @@ begin
 				active := '1';
 			end if;
 			if active='0' then
-				acc := unsigned(reverse(chksum1(init,n),n));
+				acc := unsigned(reverse(init));
 				cy  := '0';
 			end if;
 			chksum <= not std_logic_vector(acc(0 to chksum'length-1));

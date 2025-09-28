@@ -92,10 +92,10 @@ begin
 	begin
 		icmprx_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => '{'                                                      &
+			frame => compact('{'                                              &
 				"  type:" & string'(hdo(frames)**".format.icmp.type")   & ',' &
 				"  code:" & string'(hdo(frames)**".format.icmp.code")   & ',' &
-				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}',
+				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}'),
 			size  => icmprx_data'length)
 		port map (
 			clk    => miirx_clk,
@@ -273,13 +273,13 @@ begin
 
 		icmptx_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => '{'                                                &
+			frame => compact('{'                                        &
 				"lead:" & natural'image(
 					hdo(frames)**".format.arp.tha"   +
 					hdo(frames)**".format.arp.tpa"   +
 					hdo(frames)**".format.icmp.type" +
 					hdo(frames)**".format.icmp.code")                   & ',' &
-				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}',
+				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}'),
 			size  => icmptx_data'length)
 		port map (
 			clk    => miitx_clk,
