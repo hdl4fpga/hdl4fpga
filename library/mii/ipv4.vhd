@@ -576,16 +576,6 @@ begin
 				end if;
 			end process;
 
-			-- proto_i : entity hdl4fpga.sio_rom
-			-- generic map (
-			-- 	bitdata => reverse (hdo(frames)**".data.ipv4.proto.udp",8))
-			-- port map (
-			-- 	so_clk  => miitx_clk,
-			-- 	so_frm  => protoid_frm,
-			-- 	so_irdy => protoid_irdy,
-			-- 	so_trdy => open,
-			-- 	so_data => protoid_data);
-
 			spa_i : entity hdl4fpga.sio_ram
 			generic map (
 					bitdata => reverse(x"00_00_00_00",8))
