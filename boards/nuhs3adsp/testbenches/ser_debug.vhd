@@ -158,6 +158,55 @@ architecture nuhs3adsp_serdebug of testbench is
 			"00_00_00_00"          & -- arp_spa  
 			"00_00_00_00_00_00"    & -- arp_tha  
 			"c0_a8_00_0e,"         & -- arp_tpa  
+		"dhcp:0x"                  &
+			"0800"                 & -- mac type
+			"4500"                 & -- IP Version, TOS
+			"0054"                 & -- IP Length
+			"0000"                 & -- IP Identification
+			"0000"                 & -- IP Fragmentation
+			"0511"                 & -- IP TTL, protocol
+			"0000"                 & -- IP Header Checksum
+			"c0a80002"             & -- IP Source IP address
+			"c0a8000e"             & -- IP Destiantion IP Address
+			"0043"                 &
+			"0044"                 &
+			"aaaa"                 &
+			"ffff"                 &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
+			"dddddddd"             &
 		"icmp:0x"                  &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
@@ -188,7 +237,7 @@ begin
 
 	arp_req <= '0', '1' after 8 us;
 
-	sw1 <= '1', '0' after 1 us;
+	sw1 <= '1', '1' after 1 us;
 
 	tb_b : block
 		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".icmp");
