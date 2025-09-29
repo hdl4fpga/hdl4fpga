@@ -519,8 +519,7 @@ begin
 
 				sa_i : entity hdl4fpga.sio_ram
 				generic map (
-					bitdata => reverse(x"00_00_00_00",8))
-					-- bitdata => reverse(ipv4addr,8))
+					bitdata => reverse(ipv4addr,8))
 				port map (
 					si_data => ipv4rx_data,
 					so_clk  => miitx_clk,
@@ -583,10 +582,13 @@ begin
 
 			spa_i : entity hdl4fpga.sio_ram
 			generic map (
-					bitdata => reverse(x"00_00_00_00",8))
-				-- bitdata => reverse(ipv4addr,8))
+				bitdata => reverse(ipv4addr,8))
 			port map (
-				si_data => ipv4rx_data,
+				si_clk  => miirx_clk,
+				si_frm  => updpa_frm,
+				si_irdy => updpa_irdy,
+				si_trdy => open,
+				si_data => upspa_data,
 				so_clk  => miitx_clk,
 				so_frm  => sa_frm,
 				so_irdy => sa_irdy,
@@ -709,10 +711,10 @@ begin
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
 
-		updpa_frm     => updpa_frm,
-		updpa_irdy    => updpa_irdy,
-		updpa_trdy    => updpa_trdy,
-		updpa_data    => updpa_data,
+		upspa_frm  => upspa_frm,
+		upspa_irdy => upspa_irdy,
+		upspa_trdy => upspa_trdy,
+		upspa_data => upspa_data,
 
 		miitx_clk  => miitx_clk,
 		thatx_frm  => udpthatx_frm,

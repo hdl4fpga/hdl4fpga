@@ -36,10 +36,10 @@ entity udp is
 		dhcpcd_req  : in  std_logic := '0';
 		dhcpcd_rdy  : buffer std_logic := '0';
 
-		updpa_frm     : out std_logic;
-		updpa_irdy    : out std_logic;
-		updpa_trdy    : in  std_logic := '1';
-		updpa_data    : out std_logic_vector;
+		upspa_frm     : out std_logic;
+		upspa_irdy    : out std_logic;
+		upspa_trdy    : in  std_logic := '1';
+		upspa_data    : out std_logic_vector;
 
 		-- miirx_clk   : in  std_logic;
 		--
@@ -129,10 +129,10 @@ begin
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
 
-		updpa_frm     => updpa_frm,
-		updpa_irdy    => updpa_irdy,
-		updpa_trdy    => updpa_trdy,
-		updpa_data    => updpa_data,
+		upspa_frm     => upspa_frm,
+		upspa_irdy    => upspa_irdy,
+		upspa_trdy    => upspa_trdy,
+		upspa_data    => upspa_data,
 
 		miitx_clk     => miitx_clk,
 		thatx_frm     => thatx_frm,
