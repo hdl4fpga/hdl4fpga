@@ -34,6 +34,11 @@ entity arpd is
 	port (
 		miirx_clk     : in  std_logic;
 
+		upspa_frm     : in std_logic;
+		upspa_irdy    : in std_logic;
+		upspa_trdy    : in std_logic := '1';
+		upspa_data    : in std_logic_vector;
+
 		arprx_frm     : in  std_logic;
 		arprx_irdy    : in  std_logic;
 		arprx_data    : in  std_logic_vector;
@@ -100,6 +105,10 @@ begin
 			generic map (
 				bitdata => reverse(ipv4addr,8))
 			port map (
+				si_clk  => miirx_clk,
+				si_frm  => upspa_frm,
+				si_irdy => upspa_irdy,
+				si_trdy => open,
 				si_data => arprx_data,
 				so_clk  => miirx_clk,
 				so_frm  => tpa_frm,

@@ -152,11 +152,6 @@ architecture def of ipv4 is
 	alias  udptx_trdy   is ipv4pyltx_trdys(1);
 	signal udptx_data   : std_logic_vector(ipv4tx_data'range);
 
-	signal upspa_frm  : std_logic;
-	signal upspa_irdy : std_logic;
-	signal upspa_trdy : std_logic;
-	signal upspa_data : std_logic_vector(ipv4tx_data'range);
-
 begin
 	rx_b : block
 		signal length_frm : std_logic;

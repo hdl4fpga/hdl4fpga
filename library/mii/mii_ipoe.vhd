@@ -128,6 +128,11 @@ architecture def of mii_ipoe is
 	alias  ipv4typtx_trdy is typtx_trdy(1);
 	signal ipv4typtx_data : std_logic_vector(miitx_data'range);
 
+	signal upspa_frm  : std_logic;
+	signal upspa_irdy : std_logic;
+	signal upspa_trdy : std_logic;
+	signal upspa_data : std_logic_vector(miirx_data'range);
+
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -213,6 +218,11 @@ begin
 		hwaddr   => hwaddr)
 	port map (
 		miirx_clk     => miirx_clk,
+
+		upspa_frm     => upspa_frm,
+		upspa_irdy    => upspa_irdy,
+		upspa_trdy    => upspa_trdy,
+		upspa_data    => upspa_data,
 
 		arprx_frm     => arprx_frm,
 		arprx_irdy    => arprx_irdy,
@@ -355,6 +365,11 @@ begin
 		tp => tp,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
+
+		upspa_frm     => upspa_frm,
+		upspa_irdy    => upspa_irdy,
+		upspa_trdy    => upspa_trdy,
+		upspa_data    => upspa_data,
 
 		miirx_clk     => miirx_clk,
 
