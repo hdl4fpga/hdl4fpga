@@ -459,7 +459,7 @@ begin
 			signal sa_data      : std_logic_vector(ipv4rx_data'range);
 			signal da_frm       : std_logic;
 			alias  da_irdy is da_frm;
-			signal da_data     : std_logic_vector(ipv4rx_data'range);
+			signal da_data      : std_logic_vector(ipv4rx_data'range);
 			signal pyl_frm      : std_logic;
 
 			constant rom_bitdata : std_logic_vector := 
