@@ -109,7 +109,8 @@ begin
 				si_frm  => upspa_frm,
 				si_irdy => upspa_irdy,
 				si_trdy => open,
-				si_data => arprx_data,
+				si_data => upspa_data,
+
 				so_clk  => miirx_clk,
 				so_frm  => tpa_frm,
 				so_irdy => tpa_irdy,
@@ -192,7 +193,10 @@ begin
 			bitdata => reverse(ipv4addr,8))
 		port map (
 			si_clk  => miirx_clk,
-			si_data => arprx_data,
+			si_frm  => upspa_frm,
+			si_irdy => upspa_irdy,
+			si_trdy => open,
+			si_data => upspa_data,
 		
 			so_clk  => miitx_clk,
 			so_frm  => pa_frm,
