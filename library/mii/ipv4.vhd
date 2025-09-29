@@ -205,12 +205,33 @@ begin
 		end process;
 
 		pa_b : block
-			signal so_data  : std_logic_vector(ipv4rx_data'range);
-			signal icmp_equ : std_logic;
-			signal udp_equ  : std_logic;
-			signal pa_equ   : std_logic;
+			signal bcst_data : std_logic_vector(ipv4rx_data'range);
+			signal bcst_equ  : std_logic;
+			signal pa_data   : std_logic_vector(ipv4rx_data'range);
+			signal pa_equ    : std_logic;
+			signal icmp_equ  : std_logic;
+			signal udp_equ   : std_logic;
 		begin
-			mem_i : entity hdl4fpga.sio_ram
+			bcst_i : entity hdl4fpga.sio_rom
+			generic map (
+				bitdata => reverse (x"ff_ff_ff_ff",8))
+			port map (
+				so_clk  => miirx_clk,
+				so_frm  => ipv4da_frm,
+				so_irdy => ipv4da_irdy,
+				so_data => bcst_data);
+
+			bcstcmp_i : entity hdl4fpga.sio_cmp
+			port map (
+				clk     => miirx_clk,
+				mr_frm  => ipv4da_frm,
+				mr_irdy => ipv4da_irdy,
+				mr_trdy => open,
+				mr_data => bcst_data,
+				sl_data => ipv4rx_data,
+				equ     => bcst_equ);
+
+			ipaddr_i : entity hdl4fpga.sio_ram
 			generic map (
 				bitdata => reverse(ipv4addr,8))
 			port map (
@@ -223,15 +244,15 @@ begin
 				so_frm  => ipv4da_frm,
 				so_irdy => ipv4da_irdy,
 				so_trdy => open,
-				so_data => so_data);
+				so_data => pa_data);
 
-			cmp_i : entity hdl4fpga.sio_cmp
+			pacmp_i : entity hdl4fpga.sio_cmp
 			port map (
 				clk     => miirx_clk,
 				mr_frm  => ipv4da_frm,
 				mr_irdy => ipv4da_irdy,
 				mr_trdy => open,
-				mr_data => so_data,
+				mr_data => pa_data,
 				sl_data => ipv4rx_data,
 				equ     => pa_equ);
 
@@ -279,22 +300,27 @@ begin
 			end process;
 
 			udp_p : process (miirx_clk)
-				variable udp_vld : std_logic := '0';
+				variable udp_vld  : std_logic := '0';
+				variable bcst_vld : std_logic := '0';
 				variable pa_vld   : std_logic := '0';
 			begin
 				if rising_edge(miirx_clk) then
 					if (ipv4rx_frm or ipv4rx_irdy)='0' then
-						 udp_vld := '0';
+						 udp_vld  := '0';
+						 bcst_vld := '0';
 						 pa_vld   := '0';
 					else
-						if (not udp_vld and udp_equ)='1' then
+						if (not  udp_vld and udp_equ)='1' then
 							udp_vld := '1';
 						end if;
+						if (not bcst_vld and bcst_equ)='1' then
+							bcst_vld := '1';
+						end if;
 						if (not pa_vld and pa_equ)='1' then
-							pa_vld := '1';
+							pa_vld  := '1';
 						end if;
 					end if;
-					udprx_frm  <= ipv4rx_frm and pa_vld and udp_vld;
+					udprx_frm  <= ipv4rx_frm and (bcst_vld and pa_vld) and udp_vld;
 					udprx_data <= ipv4rx_data;
 				end if;
 			end process;
