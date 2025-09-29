@@ -40,12 +40,13 @@ entity dhcpcd is
 		upspa_trdy    : in  std_logic := '1';
 		upspa_data    : out std_logic_vector;
 
-		miitx_clk     : in  std_logic;
+		miirx_clk     : in  std_logic;
 		dhcpcdrx_frm  : in  std_logic;
 		dhcpcdrx_irdy : in  std_logic;
 		dhcpcdrx_trdy : out std_logic := '1';
 		dhcpcdrx_data : in  std_logic_vector;
 
+		miitx_clk     : in  std_logic;
 		thatx_frm     : in  std_logic;
 		thatx_irdy    : in  std_logic;
 		thatx_trdy    : buffer std_logic := '1';
@@ -254,7 +255,7 @@ begin
 				" yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}'),
 			size  => dhcpcdtx_data'length)
 		port map (
-			clk    => miitx_clk,
+			clk    => miirx_clk,
 			frm    => dhcpcdrx_frm,
 			irdy   => dhcpcdrx_irdy,
 			act(0) => discard0,

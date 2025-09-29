@@ -116,7 +116,9 @@ package ipoepkg is
 					"type:0x08}},"                &
 			"dhcp:{"                              &
 			   "offer:{"                          &
-					"op:0x02},"                   &
+					"op:0x02,"                    &
+					"sp:0x0043,"                  &
+					"dp:0x0044},"                 &
 				"discover:{"                      &
 					"        sp:0x0044,"          &
 					"        dp:0x0043,"          &

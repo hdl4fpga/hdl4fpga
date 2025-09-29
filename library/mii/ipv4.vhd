@@ -80,9 +80,14 @@ architecture def of ipv4 is
 	signal tparx_trdy     : std_logic := '1';
 
 	signal icmprx_frm     : std_logic;
-	signal icmprx_irdy    : std_logic;
+	alias  icmprx_irdy    is icmprx_frm;
 	signal icmprx_trdy    : std_logic;
 	signal icmprx_data    : std_logic_vector(ipv4rx_data'range);
+
+	signal udprx_frm      : std_logic;
+	signal udprx_irdy     : std_logic;
+	signal udprx_trdy     : std_logic;
+	signal udprx_data     : std_logic_vector(ipv4rx_data'range);
 
 	signal ipv4pyltx_frms  : std_logic_vector(0 to 2-1);
 	signal ipv4pyltx_irdys : std_logic_vector(0 to 2-1);
@@ -188,8 +193,6 @@ begin
 			act(7) => pyl_frm);
 
 		process (miirx_clk)
-			variable icmp_vld : std_logic := '0';
-			variable pa_vld   : std_logic := '0';
 		begin
 			if rising_edge(miirx_clk) then
 				tha1rx_frm    <= tharx_frm;
@@ -252,7 +255,7 @@ begin
 				data    => ipv4rx_data,
 				equ     => udp_equ);
 
-			process (miirx_clk)
+			icmp_p : process (miirx_clk)
 				variable icmp_vld : std_logic := '0';
 				variable pa_vld   : std_logic := '0';
 			begin
@@ -272,6 +275,28 @@ begin
 					icmprx_data <= ipv4rx_data;
 				end if;
 			end process;
+
+			udp_p : process (miirx_clk)
+				variable udp_vld : std_logic := '0';
+				variable pa_vld   : std_logic := '0';
+			begin
+				if rising_edge(miirx_clk) then
+					if (ipv4rx_frm or ipv4rx_irdy)='0' then
+						 udp_vld := '0';
+						 pa_vld   := '0';
+					else
+						if (not udp_vld and udp_equ)='1' then
+							udp_vld := '1';
+						end if;
+						if (not pa_vld and pa_equ)='1' then
+							pa_vld := '1';
+						end if;
+					end if;
+					udprx_frm  <= ipv4rx_frm and pa_vld and udp_vld;
+					udprx_data <= ipv4rx_data;
+				end if;
+			end process;
+
 		end block;
 	end block;
 
@@ -668,7 +693,7 @@ begin
 		ipv4lenrx_trdy => ipv4lenrx_trdy,
 
 		icmprx_frm     => icmprx_frm,
-		icmprx_irdy    => icmprx_frm,
+		icmprx_irdy    => icmprx_irdy,
 		icmprx_trdy    => open,
 		icmprx_data    => icmprx_data,
 
@@ -696,25 +721,6 @@ begin
 	generic map (
 		hwaddr => hwaddr)
 	port map (
-		-- miirx_clk   : in  std_logic;
-		--
-		-- tharx_frm   : in  std_logic;
-		-- tharx_irdy  : in  std_logic;
-		-- tharx_trdy  : buffer std_logic := '1';
-		--
-		-- tparx_frm   : in  std_logic;
-		-- tparx_irdy  : in  std_logic;
-		-- tparx_trdy  : buffer std_logic := '1';
-		--
-		-- udprx_frm  : in  std_logic := '0';
-		-- udprx_irdy : in  std_logic := '0';
-		-- udprx_trdy : out std_logic := '0';
-		-- udprx_data : in  std_logic_vector;
-		--
-		-- pylrx_frm   : buffer std_logic;
-		-- pylrx_irdy  : out std_logic;
-		-- pylrx_trdy  : in  std_logic := '1';
-		-- pylrx_data  : out std_logic_vector;
 
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
@@ -723,6 +729,25 @@ begin
 		upspa_irdy => upspa_irdy,
 		upspa_trdy => upspa_trdy,
 		upspa_data => upspa_data,
+
+		miirx_clk  => miirx_clk,
+		-- tharx_frm   : in  std_logic;
+		-- tharx_irdy  : in  std_logic;
+		-- tharx_trdy  : buffer std_logic := '1';
+		--
+		-- tparx_frm   : in  std_logic;
+		-- tparx_irdy  : in  std_logic;
+		-- tparx_trdy  : buffer std_logic := '1';
+
+		udprx_frm  => udprx_frm,
+		udprx_irdy => udprx_irdy,
+		udprx_trdy => udprx_trdy,
+		udprx_data => udprx_data,
+
+		-- pylrx_frm   : buffer std_logic;
+		-- pylrx_irdy  : out std_logic;
+		-- pylrx_trdy  : in  std_logic := '1';
+		-- pylrx_data  : out std_logic_vector;
 
 		miitx_clk  => miitx_clk,
 		thatx_frm  => udpthatx_frm,

@@ -41,8 +41,8 @@ entity udp is
 		upspa_trdy    : in  std_logic := '1';
 		upspa_data    : out std_logic_vector;
 
-		-- miirx_clk   : in  std_logic;
-		--
+		miirx_clk   : in  std_logic;
+
 		-- tharx_frm   : in  std_logic;
 		-- tharx_irdy  : in  std_logic;
 		-- tharx_trdy  : buffer std_logic := '1';
@@ -50,12 +50,12 @@ entity udp is
 		-- tparx_frm   : in  std_logic;
 		-- tparx_irdy  : in  std_logic;
 		-- tparx_trdy  : buffer std_logic := '1';
-		--
-		-- udprx_frm  : in  std_logic := '0';
-		-- udprx_irdy : in  std_logic := '0';
-		-- udprx_trdy : out std_logic := '0';
-		-- udprx_data : in  std_logic_vector;
-		--
+
+		udprx_frm  : in  std_logic := '0';
+		udprx_irdy : in  std_logic := '0';
+		udprx_trdy : out std_logic := '0';
+		udprx_data : in  std_logic_vector;
+
 		-- pylrx_frm   : buffer std_logic;
 		-- pylrx_irdy  : out std_logic;
 		-- pylrx_trdy  : in  std_logic := '1';
@@ -83,6 +83,11 @@ entity udp is
 end;
 
 architecture def of udp is
+	signal dhcpcdrx_frm  : std_logic;
+	signal dhcpcdrx_irdy : std_logic;
+	signal dhcpcdrx_trdy : std_logic;
+	signal dhcpcdrx_data : std_logic_vector(udprx_data'range);
+
 	signal dhcpcdlentx_frm  : std_logic;
 	signal dhcpcdlentx_irdy : std_logic;
 	signal dhcpcdlentx_trdy : std_logic;
@@ -97,30 +102,64 @@ architecture def of udp is
 	signal dhcpcdtx_data : std_logic_vector(udptx_data'range);
 begin
 
-	-- rx_b : block
-	-- 	signal meta_frm   : std_logic;
-	-- 	signal chksum_frm : std_logic;
-	-- 	signal pyl_frm : std_logic;
-	-- begin
-	-- 	udp_i : entity hdl4fpga.frame_decode
-	-- 	generic map (
-	-- 		frame => compact('{' &
-	-- 			"  meta:" & natural'image(
-	-- 				hdo(frames)**".format.udp.sp"  +
-	-- 				hdo(frames)**".format.udp.dp"  +         
-	-- 				hdo(frames)**".format.udp.length")             & ',' &
-	-- 			"chksum:" & string'(hdo(frames)**".format.ipv4.chksum")  & '}'),
-	-- 		size  => udprx_data'length)
-	-- 	port map (
-	-- 		clk    => miirx_clk,
-	-- 		frm    => udprx_frm,
-	-- 		irdy   => udprx_irdy,
-	-- 		act(0) => meta_frm,
-	-- 		act(1) => chksum_frm,
-	-- 		act(2) => pyl_frm);
-	-- 	pylrx_frm  <= tharx_frm or tparx_frm or meta_frm or chksum_frm;
-	-- 	pylrx_irdy <= pylrx_frm;
-	-- end block;
+	rx_b : block
+		signal sp_act : std_logic;
+		signal dp_frm : std_logic;
+		signal length_frm : std_logic;
+		signal chksum_frm : std_logic;
+		signal pyl_frm : std_logic;
+	begin
+		udp_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => compact('{' &
+				"    sp:" & string'(hdo(frames)**".format.udp.sp")      & ',' &
+				"    dp:" & string'(hdo(frames)**".format.udp.dp")      & ',' &
+				"length:" & string'(hdo(frames)**".format.udp.length")  & ',' &
+				"chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & '}'),
+			size  => udprx_data'length)
+		port map (
+			clk    => miirx_clk,
+			frm    => udprx_frm,
+			irdy   => udprx_irdy,
+			act(0) => sp_act,
+			act(1) => dp_frm,
+			act(2) => length_frm,
+			act(3) => chksum_frm,
+			act(4) => pyl_frm);
+		-- pylrx_frm  <= tharx_frm or tparx_frm or meta_frm or chksum_frm;
+		-- pylrx_irdy <= pylrx_frm;
+		dhcpcd_b : block
+			signal dhcpcd_equ : std_logic;
+		begin
+			sp_i : entity hdl4fpga.mii_cmp
+			generic map (
+				bitdata => reverse(hdo(frames)**".data.dhcp.offer.sp",8))
+			port map (
+				mii_clk => miirx_clk,
+				frm     => sp_act,
+				irdy    => sp_act,
+				trdy    => open,
+				data    => udprx_data,
+				equ     => dhcpcd_equ);
+
+			sp_p : process (pyl_frm, miirx_clk)
+				variable sp_vld : std_logic := '0';
+			begin
+				if rising_edge(miirx_clk) then
+					if (udprx_frm or udprx_irdy)='0' then
+						sp_vld := '0';
+					elsif (not sp_vld and dhcpcd_equ)='1' then
+						sp_vld := '1';
+					end if;
+				end if;
+				dhcpcdrx_frm <= pyl_frm and sp_vld;
+			end process;
+
+			dhcpcdrx_data <= udprx_data;
+
+		end block;
+
+	end block;
 
 	dhcpcd_i : entity hdl4fpga.dhcpcd
 	generic map (
@@ -133,6 +172,12 @@ begin
 		upspa_irdy    => upspa_irdy,
 		upspa_trdy    => upspa_trdy,
 		upspa_data    => upspa_data,
+
+		miirx_clk     => miirx_clk,
+		dhcpcdrx_frm  => dhcpcdrx_frm,
+		dhcpcdrx_irdy => dhcpcdrx_irdy,
+		dhcpcdrx_trdy => dhcpcdrx_trdy,
+		dhcpcdrx_data => dhcpcdrx_data,
 
 		miitx_clk     => miitx_clk,
 		thatx_frm     => thatx_frm,
