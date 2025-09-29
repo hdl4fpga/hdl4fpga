@@ -214,7 +214,6 @@ begin
 				si_irdy => upspa_irdy,
 				si_trdy => open,
 				si_data => upspa_data,
-				si_data => ipv4rx_data,
 				so_clk  => miirx_clk,
 				so_frm  => ipv4da_frm,
 				so_irdy => ipv4da_irdy,
@@ -526,7 +525,11 @@ begin
 				generic map (
 					bitdata => reverse(ipv4addr,8))
 				port map (
-					si_data => ipv4rx_data,
+					si_clk  => miirx_clk,
+					si_frm  => upspa_frm,
+					si_irdy => upspa_irdy,
+					si_trdy => open,
+					si_data => upspa_data,
 					so_clk  => miitx_clk,
 					so_frm  => sa_frm,
 					so_irdy => sa_irdy,

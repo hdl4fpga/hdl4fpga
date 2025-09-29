@@ -119,6 +119,9 @@ begin
 				end if;
 			end if;
 		end process;
+		upspa_frm  <= decode_frm;
+		upspa_irdy <= decode_frm;
+		upspa_data <= (upspa_data'range => '0');
 
 		dhcpcdtx_frm  <= decode_frm and not decode_last;
 		dhcpcdtx_irdy <= decode_frm;
