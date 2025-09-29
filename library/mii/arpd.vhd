@@ -34,10 +34,10 @@ entity arpd is
 	port (
 		miirx_clk     : in  std_logic;
 
-		upspa_frm     : in std_logic;
-		upspa_irdy    : in std_logic;
-		upspa_trdy    : in std_logic := '1';
-		upspa_data    : in std_logic_vector;
+		upspa_frm     : in  std_logic;
+		upspa_irdy    : in  std_logic;
+		upspa_trdy    : out std_logic := '1';
+		upspa_data    : in  std_logic_vector;
 
 		arprx_frm     : in  std_logic;
 		arprx_irdy    : in  std_logic;
