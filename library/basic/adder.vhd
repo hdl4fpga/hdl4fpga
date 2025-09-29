@@ -140,8 +140,8 @@ begin
 		end if;
 	end process;
 
-	a_ser <= a_als(a_ser'range) when load='1' else a_rgtr(a_ser'range);
-	b_ser <= b_als(a_ser'range) when load='1' else b_rgtr(a_ser'range);
+	a_ser <= a_als(a_ser'range) when load='1' else a_rgtr(a_ser'reverse_range);
+	b_ser <= b_als(a_ser'range) when load='1' else b_rgtr(a_ser'reverse_range);
 	adder_e : entity hdl4fpga.adder_ser
 	port map (
 		clk  => clk,
