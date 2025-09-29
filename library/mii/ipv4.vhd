@@ -36,6 +36,11 @@ entity ipv4 is
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : buffer std_logic := '0';
 
+		upspa_frm     : buffer std_logic;
+		upspa_irdy    : buffer std_logic;
+		upspa_trdy    : in std_logic := '1';
+		upspa_data    : buffer std_logic_vector;
+
 		miirx_clk     : in  std_logic;
 
 		tharx_frm     : in  std_logic;
@@ -72,9 +77,11 @@ architecture def of ipv4 is
 	signal tha1rx_frm     : std_logic;
 	signal tha1rx_irdy    : std_logic;
 	signal tha1rx_trdy    : std_logic := '1';
+
 	signal ipv4lenrx_frm  : std_logic;
 	alias  ipv4lenrx_irdy is ipv4lenrx_frm;
 	signal ipv4lenrx_trdy : std_logic := '1';
+
 	signal tparx_frm      : std_logic;
 	alias  tparx_irdy  is tparx_frm;
 	signal tparx_trdy     : std_logic := '1';

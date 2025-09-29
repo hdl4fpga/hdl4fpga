@@ -126,8 +126,10 @@ begin
 			act(2) => length_frm,
 			act(3) => chksum_frm,
 			act(4) => pyl_frm);
+
 		-- pylrx_frm  <= tharx_frm or tparx_frm or meta_frm or chksum_frm;
 		-- pylrx_irdy <= pylrx_frm;
+
 		dhcpcd_b : block
 			signal dhcpcd_equ : std_logic;
 		begin
