@@ -140,10 +140,10 @@ architecture def of ipv4 is
 	alias  udptx_trdy   is ipv4pyltx_trdys(1);
 	signal udptx_data   : std_logic_vector(ipv4tx_data'range);
 
-	signal updpa_frm  : std_logic;
-	signal updpa_irdy : std_logic;
-	signal updpa_trdy : std_logic;
-	signal updpa_data : std_logic_vector(ipv4tx_data'range);
+	signal upspa_frm  : std_logic;
+	signal upspa_irdy : std_logic;
+	signal upspa_trdy : std_logic;
+	signal upspa_data : std_logic_vector(ipv4tx_data'range);
 
 begin
 	rx_b : block
@@ -209,6 +209,11 @@ begin
 			generic map (
 				bitdata => reverse(ipv4addr,8))
 			port map (
+				si_clk  => miirx_clk,
+				si_frm  => upspa_frm,
+				si_irdy => upspa_irdy,
+				si_trdy => open,
+				si_data => upspa_data,
 				si_data => ipv4rx_data,
 				so_clk  => miirx_clk,
 				so_frm  => ipv4da_frm,
@@ -585,8 +590,8 @@ begin
 				bitdata => reverse(ipv4addr,8))
 			port map (
 				si_clk  => miirx_clk,
-				si_frm  => updpa_frm,
-				si_irdy => updpa_irdy,
+				si_frm  => upspa_frm,
+				si_irdy => upspa_irdy,
 				si_trdy => open,
 				si_data => upspa_data,
 				so_clk  => miitx_clk,
