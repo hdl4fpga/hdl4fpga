@@ -41,6 +41,10 @@ entity dhcpcd is
 		upspa_data    : out std_logic_vector;
 
 		miitx_clk     : in  std_logic;
+		dhcpcdrx_frm  : in  std_logic;
+		dhcpcdrx_irdy : in  std_logic;
+		dhcpcdrx_trdy : out std_logic := '1';
+		dhcpcdrx_data : in  std_logic_vector;
 
 		thatx_frm     : in  std_logic;
 		thatx_irdy    : in  std_logic;
@@ -63,6 +67,7 @@ entity dhcpcd is
 end;
 
 architecture def of dhcpcd is
+	signal yiaddr_act : std_logic;
 begin
 
 	discover_b : block
@@ -119,9 +124,6 @@ begin
 				end if;
 			end if;
 		end process;
-		upspa_frm  <= decode_frm;
-		upspa_irdy <= decode_frm;
-		upspa_data <= (upspa_data'range => '0');
 
 		dhcpcdtx_frm  <= decode_frm and not decode_last;
 		dhcpcdtx_irdy <= decode_frm;
@@ -225,5 +227,47 @@ begin
 		tpatx_trdy <= tpatx_irdy;
 
 	end block;
+
+	offer_b : block
+		signal discard0   : std_logic;
+		signal discard2   : std_logic;
+	begin
+		decode_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => compact('{'                        &
+				"discard0:" & natural'image(
+					hdo(frames)**".format.mac.hwda"     +
+					hdo(frames)**".format.udp.length"   +
+					hdo(frames)**".format.ipv4.da"      +
+					hdo(frames)**".format.udp.sp"       +
+					hdo(frames)**".format.udp.dp"       +
+					hdo(frames)**".format.udp.length"   +
+					hdo(frames)**".format.udp.chksum"   +
+					hdo(frames)**".format.dhcp.op"      +
+					hdo(frames)**".format.dhcp.htype"   +
+					hdo(frames)**".format.dhcp.hlen "   +
+					hdo(frames)**".format.dhcp.hops "   +
+					hdo(frames)**".format.dhcp.xid"     +
+					hdo(frames)**".format.dhcp.secs"    +
+					hdo(frames)**".format.dhcp.flags"   +
+					hdo(frames)**".format.dhcp.ciaddr")  & ',' &
+				" yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}'),
+			size  => dhcpcdtx_data'length)
+		port map (
+			clk    => miitx_clk,
+			frm    => dhcpcdrx_frm,
+			irdy   => dhcpcdrx_irdy,
+			act(0) => discard0,
+			act(1) => yiaddr_act,
+			act(2) => discard2);
+		
+	end block;
+
+	upspa_frm  <= dhcpcdtx_irdy or yiaddr_act;
+	upspa_irdy <= dhcpcdtx_irdy or yiaddr_act;
+	upspa_data <= 
+		(upspa_data'range => '0') when dhcpcdtx_irdy='1' else
+		dhcpcdrx_data             when    yiaddr_act='1' else
+		(upspa_data'range => '-');
 
 end;
