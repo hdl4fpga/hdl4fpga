@@ -208,10 +208,12 @@ begin
 		end process;
 
 		pa_b : block
+			constant dflt_data : std_logic_vector := (ipv4rx_data'range => '0');
 			signal bcst_data : std_logic_vector(ipv4rx_data'range);
 			signal bcst_equ  : std_logic;
 			signal pa_data   : std_logic_vector(ipv4rx_data'range);
 			signal pa_equ    : std_logic;
+			signal dflt_equ  : std_logic;
 			signal icmp_equ  : std_logic;
 			signal udp_equ   : std_logic;
 		begin
@@ -248,6 +250,16 @@ begin
 				so_irdy => ipv4da_irdy,
 				so_trdy => open,
 				so_data => pa_data);
+
+			dfltcmp_i : entity hdl4fpga.sio_cmp
+			port map (
+				clk     => miirx_clk,
+				mr_frm  => ipv4da_frm,
+				mr_irdy => ipv4da_irdy,
+				mr_trdy => open,
+				mr_data => pa_data,
+				sl_data => dflt_data,
+				equ     => dflt_equ);
 
 			pacmp_i : entity hdl4fpga.sio_cmp
 			port map (
@@ -293,7 +305,7 @@ begin
 						if (not icmp_vld and icmp_equ)='1' then
 							icmp_vld := '1';
 						end if;
-						if (not pa_vld and pa_equ)='1' then
+						if (not pa_vld and (pa_equ or dflt_equ))='1' then
 							pa_vld := '1';
 						end if;
 					end if;
@@ -319,7 +331,7 @@ begin
 						if (not bcst_vld and bcst_equ)='1' then
 							bcst_vld := '1';
 						end if;
-						if (not pa_vld and pa_equ)='1' then
+						if (not pa_vld and (pa_equ or dflt_equ))='1' then
 							pa_vld  := '1';
 						end if;
 					end if;
@@ -752,6 +764,7 @@ begin
 	generic map (
 		hwaddr => hwaddr)
 	port map (
+		tp => tp,
 
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,

@@ -170,6 +170,7 @@ begin
 	generic map (
 		hwaddr        => hwaddr)
 	port map (
+		-- tp => tp,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
 

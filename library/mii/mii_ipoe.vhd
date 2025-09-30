@@ -362,7 +362,7 @@ begin
 	end process;
 
 	-- tp(1) <= ipv4rx_frm; --miirx_frm;
-	-- tp(2 to 2+miirx_data'length-1) <= miirx_data;
+	-- tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
 	ipv4_i : entity hdl4fpga.ipv4
 	generic map (
 		hwaddr   => hwaddr,

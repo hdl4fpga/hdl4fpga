@@ -123,6 +123,8 @@ begin
 
 	end block;
 
+	tp(1) <= dhcpcdrx_frm;
+	tp(2 to 2+dhcpcdrx_data'length-1) <= dhcpcdrx_data;
 	discover_b : block
 		constant thaddress : std_logic_vector  := x"ff_ff_ff_ff_ff_ff";
 		constant tpaddress : std_logic_vector  := x"ff_ff_ff_ff";
@@ -284,8 +286,8 @@ begin
 	upspa_frm  <= dhcpcdtx_irdy or yiaddr_act;
 	upspa_irdy <= dhcpcdtx_irdy or yiaddr_act;
 	upspa_data <= 
-		(upspa_data'range => '0') when dhcpcdtx_irdy='1' else
 		dhcpcdrx_data             when    yiaddr_act='1' else
+		(upspa_data'range => '0') when dhcpcdtx_irdy='1' else
 		(upspa_data'range => '-');
 
 end;
