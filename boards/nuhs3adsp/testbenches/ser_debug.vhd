@@ -167,7 +167,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"0511"                 & -- IP TTL, protocol
 			"0000"                 & -- IP Header Checksum
 			"c0a80002"             & -- IP Source IP address
-			"ffffffff"             & -- IP Destiantion IP Address
+			"c0a80002"             & -- IP Destiantion IP Address
 			"0043"                 &
 			"0044"                 &
 			"aaaa"                 &

@@ -209,7 +209,7 @@ begin
 
 		pa_b : block
 			constant dflt_data : std_logic_vector := (ipv4rx_data'range => '0');
-			signal bcst_data : std_logic_vector(ipv4rx_data'range);
+			constant bcst_data : std_logic_vector := (ipv4rx_data'range => '1');
 			signal bcst_equ  : std_logic;
 			signal pa_data   : std_logic_vector(ipv4rx_data'range);
 			signal pa_equ    : std_logic;
@@ -217,14 +217,6 @@ begin
 			signal icmp_equ  : std_logic;
 			signal udp_equ   : std_logic;
 		begin
-			bcst_i : entity hdl4fpga.sio_rom
-			generic map (
-				bitdata => reverse (x"ff_ff_ff_ff",8))
-			port map (
-				so_clk  => miirx_clk,
-				so_frm  => ipv4da_frm,
-				so_irdy => ipv4da_irdy,
-				so_data => bcst_data);
 
 			bcstcmp_i : entity hdl4fpga.sio_cmp
 			port map (
@@ -316,26 +308,21 @@ begin
 
 			udp_p : process (icmprx_frm, miirx_clk)
 				variable udp_vld  : std_logic := '0';
-				variable bcst_vld : std_logic := '0';
 				variable pa_vld   : std_logic := '0';
 			begin
 				if rising_edge(miirx_clk) then
 					if (ipv4rx_frm or ipv4rx_irdy)='0' then
-						 udp_vld  := '0';
-						 bcst_vld := '0';
-						 pa_vld   := '0';
+						 udp_vld := '0';
+						 pa_vld  := '0';
 					else
 						if (not  udp_vld and udp_equ)='1' then
 							udp_vld := '1';
 						end if;
-						if (not bcst_vld and bcst_equ)='1' then
-							bcst_vld := '1';
-						end if;
-						if (not pa_vld and (pa_equ or dflt_equ))='1' then
+						if (not pa_vld and (pa_equ or dflt_equ or bcst_equ))='1' then
 							pa_vld  := '1';
 						end if;
 					end if;
-					udprx_frm  <= ipv4rx_frm and (bcst_vld or pa_vld) and udp_vld;
+					udprx_frm  <= ipv4rx_frm and pa_vld and udp_vld;
 					udprx_data <= ipv4rx_data;
 				end if;
 			end process;
