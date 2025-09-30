@@ -84,7 +84,7 @@ end;
 
 architecture def of udp is
 	signal dhcpcdrx_frm  : std_logic;
-	signal dhcpcdrx_irdy : std_logic;
+	alias  dhcpcdrx_irdy is dhcpcdrx_frm;
 	signal dhcpcdrx_trdy : std_logic;
 	signal dhcpcdrx_data : std_logic_vector(udprx_data'range);
 

@@ -92,7 +92,7 @@ architecture def of ipv4 is
 	signal icmprx_data    : std_logic_vector(ipv4rx_data'range);
 
 	signal udprx_frm      : std_logic;
-	signal udprx_irdy     : std_logic;
+	alias  udprx_irdy     is udprx_frm;
 	signal udprx_trdy     : std_logic;
 	signal udprx_data     : std_logic_vector(ipv4rx_data'range);
 
@@ -299,7 +299,7 @@ begin
 				end if;
 			end process;
 
-			udp_p : process (miirx_clk)
+			udp_p : process (icmprx_frm, miirx_clk)
 				variable udp_vld  : std_logic := '0';
 				variable bcst_vld : std_logic := '0';
 				variable pa_vld   : std_logic := '0';
@@ -320,7 +320,7 @@ begin
 							pa_vld  := '1';
 						end if;
 					end if;
-					udprx_frm  <= ipv4rx_frm and (bcst_vld and pa_vld) and udp_vld;
+					udprx_frm  <= ipv4rx_frm and (bcst_vld or pa_vld) and udp_vld;
 					udprx_data <= ipv4rx_data;
 				end if;
 			end process;
