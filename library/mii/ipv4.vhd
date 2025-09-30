@@ -315,7 +315,7 @@ begin
 						 udp_vld := '0';
 						 pa_vld  := '0';
 					else
-						if (not  udp_vld and udp_equ)='1' then
+						if (not udp_vld and udp_equ)='1' then
 							udp_vld := '1';
 						end if;
 						if (not pa_vld and (pa_equ or dflt_equ or bcst_equ))='1' then
