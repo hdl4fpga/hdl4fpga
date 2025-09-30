@@ -35,6 +35,9 @@ entity dhcpcd is
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : buffer std_logic := '0';
 
+		arp_req       : buffer std_logic := '0';
+		arp_rdy       : in  std_logic := '0';
+
 		upspa_frm     : out std_logic;
 		upspa_irdy    : out std_logic;
 		upspa_trdy    : in  std_logic := '1';
@@ -70,6 +73,55 @@ end;
 architecture def of dhcpcd is
 	signal yiaddr_act : std_logic;
 begin
+
+	offer_b : block
+		signal discard0 : std_logic;
+		signal discard2 : std_logic;
+	begin
+		decode_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => compact('{'                        &
+				"discard0:" & natural'image(
+					hdo(frames)**".format.mac.hwda"     +
+					hdo(frames)**".format.udp.length"   +
+					hdo(frames)**".format.ipv4.da"      +
+					hdo(frames)**".format.udp.sp"       +
+					hdo(frames)**".format.udp.dp"       +
+					hdo(frames)**".format.udp.length"   +
+					hdo(frames)**".format.udp.chksum"   +
+					hdo(frames)**".format.dhcp.op"      +
+					hdo(frames)**".format.dhcp.htype"   +
+					hdo(frames)**".format.dhcp.hlen "   +
+					hdo(frames)**".format.dhcp.hops "   +
+					hdo(frames)**".format.dhcp.xid"     +
+					hdo(frames)**".format.dhcp.secs"    +
+					hdo(frames)**".format.dhcp.flags"   +
+					hdo(frames)**".format.dhcp.ciaddr")  & ',' &
+				" yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}'),
+			size  => dhcpcdtx_data'length)
+		port map (
+			clk    => miirx_clk,
+			frm    => dhcpcdrx_frm,
+			irdy   => dhcpcdrx_irdy,
+			act(0) => discard0,
+			act(1) => yiaddr_act,
+			act(2) => discard2);
+		
+		process (miirx_clk)
+			variable refresh_req : std_logic := '0';
+			variable refresh_rdy : std_logic := '0';
+		begin
+			if rising_edge(miirx_clk) then
+				if dhcpcdrx_frm='1' then
+					refresh_req := not refresh_rdy;
+				elsif (refresh_rdy xor refresh_req)='1' then
+					refresh_rdy := refresh_req;
+					arp_req <= not arp_rdy;
+				end if;
+			end if;
+		end process;
+
+	end block;
 
 	discover_b : block
 		constant thaddress : std_logic_vector  := x"ff_ff_ff_ff_ff_ff";
@@ -227,41 +279,6 @@ begin
 		lentx_trdy <= lentx_irdy;
 		tpatx_trdy <= tpatx_irdy;
 
-	end block;
-
-	offer_b : block
-		signal discard0   : std_logic;
-		signal discard2   : std_logic;
-	begin
-		decode_i : entity hdl4fpga.frame_decode
-		generic map (
-			frame => compact('{'                        &
-				"discard0:" & natural'image(
-					hdo(frames)**".format.mac.hwda"     +
-					hdo(frames)**".format.udp.length"   +
-					hdo(frames)**".format.ipv4.da"      +
-					hdo(frames)**".format.udp.sp"       +
-					hdo(frames)**".format.udp.dp"       +
-					hdo(frames)**".format.udp.length"   +
-					hdo(frames)**".format.udp.chksum"   +
-					hdo(frames)**".format.dhcp.op"      +
-					hdo(frames)**".format.dhcp.htype"   +
-					hdo(frames)**".format.dhcp.hlen "   +
-					hdo(frames)**".format.dhcp.hops "   +
-					hdo(frames)**".format.dhcp.xid"     +
-					hdo(frames)**".format.dhcp.secs"    +
-					hdo(frames)**".format.dhcp.flags"   +
-					hdo(frames)**".format.dhcp.ciaddr")  & ',' &
-				" yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}'),
-			size  => dhcpcdtx_data'length)
-		port map (
-			clk    => miirx_clk,
-			frm    => dhcpcdrx_frm,
-			irdy   => dhcpcdrx_irdy,
-			act(0) => discard0,
-			act(1) => yiaddr_act,
-			act(2) => discard2);
-		
 	end block;
 
 	upspa_frm  <= dhcpcdtx_irdy or yiaddr_act;

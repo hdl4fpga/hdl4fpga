@@ -133,6 +133,9 @@ architecture def of mii_ipoe is
 	signal upspa_trdy : std_logic;
 	signal upspa_data : std_logic_vector(miirx_data'range);
 
+	signal arp_req : std_logic;
+	signal arp_rdy : std_logic;
+
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -217,6 +220,9 @@ begin
 		ipv4addr => ipv4addr,
 		hwaddr   => hwaddr)
 	port map (
+		arp_req       => arp_req,
+		arp_rdy       => arp_rdy,
+
 		miirx_clk     => miirx_clk,
 
 		upspa_frm     => upspa_frm,
@@ -363,8 +369,12 @@ begin
 		ipv4addr => ipv4addr)
 	port map (
 		tp => tp,
+
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
+
+		arp_req       => arp_req,
+		arp_rdy       => arp_rdy,
 
 		upspa_frm     => upspa_frm,
 		upspa_irdy    => upspa_irdy,

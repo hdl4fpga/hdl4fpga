@@ -33,15 +33,18 @@ entity udp is
 	port (
 		tp : out std_logic_vector(1 to 32);
 
-		dhcpcd_req  : in  std_logic := '0';
-		dhcpcd_rdy  : buffer std_logic := '0';
+		dhcpcd_req    : in  std_logic := '0';
+		dhcpcd_rdy    : buffer std_logic := '0';
+
+		arp_req       : buffer std_logic := '0';
+		arp_rdy       : in  std_logic := '0';
 
 		upspa_frm     : out std_logic;
 		upspa_irdy    : out std_logic;
 		upspa_trdy    : in  std_logic := '1';
 		upspa_data    : out std_logic_vector;
 
-		miirx_clk   : in  std_logic;
+		miirx_clk     : in  std_logic;
 
 		-- tharx_frm   : in  std_logic;
 		-- tharx_irdy  : in  std_logic;
@@ -51,10 +54,10 @@ entity udp is
 		-- tparx_irdy  : in  std_logic;
 		-- tparx_trdy  : buffer std_logic := '1';
 
-		udprx_frm  : in  std_logic := '0';
-		udprx_irdy : in  std_logic := '0';
-		udprx_trdy : out std_logic := '0';
-		udprx_data : in  std_logic_vector;
+		udprx_frm     : in  std_logic := '0';
+		udprx_irdy    : in  std_logic := '0';
+		udprx_trdy    : out std_logic := '0';
+		udprx_data    : in  std_logic_vector;
 
 		-- pylrx_frm   : buffer std_logic;
 		-- pylrx_irdy  : out std_logic;
@@ -72,9 +75,9 @@ entity udp is
 		tpatx_irdy    : in  std_logic;
 		tpatx_trdy    : out std_logic := '1';
 
-		lentx_frm  : in std_logic;
-		lentx_irdy : in std_logic;
-		lentx_trdy : out std_logic := '1';
+		lentx_frm     : in std_logic;
+		lentx_irdy    : in std_logic;
+		lentx_trdy    : out std_logic := '1';
 
 		udptx_frm     : buffer std_logic := '0';
 		udptx_irdy    : buffer std_logic := '0';
@@ -169,6 +172,9 @@ begin
 	port map (
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
+
+		arp_req       => arp_req,
+		arp_rdy       => arp_rdy,
 
 		upspa_frm     => upspa_frm,
 		upspa_irdy    => upspa_irdy,

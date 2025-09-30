@@ -33,6 +33,8 @@ entity arpd is
 		hwaddr   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
 		miirx_clk     : in  std_logic;
+		arp_req       : in  std_logic := '0';
+		arp_rdy       : buffer std_logic := '0';
 
 		upspa_frm     : in  std_logic;
 		upspa_irdy    : in  std_logic;
@@ -135,6 +137,10 @@ begin
 						if (lat1 and tpa_equ)='1' then
 							tx_req <= not tx_rdy;
 						end if;
+					end if;
+					if (arp_rdy xor arp_req)='1' then
+						tx_req <= not tx_rdy;
+						arp_rdy <= arp_req;
 					end if;
 					lat1 := (tpa_frm or tpa_irdy);
 				end if;

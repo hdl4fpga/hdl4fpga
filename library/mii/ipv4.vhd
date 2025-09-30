@@ -36,6 +36,9 @@ entity ipv4 is
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : buffer std_logic := '0';
 
+		arp_req       : buffer std_logic := '0';
+		arp_rdy       : in  std_logic := '0';
+
 		upspa_frm     : buffer std_logic;
 		upspa_irdy    : buffer std_logic;
 		upspa_trdy    : in std_logic := '1';
@@ -752,6 +755,9 @@ begin
 
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
+
+		arp_req    => arp_req,
+		arp_rdy    => arp_rdy,
 
 		upspa_frm  => upspa_frm,
 		upspa_irdy => upspa_irdy,
