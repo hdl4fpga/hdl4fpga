@@ -82,13 +82,6 @@ begin
 		generic map (
 			frame => compact('{'                        &
 				"discard0:" & natural'image(
-					hdo(frames)**".format.mac.hwda"     +
-					hdo(frames)**".format.udp.length"   +
-					hdo(frames)**".format.ipv4.da"      +
-					hdo(frames)**".format.udp.sp"       +
-					hdo(frames)**".format.udp.dp"       +
-					hdo(frames)**".format.udp.length"   +
-					hdo(frames)**".format.udp.chksum"   +
 					hdo(frames)**".format.dhcp.op"      +
 					hdo(frames)**".format.dhcp.htype"   +
 					hdo(frames)**".format.dhcp.hlen "   +

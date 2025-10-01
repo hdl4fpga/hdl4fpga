@@ -237,7 +237,7 @@ begin
 
 	arp_req <= '0', '1' after 8 us;
 
-	sw1 <= '1', '1' after 1 us;
+	sw1 <= '1', '0' after 1 us;
 
 	tb_b : block
 		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".dhcp");
@@ -267,7 +267,7 @@ begin
 
 	end block;
 
-	rst <= '1', '0' after 1 us;
+	rst <= '1', '0' after 38 us;
 
 	du_e : nuhs3adsp
 	port map (
