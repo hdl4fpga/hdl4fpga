@@ -136,6 +136,8 @@ architecture def of mii_ipoe is
 	signal arp_req : std_logic;
 	signal arp_rdy : std_logic;
 
+	constant bcst_data : std_logic_vector := (miirx_data'range => '1');
+
 begin
 
 	ethrx_e : entity hdl4fpga.eth_rx
@@ -161,14 +163,14 @@ begin
 		fcs_sb   => fcs_sb,
 		fcs_vld  => fcs_vld);
 
-	bcstda_cmp_i : entity hdl4fpga.mii_cmp
-	generic map (
-		bitdata => reverse(x"ff_ff_ff_ff_ff_ff",8))
+	bcstcmp_i : entity hdl4fpga.sio_cmp
 	port map (
-		mii_clk => miirx_clk,
-		frm     => ethda_frm,
-		irdy    => ethda_irdy,
-		data    => miirx_data,
+		clk     => miirx_clk,
+		mr_frm  => ethda_frm,
+		mr_irdy => ethda_irdy,
+		mr_trdy => open,
+		mr_data => bcst_data,
+		sl_data => miirx_data,
 		equ     => bcstda_equ);
 
 	ethda_cmp_i : entity hdl4fpga.mii_cmp
@@ -217,8 +219,8 @@ begin
 
 	arpd_i : entity hdl4fpga.arpd
 	generic map (
-		ipv4addr => ipv4addr,
-		hwaddr   => hwaddr)
+		ipv4addr      => ipv4addr,
+		hwaddr        => hwaddr)
 	port map (
 		arp_req       => arp_req,
 		arp_rdy       => arp_rdy,
@@ -347,9 +349,9 @@ begin
 				if (not da_vld and ethda_equ)='1' then
 					da_vld := '1';
 				end if;
-				if (not da_vld and bcstda_equ)='1' then
-					da_vld := '1';
-				end if;
+				-- if (not da_vld and bcstda_equ)='1' then
+				-- 	da_vld := '1';
+				-- end if;
 				if (not typ_vld and ipv4typ_equ)='1' then
 					typ_vld := '1';
 				end if;
