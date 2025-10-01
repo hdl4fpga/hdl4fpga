@@ -192,11 +192,11 @@ begin
 				irdy  => udppyltx_irdy,
 				trdy  => udppyltx_trdy);
 
-			-- udppyltx_data <= 
-			-- 	dhcpcdtx_data when gntd(0)='1' else
-			-- 	 pyltx_data when gntd(1)='1' else
-			-- 	(udppyltx_data'range => '-');
-			--
+			udppyltx_data <= 
+				dhcpcdtx_data when gntd(0)='1' else
+				 pyltx_data when gntd(1)='1' else
+				(udppyltx_data'range => '-');
+
 			-- udplentx_frms  <= gntd and (gntd'range => udplentx_frm);
 			-- udplentx_irdys <= gntd and (gntd'range => udplentx_irdy);
 			-- udplentx_trdy  <= '1' when (gntd and udplentx_trdys) /= (gntd'range => '0') else '0';
