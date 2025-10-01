@@ -30,33 +30,39 @@ use hdl4fpga.ipoepkg.all;
 
 entity mii_ipoe is
 	generic (
-		ipv4addr : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
-		hwaddr   : std_logic_vector := x"00_40_00_01_02_03");
+		ipv4addr      : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
+		hwaddr        : std_logic_vector := x"00_40_00_01_02_03");
 	port (
-		dhcpcd_req : in  std_logic := '0';
-		dhcpcd_rdy : buffer std_logic := '0';
+		dhcpcd_req    : in  std_logic := '0';
+		dhcpcd_rdy    : buffer std_logic := '0';
 
-		miirx_clk  : in  std_logic;
-		miirx_frm  : in  std_logic;
-		miirx_irdy : in  std_logic := '0';
-		miirx_trdy : out std_logic := '1';
-		miirx_data : in  std_logic_vector;
+		miirx_clk     : in  std_logic;
+		miirx_frm     : in  std_logic;
+		miirx_irdy    : in  std_logic := '0';
+		miirx_trdy    : out std_logic := '1';
+		miirx_data    : in  std_logic_vector;
 
 		udppylrx_frm  : out std_logic;
 		udppylrx_irdy : out std_logic;
 		udppylrx_trdy : in  std_logic := '1';
 		udppylrx_data : out std_logic_vector;
 
-		fcs_sb     : out std_logic;
-		fcs_vld    : out std_logic;
+		fcs_sb        : out std_logic;
+		fcs_vld       : out std_logic;
 
-		miitx_clk  : in  std_logic;
-		miitx_frm  : out std_logic;
-		miitx_irdy : out std_logic := '0';
-		miitx_trdy : in  std_logic := '1';
-		miitx_data : out std_logic_vector;
+		miitx_clk     : in  std_logic;
 
-		tp         : buffer std_logic_vector(1 to 32) := (others => '0'));
+		udppyltx_frm  : in  std_logic;
+		udppyltx_irdy : in  std_logic;
+		udppyltx_trdy : out std_logic := '1';
+		udppyltx_data : in  std_logic_vector;
+
+		miitx_frm     : out std_logic;
+		miitx_irdy    : out std_logic := '0';
+		miitx_trdy    : in  std_logic := '1';
+		miitx_data    : out std_logic_vector;
+
+		tp            : buffer std_logic_vector(1 to 32) := (others => '0'));
 end;
 
 architecture def of mii_ipoe is
@@ -404,6 +410,11 @@ begin
 		ipv4rx_data   => ipv4rx_data,
 
 		miitx_clk     => miitx_clk,
+
+		udppyltx_frm  => udppyltx_frm,
+		udppyltx_irdy => udppyltx_irdy,
+		udppyltx_trdy => udppyltx_trdy,
+		udppyltx_data => udppyltx_data,
 
 		thatx_frm     => ipv4thatx_frm,
 		thatx_irdy    => ipv4thatx_irdy,

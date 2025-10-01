@@ -84,6 +84,11 @@ architecture ser_debug of nuhs3adsp is
 	signal udppylrx_trdy : std_logic;
 	signal udppylrx_data : std_logic_vector(0 to mii_rxd'length-1);
 
+	signal udppyltx_frm  : std_logic;
+	signal udppyltx_irdy : std_logic;
+	signal udppyltx_trdy : std_logic;
+	signal udppyltx_data : std_logic_vector(0 to mii_rxd'length-1);
+
 begin
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm
@@ -143,8 +148,16 @@ begin
 
 		miitx_clk  => mii_txc,
 		miitx_frm  => mii_txen,
-		miitx_data => mii_txd);
+		miitx_data => mii_txd,
 
+		udppyltx_frm  => udppyltx_frm,
+		udppyltx_irdy => udppyltx_irdy,
+		udppyltx_data => udppyltx_data);
+
+	ser_clk  <= mii_rxc;
+	ser_frm  <= udppylrx_frm;
+	ser_irdy <= udppylrx_irdy;
+	ser_data <= udppylrx_data;
 	-- mii_txen <= '0';
 	-- mii_txd <= (others =>'Z');
 
@@ -155,10 +168,10 @@ begin
 	-- ser_frm  <= mii_rxdv;
 	-- ser_irdy <= mii_rxdv;
 	-- ser_data <= mii_rxd;
-	ser_clk  <= mii_rxc;
-	ser_frm  <= tp(1);
-	ser_irdy <= tp(1);
-	ser_data <= tp(2 to 2+mii_rxd'length-1);
+	-- ser_clk  <= mii_rxc;
+	-- ser_frm  <= tp(1);
+	-- ser_irdy <= tp(1);
+	-- ser_data <= tp(2 to 2+mii_rxd'length-1);
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

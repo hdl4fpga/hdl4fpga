@@ -46,11 +46,6 @@ entity ipv4 is
 
 		miirx_clk     : in  std_logic;
 
-		udppylrx_frm  : out std_logic;
-		udppylrx_irdy : out std_logic;
-		udppylrx_trdy : in  std_logic := '1';
-		udppylrx_data : out std_logic_vector;
-
 		sharx_frm     : in  std_logic;
 		sharx_irdy    : in  std_logic;
 		sharx_trdy    : out std_logic := '1';
@@ -60,8 +55,17 @@ entity ipv4 is
 		ipv4rx_trdy   : out std_logic := '1';
 		ipv4rx_data   : in  std_logic_vector;
 
+		udppylrx_frm  : out std_logic;
+		udppylrx_irdy : out std_logic;
+		udppylrx_trdy : in  std_logic := '1';
+		udppylrx_data : out std_logic_vector;
 
 		miitx_clk     : in  std_logic;
+
+		udppyltx_frm  : in  std_logic;
+		udppyltx_irdy : in  std_logic;
+		udppyltx_trdy : out std_logic := '1';
+		udppyltx_data : in  std_logic_vector;
 
 		ethtyptx_frm  : in  std_logic;
 		ethtyptx_irdy : in  std_logic;
@@ -789,12 +793,13 @@ begin
 		pylrx_trdy => udppylrx_trdy,
 		pylrx_data => udppylrx_data,
 
-		-- pylrx_frm   : buffer std_logic;
-		-- pylrx_irdy  : out std_logic;
-		-- pylrx_trdy  : in  std_logic := '1';
-		-- pylrx_data  : out std_logic_vector;
-
 		miitx_clk  => miitx_clk,
+
+		pyltx_frm  => udppyltx_frm,
+		pyltx_irdy => udppyltx_irdy,
+		pyltx_trdy => udppyltx_trdy,
+		pyltx_data => udppyltx_data,
+
 		thatx_frm  => udpthatx_frm,
 		thatx_irdy => udpthatx_irdy,
 		thatx_trdy => udpthatx_trdy,

@@ -66,6 +66,11 @@ entity udp is
 
 		miitx_clk  : in  std_logic;
 
+		pyltx_frm  : in  std_logic;
+		pyltx_irdy : in  std_logic;
+		pyltx_trdy : out std_logic := '1';
+		pyltx_data : in  std_logic_vector;
+
 		thatx_frm  : in  std_logic;
 		thatx_irdy : in  std_logic;
 		thatx_trdy : out std_logic := '1';
