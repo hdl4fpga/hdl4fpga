@@ -32,13 +32,13 @@ entity icmpd is
 	port (
 		miirx_clk   : in  std_logic;
 
-		tharx_frm   : in  std_logic;
-		tharx_irdy  : in  std_logic;
-		tharx_trdy  : buffer std_logic := '1';
+		sharx_frm   : in  std_logic;
+		sharx_irdy  : in  std_logic;
+		sharx_trdy  : buffer std_logic := '1';
 
-		tparx_frm   : in  std_logic;
-		tparx_irdy  : in  std_logic;
-		tparx_trdy  : buffer std_logic := '1';
+		sparx_frm   : in  std_logic;
+		sparx_irdy  : in  std_logic;
+		sparx_trdy  : buffer std_logic := '1';
 
 		ipv4lenrx_frm  : in  std_logic;
 		ipv4lenrx_irdy : in  std_logic;
@@ -162,8 +162,8 @@ begin
 			variable init : boolean;
 		begin
 			if rising_edge(miirx_clk) then
-				if tharx_frm='1' then
-					if (tharx_irdy and tharx_trdy)='1' then
+				if sharx_frm='1' then
+					if (sharx_irdy and sharx_trdy)='1' then
 						if not init then
 							init := true;
 							cntr := (others => '0');
@@ -174,7 +174,7 @@ begin
 					end if;
 				else 
 					init := false;
-					if (tparx_irdy and tparx_trdy)='1' then
+					if (sparx_irdy and sparx_trdy)='1' then
 						cntr := cntr + 1;
 						wr_ena <= '1';
 					elsif (icmprx_irdy and icmprx_trdy)='1' then

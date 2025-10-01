@@ -46,23 +46,23 @@ entity udp is
 
 		miirx_clk     : in  std_logic;
 
-		-- tharx_frm   : in  std_logic;
-		-- tharx_irdy  : in  std_logic;
-		-- tharx_trdy  : buffer std_logic := '1';
-		--
-		-- tparx_frm   : in  std_logic;
-		-- tparx_irdy  : in  std_logic;
-		-- tparx_trdy  : buffer std_logic := '1';
+		sharx_frm   : in  std_logic;
+		sharx_irdy  : in  std_logic;
+		sharx_trdy  : buffer std_logic := '1';
+		
+		sparx_frm   : in  std_logic;
+		sparx_irdy  : in  std_logic;
+		sparx_trdy  : buffer std_logic := '1';
 
 		udprx_frm     : in  std_logic := '0';
 		udprx_irdy    : in  std_logic := '0';
 		udprx_trdy    : out std_logic := '0';
 		udprx_data    : in  std_logic_vector;
 
-		-- pylrx_frm   : buffer std_logic;
-		-- pylrx_irdy  : out std_logic;
-		-- pylrx_trdy  : in  std_logic := '1';
-		-- pylrx_data  : out std_logic_vector;
+		pylrx_frm     : buffer std_logic;
+		pylrx_irdy    : out std_logic;
+		pylrx_trdy    : in  std_logic := '1';
+		pylrx_data    : out std_logic_vector;
 
 		miitx_clk     : in  std_logic;
 
@@ -106,32 +106,32 @@ architecture def of udp is
 begin
 
 	rx_b : block
-		signal sp_act : std_logic;
-		signal dp_frm : std_logic;
-		signal length_frm : std_logic;
-		signal chksum_frm : std_logic;
+		signal sp_act  : std_logic;
+		signal dp_act  : std_logic;
+		signal act2    : std_logic;
+		signal act3    : std_logic;
 		signal pyl_frm : std_logic;
 	begin
 		udp_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => compact('{' &
-				"    sp:" & string'(hdo(frames)**".format.udp.sp")      & ',' &
-				"    dp:" & string'(hdo(frames)**".format.udp.dp")      & ',' &
-				"length:" & string'(hdo(frames)**".format.udp.length")  & ',' &
-				"chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & '}'),
+				"    sp:" & string'(hdo(frames)**".format.udp.sp")     & ',' &
+				"    dp:" & string'(hdo(frames)**".format.udp.dp")     & ',' &
+				"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
+				"chksum:" & string'(hdo(frames)**".format.udp.chksum") & '}'),
 			size  => udprx_data'length)
 		port map (
 			clk    => miirx_clk,
 			frm    => udprx_frm,
 			irdy   => udprx_irdy,
 			act(0) => sp_act,
-			act(1) => dp_frm,
-			act(2) => length_frm,
-			act(3) => chksum_frm,
+			act(1) => dp_act,
+			act(2) => act2,
+			act(3) => act3,
 			act(4) => pyl_frm);
 
-		-- pylrx_frm  <= tharx_frm or tparx_frm or meta_frm or chksum_frm;
-		-- pylrx_irdy <= pylrx_frm;
+		pylrx_frm  <= sharx_frm or sparx_frm or sp_act or dp_act;
+		pylrx_irdy <= pylrx_frm;
 
 		dhcpcd_b : block
 			signal dhcpcd_equ : std_logic;

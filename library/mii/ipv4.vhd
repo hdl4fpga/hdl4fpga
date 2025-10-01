@@ -46,9 +46,14 @@ entity ipv4 is
 
 		miirx_clk     : in  std_logic;
 
-		tharx_frm     : in  std_logic;
-		tharx_irdy    : in  std_logic;
-		tharx_trdy    : out std_logic := '1';
+		udppylrx_frm  : out std_logic;
+		udppylrx_irdy : out std_logic;
+		udppylrx_trdy : in  std_logic := '1';
+		udppylrx_data : out std_logic_vector;
+
+		sharx_frm     : in  std_logic;
+		sharx_irdy    : in  std_logic;
+		sharx_trdy    : out std_logic := '1';
 
 		ipv4rx_frm    : in  std_logic;
 		ipv4rx_irdy   : in  std_logic;
@@ -85,9 +90,9 @@ architecture def of ipv4 is
 	alias  ipv4lenrx_irdy is ipv4lenrx_frm;
 	signal ipv4lenrx_trdy : std_logic := '1';
 
-	signal tparx_frm      : std_logic;
-	alias  tparx_irdy  is tparx_frm;
-	signal tparx_trdy     : std_logic := '1';
+	signal sparx_frm      : std_logic;
+	alias  sparx_irdy  is sparx_frm;
+	signal sparx_trdy     : std_logic := '1';
 
 	signal icmprx_frm     : std_logic;
 	alias  icmprx_irdy    is icmprx_frm;
@@ -200,10 +205,10 @@ begin
 		process (miirx_clk)
 		begin
 			if rising_edge(miirx_clk) then
-				tha1rx_frm    <= tharx_frm;
-				tha1rx_irdy   <= tharx_irdy;
+				tha1rx_frm    <= sharx_frm;
+				tha1rx_irdy   <= sharx_irdy;
 				ipv4lenrx_frm <= length_frm;
-				tparx_frm     <= spa_frm;
+				sparx_frm     <= spa_frm;
 			end if;
 		end process;
 
@@ -712,12 +717,12 @@ begin
 	icmpd_i : entity hdl4fpga.icmpd
 	port map (
 		miirx_clk      => miirx_clk,
-		tharx_frm      => tha1rx_frm,
-		tharx_irdy     => tha1rx_irdy,
-		tharx_trdy     => tha1rx_trdy,
-		tparx_frm      => tparx_frm,
-		tparx_irdy     => tparx_irdy,
-		tparx_trdy     => tparx_trdy,
+		sharx_frm      => tha1rx_frm,
+		sharx_irdy     => tha1rx_irdy,
+		sharx_trdy     => tha1rx_trdy,
+		sparx_frm      => sparx_frm,
+		sparx_irdy     => sparx_irdy,
+		sparx_trdy     => sparx_trdy,
 		ipv4lenrx_frm  => ipv4lenrx_frm,
 		ipv4lenrx_irdy => ipv4lenrx_irdy,
 		ipv4lenrx_trdy => ipv4lenrx_trdy,
@@ -765,18 +770,24 @@ begin
 		upspa_data => upspa_data,
 
 		miirx_clk  => miirx_clk,
-		-- tharx_frm   : in  std_logic;
-		-- tharx_irdy  : in  std_logic;
-		-- tharx_trdy  : buffer std_logic := '1';
-		--
-		-- tparx_frm   : in  std_logic;
-		-- tparx_irdy  : in  std_logic;
-		-- tparx_trdy  : buffer std_logic := '1';
+
+		sharx_frm  => sharx_frm,
+		sharx_irdy => sharx_irdy,
+		sharx_trdy => sharx_trdy,
+                                 
+		sparx_frm  => sparx_frm ,
+		sparx_irdy => sparx_irdy,
+		-- sparx_trdy => sparx_trdy,
 
 		udprx_frm  => udprx_frm,
 		udprx_irdy => udprx_irdy,
 		udprx_trdy => udprx_trdy,
 		udprx_data => udprx_data,
+
+		pylrx_frm  => udppylrx_frm,
+		pylrx_irdy => udppylrx_irdy,
+		pylrx_trdy => udppylrx_trdy,
+		pylrx_data => udppylrx_data,
 
 		-- pylrx_frm   : buffer std_logic;
 		-- pylrx_irdy  : out std_logic;

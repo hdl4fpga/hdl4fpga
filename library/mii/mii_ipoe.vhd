@@ -41,6 +41,12 @@ entity mii_ipoe is
 		miirx_irdy : in  std_logic := '0';
 		miirx_trdy : out std_logic := '1';
 		miirx_data : in  std_logic_vector;
+
+		udppylrx_frm  : out std_logic;
+		udppylrx_irdy : out std_logic;
+		udppylrx_trdy : in  std_logic := '1';
+		udppylrx_data : out std_logic_vector;
+
 		fcs_sb     : out std_logic;
 		fcs_vld    : out std_logic;
 
@@ -93,8 +99,8 @@ architecture def of mii_ipoe is
 	signal arptha_frm    : std_logic;
 	signal arptpa_frm    : std_logic;
 
-	signal ipv4tharx_frm  : std_logic;
-	signal ipv4tharx_irdy : std_logic;
+	signal ipv4sharx_frm  : std_logic;
+	signal ipv4sharx_irdy : std_logic;
 
 	signal ipv4rx_frm    : std_logic;
 	alias  ipv4rx_irdy is ipv4rx_frm;
@@ -356,8 +362,8 @@ begin
 					typ_vld := '1';
 				end if;
 			end if;
-			ipv4tharx_frm  <= ethsa_frm;
-			ipv4tharx_irdy <= ethsa_irdy;
+			ipv4sharx_frm  <= ethsa_frm;
+			ipv4sharx_irdy <= ethsa_irdy;
 			ipv4rx_frm     <= ethpyl_frm and da_vld and typ_vld;
 			ipv4rx_data    <= miirx_data;
 		end if;
@@ -385,8 +391,13 @@ begin
 
 		miirx_clk     => miirx_clk,
 
-		tharx_frm     => ipv4tharx_frm,
-		tharx_irdy    => ipv4tharx_irdy,
+		udppylrx_frm  => udppylrx_frm,
+		udppylrx_irdy => udppylrx_irdy,
+		udppylrx_trdy => udppylrx_trdy,
+		udppylrx_data => udppylrx_data,
+
+		sharx_frm     => ipv4sharx_frm,
+		sharx_irdy    => ipv4sharx_irdy,
 
 		ipv4rx_frm    => ipv4rx_frm,
 		ipv4rx_irdy   => ipv4rx_irdy,

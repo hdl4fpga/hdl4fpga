@@ -78,6 +78,12 @@ architecture ser_debug of nuhs3adsp is
 	signal hwda_frm   : std_logic;
 	signal dhcpcd_req : std_logic := '0';
 	signal dhcpcd_rdy : std_logic := '0';
+
+	signal udppylrx_frm  : std_logic;
+	signal udppylrx_irdy : std_logic;
+	signal udppylrx_trdy : std_logic;
+	signal udppylrx_data : std_logic_vector(0 to mii_rxd'length-1);
+
 begin
 
 	videodcm_i : entity hdl4fpga.xc3s_videodcm
@@ -130,6 +136,11 @@ begin
 		miirx_frm  => mii_rxdv,
 		miirx_irdy => mii_rxdv,
 		miirx_data => mii_rxd,
+
+		udppylrx_frm  => udppylrx_frm,
+		udppylrx_irdy => udppylrx_irdy,
+		udppylrx_data => udppylrx_data,
+
 		miitx_clk  => mii_txc,
 		miitx_frm  => mii_txen,
 		miitx_data => mii_txd);
