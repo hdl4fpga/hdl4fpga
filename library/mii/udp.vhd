@@ -107,7 +107,7 @@ architecture def of udp is
 	signal udppyltx_frms  : std_logic_vector(0 to 2-1);
 	signal udppyltx_irdys : std_logic_vector(0 to 2-1);
 	signal udppyltx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
-	signal udppyltx_data  : std_logic_vector(ipv4tx_data'range);
+	signal udppyltx_data  : std_logic_vector(udptx_data'range);
 
 begin
 
@@ -173,8 +173,12 @@ begin
 	end block;
 
 	tx_b : block
+		signal udppyltx_frm  : std_logic;
+		signal udppyltx_irdy : std_logic;
+		signal udppyltx_trdy : std_logic;
 	begin
 		arbiter_b : block
+			signal gntd           : std_logic_vector(0 to 2-1);
 		begin
 
 			arbiter_i : entity hdl4fpga.mii_arbiter
@@ -188,27 +192,27 @@ begin
 				irdy  => udppyltx_irdy,
 				trdy  => udppyltx_trdy);
 
-			udppyltx_data <= 
-				dhcpcdtx_data when gntd(0)='1' else
-				 pyltx_data when gntd(1)='1' else
-				(udppyltx_data'range => '-');
-
-			udplentx_frms  <= gntd and (gntd'range => udplentx_frm);
-			udplentx_irdys <= gntd and (gntd'range => udplentx_irdy);
-			udplentx_trdy  <= '1' when (gntd and udplentx_trdys) /= (gntd'range => '0') else '0';
-			udplentx_data  <= 
-				dhcpcdtx_data when gntd(0)='1' else
-				pyltx_data    when gntd(1)='1' else
-				(udplentx_data'range => '-');
-
-			udptpatx_frms  <= gntd and (gntd'range => udptpatx_frm);
-			udptpatx_irdys <= gntd and (gntd'range => udptpatx_irdy);
-			udptpatx_trdy  <= '1' when (gntd and udptpatx_trdys) /= (gntd'range => '0') else '0';
-			udptpatx_data  <= 
-				dhcpcdtx_data when gntd(0)='1' else
-				pyltx_data    when gntd(1)='1' else
-				(udptpatx_data'range => '-');
-
+			-- udppyltx_data <= 
+			-- 	dhcpcdtx_data when gntd(0)='1' else
+			-- 	 pyltx_data when gntd(1)='1' else
+			-- 	(udppyltx_data'range => '-');
+			--
+			-- udplentx_frms  <= gntd and (gntd'range => udplentx_frm);
+			-- udplentx_irdys <= gntd and (gntd'range => udplentx_irdy);
+			-- udplentx_trdy  <= '1' when (gntd and udplentx_trdys) /= (gntd'range => '0') else '0';
+			-- udplentx_data  <= 
+			-- 	dhcpcdtx_data when gntd(0)='1' else
+			-- 	pyltx_data    when gntd(1)='1' else
+			-- 	(udplentx_data'range => '-');
+			--
+			-- udptpatx_frms  <= gntd and (gntd'range => udptpatx_frm);
+			-- udptpatx_irdys <= gntd and (gntd'range => udptpatx_irdy);
+			-- udptpatx_trdy  <= '1' when (gntd and udptpatx_trdys) /= (gntd'range => '0') else '0';
+			-- udptpatx_data  <= 
+			-- 	dhcpcdtx_data when gntd(0)='1' else
+			-- 	pyltx_data    when gntd(1)='1' else
+			-- 	(udptpatx_data'range => '-');
+			--
 		end block;
 
 	end block;
