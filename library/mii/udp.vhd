@@ -29,60 +29,60 @@ use hdl4fpga.ipoepkg.all;
 
 entity udp is
 	generic (
-		hwaddr        : std_logic_vector(0 to 48-1));
+		hwaddr     : std_logic_vector(0 to 48-1));
 	port (
 		tp : out std_logic_vector(1 to 32);
 
-		dhcpcd_req    : in  std_logic := '0';
-		dhcpcd_rdy    : buffer std_logic := '0';
+		dhcpcd_req : in  std_logic := '0';
+		dhcpcd_rdy : buffer std_logic := '0';
 
-		arp_req       : buffer std_logic := '0';
-		arp_rdy       : in  std_logic := '0';
+		arp_req    : buffer std_logic := '0';
+		arp_rdy    : in  std_logic := '0';
 
-		upspa_frm     : out std_logic;
-		upspa_irdy    : out std_logic;
-		upspa_trdy    : in  std_logic := '1';
-		upspa_data    : out std_logic_vector;
+		upspa_frm  : out std_logic;
+		upspa_irdy : out std_logic;
+		upspa_trdy : in  std_logic := '1';
+		upspa_data : out std_logic_vector;
 
-		miirx_clk     : in  std_logic;
+		miirx_clk  : in  std_logic;
 
-		sharx_frm   : in  std_logic;
-		sharx_irdy  : in  std_logic;
-		sharx_trdy  : buffer std_logic := '1';
+		sharx_frm  : in  std_logic;
+		sharx_irdy : in  std_logic;
+		sharx_trdy : buffer std_logic := '1';
 		
-		sparx_frm   : in  std_logic;
-		sparx_irdy  : in  std_logic;
-		sparx_trdy  : buffer std_logic := '1';
+		sparx_frm  : in  std_logic;
+		sparx_irdy : in  std_logic;
+		sparx_trdy : buffer std_logic := '1';
 
-		udprx_frm     : in  std_logic := '0';
-		udprx_irdy    : in  std_logic := '0';
-		udprx_trdy    : out std_logic := '0';
-		udprx_data    : in  std_logic_vector;
+		udprx_frm  : in  std_logic := '0';
+		udprx_irdy : in  std_logic := '0';
+		udprx_trdy : out std_logic := '0';
+		udprx_data : in  std_logic_vector;
 
-		pylrx_frm     : buffer std_logic;
-		pylrx_irdy    : out std_logic;
-		pylrx_trdy    : in  std_logic := '1';
-		pylrx_data    : out std_logic_vector;
+		pylrx_frm  : buffer std_logic;
+		pylrx_irdy : out std_logic;
+		pylrx_trdy : in  std_logic := '1';
+		pylrx_data : out std_logic_vector;
 
-		miitx_clk     : in  std_logic;
+		miitx_clk  : in  std_logic;
 
-		thatx_frm     : in  std_logic;
-		thatx_irdy    : in  std_logic;
-		thatx_trdy    : out std_logic := '1';
-		thatx_data    : out std_logic_vector;
+		thatx_frm  : in  std_logic;
+		thatx_irdy : in  std_logic;
+		thatx_trdy : out std_logic := '1';
+		thatx_data : out std_logic_vector;
 
-		tpatx_frm     : in  std_logic;
-		tpatx_irdy    : in  std_logic;
-		tpatx_trdy    : out std_logic := '1';
+		tpatx_frm  : in  std_logic;
+		tpatx_irdy : in  std_logic;
+		tpatx_trdy : out std_logic := '1';
 
-		lentx_frm     : in std_logic;
-		lentx_irdy    : in std_logic;
-		lentx_trdy    : out std_logic := '1';
+		lentx_frm  : in std_logic;
+		lentx_irdy : in std_logic;
+		lentx_trdy : out std_logic := '1';
 
-		udptx_frm     : buffer std_logic := '0';
-		udptx_irdy    : buffer std_logic := '0';
-		udptx_trdy    : in  std_logic := '0';
-		udptx_data    : buffer std_logic_vector);
+		udptx_frm  : buffer std_logic := '0';
+		udptx_irdy : buffer std_logic := '0';
+		udptx_trdy : in  std_logic := '0';
+		udptx_data : buffer std_logic_vector);
 end;
 
 architecture def of udp is
@@ -103,6 +103,12 @@ architecture def of udp is
 	signal dhcpcdtx_irdy : std_logic;
 	signal dhcpcdtx_trdy : std_logic;
 	signal dhcpcdtx_data : std_logic_vector(udptx_data'range);
+
+	signal udppyltx_frms  : std_logic_vector(0 to 2-1);
+	signal udppyltx_irdys : std_logic_vector(0 to 2-1);
+	signal udppyltx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
+	signal udppyltx_data  : std_logic_vector(ipv4tx_data'range);
+
 begin
 
 	rx_b : block
@@ -161,6 +167,47 @@ begin
 			end process;
 
 			dhcpcdrx_data <= udprx_data;
+
+		end block;
+
+	end block;
+
+	tx_b : block
+	begin
+		arbiter_b : block
+		begin
+
+			arbiter_i : entity hdl4fpga.mii_arbiter
+			port map (
+				clk   => miitx_clk,
+				gntd  => gntd,
+				frms  => udppyltx_frms,
+				irdys => udppyltx_irdys,
+				trdys => udppyltx_trdys,
+				frm   => udppyltx_frm,
+				irdy  => udppyltx_irdy,
+				trdy  => udppyltx_trdy);
+
+			udppyltx_data <= 
+				dhcpcdtx_data when gntd(0)='1' else
+				 pyltx_data when gntd(1)='1' else
+				(udppyltx_data'range => '-');
+
+			udplentx_frms  <= gntd and (gntd'range => udplentx_frm);
+			udplentx_irdys <= gntd and (gntd'range => udplentx_irdy);
+			udplentx_trdy  <= '1' when (gntd and udplentx_trdys) /= (gntd'range => '0') else '0';
+			udplentx_data  <= 
+				dhcpcdtx_data when gntd(0)='1' else
+				pyltx_data    when gntd(1)='1' else
+				(udplentx_data'range => '-');
+
+			udptpatx_frms  <= gntd and (gntd'range => udptpatx_frm);
+			udptpatx_irdys <= gntd and (gntd'range => udptpatx_irdy);
+			udptpatx_trdy  <= '1' when (gntd and udptpatx_trdys) /= (gntd'range => '0') else '0';
+			udptpatx_data  <= 
+				dhcpcdtx_data when gntd(0)='1' else
+				pyltx_data    when gntd(1)='1' else
+				(udptpatx_data'range => '-');
 
 		end block;
 
