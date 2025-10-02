@@ -143,15 +143,18 @@ begin
 			act(4) => pyl_act);
 
 		xxx : block
+			signal wr_ena  : std_logic;
 			signal wr_addr : std_logic_vector(0 to 5-1);
 			signal rd_addr : std_logic_vector(wr_addr'range);
+			signal wr_data : std_logic_vector(udprx_data'range);
 		begin
 
 			data_i : entity hdl4fpga.dpram
 			port map (
 				wr_clk  => miirx_clk,
 				wr_addr => wr_addr,
-				wr_data => udprx_data,
+				wr_ena  => wr_ena,
+				wr_data => wr_data,
 				rd_addr => rd_addr,
 				rd_data => pylrx_data);
 
@@ -174,6 +177,7 @@ begin
 					if (pylrx_frm and pylrx_irdy)='1' then
 						if pylrx_trdy='1' then
 							rd_cntr := rd_cntr + 1;
+							rd_addr <= std_logic_vector(rd_cntr);
 						end if;
 					end if;
 
@@ -188,11 +192,14 @@ begin
 					end if;
 
 					wr_addr <= std_logic_vector(wr_cntr);
-					rd_addr <= std_logic_vector(rd_cntr);
+					wr_data <= udprx_data;
 					if (sharx_frm and sharx_irdy)='1' or
 					   (sparx_frm and sparx_irdy)='1' or
 					   (sp_act or dp_act or pyl_act)='1' then
-						   wr_cntr := wr_cntr + 1;
+						wr_ena  <= '1';
+						wr_cntr := wr_cntr + 1;
+					else
+						wr_ena  <= '0';
 					end if;
 				end if;
 			end process;

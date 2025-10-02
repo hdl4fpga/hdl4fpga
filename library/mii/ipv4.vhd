@@ -775,9 +775,9 @@ begin
 
 		miirx_clk  => miirx_clk,
 
-		sharx_frm  => sharx_frm,
-		sharx_irdy => sharx_irdy,
-		sharx_trdy => sharx_trdy,
+		sharx_frm  => tha1rx_frm,
+		sharx_irdy => tha1rx_irdy,
+		-- sharx_trdy => tha1rx_trdy,
                                  
 		sparx_frm  => sparx_frm ,
 		sparx_irdy => sparx_irdy,
