@@ -21,6 +21,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
@@ -60,7 +61,7 @@ entity udp is
 		udprx_data : in  std_logic_vector;
 
 		pylrx_frm  : buffer std_logic;
-		pylrx_irdy : out std_logic;
+		pylrx_irdy : buffer std_logic;
 		pylrx_trdy : in  std_logic := '1';
 		pylrx_data : out std_logic_vector;
 
@@ -121,7 +122,7 @@ begin
 		signal dp_act  : std_logic;
 		signal act2    : std_logic;
 		signal act3    : std_logic;
-		signal pyl_frm : std_logic;
+		signal pyl_act : std_logic;
 	begin
 		udp_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -139,10 +140,63 @@ begin
 			act(1) => dp_act,
 			act(2) => act2,
 			act(3) => act3,
-			act(4) => pyl_frm);
+			act(4) => pyl_act);
 
-		pylrx_frm  <= sharx_frm or sparx_frm or sp_act or dp_act;
-		pylrx_irdy <= pylrx_frm;
+		xxx : block
+			signal wr_addr : std_logic_vector(0 to 5-1);
+			signal rd_addr : std_logic_vector(wr_addr'range);
+		begin
+
+			data_i : entity hdl4fpga.dpram
+			port map (
+				wr_clk  => miirx_clk,
+				wr_addr => wr_addr,
+				wr_data => udprx_data,
+				rd_addr => rd_addr,
+				rd_data => pylrx_data);
+
+			process (miirx_clk)
+				variable init    : boolean;
+				variable wr_cntr : unsigned (wr_addr'range);
+				variable rd_cntr : unsigned (rd_addr'range);
+			begin
+				if rising_edge(miirx_clk) then
+					if init then
+						if sharx_frm='1' then
+							rd_cntr := (others => '0');
+							wr_cntr := (others => '0');
+							init := false;
+						end if;
+					elsif sharx_frm='0' then
+						init := true;
+					end if;
+
+					if (pylrx_frm and pylrx_irdy)='1' then
+						if pylrx_trdy='1' then
+							rd_cntr := rd_cntr + 1;
+						end if;
+					end if;
+
+					if wr_cntr /= rd_cntr then
+						if pylrx_frm='0' then
+							pylrx_frm  <= pyl_act;
+							pylrx_irdy <= pyl_act;
+						end if;
+					else
+						pylrx_frm  <= '0';
+						pylrx_irdy <= '0';
+					end if;
+
+					wr_addr <= std_logic_vector(wr_cntr);
+					rd_addr <= std_logic_vector(rd_cntr);
+					if (sharx_frm and sharx_irdy)='1' or
+					   (sparx_frm and sparx_irdy)='1' or
+					   (sp_act or dp_act or pyl_act)='1' then
+						   wr_cntr := wr_cntr + 1;
+					end if;
+				end if;
+			end process;
+		end block;
 
 		dhcpcd_b : block
 			signal dhcpcd_equ : std_logic;
@@ -158,7 +212,7 @@ begin
 				data    => udprx_data,
 				equ     => dhcpcd_equ);
 
-			sp_p : process (pyl_frm, miirx_clk)
+			sp_p : process (pyl_act, miirx_clk)
 				variable sp_vld : std_logic := '0';
 			begin
 				if rising_edge(miirx_clk) then
@@ -168,7 +222,7 @@ begin
 						sp_vld := '1';
 					end if;
 				end if;
-				dhcpcdrx_frm <= pyl_frm and sp_vld;
+				dhcpcdrx_frm <= pyl_act and sp_vld;
 			end process;
 
 			dhcpcdrx_data <= udprx_data;
@@ -183,7 +237,7 @@ begin
 		signal udppyltx_trdy : std_logic;
 	begin
 		arbiter_b : block
-			signal gntd           : std_logic_vector(0 to 2-1);
+			signal gntd  : std_logic_vector(0 to 2-1);
 		begin
 
 			arbiter_i : entity hdl4fpga.mii_arbiter

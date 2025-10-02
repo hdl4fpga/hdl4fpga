@@ -28,6 +28,7 @@ use hdl4fpga.base.all;
 
 entity mii_buffer is -- skid buffer
 	generic (
+		flush   : boolean := false;
 		latency : natural := 1);
 	port (
 		clk : in std_logic;
@@ -42,26 +43,7 @@ entity mii_buffer is -- skid buffer
 end;
 
 architecture def of mii_buffer is
-	signal wr_addr : std_logic_vector(0 to 4-1);
-	signal rd_addr : std_logic_vector(wr_addr'range);
-	signal rd_data : std_logic_vector(dst_data'range);
 begin
-
-	-- fifo_i : entity hdl4fpga.dpram
-	-- port map (
-	-- 	wr_clk  => clk,
-	-- 	wr_addr => wr_addr,
-	-- 	wr_data => src_data,
-	-- 	rd_addr => rd_addr,
-	-- 	rd_data => rd_data);
-	--
-	-- process (clk)
-	-- 	variable rd_cntr : unsigned (rd_addr'range);
-	-- 	variable wr_cntr : unsigned (wr_addr'range);
-	-- begin
-	-- 	if rising_edge(clk) then
-	-- 	end if;
-	-- end process;
 
 	process (src_frm, dst_trdy, clk)
 		variable frm_shr  : unsigned(0 to latency-1) := (others => '0');
@@ -70,6 +52,9 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (not frm_shr(0) and irdy_shr(0) and dst_trdy)='1' then
+				irdy_shr := (others =>'0');
+			elsif flush and (src_frm or src_irdy)='0' then
+				frm_shr  := (others =>'0');
 				irdy_shr := (others =>'0');
 			elsif (not irdy_shr(0) or dst_trdy)='1' then
 				frm_shr(0) := src_frm;
