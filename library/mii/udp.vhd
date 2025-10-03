@@ -159,6 +159,21 @@ begin
 				rd_data => pylrx_data);
 
 			process (miirx_clk)
+			begin
+				if rising_edge(miirx_clk) then
+					if wr_addr /= rd_addr then
+						if pyl_act='1' then
+							pylrx_frm  <= pyl_act;
+							pylrx_irdy <= pyl_act;
+						end if;
+					else
+						pylrx_frm  <= '0';
+						pylrx_irdy <= '0';
+					end if;
+				end if;
+			end process;
+
+			process (miirx_clk)
 				variable init    : boolean;
 				variable wr_cntr : unsigned (wr_addr'range);
 				variable rd_cntr : unsigned (rd_addr'range);
@@ -172,16 +187,6 @@ begin
 						end if;
 					elsif sharx_frm='0' then
 						init := true;
-					end if;
-
-					if wr_cntr /= rd_cntr then
-						if pylrx_frm='0' then
-							pylrx_frm  <= pyl_act;
-							pylrx_irdy <= pyl_act;
-						end if;
-					else
-						pylrx_frm  <= '0';
-						pylrx_irdy <= '0';
 					end if;
 
 					wr_addr <= std_logic_vector(wr_cntr);
