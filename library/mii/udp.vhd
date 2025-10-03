@@ -162,7 +162,6 @@ begin
 			process (miirx_clk)
 			begin
 				if rising_edge(miirx_clk) then
-					-- if wr_addr /= rd_addr then
 					if ne_addr then
 						if pyl_act='1' then
 							pylrx_frm  <= pyl_act;
