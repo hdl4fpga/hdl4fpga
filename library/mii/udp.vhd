@@ -143,6 +143,7 @@ begin
 			act(4) => pyl_act);
 
 		xxx : block
+			signal ne_addr : boolean;
 			signal wr_ena  : std_logic;
 			signal wr_addr : std_logic_vector(0 to 5-1);
 			signal rd_addr : std_logic_vector(wr_addr'range);
@@ -161,7 +162,8 @@ begin
 			process (miirx_clk)
 			begin
 				if rising_edge(miirx_clk) then
-					if wr_addr /= rd_addr then
+					-- if wr_addr /= rd_addr then
+					if ne_addr then
 						if pyl_act='1' then
 							pylrx_frm  <= pyl_act;
 							pylrx_irdy <= pyl_act;
@@ -179,6 +181,7 @@ begin
 				variable rd_cntr : unsigned (rd_addr'range);
 			begin
 				if rising_edge(miirx_clk) then
+					ne_addr <= wr_cntr /= rd_cntr;
 					if init then
 						if sharx_frm='1' then
 							rd_cntr := (others => '0');
