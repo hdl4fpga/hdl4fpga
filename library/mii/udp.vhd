@@ -174,13 +174,6 @@ begin
 						init := true;
 					end if;
 
-					if (pylrx_frm and pylrx_irdy)='1' then
-						if pylrx_trdy='1' then
-							rd_cntr := rd_cntr + 1;
-							rd_addr <= std_logic_vector(rd_cntr);
-						end if;
-					end if;
-
 					if wr_cntr /= rd_cntr then
 						if pylrx_frm='0' then
 							pylrx_frm  <= pyl_act;
@@ -201,6 +194,17 @@ begin
 					else
 						wr_ena  <= '0';
 					end if;
+
+					if pylrx_trdy='1' then
+						if pyl_act='1' then
+							rd_addr <= std_logic_vector(rd_cntr);
+							rd_cntr := rd_cntr + 1;
+						elsif (pylrx_frm and pylrx_irdy)='1' then
+							rd_addr <= std_logic_vector(rd_cntr);
+							rd_cntr := rd_cntr + 1;
+						end if;
+					end if;
+
 				end if;
 			end process;
 		end block;
