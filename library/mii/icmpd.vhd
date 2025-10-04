@@ -229,6 +229,7 @@ begin
 		signal buffer_irdy : std_logic;
 		signal buffer_trdy : std_logic;
 
+		-- signal eq_addr : boolean;
 	begin
 
 		process (miitx_clk)
@@ -259,7 +260,7 @@ begin
 		decode_data <= rd_data;
 
 		process (rd_addr , miitx_clk)
-			variable cntr   : unsigned(rd_addr'range) := (others => '0');
+			variable cntr : unsigned(rd_addr'range) := (others => '0');
 		begin
 			if rising_edge(miitx_clk) then
 				if ((decode_frm or decode_trdy) and decode_irdy)='1' then
@@ -267,6 +268,7 @@ begin
 				elsif (icmptx_frm or icmptx_irdy)='0' then
 					cntr := (others => '0');
 				end if;
+				-- eq_addr <= std_logic_vector(cntr) = wr_addr;
 				rd_addr <= std_logic_vector(cntr);
 			end if;
 		end process;
@@ -291,6 +293,7 @@ begin
 			act(2) => pyl_frm);
 
 		buffer_frm  <= decode_frm when unsigned(rd_addr) /= unsigned(wr_addr) else '0';
+		-- buffer_frm  <= decode_frm when eq_addr else '0';
 		buffer_irdy <= decode_frm;
 		buffer_i : entity hdl4fpga.mii_buffer
 		port map (

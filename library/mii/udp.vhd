@@ -142,7 +142,7 @@ begin
 			act(3) => act3,
 			act(4) => pyl_act);
 
-		xxx : block
+		fifo_b : block
 			signal ne_addr : boolean;
 			signal wr_ena  : std_logic;
 			signal wr_addr : std_logic_vector(0 to 5-1);
