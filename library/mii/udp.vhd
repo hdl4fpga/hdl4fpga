@@ -181,14 +181,13 @@ begin
 			begin
 				if rising_edge(miirx_clk) then
 					ne_addr <= wr_cntr /= rd_cntr;
+				end if;
+
+				if rising_edge(miirx_clk) then
 					if init then
 						if sharx_frm='1' then
-							rd_cntr := (others => '0');
 							wr_cntr := (others => '0');
-							init := false;
 						end if;
-					elsif sharx_frm='0' then
-						init := true;
 					end if;
 
 					wr_addr <= std_logic_vector(wr_cntr);
@@ -201,6 +200,14 @@ begin
 					else
 						wr_ena  <= '0';
 					end if;
+				end if;
+
+				if rising_edge(miirx_clk) then
+					if init then
+						if sharx_frm='1' then
+							rd_cntr := (others => '0');
+						end if;
+					end if;
 
 					if pylrx_trdy='1' then
 						if pyl_act='1' then
@@ -211,8 +218,18 @@ begin
 							rd_cntr := rd_cntr + 1;
 						end if;
 					end if;
-
 				end if;
+
+				if rising_edge(miirx_clk) then
+					if init then
+						if sharx_frm='1' then
+							init := false;
+						end if;
+					elsif sharx_frm='0' then
+						init := true;
+					end if;
+				end if;
+
 			end process;
 		end block;
 
