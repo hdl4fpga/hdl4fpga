@@ -519,7 +519,7 @@ begin
 				act(6) => da_frm,
 				act(7) => pyl_frm);
 
-			ipv4pyltx_trdy <= (pyl_frm or decode_fin) and ipv4tx_irdy and ipv4tx_trdy;
+			ipv4pyltx_trdy <= (pyl_frm or decode_fin) and ipv4tx_irdy and decode_trdy;
 
 			rom_irdy <=
 			   '1' and decode_trdy when       verihltos_frm='1' else

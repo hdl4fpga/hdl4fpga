@@ -234,6 +234,12 @@ begin
 		end block;
 
 		tx_b : block
+			signal tha_act    : std_logic;
+			signal length_act : std_logic;
+			signal da_act     : std_logic;
+			signal ports_act  : std_logic;
+			signal chksum_act : std_logic;
+			signal pyl_act    : std_logic;
 		begin
 			udp_i : entity hdl4fpga.frame_decode
 			generic map (
@@ -241,22 +247,24 @@ begin
 					"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
 					"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 					"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
-					"xxx:"& natural'image(
-					"    sp:" & string'(hdo(frames)**".format.udp.sp")      & ',' &
-					"    dp:" & string'(hdo(frames)**".format.udp.dp")      & ',' &
+					" ports:" & natural'image(
+						hdo(frames)**".format.udp.sp" +
+						hdo(frames)**".format.udp.dp")                      & ',' &
 					"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}'),
 				size  => udprx_data'length)
 			port map (
 				clk    => miirx_clk,
 				frm    => udprx_frm,
 				irdy   => udprx_irdy,
-				act(0) => sp_act,
-				act(1) => dp_act,
-				act(2) => act2,
-				act(3) => act3,
-				act(4) => pyl_act);
+				act(0) => tha_act,
+				act(1) => length_act,
+				act(3) => da_act,
+				act(2) => ports_act,
+				act(4) => chksum_act,
+				act(5) => pyl_act);
 
 		end block;
+
 		dhcpcd_b : block
 			signal dhcpcd_equ : std_logic;
 		begin

@@ -74,7 +74,9 @@ begin
 			else
 				src_trdy <= dst_trdy;
 			end if;
-		elsif (frm_shr(0) or irdy_shr(0))='1' then
+		elsif frm_shr(0)='1' then
+			src_trdy <= '0';
+		elsif irdy_shr(0)='1' then
 			src_trdy <= dst_trdy;
 		else
 			src_trdy <= '0';
