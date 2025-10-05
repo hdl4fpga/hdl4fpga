@@ -53,7 +53,6 @@ entity dhcpcd is
 		thatx_frm     : in  std_logic;
 		thatx_irdy    : in  std_logic;
 		thatx_trdy    : buffer std_logic := '1';
-		thatx_data    : out std_logic_vector;
 
 		lentx_frm     : in  std_logic;
 		lentx_irdy    : in  std_logic;
@@ -269,7 +268,6 @@ begin
 			(rom_data'range => '0');
 		
 		thatx_trdy <= thatx_irdy;
-		thatx_data <= rom_data;
 
 		lentx_trdy <= lentx_irdy;
 		tpatx_trdy <= tpatx_irdy;

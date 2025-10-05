@@ -67,8 +67,8 @@ entity udp is
 
 		miitx_clk  : in  std_logic;
 
-		pyltx_frm  : in  std_logic;
-		pyltx_irdy : in  std_logic;
+		pyltx_frm  : in  std_logic := '0';
+		pyltx_irdy : in  std_logic := '0';
 		pyltx_trdy : out std_logic := '1';
 		pyltx_data : in  std_logic_vector;
 
@@ -97,23 +97,50 @@ architecture def of udp is
 	signal dhcpcdrx_trdy : std_logic;
 	signal dhcpcdrx_data : std_logic_vector(udprx_data'range);
 
-	signal dhcpcdlentx_frm  : std_logic;
-	signal dhcpcdlentx_irdy : std_logic;
-	signal dhcpcdlentx_trdy : std_logic;
+	signal udptx_frms  : std_logic_vector(0 to 2-1);
+	signal udptx_irdys : std_logic_vector(0 to 2-1);
+	signal udptx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
 
-	signal dhcpcdtpatx_frm  : std_logic;
-	signal dhcpcdtpatx_irdy : std_logic;
-	signal dhcpcdtpatx_trdy : std_logic;
+	signal thatx_frms  : std_logic_vector(0 to 2-1);
+	signal thatx_irdys : std_logic_vector(0 to 2-1);
+	signal thatx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
 
-	signal dhcpcdtx_frm  : std_logic;
-	signal dhcpcdtx_irdy : std_logic;
-	signal dhcpcdtx_trdy : std_logic;
+	signal lentx_frms  : std_logic_vector(0 to 2-1);
+	signal lentx_irdys : std_logic_vector(0 to 2-1);
+	signal lentx_trdys : std_logic_vector(0 to 2-1);
+
+	signal tpatx_frms  : std_logic_vector(0 to 2-1);
+	signal tpatx_irdys : std_logic_vector(0 to 2-1);
+	signal tpatx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
+
+	alias  udpthatx_frm  is thatx_frms(0);
+	alias  udpthatx_irdy is thatx_irdys(0);
+	alias  udpthatx_trdy is thatx_trdys(0);
+
+	alias  udplentx_frm  is lentx_frms(0);
+	alias  udplentx_irdy is lentx_irdys(0);
+	alias  udplentx_trdy is lentx_trdys(0);
+
+	alias  udptpatx_frm  is tpatx_frms(0);
+	alias  udptpatx_irdy is tpatx_irdys(0);
+	alias  udptpatx_trdy is tpatx_trdys(0);
+
+	alias  dhcpcdtx_frm  is udptx_frms(1);
+	alias  dhcpcdtx_irdy is udptx_irdys(1);
+	alias  dhcpcdtx_trdy is udptx_trdys(1);
 	signal dhcpcdtx_data : std_logic_vector(udptx_data'range);
 
-	signal udppyltx_frms  : std_logic_vector(0 to 2-1);
-	signal udppyltx_irdys : std_logic_vector(0 to 2-1);
-	signal udppyltx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
-	signal udppyltx_data  : std_logic_vector(udptx_data'range);
+	alias  dhcpcdthatx_frm  is thatx_frms(1);
+	alias  dhcpcdthatx_irdy is thatx_irdys(1);
+	alias  dhcpcdthatx_trdy is thatx_trdys(1);
+
+	alias  dhcpcdlentx_frm  is lentx_frms(1);
+	alias  dhcpcdlentx_irdy is lentx_irdys(1);
+	alias  dhcpcdlentx_trdy is lentx_trdys(1);
+
+	alias  dhcpcdtpatx_frm  is tpatx_frms(1);
+	alias  dhcpcdtpatx_irdy is tpatx_irdys(1);
+	alias  dhcpcdtpatx_trdy is tpatx_trdys(1);
 
 begin
 
@@ -124,6 +151,7 @@ begin
 		signal act3    : std_logic;
 		signal pyl_act : std_logic;
 	begin
+
 		udp_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => compact('{' &
@@ -233,38 +261,6 @@ begin
 			end process;
 		end block;
 
-		tx_b : block
-			signal tha_act    : std_logic;
-			signal length_act : std_logic;
-			signal da_act     : std_logic;
-			signal ports_act  : std_logic;
-			signal chksum_act : std_logic;
-			signal pyl_act    : std_logic;
-		begin
-			udp_i : entity hdl4fpga.frame_decode
-			generic map (
-				frame => compact('{' &
-					"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
-					"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-					"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
-					" ports:" & natural'image(
-						hdo(frames)**".format.udp.sp" +
-						hdo(frames)**".format.udp.dp")                      & ',' &
-					"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}'),
-				size  => udprx_data'length)
-			port map (
-				clk    => miirx_clk,
-				frm    => udprx_frm,
-				irdy   => udprx_irdy,
-				act(0) => tha_act,
-				act(1) => length_act,
-				act(3) => da_act,
-				act(2) => ports_act,
-				act(4) => chksum_act,
-				act(5) => pyl_act);
-
-		end block;
-
 		dhcpcd_b : block
 			signal dhcpcd_equ : std_logic;
 		begin
@@ -298,47 +294,83 @@ begin
 
 	end block;
 
+
 	tx_b : block
 		signal udppyltx_frm  : std_logic;
 		signal udppyltx_irdy : std_logic;
 		signal udppyltx_trdy : std_logic;
+
+		signal tha_act    : std_logic;
+		signal length_act : std_logic;
+		signal da_act     : std_logic;
+		signal ports_act  : std_logic;
+		signal chksum_act : std_logic;
+		signal pyl_act    : std_logic;
 	begin
+
+		udp_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => compact('{' &
+				"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
+				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
+				" ports:" & natural'image(
+					hdo(frames)**".format.udp.sp" +
+					hdo(frames)**".format.udp.dp")                      & ',' &
+				"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}'),
+			size  => udprx_data'length)
+		port map (
+			clk    => miirx_clk,
+			frm    => udprx_frm,
+			irdy   => udprx_irdy,
+			act(0) => tha_act,
+			act(1) => length_act,
+			act(3) => da_act,
+			act(2) => ports_act,
+			act(4) => chksum_act,
+			act(5) => pyl_act);
+
+
 		arbiter_b : block
 			signal gntd  : std_logic_vector(0 to 2-1);
 		begin
+
+			udptx_frms(0)  <= pyltx_frm;
+			udptx_irdys(0) <= pyltx_irdy;
+			pyltx_trdy     <= udptx_trdys(0);
 
 			arbiter_i : entity hdl4fpga.mii_arbiter
 			port map (
 				clk   => miitx_clk,
 				gntd  => gntd,
-				frms  => udppyltx_frms,
-				irdys => udppyltx_irdys,
-				trdys => udppyltx_trdys,
-				frm   => udppyltx_frm,
-				irdy  => udppyltx_irdy,
-				trdy  => udppyltx_trdy);
+				frms  => udptx_frms,
+				irdys => udptx_irdys,
+				trdys => udptx_trdys,
+				frm   => udptx_frm,
+				irdy  => udptx_irdy,
+				trdy  => udptx_trdy);
 
-			udppyltx_data <= 
-				dhcpcdtx_data when gntd(0)='1' else
-				 pyltx_data when gntd(1)='1' else
-				(udppyltx_data'range => '-');
+			udptx_data <= 
+				pyltx_data    when gntd(0)='1' else
+				dhcpcdtx_data when gntd(1)='1' else
+				(udptx_data'range => '-');
 
-			-- udplentx_frms  <= gntd and (gntd'range => udplentx_frm);
-			-- udplentx_irdys <= gntd and (gntd'range => udplentx_irdy);
-			-- udplentx_trdy  <= '1' when (gntd and udplentx_trdys) /= (gntd'range => '0') else '0';
-			-- udplentx_data  <= 
-			-- 	dhcpcdtx_data when gntd(0)='1' else
-			-- 	pyltx_data    when gntd(1)='1' else
-			-- 	(udplentx_data'range => '-');
-			--
-			-- udptpatx_frms  <= gntd and (gntd'range => udptpatx_frm);
-			-- udptpatx_irdys <= gntd and (gntd'range => udptpatx_irdy);
-			-- udptpatx_trdy  <= '1' when (gntd and udptpatx_trdys) /= (gntd'range => '0') else '0';
-			-- udptpatx_data  <= 
-			-- 	dhcpcdtx_data when gntd(0)='1' else
-			-- 	pyltx_data    when gntd(1)='1' else
-			-- 	(udptpatx_data'range => '-');
-			--
+			thatx_frms  <= gntd and (gntd'range => thatx_frm);
+			thatx_irdys <= gntd and (gntd'range => thatx_irdy);
+			thatx_trdy  <= '1' when (gntd and thatx_trdys) /= (gntd'range => '0') else '0';
+			thatx_data  <= 
+				pyltx_data    when gntd(0)='1' else
+				dhcpcdtx_data when gntd(1)='1' else
+				(thatx_data'range => '-');
+
+			lentx_frms  <= gntd and (gntd'range => lentx_frm);
+			lentx_irdys <= gntd and (gntd'range => lentx_irdy);
+			lentx_trdy  <= '1' when (gntd and lentx_trdys) /= (gntd'range => '0') else '0';
+
+			tpatx_frms  <= gntd and (gntd'range => tpatx_frm);
+			tpatx_irdys <= gntd and (gntd'range => tpatx_irdy);
+			tpatx_trdy  <= '1' when (gntd and tpatx_trdys) /= (gntd'range => '0') else '0';
+
 		end block;
 
 	end block;
@@ -366,10 +398,9 @@ begin
 		dhcpcdrx_data => dhcpcdrx_data,
 
 		miitx_clk     => miitx_clk,
-		thatx_frm     => thatx_frm,
-		thatx_irdy    => thatx_irdy,
-		thatx_trdy    => thatx_trdy,
-		thatx_data    => thatx_data,
+		thatx_frm     => dhcpcdthatx_frm,
+		thatx_irdy    => dhcpcdthatx_irdy,
+		thatx_trdy    => dhcpcdthatx_trdy,
 
 		lentx_frm     => dhcpcdlentx_frm,
 		lentx_irdy    => dhcpcdlentx_irdy,
@@ -384,16 +415,4 @@ begin
 		dhcpcdtx_trdy => dhcpcdtx_trdy,
 		dhcpcdtx_data => dhcpcdtx_data);
 
-		dhcpcdlentx_frm  <= lentx_frm;
-		dhcpcdlentx_irdy <= lentx_irdy;
-		lentx_trdy       <= dhcpcdlentx_trdy;
-
-		dhcpcdtpatx_frm  <= tpatx_frm;
-		dhcpcdtpatx_irdy <= tpatx_irdy;
-		tpatx_trdy    <= dhcpcdtpatx_trdy;
-
-		udptx_frm        <= dhcpcdtx_frm;
-		udptx_irdy       <= dhcpcdtx_irdy;
-		dhcpcdtx_trdy    <= udptx_trdy ;
-		udptx_data       <= dhcpcdtx_data;
 end;
