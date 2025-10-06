@@ -107,8 +107,8 @@ begin
 	tp(1) <= dhcpcdrx_frm;
 	tp(2 to 2+dhcpcdrx_data'length-1) <= dhcpcdrx_data;
 	discover_b : block
-		constant thaddress : std_logic_vector  := x"ff_ff_ff_ff_ff_ff";
-		constant tpaddress : std_logic_vector  := x"ff_ff_ff_ff";
+		constant bcst_tha : std_logic_vector := x"ff_ff_ff_ff_ff_ff";
+		constant bcst_tpa : std_logic_vector := x"ff_ff_ff_ff";
 		constant discover_length : natural := 250;
 		constant udp_length  : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8,16));
 		constant ipv4_length : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8+20,16));
@@ -163,7 +163,7 @@ begin
 
 		dhcpcdtx_frm  <= decode_frm and not decode_last;
 		dhcpcdtx_irdy <= decode_frm;
-		decode_irdy   <= dhcpcdtx_trdy when decode_frm='0' else '0';
+		decode_irdy   <= dhcpcdtx_trdy when decode_frm='1' else '0';
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -215,9 +215,9 @@ begin
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(
-				thaddress                                                        &
+				bcst_tha                                                         &
 				ipv4_length                                                      &
-				tpaddress                                                        &
+				bcst_tpa                                                         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.sp")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.dp")         &
 				udp_length                                                       &
