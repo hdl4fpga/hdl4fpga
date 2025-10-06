@@ -62,8 +62,8 @@ entity ipv4 is
 
 		miitx_clk     : in  std_logic;
 
-		udppyltx_frm  : in  std_logic;
-		udppyltx_irdy : in  std_logic;
+		udppyltx_frm  : in  std_logic := '0';
+		udppyltx_irdy : in  std_logic := '0';
 		udppyltx_trdy : out std_logic := '1';
 		udppyltx_data : in  std_logic_vector;
 
@@ -293,23 +293,16 @@ begin
 		signal ipv4pyltx_irdy : std_logic;
 		signal ipv4pyltx_trdy : std_logic;
 
-		signal ipv4lentx_frm  : std_logic;
-		signal ipv4lentx_irdy : std_logic;
-		signal ipv4lentx_trdy : std_logic;
+		signal ipv4lentx_act  : std_logic;
+		signal ipv4tpatx_act  : std_logic;
 
-		signal ipv4tpatx_frm  : std_logic;
-		signal ipv4tpatx_irdy : std_logic;
-		signal ipv4tpatx_trdy : std_logic;
-
-		signal decode_trdy    : std_logic;
+		signal buffer_trdy    : std_logic;
 		signal gntd           : std_logic_vector(0 to 2-1);
 
 		alias icmp_gntd is gntd(0);
 		alias udp_gntd  is gntd(1);
 	begin
 
-		ipv4lentx_irdy <= ipv4Lentx_frm;
-		ipv4tpatx_irdy <= ipv4tpatx_frm;
 
 		arbiter_b : block
 		begin
@@ -375,15 +368,15 @@ begin
 
 		begin
 
-			decode_frm  <= (ipv4pyltx_frm or ipv4pyltx_irdy);
-			decode_irdy <= decode_trdy;
+			decode_frm  <= ipv4pyltx_frm;
+			decode_irdy <= buffer_trdy;
 
 			ipv4_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => compact('{'                                                 &
 					"            tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
+					"           type:" & string'(hdo(frames)**".format.mac.type")    & ',' &
 					"      verihltos:" & natural'image(
-						hdo(frames)**".data.mac.type.ipv4"  +
 						hdo(frames)**".format.ipv4.verihl"  +
 						hdo(frames)**".format.ipv4.tos")                             & ',' & 
 					"         length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
@@ -411,11 +404,11 @@ begin
 				act(7) => da_frm,
 				act(8) => pyl_frm);
 
-			ipv4pyltx_trdy <= (pyl_frm or decode_fin) and ipv4tx_irdy and decode_trdy;
+			ipv4pyltx_trdy <= tha_act or ipv4lentx_act or ipv4tpatx_act or pyl_frm;
 
 			rom_irdy <=
-			   '1' and decode_trdy when       verihltos_frm='1' else
-			   '1' and decode_trdy when identflgsfrgttl_frm='1' else
+			   '1' and buffer_trdy when       verihltos_frm='1' else
+			   '1' and buffer_trdy when identflgsfrgttl_frm='1' else
 			   '0';
 
 			rom_frm  <= decode_frm;
@@ -444,8 +437,7 @@ begin
 				signal act3 : std_logic;
 
 			begin
-				decode_frm  <= (ipv4pyltx_frm or ipv4pyltx_irdy);
-				decode_irdy <= decode_frm;
+				decode_irdy <= ipv4pyltx_irdy when tha_act='0' else '0';
 				chksum_i : entity hdl4fpga.frame_decode
 				generic map (
 					frame => compact('{'                                                       &
@@ -455,10 +447,10 @@ begin
 					size  => ipv4tx_data'length)
 				port map (
 					clk    => miitx_clk,
-					frm    => decode_frm,
+					frm    => ipv4pyltx_frm,
 					irdy   => decode_irdy,
-					act(0) => ipv4lentx_frm,
-					act(1) => ipv4tpatx_frm,
+					act(0) => ipv4lentx_act,
+					act(1) => ipv4tpatx_act,
 					act(2) => sa_frm,
 					act(3) => act3);
 
@@ -467,8 +459,8 @@ begin
 					bitdata => (0 to hdo(frames)**".format.ipv4.length"-1 => '-'))
 				port map (
 					si_clk  => miitx_clk,
-					si_frm  => ipv4lentx_frm,
-					si_irdy => ipv4lentx_irdy,
+					si_frm  => ipv4lentx_act,
+					si_irdy => ipv4lentx_act,
 					si_trdy => open,
 					si_data => ipv4pyltx_data,
 					so_clk  => miitx_clk,
@@ -497,8 +489,8 @@ begin
 					bitdata => (0 to hdo(frames)**".format.ipv4.da"-1 => '-'))
 				port map (
 					si_clk  => miitx_clk,
-					si_frm  => ipv4tpatx_frm,
-					si_irdy => ipv4tpatx_irdy,
+					si_frm  => ipv4tpatx_act,
+					si_irdy => ipv4tpatx_act,
 					si_trdy => open,
 					si_data => ipv4pyltx_data,
 					so_clk  => miitx_clk,
@@ -508,10 +500,10 @@ begin
 					so_data => da_data);
 
 				miichksum_frm  <= (ipv4pyltx_frm or ipv4pyltx_irdy);
-				miichksum_irdy <= ipv4lentx_frm or ipv4tpatx_frm or sa_frm or chksum_frm;
+				miichksum_irdy <= ipv4lentx_act or ipv4tpatx_act or sa_frm or chksum_frm;
 				miichksum_data <=
-					ipv4pyltx_data when ipv4lentx_frm='1' else
-					ipv4pyltx_data when ipv4tpatx_frm='1' else
+					ipv4pyltx_data when ipv4lentx_act='1' else
+					ipv4pyltx_data when ipv4tpatx_act='1' else
 					       sa_data when        sa_frm='1' else
 					(miichksum_data'range => '0');
 
@@ -574,10 +566,9 @@ begin
 			buffer_b : block
 				signal buffer_frm  : std_logic;
 				signal buffer_irdy : std_logic;
-				signal dst_trdy    : std_logic;
 			begin
 				buffer_frm  <= ipv4pyltx_frm;
-				buffer_irdy <= decode_frm;
+				buffer_irdy <= ipv4pyltx_irdy;
 
 				buffer_i : entity hdl4fpga.mii_buffer
 				generic map (
@@ -586,7 +577,7 @@ begin
 					clk => miitx_clk,
 					src_frm  => buffer_frm,
 					src_irdy => buffer_irdy,
-					src_trdy => decode_trdy,
+					src_trdy => buffer_trdy,
 					src_data => decode_data,
 					dst_frm  => ipv4tx_frm,
 					dst_irdy => ipv4tx_irdy,

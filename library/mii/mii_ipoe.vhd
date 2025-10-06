@@ -52,8 +52,8 @@ entity mii_ipoe is
 
 		miitx_clk     : in  std_logic;
 
-		udppyltx_frm  : in  std_logic;
-		udppyltx_irdy : in  std_logic;
+		udppyltx_frm  : in  std_logic := '0';
+		udppyltx_irdy : in  std_logic := '0';
 		udppyltx_trdy : out std_logic := '1';
 		udppyltx_data : in  std_logic_vector;
 

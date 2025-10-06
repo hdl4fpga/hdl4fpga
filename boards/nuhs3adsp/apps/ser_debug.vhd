@@ -84,9 +84,9 @@ architecture ser_debug of nuhs3adsp is
 	signal udppylrx_trdy : std_logic;
 	signal udppylrx_data : std_logic_vector(0 to mii_rxd'length-1);
 
-	signal udppyltx_frm  : std_logic;
-	signal udppyltx_irdy : std_logic;
-	signal udppyltx_trdy : std_logic;
+	signal udppyltx_frm  : std_logic := '0';
+	signal udppyltx_irdy : std_logic := '0';
+	signal udppyltx_trdy : std_logic := '0';
 	signal udppyltx_data : std_logic_vector(0 to mii_rxd'length-1);
 
 begin

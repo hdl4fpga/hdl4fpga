@@ -50,25 +50,17 @@ end;
 architecture def of eth_tx is
 
 	signal decode_frm  : std_logic;
-	signal decode_irdy : std_logic;
-	signal decode_trdy : std_logic;
 	signal decode_data : std_logic_vector(mii_data'range);
 	signal decode_fin  : std_logic;
 	signal decode_last : std_logic;
 
-	signal prmb_frm    : std_logic;
-	alias  prmb_irdy   is prmb_frm;
-	signal prmb_trdy   : std_logic;
-	signal prmb_data   : std_logic_vector(mii_data'range);
+	signal rom_frm    : std_logic;
+	signal rom_irdy   : std_logic;
+	signal rom_data   : std_logic_vector(mii_data'range);
 
-	signal sha_frm     : std_logic;
-	alias  sha_irdy    is sha_frm;
-	signal sha_trdy    : std_logic;
-	signal sha_data    : std_logic_vector(mii_data'range);
-
-	signal pad_frm     : std_logic;
-	alias  pad_irdy    is sha_frm;
-	constant pad_trdy  : std_logic := '1';
+	signal prmb_act    : std_logic;
+	signal sha_act     : std_logic;
+	signal pad_act     : std_logic;
 
 	signal fcs_frm     : std_logic;
 	signal fcs_irdy    : std_logic;
@@ -88,7 +80,7 @@ architecture def of eth_tx is
 
 begin
 
-	decode_frm <= pyl_frm or pyl_irdy;
+	decode_frm <= pyl_frm;
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => "{"                                                 &
@@ -100,45 +92,29 @@ begin
 		size  => mii_data'length)
 	port map (
 		clk    => mii_clk,
-		frm    => decode_frm,
-		irdy   => decode_irdy,
-		trdy   => decode_trdy,
+		frm    => pyl_frm,
+		irdy   => pyl_irdy,
 		fin    => decode_fin,
 		last   => decode_last,
-		act(0) => prmb_frm,
+		act(0) => prmb_act,
 		act(1) => tha_act,
-		act(2) => sha_frm,
+		act(2) => sha_act,
 		act(3) => typ_act,
-		act(4) => pad_frm,
+		act(4) => pad_act,
 		act(5) => act5);
 
-	decode_irdy <=
-		prmb_trdy when prmb_frm='1' else
-		pyl_trdy  when  tha_act='1' else
-		sha_trdy  when  sha_frm='1' else
-		pyl_trdy  when  typ_act='1' else
-		pad_trdy  when  pad_frm='1' else
-		(pyl_frm or pyl_irdy);
-
-	prmb_i : entity hdl4fpga.sio_rom
+	rom_frm  <= pyl_frm;
+	rom_irdy <= prmb_act or sha_act;
+	rom_i : entity hdl4fpga.sio_rom
 	generic map (
-		bitdata => reverse(x"5555_5555_5555_55d5", 8))
+		bitdata => reverse(
+			x"5555_5555_5555_55d5" &
+			sha, 8))
 	port map (
         so_clk  => mii_clk,
-		so_frm  => prmb_frm,
-		so_irdy => prmb_irdy,
-		so_trdy => prmb_trdy,
-		so_data => prmb_data);
-
-	sha_i : entity hdl4fpga.sio_rom
-	generic map (
-		bitdata => reverse(sha, 8))
-	port map (
-        so_clk  => mii_clk,
-		so_frm  => sha_frm,
-		so_irdy => sha_irdy,
-		so_trdy => sha_trdy,
-		so_data => sha_data);
+		so_frm  => rom_frm,
+		so_irdy => rom_irdy,
+		so_data => rom_data);
 
 	fcs_frm_p : process (tha_act, mii_clk)
 		variable frm : std_logic;
@@ -146,7 +122,7 @@ begin
 		if rising_edge(mii_clk) then
 			if tha_act='1' then
 				frm := '1';
-			elsif ((pyl_frm or pyl_irdy) and (pyl_frm or not pyl_trdy))='0' then
+			elsif (pyl_frm or (pyl_irdy and not pyl_trdy))='0' then
 				frm := '0';
 			end if;
 		end if;
@@ -154,43 +130,43 @@ begin
 	end process;
 
 	fcs_irdy <=
-		'0'      when   prmb_frm='1' else
-		pyl_irdy when  tha_act='1' else
-		sha_irdy when    sha_frm='1' else
-		pyl_irdy when typ_act='1' else
+		'0'      when  prmb_act='1' else
+		pyl_irdy when   tha_act='1' else
+		'1'      when   sha_act='1' else
+		pyl_irdy when   typ_act='1' else
 		crc_irdy;
 
 	fcs_data <= 
 		pyl_data when  tha_act='1' else
-		sha_data when    sha_frm='1' else
+		rom_data when  sha_act='1' else
 		pyl_data when typ_act='1' else
 		pyl_data when    pyl_frm='1' else
 		pyl_data when   pyl_irdy='1' else
 		(pyl_data'range => '-');
 
-	process (pad_frm, decode_fin, decode_trdy, pyl_frm, pyl_irdy, mii_clk)
+	process (pad_act, decode_fin, pyl_frm, pyl_irdy, mii_clk)
 		variable shr : unsigned(0 to fcs_crc'length/mii_data'length);
 	begin
 		if rising_edge(mii_clk) then
-			if (pad_frm or pyl_frm or pyl_irdy or crc_trdy)='1' then
-				shr(0) := pyl_frm or (pad_frm and not decode_last);
+			if (pad_act or pyl_frm or pyl_irdy or crc_trdy)='1' then
+				shr(0) := pyl_frm or (pad_act and not decode_last);
 				shr := rotate_left(shr, 1);
 			end if;
 			crc_irdy <= shr(0);
-			crc_frm <= not pyl_frm and pyl_irdy and (not pad_frm or decode_last);
+			crc_frm <= not pyl_frm and pyl_irdy and (not pad_act or decode_last);
 		end if;
 
-		if decode_fin='1' then
-			if (pyl_frm and decode_trdy)='1' then
-				pyl_trdy <= '1';
-			elsif (pyl_irdy and not shr(1))='1' then
-				pyl_trdy <= '1';
-			else
+		if decode_fin='0' then
+			if (not pyl_frm and pyl_irdy)='1' then
 				pyl_trdy <= '0';
+			elsif prmb_act='1' then
+				pyl_trdy <= '0';
+			else
+				pyl_trdy <= '1';
 			end if;
-		elsif (not pyl_frm and pyl_irdy)='1' then
-			pyl_trdy <= '0';
-		elsif (pad_frm and decode_trdy)='1' then
+		elsif pyl_frm='1' then
+			pyl_trdy <= '1';
+		elsif (pyl_irdy and not shr(1))='1' then
 			pyl_trdy <= '1';
 		else
 			pyl_trdy <= '0';
@@ -208,30 +184,30 @@ begin
 		data => fcs_data,
 		crc  => fcs_crc);
 
-	mii_frm_p : process (prmb_frm, mii_clk)
+	mii_frm_p : process (prmb_act, mii_clk)
 		variable frm : std_logic;
 	begin
 		if rising_edge(mii_clk) then
-			if prmb_frm='1' then
+			if prmb_act='1' then
 				frm := '1';
 			elsif ((pyl_frm or pyl_irdy) and (pyl_frm or not pyl_trdy))='0' then
 				frm := '0';
 			end if;
 		end if;
-		mii_frm <= prmb_frm or frm;
+		mii_frm <= prmb_act or frm;
 	end process;
 
 	mii_irdy <=
-		prmb_trdy when prmb_frm='1' else
-		fcs_irdy  when  fcs_frm='1' else
-		crc_trdy  when  crc_frm='1' else
+		'1'      when prmb_act='1' else
+		fcs_irdy when  fcs_frm='1' else
+		crc_trdy when  crc_frm='1' else
 		'0';
 		
 	mii_data <= 
-		prmb_data when prmb_frm='1' else
-		pyl_data  when  tha_act='1' else
-		sha_data  when  sha_frm='1' else
-		pyl_data  when  typ_act='1' else
-		crc_data  when  crc_frm='1' else
+		rom_data when prmb_act='1' else
+		pyl_data when  tha_act='1' else
+		rom_data when  sha_act='1' else
+		pyl_data when  typ_act='1' else
+		crc_data when  crc_frm='1' else
 		pyl_data;
 end;
