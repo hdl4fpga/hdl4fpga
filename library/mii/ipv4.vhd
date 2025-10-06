@@ -312,12 +312,10 @@ begin
 		signal verihltos_frm : std_logic;
 		signal identflgsfrgttl_frm : std_logic;
 
-		signal length_frm  : std_logic;
-		alias  length_irdy is length_frm;
+		signal length_act  : std_logic;
 		signal length_data : std_logic_vector(ipv4rx_data'range);
 
-		signal protoid_frm  : std_logic;
-		alias  protoid_irdy is protoid_frm;
+		signal protoid_act  : std_logic;
 		signal protoid_data : std_logic_vector(ipv4rx_data'range);
 
 		signal chksum_frm   : std_logic;
@@ -389,9 +387,9 @@ begin
 			fin    => decode_fin,
 			act(0) => tha_act,
 			act(1) => verihltos_frm,
-			act(2) => length_frm,
+			act(2) => length_act,
 			act(3) => identflgsfrgttl_frm,
-			act(4) => protoid_frm,
+			act(4) => protoid_act,
 			act(5) => chksum_frm,
 			act(6) => sa_frm,
 			act(7) => da_frm,
@@ -456,8 +454,8 @@ begin
 				si_trdy => open,
 				si_data => ipv4pyltx_data,
 				so_clk  => miitx_clk,
-				so_frm  => length_frm,
-				so_irdy => length_irdy,
+				so_frm  => length_act,
+				so_irdy => length_act,
 				so_trdy => open,
 				so_data => length_data);
 
@@ -516,12 +514,12 @@ begin
 			variable shr : unsigned(0 to hdo(frames)**".format.ipv4.proto"-1);
 		begin
 			if rising_edge(miitx_clk) then
-				if protoid_frm='0' then
+				if protoid_act='0' then
 					shr := unsigned(
 						(std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp") and icmp_gntd) or
 						(std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp")  and udp_gntd));
 					shr := reverse(shr,8);
-				elsif protoid_irdy='1' then
+				elsif decode_irdy='1' then
 					shr := rotate_left(shr, ipv4tx_data'length);
 				end if;
 				protoid_data <= std_logic_vector(shr(0 to ipv4tx_data'length-1));
@@ -547,9 +545,9 @@ begin
 			ipv4pyltx_data when             tha_act='1' else
 			rom_data       when       verihltos_frm='1' else
 			rom_data       when identflgsfrgttl_frm='1' else
-			protoid_data   when         protoid_frm='1' else
+			protoid_data   when         protoid_act='1' else
 			chksum_data    when          chksum_frm='1' else
-			length_data    when          length_frm='1' else
+			length_data    when          length_act='1' else
 			sa_data        when              sa_frm='1' else
 			da_data        when              da_frm='1' else
 			ipv4pyltx_data when             pyl_act='1' else
