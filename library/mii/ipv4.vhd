@@ -375,8 +375,8 @@ begin
 			generic map (
 				frame => compact('{'                                                 &
 					"            tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
-					"           type:" & string'(hdo(frames)**".format.mac.type")    & ',' &
 					"      verihltos:" & natural'image(
+						hdo(frames)**".format.mac.type"     +
 						hdo(frames)**".format.ipv4.verihl"  +
 						hdo(frames)**".format.ipv4.tos")                             & ',' & 
 					"         length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
@@ -423,7 +423,6 @@ begin
 				so_data => rom_data);
 
 			chksum_b : block
-				signal decode_frm  : std_logic;
 				signal decode_irdy : std_logic;
 				signal sa_frm      : std_logic;
 				alias  sa_irdy     is sa_frm;
