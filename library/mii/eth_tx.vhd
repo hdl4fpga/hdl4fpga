@@ -139,9 +139,9 @@ begin
 	fcs_data <= 
 		pyl_data when  tha_act='1' else
 		rom_data when  sha_act='1' else
-		pyl_data when typ_act='1' else
-		pyl_data when    pyl_frm='1' else
-		pyl_data when   pyl_irdy='1' else
+		pyl_data when  typ_act='1' else
+		pyl_data when  pyl_frm='1' else
+		pyl_data when pyl_irdy='1' else
 		(pyl_data'range => '-');
 
 	process (pad_act, decode_fin, pyl_frm, pyl_irdy, mii_clk)
@@ -157,12 +157,12 @@ begin
 		end if;
 
 		if decode_fin='0' then
-			if (not pyl_frm and pyl_irdy)='1' then
+			if prmb_act='1' then
 				pyl_trdy <= '0';
-			elsif prmb_act='1' then
+			elsif (not pyl_frm and pyl_irdy)='1' then
 				pyl_trdy <= '0';
 			else
-				pyl_trdy <= '1';
+				pyl_trdy <= pyl_frm;
 			end if;
 		elsif pyl_frm='1' then
 			pyl_trdy <= '1';
