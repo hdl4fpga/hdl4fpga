@@ -147,8 +147,6 @@ begin
 				if (dhcpcd_req xor dhcpcd_rdy)='1' then
 					if decode_last='0' then
 						decode_frm <= '1';
-					elsif dhcpcdtx_frm='1' then
-						decode_frm <= '1';
 					elsif (dhcpcdtx_irdy and not dhcpcdtx_trdy)='1' then
 						decode_frm <= '1';
 					else
