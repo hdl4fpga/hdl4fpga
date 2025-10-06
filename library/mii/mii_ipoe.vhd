@@ -84,20 +84,6 @@ architecture def of mii_ipoe is
 	signal ethpyl_frm    : std_logic;
 	signal ethpyl_irdy   : std_logic;
 
-	signal thatx_frm     : std_logic_vector(0 to 2-1) := (others => '0');
-	signal thatx_irdy    : std_logic_vector(thatx_frm'range) := (others => '0');
-	signal thatx_trdy    : std_logic_vector(thatx_frm'range) := (others => '0');
-
-	alias  arpthatx_frm   is thatx_frm(0);
-	alias  arpthatx_irdy  is thatx_irdy(0);
-	alias  arpthatx_trdy  is thatx_trdy(0);
-	signal arpthatx_data  : std_logic_vector(miitx_data'range);
-
-	alias  ipv4thatx_frm  is thatx_frm(1);
-	alias  ipv4thatx_irdy is thatx_irdy(1);
-	alias  ipv4thatx_trdy is thatx_trdy(1);
-	signal ipv4thatx_data : std_logic_vector(miitx_data'range);
-
 	signal arprx_frm     : std_logic;
 	alias  arprx_irdy is arprx_frm;
 	signal arprx_data    : std_logic_vector(miirx_data'range);
@@ -125,20 +111,6 @@ architecture def of mii_ipoe is
 	alias  ipv4tx_irdy is eth_irdys(1);
 	alias  ipv4tx_trdy is eth_trdys(1);
 	signal ipv4tx_data : std_logic_vector(miitx_data'range);
-
-	signal typtx_frm     : std_logic_vector(0 to 2-1) := (others => '0');
-	signal typtx_irdy    : std_logic_vector(typtx_frm'range) := (others => '0');
-	signal typtx_trdy    : std_logic_vector(typtx_frm'range) := (others => '0');
-
-	alias  arptyptx_frm   is typtx_frm(0);
-	alias  arptyptx_irdy  is typtx_irdy(0);
-	alias  arptyptx_trdy  is typtx_trdy(0);
-	signal arptyptx_data  : std_logic_vector(miitx_data'range);
-
-	alias  ipv4typtx_frm  is typtx_frm(1);
-	alias  ipv4typtx_irdy is typtx_irdy(1);
-	alias  ipv4typtx_trdy is typtx_trdy(1);
-	signal ipv4typtx_data : std_logic_vector(miitx_data'range);
 
 	signal upspa_frm  : std_logic;
 	signal upspa_irdy : std_logic;
@@ -248,16 +220,6 @@ begin
 		arprx_irdy    => arprx_irdy,
 		arprx_data    => arprx_data,
 
-		thatx_frm     => arpthatx_frm,
-		thatx_irdy    => arpthatx_irdy,
-		thatx_trdy    => arpthatx_trdy,
-		thatx_data    => arpthatx_data,
-
-		ethtyptx_frm  => arptyptx_frm,
-		ethtyptx_irdy => arptyptx_irdy,
-		ethtyptx_trdy => arptyptx_trdy,
-		ethtyptx_data => arptyptx_data,
-
 		miitx_clk     => miitx_clk,
 		arptx_frm     => arptx_frm,
 		arptx_irdy    => arptx_irdy,
@@ -265,16 +227,6 @@ begin
 		arptx_data    => arptx_data);
 
 	tx_b : block
-		signal eththatx_frm  : std_logic := '0';
-		signal eththatx_irdy : std_logic := '0';
-		signal eththatx_trdy : std_logic := '0';
-		signal eththatx_data : std_logic_vector(miitx_data'range);
-
-		signal ethtyptx_frm  : std_logic := '0';
-		signal ethtyptx_irdy : std_logic := '0';
-		signal ethtyptx_trdy : std_logic := '0';
-		signal ethtyptx_data : std_logic_vector(miitx_data'range);
-
 		signal gntd  : std_logic_vector(0 to 2-1);
 
 		signal pyl_frm   : std_logic;
@@ -299,22 +251,6 @@ begin
 			ipv4tx_data when gntd(1)='1' else
 			(pyl_data'range => '-');
 
-		thatx_frm     <= gntd and (gntd'range => eththatx_frm);
-		thatx_irdy    <= gntd and (gntd'range => eththatx_irdy);
-		eththatx_trdy <= '1' when (gntd and thatx_trdy) /= (gntd'range => '0') else '0';
-		eththatx_data <= 
-			 arpthatx_data when gntd(0)='1' else
-			ipv4thatx_data when gntd(1)='1' else
-			(eththatx_data'range => '-');
-
-		typtx_frm     <= gntd and (gntd'range => ethtyptx_frm);
-		typtx_irdy    <= gntd and (gntd'range => ethtyptx_irdy);
-		ethtyptx_trdy <= '1' when (gntd and typtx_trdy) /= (gntd'range => '0') else '0';
-		ethtyptx_data <= 
-			 arptyptx_data when gntd(0)='1' else
-			ipv4typtx_data when gntd(1)='1' else
-			(ethtyptx_data'range => '-');
-
 		ethtx_i : entity hdl4fpga.eth_tx
 		port map (
 			mii_clk     => miitx_clk,
@@ -326,17 +262,8 @@ begin
 			pyl_frm     => pyl_frm,
 			pyl_irdy    => pyl_irdy,
 			pyl_trdy    => pyl_trdy,
-			pyl_data    => pyl_data,
+			pyl_data    => pyl_data);
 
-			ethda_frm   => eththatx_frm,
-			ethda_irdy  => eththatx_irdy,
-			ethda_trdy  => eththatx_trdy,
-			ethda_data  => eththatx_data,
-
-			ethtyp_frm  => ethtyptx_frm,
-			ethtyp_irdy => ethtyptx_irdy,
-			ethtyp_trdy => ethtyptx_trdy,
-			ethtyp_data => ethtyptx_data);
 	end block;
 
 	ipv4typ_cmp_i : entity hdl4fpga.mii_cmp
@@ -415,16 +342,6 @@ begin
 		udppyltx_irdy => udppyltx_irdy,
 		udppyltx_trdy => udppyltx_trdy,
 		udppyltx_data => udppyltx_data,
-
-		thatx_frm     => ipv4thatx_frm,
-		thatx_irdy    => ipv4thatx_irdy,
-		thatx_trdy    => ipv4thatx_trdy,
-		thatx_data    => ipv4thatx_data,
-
-		ethtyptx_frm  => ipv4typtx_frm,
-		ethtyptx_irdy => ipv4typtx_irdy,
-		ethtyptx_trdy => ipv4typtx_trdy,
-		ethtyptx_data => ipv4typtx_data,
 
 		ipv4tx_frm    => ipv4tx_frm,
 		ipv4tx_irdy   => ipv4tx_irdy,

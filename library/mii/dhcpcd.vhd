@@ -50,17 +50,6 @@ entity dhcpcd is
 		dhcpcdrx_data : in  std_logic_vector;
 
 		miitx_clk     : in  std_logic;
-		thatx_frm     : in  std_logic;
-		thatx_irdy    : in  std_logic;
-		thatx_trdy    : buffer std_logic := '1';
-
-		lentx_frm     : in  std_logic;
-		lentx_irdy    : in  std_logic;
-		lentx_trdy    : buffer std_logic := '1';
-
-		tpatx_frm     : in  std_logic;
-		tpatx_irdy    : in  std_logic;
-		tpatx_trdy    : buffer std_logic := '1';
 
 		dhcpcdtx_frm  : buffer std_logic;
 		dhcpcdtx_irdy : buffer std_logic;
@@ -174,12 +163,7 @@ begin
 
 		dhcpcdtx_frm  <= decode_frm and not decode_last;
 		dhcpcdtx_irdy <= decode_frm;
-		decode_irdy <=
-			   '0'        when decode_frm='0' else
-			   thatx_irdy when  thatx_frm='1' else
-			   lentx_irdy when  lentx_frm='1' else
-			   tpatx_irdy when  tpatx_frm='1' else
-			   dhcpcdtx_trdy;
+		decode_irdy   <= dhcpcdtx_trdy when decode_frm='0' else '0';
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -227,13 +211,7 @@ begin
 			act(4) => rom4_act,
 			act(5) => discard5);
 		
-		rom_irdy <= 
-			'0'        when decode_frm='0' else
-			thatx_irdy and thatx_trdy when thatx_frm='1' else
-			lentx_irdy and lentx_trdy when lentx_frm='1' else
-			tpatx_irdy and tpatx_trdy when tpatx_frm='1' else
-			(rom0_act or rom2_act or rom4_act) and dhcpcdtx_trdy;
-
+		rom_irdy <= (rom0_act or rom2_act or rom4_act) and dhcpcdtx_trdy when decode_frm='1' else '0';
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(
@@ -267,11 +245,6 @@ begin
 			rom_data when rom4_act='1' else
 			(rom_data'range => '0');
 		
-		thatx_trdy <= thatx_irdy;
-
-		lentx_trdy <= lentx_irdy;
-		tpatx_trdy <= tpatx_irdy;
-
 	end block;
 
 	upspa_frm  <= dhcpcdtx_irdy or yiaddr_act;

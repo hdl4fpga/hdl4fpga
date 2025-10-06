@@ -51,20 +51,6 @@ entity icmpd is
 
 		miitx_clk   : in  std_logic;
 
-		thatx_frm   : in  std_logic;
-		thatx_irdy  : in  std_logic;
-		thatx_trdy  : out std_logic := '1';
-		thatx_data  : out std_logic_vector;
-
-		tpatx_frm   : in  std_logic;
-		tpatx_irdy  : in  std_logic;
-		tpatx_trdy  : out std_logic := '1';
-
-		ipv4lentx_frm  : in  std_logic;
-		ipv4lentx_irdy : in  std_logic;
-		ipv4lentx_trdy : out std_logic := '1';
-
-
 		icmptx_frm  : buffer std_logic := '0';
 		icmptx_irdy : buffer std_logic := '0';
 		icmptx_trdy : in  std_logic := '0';
@@ -227,7 +213,6 @@ begin
 
 		signal buffer_frm  : std_logic;
 		signal buffer_irdy : std_logic;
-		signal buffer_trdy : std_logic;
 
 		-- signal eq_addr : boolean;
 	begin
@@ -304,18 +289,8 @@ begin
 			src_data => decode_data,
 			dst_frm  => icmptx_frm,
 			dst_irdy => icmptx_irdy,
-			dst_trdy => buffer_trdy,
+			dst_trdy => icmptx_trdy,
 			dst_data => icmptx_data);
-
-		buffer_trdy <= 
-			thatx_irdy     when     thatx_frm='1' else
-			ipv4lentx_irdy when ipv4lentx_frm='1' else
-			tpatx_irdy     when     tpatx_frm='1' else
-			icmptx_trdy;
-
-		thatx_trdy  <= thatx_irdy;
-		thatx_data  <= icmptx_data;
-		tpatx_trdy  <= tpatx_irdy;
 
 	end block;
 

@@ -43,17 +43,8 @@ entity eth_tx is
 		pyl_frm     : in  std_logic;
 		pyl_irdy    : in  std_logic;
 		pyl_trdy    : buffer std_logic := '0';
-		pyl_data    : in  std_logic_vector;
+		pyl_data    : in  std_logic_vector);
 
-		ethda_frm   : buffer std_logic;
-		ethda_irdy  : buffer std_logic;
-		ethda_trdy  : in  std_logic := '1';
-		ethda_data  : in  std_logic_vector;
-
-		ethtyp_frm  : buffer std_logic;
-		ethtyp_irdy : buffer std_logic;
-		ethtyp_trdy : in  std_logic := '1';
-		ethtyp_data : in  std_logic_vector);
 end;
 
 architecture def of eth_tx is
@@ -91,6 +82,8 @@ architecture def of eth_tx is
 	alias  crc_trdy    is crc_irdy;
 	alias  crc_data    is fcs_crc(mii_data'range);
 
+    signal tha_act     : std_logic;
+    signal typ_act     : std_logic;
     signal act5        : std_logic;
 
 begin
@@ -113,20 +106,18 @@ begin
 		fin    => decode_fin,
 		last   => decode_last,
 		act(0) => prmb_frm,
-		act(1) => ethda_frm,
+		act(1) => tha_act,
 		act(2) => sha_frm,
-		act(3) => ethtyp_frm,
+		act(3) => typ_act,
 		act(4) => pad_frm,
 		act(5) => act5);
-	ethda_irdy  <= ethda_frm;
-	ethtyp_irdy <= ethtyp_frm;
 
 	decode_irdy <=
-		prmb_trdy   when   prmb_frm='1' else
-		ethda_trdy  when  ethda_frm='1' else
-		sha_trdy    when    sha_frm='1' else
-		ethtyp_trdy when ethtyp_frm='1' else
-		pad_trdy    when    pad_frm='1' else
+		prmb_trdy when prmb_frm='1' else
+		pyl_trdy  when  tha_act='1' else
+		sha_trdy  when  sha_frm='1' else
+		pyl_trdy  when  typ_act='1' else
+		pad_trdy  when  pad_frm='1' else
 		(pyl_frm or pyl_irdy);
 
 	prmb_i : entity hdl4fpga.sio_rom
@@ -149,32 +140,32 @@ begin
 		so_trdy => sha_trdy,
 		so_data => sha_data);
 
-	fcs_frm_p : process (ethda_frm, mii_clk)
+	fcs_frm_p : process (tha_act, mii_clk)
 		variable frm : std_logic;
 	begin
 		if rising_edge(mii_clk) then
-			if ethda_frm='1' then
+			if tha_act='1' then
 				frm := '1';
 			elsif ((pyl_frm or pyl_irdy) and (pyl_frm or not pyl_trdy))='0' then
 				frm := '0';
 			end if;
 		end if;
-		fcs_frm <= ethda_frm or frm;
+		fcs_frm <= tha_act or frm;
 	end process;
 
 	fcs_irdy <=
-		'0'         when   prmb_frm='1' else
-		ethda_irdy  when  ethda_frm='1' else
-		sha_irdy    when    sha_frm='1' else
-		ethtyp_irdy when ethtyp_frm='1' else
+		'0'      when   prmb_frm='1' else
+		pyl_irdy when  tha_act='1' else
+		sha_irdy when    sha_frm='1' else
+		pyl_irdy when typ_act='1' else
 		crc_irdy;
 
 	fcs_data <= 
-		ethda_data  when  ethda_frm='1' else
-		sha_data    when    sha_frm='1' else
-		ethtyp_data when ethtyp_frm='1' else
-		pyl_data    when    pyl_frm='1' else
-		pyl_data    when   pyl_irdy='1' else
+		pyl_data when  tha_act='1' else
+		sha_data when    sha_frm='1' else
+		pyl_data when typ_act='1' else
+		pyl_data when    pyl_frm='1' else
+		pyl_data when   pyl_irdy='1' else
 		(pyl_data'range => '-');
 
 	process (pad_frm, decode_fin, decode_trdy, pyl_frm, pyl_irdy, mii_clk)
@@ -237,10 +228,10 @@ begin
 		'0';
 		
 	mii_data <= 
-		prmb_data   when   prmb_frm='1' else
-		ethda_data  when  ethda_frm='1' else
-		sha_data    when    sha_frm='1' else
-		ethtyp_data when ethtyp_frm='1' else
-		crc_data    when    crc_frm='1' else
+		prmb_data when prmb_frm='1' else
+		pyl_data  when  tha_act='1' else
+		sha_data  when  sha_frm='1' else
+		pyl_data  when  typ_act='1' else
+		crc_data  when  crc_frm='1' else
 		pyl_data;
 end;

@@ -45,16 +45,6 @@ entity arpd is
 		arprx_irdy    : in  std_logic;
 		arprx_data    : in  std_logic_vector;
 
-		thatx_frm     : in  std_logic := '0';
-		thatx_irdy    : in  std_logic := '0';
-		thatx_trdy    : out std_logic := '0';
-		thatx_data    : out std_logic_vector;
-
-		ethtyptx_frm  : in  std_logic := '0';
-		ethtyptx_irdy : in  std_logic := '0';
-		ethtyptx_trdy : out std_logic := '0';
-		ethtyptx_data : out std_logic_vector;
-
 		miitx_clk     : in  std_logic;
 		arptx_frm     : buffer std_logic := '0';
 		arptx_irdy    : buffer std_logic := '0';
@@ -149,14 +139,16 @@ begin
 	end block;
 
 	tx_b : block
-		signal rom_frm : std_logic;
+		constant bcst_tha : std_logic_vector := x"ff_ff_ff_ff_ff_ff";
+		signal tha_act  : std_logic;
+		signal rom_frm  : std_logic;
 		signal rom_irdy : std_logic;
-		signal rom_trdy    : std_logic;
-		signal rom_data    : std_logic_vector(arptx_data'range);
+		signal rom_trdy : std_logic;
+		signal rom_data : std_logic_vector(arptx_data'range);
 
-		signal spa_frm : std_logic;
-		signal tpa_frm : std_logic;
-		signal tha_frm : std_logic;
+		signal spa_frm  : std_logic;
+		signal tpa_frm  : std_logic;
+		signal tha_frm  : std_logic;
 		alias tha_irdy is tha_frm;
 		constant tha_data : std_logic_vector := (arptx_data'range => '1');
 
@@ -174,25 +166,6 @@ begin
 		signal pa_data  : std_logic_vector(arptx_data'range);
 
 	begin
-		ethtyptx_i : entity hdl4fpga.sio_rom
-		generic map (
-			bitdata => reverse(hdo(frames)**".data.mac.type.arp",8))
-		port map (
-			so_clk  => miitx_clk,
-			so_frm  => ethtyptx_frm,
-			so_irdy => ethtyptx_irdy,
-			so_trdy => ethtyptx_trdy,
-			so_data => ethtyptx_data);
-
-		thatx_i : entity hdl4fpga.sio_rom
-		generic map (
-			bitdata => reverse(x"ff_ff_ff_ff_ff_ff", 8))
-		port map (
-			so_clk  => miitx_clk,
-			so_frm  => thatx_frm,
-			so_irdy => thatx_irdy,
-			so_trdy => thatx_trdy,
-			so_data => thatx_data);
 
 		spa_e : entity hdl4fpga.sio_ram
 		generic map (
@@ -228,8 +201,10 @@ begin
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => '{'                                             &
+			frame => compact('{'                                      &
 				"    rom:" & natural'image(
+					hdo(frames)**".format.mac.hwda"  +
+					hdo(frames)**".format.mac.type"  +
 					hdo(frames)**".format.arp.htype" +
 					hdo(frames)**".format.arp.ptype" +
 					hdo(frames)**".format.arp.hlen"  +
@@ -238,7 +213,7 @@ begin
 					hdo(frames)**".format.arp.sha")                  & ',' &
 				"    spa:" & string'(hdo(frames)**".format.arp.spa") & ',' &
 				"    tha:" & string'(hdo(frames)**".format.arp.tha") & ',' &
-				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}',
+				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}'),
 			size  => arptx_data'length)
 		port map (
 			clk    => miitx_clk,
@@ -254,7 +229,6 @@ begin
 		pa_irdy <= spa_frm or tpa_frm;
 
 		decode_irdy <= 
-			tha_irdy and decode_trdy when tha_frm='1' else
 			pa_irdy  and decode_trdy when  pa_frm='1' else
 			rom_irdy and decode_trdy when rom_frm='1' else
 			tha_irdy and decode_trdy when tha_frm='1' else
@@ -267,6 +241,8 @@ begin
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(
+				bcst_tha                                               &
+				std_logic_vector'(hdo(frames)**".data.mac.type.arp")   &
 				std_logic_vector'(hdo(frames)**".data.arp.htype")      &
 				std_logic_vector'(hdo(frames)**".data.arp.ptype")      &
 				std_logic_vector'(hdo(frames)**".data.arp.hlen")       &
@@ -281,9 +257,9 @@ begin
 			so_data => rom_data);
 
 		decode_data <= 
-			rom_data when rom_frm='1' else
-			pa_data  when  pa_frm='1' else
-			tha_data when tha_frm='1' else
+			rom_data  when rom_frm='1' else
+			pa_data   when  pa_frm='1' else
+			tha_data  when tha_frm='1' else
 			(decode_data'range => '-');
 
 		buffer_b : block

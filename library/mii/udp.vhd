@@ -72,19 +72,6 @@ entity udp is
 		pyltx_trdy : out std_logic := '1';
 		pyltx_data : in  std_logic_vector;
 
-		thatx_frm  : in  std_logic;
-		thatx_irdy : in  std_logic;
-		thatx_trdy : out std_logic := '1';
-		thatx_data : out std_logic_vector;
-
-		tpatx_frm  : in  std_logic;
-		tpatx_irdy : in  std_logic;
-		tpatx_trdy : out std_logic := '1';
-
-		lentx_frm  : in std_logic;
-		lentx_irdy : in std_logic;
-		lentx_trdy : out std_logic := '1';
-
 		udptx_frm  : buffer std_logic := '0';
 		udptx_irdy : buffer std_logic := '0';
 		udptx_trdy : in  std_logic := '0';
@@ -101,46 +88,10 @@ architecture def of udp is
 	signal udptx_irdys : std_logic_vector(0 to 2-1);
 	signal udptx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
 
-	signal thatx_frms  : std_logic_vector(0 to 2-1);
-	signal thatx_irdys : std_logic_vector(0 to 2-1);
-	signal thatx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
-
-	signal lentx_frms  : std_logic_vector(0 to 2-1);
-	signal lentx_irdys : std_logic_vector(0 to 2-1);
-	signal lentx_trdys : std_logic_vector(0 to 2-1);
-
-	signal tpatx_frms  : std_logic_vector(0 to 2-1);
-	signal tpatx_irdys : std_logic_vector(0 to 2-1);
-	signal tpatx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
-
-	alias  udpthatx_frm  is thatx_frms(0);
-	alias  udpthatx_irdy is thatx_irdys(0);
-	alias  udpthatx_trdy is thatx_trdys(0);
-
-	alias  udplentx_frm  is lentx_frms(0);
-	alias  udplentx_irdy is lentx_irdys(0);
-	alias  udplentx_trdy is lentx_trdys(0);
-
-	alias  udptpatx_frm  is tpatx_frms(0);
-	alias  udptpatx_irdy is tpatx_irdys(0);
-	alias  udptpatx_trdy is tpatx_trdys(0);
-
 	alias  dhcpcdtx_frm  is udptx_frms(1);
 	alias  dhcpcdtx_irdy is udptx_irdys(1);
 	alias  dhcpcdtx_trdy is udptx_trdys(1);
 	signal dhcpcdtx_data : std_logic_vector(udptx_data'range);
-
-	alias  dhcpcdthatx_frm  is thatx_frms(1);
-	alias  dhcpcdthatx_irdy is thatx_irdys(1);
-	alias  dhcpcdthatx_trdy is thatx_trdys(1);
-
-	alias  dhcpcdlentx_frm  is lentx_frms(1);
-	alias  dhcpcdlentx_irdy is lentx_irdys(1);
-	alias  dhcpcdlentx_trdy is lentx_trdys(1);
-
-	alias  dhcpcdtpatx_frm  is tpatx_frms(1);
-	alias  dhcpcdtpatx_irdy is tpatx_irdys(1);
-	alias  dhcpcdtpatx_trdy is tpatx_trdys(1);
 
 begin
 
@@ -294,7 +245,6 @@ begin
 
 	end block;
 
-
 	tx_b : block
 		signal udppyltx_frm  : std_logic;
 		signal udppyltx_irdy : std_logic;
@@ -355,22 +305,6 @@ begin
 				dhcpcdtx_data when gntd(1)='1' else
 				(udptx_data'range => '-');
 
-			thatx_frms  <= gntd and (gntd'range => thatx_frm);
-			thatx_irdys <= gntd and (gntd'range => thatx_irdy);
-			thatx_trdy  <= '1' when (gntd and thatx_trdys) /= (gntd'range => '0') else '0';
-			thatx_data  <= 
-				pyltx_data    when gntd(0)='1' else
-				dhcpcdtx_data when gntd(1)='1' else
-				(thatx_data'range => '-');
-
-			lentx_frms  <= gntd and (gntd'range => lentx_frm);
-			lentx_irdys <= gntd and (gntd'range => lentx_irdy);
-			lentx_trdy  <= '1' when (gntd and lentx_trdys) /= (gntd'range => '0') else '0';
-
-			tpatx_frms  <= gntd and (gntd'range => tpatx_frm);
-			tpatx_irdys <= gntd and (gntd'range => tpatx_irdy);
-			tpatx_trdy  <= '1' when (gntd and tpatx_trdys) /= (gntd'range => '0') else '0';
-
 		end block;
 
 	end block;
@@ -398,17 +332,6 @@ begin
 		dhcpcdrx_data => dhcpcdrx_data,
 
 		miitx_clk     => miitx_clk,
-		thatx_frm     => dhcpcdthatx_frm,
-		thatx_irdy    => dhcpcdthatx_irdy,
-		thatx_trdy    => dhcpcdthatx_trdy,
-
-		lentx_frm     => dhcpcdlentx_frm,
-		lentx_irdy    => dhcpcdlentx_irdy,
-		lentx_trdy    => dhcpcdlentx_trdy,
-
-		tpatx_frm     => dhcpcdtpatx_frm,
-		tpatx_irdy    => dhcpcdtpatx_irdy,
-		tpatx_trdy    => dhcpcdtpatx_trdy,
 
 		dhcpcdtx_frm  => dhcpcdtx_frm,
 		dhcpcdtx_irdy => dhcpcdtx_irdy,
