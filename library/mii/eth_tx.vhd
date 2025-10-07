@@ -157,7 +157,7 @@ begin
 		end if;
 
 		if decode_fin='0' then
-			if prmb_act='1' then
+			if (prmb_act or sha_act)='1' then
 				pyl_trdy <= '0';
 			elsif (not pyl_frm and pyl_irdy)='1' then
 				pyl_trdy <= '0';
