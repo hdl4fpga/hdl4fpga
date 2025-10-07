@@ -140,7 +140,6 @@ begin
 
 	tx_b : block
 		constant bcst_tha : std_logic_vector := x"ff_ff_ff_ff_ff_ff";
-		signal tha_act  : std_logic;
 		signal rom_frm  : std_logic;
 		signal rom_irdy : std_logic;
 		signal rom_trdy : std_logic;
@@ -154,7 +153,7 @@ begin
 
 		signal pyl_frm : std_logic;
 
-		signal decode_frm  : std_logic;
+		signal decode_frm  : std_logic := '0';
 		signal decode_irdy : std_logic;
 		signal decode_trdy : std_logic;
 		signal decode_last : std_logic;
@@ -263,14 +262,16 @@ begin
 			(decode_data'range => '-');
 
 		buffer_b : block
-			signal buffer_frm : std_logic;
+			signal buffer_frm  : std_logic;
+			signal buffer_irdy : std_logic;
 		begin
 			buffer_frm  <= decode_frm and not decode_last;
+			buffer_irdy <= decode_frm;
 			buffer_i : entity hdl4fpga.mii_buffer
 			port map (
 				clk => miitx_clk,
 				src_frm  => buffer_frm,
-				src_irdy => decode_irdy,
+				src_irdy => buffer_irdy,
 				src_trdy => decode_trdy,
 				src_data => decode_data,
 				dst_frm  => arptx_frm,

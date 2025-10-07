@@ -80,7 +80,7 @@ architecture def of eth_tx is
 
 begin
 
-	decode_frm <= pyl_frm;
+	decode_frm <= pyl_frm or pyl_irdy;
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => "{"                                                 &
@@ -92,7 +92,7 @@ begin
 		size  => mii_data'length)
 	port map (
 		clk    => mii_clk,
-		frm    => pyl_frm,
+		frm    => decode_frm,
 		irdy   => pyl_irdy,
 		fin    => decode_fin,
 		last   => decode_last,
