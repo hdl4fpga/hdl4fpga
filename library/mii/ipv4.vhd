@@ -321,20 +321,19 @@ begin
 		signal chksum_act   : std_logic;
 		signal chksum_data  : std_logic_vector(ipv4rx_data'range);
 
-		signal sa_act       : std_logic;
-		signal sa_data      : std_logic_vector(ipv4rx_data'range);
+		signal spa_act      : std_logic;
+		signal spa_data     : std_logic_vector(ipv4rx_data'range);
 		signal da_act       : std_logic;
 		alias  da_irdy is da_act;
 		signal da_data      : std_logic_vector(ipv4rx_data'range);
 		signal pyl_act      : std_logic;
 
-		constant rom_bitdata : std_logic_vector := 
-				std_logic_vector'(hdo(frames)**".data.mac.type.ipv4") &
-				std_logic_vector'(hdo(frames)**".data.ipv4.verihl")  &
-				std_logic_vector'(hdo(frames)**".data.ipv4.tos")     &
-				std_logic_vector'(hdo(frames)**".data.ipv4.ident")   &
-				std_logic_vector'(hdo(frames)**".data.ipv4.flgsfrg") &
-				std_logic_vector'(hdo(frames)**".data.ipv4.ttl");
+		constant ipv4hdr_bitdata : std_logic_vector := 
+			std_logic_vector'(hdo(frames)**".data.ipv4.verihl")  &
+			std_logic_vector'(hdo(frames)**".data.ipv4.tos")     &
+			std_logic_vector'(hdo(frames)**".data.ipv4.ident")   &
+			std_logic_vector'(hdo(frames)**".data.ipv4.flgsfrg") &
+			std_logic_vector'(hdo(frames)**".data.ipv4.ttl");
 
 		signal rom_frm     : std_logic;
 		signal rom_irdy    : std_logic;
@@ -390,11 +389,16 @@ begin
 			act(3) => identflgsfrgttl_act,
 			act(4) => protoid_act,
 			act(5) => chksum_act,
-			act(6) => sa_act,
+			act(6) => spa_act,
 			act(7) => da_act,
 			act(8) => pyl_act);
 
-		ipv4pyltx_trdy <= (tha_act or ipv4lentx_act or ipv4tpatx_act or pyl_act) and (decode_irdy and buffer_trdy);
+		ipv4pyltx_trdy <= 
+			buffer_trdy    when       tha_act='1' else
+			ipv4pyltx_irdy when ipv4lentx_act='1' else 
+			ipv4pyltx_irdy when ipv4tpatx_act='1' else 
+			buffer_trdy    when       pyl_act='1' else
+			'0';
 
 		rom_irdy <=
 		   '1' and buffer_trdy when       verihltos_act='1' else
@@ -404,7 +408,9 @@ begin
 		rom_frm  <= decode_frm;
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
-			bitdata => reverse (rom_bitdata,8))
+			bitdata => reverse (
+				std_logic_vector'(hdo(frames)**".data.mac.type.ipv4") &
+				ipv4hdr_bitdata,8))
 		port map (
 			so_clk  => miitx_clk,
 			so_frm  => rom_frm,
@@ -413,16 +419,25 @@ begin
 			so_data => rom_data);
 
 		chksum_b : block
-			signal decode_irdy : std_logic;
-			signal sa_act      : std_logic;
-			signal sa_data     : std_logic_vector(ipv4rx_data'range);
-			constant miichksum_icmp : std_logic_vector := chksum1(reverse(reverse(rom_bitdata & std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp"),16),8), 16);
-			constant miichksum_udp  : std_logic_vector := chksum1(reverse(reverse(rom_bitdata & std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp"), 16),8), 16);
+			signal decode_irdy      : std_logic;
+			signal spa_act          : std_logic;
+			signal spa_data         : std_logic_vector(ipv4rx_data'range);
+			constant miichksum_icmp : std_logic_vector := chksum1(reverse(reverse(ipv4hdr_bitdata & std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp"),16),8), 16);
+			constant miichksum_udp  : std_logic_vector := chksum1(reverse(reverse(ipv4hdr_bitdata & std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp"), 16),8), 16);
 			signal miichksum_init   : std_logic_vector(0 to 16-1);
 			signal miichksum_frm    : std_logic;
 			signal miichksum_irdy   : std_logic;
 			signal miichksum_data   : std_logic_vector(ipv4rx_data'range);
 			signal act3 : std_logic;
+
+			alias  lentx_frm is ipv4lentx_act;
+			signal lentx_irdy : std_logic;
+
+			alias  spatx_frm is spa_act;
+			signal spatx_irdy : std_logic;
+
+			alias  tpatx_frm is ipv4tpatx_act;
+			signal tpatx_irdy : std_logic;
 
 		begin
 			decode_irdy <= ipv4pyltx_irdy when tha_act='0' else '0';
@@ -439,16 +454,17 @@ begin
 				irdy   => decode_irdy,
 				act(0) => ipv4lentx_act,
 				act(1) => ipv4tpatx_act,
-				act(2) => sa_act,
+				act(2) => spa_act,
 				act(3) => act3);
 
+			lentx_irdy <= lentx_frm and decode_irdy;
 			length_i : entity hdl4fpga.sio_ram
 			generic map (
 				bitdata => (0 to hdo(frames)**".format.ipv4.length"-1 => '-'))
 			port map (
 				si_clk  => miitx_clk,
-				si_frm  => ipv4lentx_act,
-				si_irdy => ipv4lentx_act,
+				si_frm  => lentx_frm,
+				si_irdy => lentx_irdy,
 				si_trdy => open,
 				si_data => ipv4pyltx_data,
 				so_clk  => miitx_clk,
@@ -467,18 +483,19 @@ begin
 				si_trdy => open,
 				si_data => upspa_data,
 				so_clk  => miitx_clk,
-				so_frm  => sa_act,
+				so_frm  => spa_act,
 				so_irdy => decode_irdy,
 				so_trdy => open,
-				so_data => sa_data);
+				so_data => spa_data);
 
+			tpatx_irdy <= tpatx_frm and decode_irdy;
 			da_i : entity hdl4fpga.sio_ram
 			generic map (
 				bitdata => (0 to hdo(frames)**".format.ipv4.da"-1 => '-'))
 			port map (
 				si_clk  => miitx_clk,
-				si_frm  => ipv4tpatx_act,
-				si_irdy => decode_irdy,
+				si_frm  => tpatx_frm,
+				si_irdy => tpatx_irdy,
 				si_trdy => open,
 				si_data => ipv4pyltx_data,
 				so_clk  => miitx_clk,
@@ -488,11 +505,11 @@ begin
 				so_data => da_data);
 
 			miichksum_frm  <= (ipv4pyltx_frm or ipv4pyltx_irdy);
-			miichksum_irdy <= ipv4lentx_act or ipv4tpatx_act or sa_act or chksum_act;
+			miichksum_irdy <= lentx_irdy or tpatx_irdy or spa_act or chksum_act;
 			miichksum_data <=
-				ipv4pyltx_data when ipv4lentx_act='1' else
-				ipv4pyltx_data when ipv4tpatx_act='1' else
-				       sa_data when        sa_act='1' else
+				ipv4pyltx_data when lentx_frm='1' else
+				ipv4pyltx_data when tpatx_frm='1' else
+				      spa_data when   spa_act='1' else
 				(miichksum_data'range => '0');
 
 			miichksum_init <= (miichksum_udp and udp_gntd) or (miichksum_icmp and icmp_gntd);
@@ -534,10 +551,10 @@ begin
 			si_trdy => open,
 			si_data => upspa_data,
 			so_clk  => miitx_clk,
-			so_frm  => sa_act,
+			so_frm  => spa_act,
 			so_irdy => decode_irdy,
 			so_trdy => open,
-			so_data => sa_data);
+			so_data => spa_data);
 
 		decode_data <= 
 			ipv4pyltx_data when             tha_act='1' else
@@ -546,7 +563,7 @@ begin
 			protoid_data   when         protoid_act='1' else
 			chksum_data    when          chksum_act='1' else
 			length_data    when          length_act='1' else
-			sa_data        when              sa_act='1' else
+			spa_data       when             spa_act='1' else
 			da_data        when              da_act='1' else
 			ipv4pyltx_data when             pyl_act='1' else
 			ipv4pyltx_data;

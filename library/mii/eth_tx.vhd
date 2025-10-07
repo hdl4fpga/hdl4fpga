@@ -144,7 +144,7 @@ begin
 		pyl_data when pyl_irdy='1' else
 		(pyl_data'range => '-');
 
-	process (pad_act, decode_fin, pyl_frm, pyl_irdy, mii_clk)
+	process (prmb_act, sha_act, decode_fin, pyl_frm, pyl_irdy, mii_clk)
 		variable shr : unsigned(0 to fcs_crc'length/mii_data'length);
 	begin
 		if rising_edge(mii_clk) then

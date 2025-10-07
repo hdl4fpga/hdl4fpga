@@ -101,10 +101,10 @@ begin
 
 	miidcm_i : entity hdl4fpga.xc3s_dcm
 	generic map (
-		settings => "{"                 &
+		settings => compact("{"         &
 			"freq_in        : 20.0e6,"  & 
 			"clkfx_multiply : 5,"       & 
-			"clkfx_divide   : 4}")
+			"clkfx_divide   : 4}"))
 	port map (
 		clkin => sys_clk,
 		clkfx => mii_clk);
@@ -154,10 +154,10 @@ begin
 		udppyltx_irdy => udppyltx_irdy,
 		udppyltx_data => udppyltx_data);
 
-	ser_clk  <= mii_rxc;
-	ser_frm  <= udppylrx_frm;
-	ser_irdy <= udppylrx_irdy;
-	ser_data <= udppylrx_data;
+	-- ser_clk  <= mii_rxc;
+	-- ser_frm  <= udppylrx_frm;
+	-- ser_irdy <= udppylrx_irdy;
+	-- ser_data <= udppylrx_data;
 	-- mii_txen <= '0';
 	-- mii_txd <= (others =>'Z');
 
