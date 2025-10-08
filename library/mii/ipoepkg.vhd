@@ -141,12 +141,6 @@ package ipoepkg is
 		constant size : natural)
 		return std_logic_vector;
 
-	function udp_checksummed(
-		constant src  : std_logic_vector(0 to 32-1);
-		constant dst  : std_logic_vector(0 to 32-1);
-		constant udp  : std_logic_vector)
-		return std_logic_vector;
-
 	function summation (
 		constant format : string)
 		return natural;
@@ -200,30 +194,6 @@ package body ipoepkg is
 			aux := aux sll size;
 		end loop;
 		return std_logic_vector(checksum(1 to size));
-	end;
-
-	function udp_checksummed(
-		constant src  : std_logic_vector(0 to 32-1);
-		constant dst  : std_logic_vector(0 to 32-1);
-		constant udp  : std_logic_vector)
-		return std_logic_vector is
-
-		variable len : unsigned(0 to 16-1);
-		variable aux : unsigned(0 to udp'length+src'length+32+dst'length-1) := (others => '0');
-	begin
-		aux(0 to udp'length-1) := unsigned(udp);
-		len := aux(32 to 48-1);
-		aux := aux rol udp'length;
-		aux(src'range) := unsigned(src);
-		aux := aux rol src'length;
-		aux(dst'range) := unsigned(dst);
-		aux := aux rol dst'length;
-		aux( 0 to 16-1) := x"0011";
-		aux(16 to 32-1) := len;
-		aux := aux rol 32;
-
-		aux(48 to 64-1) := unsigned(chksum1(not std_logic_vector(aux), 16));
-		return std_logic_vector(aux(0 to udp'length-1));
 	end;
 
 	function summation (

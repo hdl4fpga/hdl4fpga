@@ -154,10 +154,16 @@ begin
 		udppyltx_irdy => udppyltx_irdy,
 		udppyltx_data => udppyltx_data);
 
-	-- ser_clk  <= mii_rxc;
-	-- ser_frm  <= udppylrx_frm;
-	-- ser_irdy <= udppylrx_irdy;
-	-- ser_data <= udppylrx_data;
+	ser_clk <= mii_rxc;
+	process (ser_clk)
+	begin
+		if rising_edge(ser_clk) then
+			ser_frm  <= udppylrx_frm;
+			ser_irdy <= udppylrx_irdy;
+			ser_data <= udppylrx_data;
+		end if;
+	end process;
+
 	-- mii_txen <= '0';
 	-- mii_txd <= (others =>'Z');
 

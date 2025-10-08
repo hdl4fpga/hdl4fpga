@@ -590,8 +590,6 @@ begin
 				dst_data => ipv4tx_data);
 
 		end block;
-
-
 	end block;
 
 	icmpd_i : entity hdl4fpga.icmpd
