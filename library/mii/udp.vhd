@@ -284,7 +284,9 @@ begin
 			alias  length_frm  is length_act;
 			alias  length_irdy is udptx_irdy;
 			signal length_ipv4 : unsigned(0 to hdo(frames)**".format.ipv4.length"-1);
-			alias  length_miib : unsigned(udptx_data'range) is length_ipv4(0 to udptx_data'length-1);
+			alias  miib_ipv4   : unsigned(udptx_data'range) is length_ipv4(0 to udptx_data'length-1);
+			signal length_udp  : unsigned(0 to hdo(frames)**".format.udp.length"-1);
+			alias  miib_udp    : unsigned(udptx_data'range) is length_udp(0 to udptx_data'length-1);
 		begin
 			process (miitx_clk)
 				variable cy  : std_logic;
@@ -295,13 +297,17 @@ begin
 				if rising_edge(miitx_clk) then
 					if (length_frm and length_irdy)='1' then
 						op1 := unsigned('0' & reverse(udptx_data) & '1');
-						op2 := unsigned('0' & reverse(length_miib) & cy);
+						op2 := unsigned('0' & reverse(miib_ipv4) & cy);
 						sum := op1 + op2;
 						cy  := sum(0);
 						length_ipv4 <= rotate_left(length_ipv4, udptx_data'length);
 					else
 						cy := '0';
-						length_ipv4 <= reverse(to_unsigned(summation(hdo(frames)**".format.ipv4"), length_ipv4'length));
+						length_ipv4 <= reverse(to_unsigned(
+							summation(hdo(frames)**".format.ipv4") +
+							summation(hdo(frames)**".format.udp"), length_ipv4'length));
+						length_udp  <= reverse(to_unsigned(
+							summation(hdo(frames)**".format.udp"), length_ipv4'length));
 					end if;
 
 					if (length_frm and udptx_irdy)='1' then
