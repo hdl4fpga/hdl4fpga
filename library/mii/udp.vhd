@@ -280,41 +280,15 @@ begin
 			act(4) => chksum_act,
 			act(5) => pyl_act);
 
-		adjlen_b : block
-			alias  length_frm  is length_act;
-			alias  length_irdy is udptx_irdy;
-			signal length_ipv4 : unsigned(0 to hdo(frames)**".format.ipv4.length"-1);
-			alias  miib_ipv4   : unsigned(udptx_data'range) is length_ipv4(0 to udptx_data'length-1);
-			signal length_udp  : unsigned(0 to hdo(frames)**".format.udp.length"-1);
-			alias  miib_udp    : unsigned(udptx_data'range) is length_udp(0 to udptx_data'length-1);
-		begin
-			process (miitx_clk)
-				variable cy  : std_logic;
-				variable sum : unsigned(0 to udptx_data'length+1);
-				variable op1 : unsigned(sum'range);
-				variable op2 : unsigned(sum'range);
-			begin
-				if rising_edge(miitx_clk) then
-					if (length_frm and length_irdy)='1' then
-						op1 := unsigned('0' & reverse(udptx_data) & '1');
-						op2 := unsigned('0' & reverse(miib_ipv4) & cy);
-						sum := op1 + op2;
-						cy  := sum(0);
-						length_ipv4 <= rotate_left(length_ipv4, udptx_data'length);
-					else
-						cy := '0';
-						length_ipv4 <= reverse(to_unsigned(
-							summation(hdo(frames)**".format.ipv4") +
-							summation(hdo(frames)**".format.udp"), length_ipv4'length));
-						length_udp  <= reverse(to_unsigned(
-							summation(hdo(frames)**".format.udp"), length_ipv4'length));
-					end if;
-
-					if (length_frm and udptx_irdy)='1' then
-					end if;
-				end if;
-			end process;
-		end block;
+		miiadjlen_i : entity hdl4fpga.adjlen
+		generic map (
+			diff => summation(hdo(frame)**".format.udp"))
+		port map (
+			clk => miirx_clk,
+			frm => udprx_frm,
+			irdy => ,
+			si_data => pyltx_data,
+			so_data =>);
 
 		arbiter_b : block
 			signal gntd  : std_logic_vector(0 to 2-1);

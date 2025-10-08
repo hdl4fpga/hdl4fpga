@@ -27,54 +27,49 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
-entity ipv4_adjlen is
+entity mii_adjlen is
 	generic (
-		adjust  : std_logic_vector);
+		diff : std_logic_vector);
 	port (
-		sio_clk  : in  std_logic;
-		sio_frm  : in  std_logic;
-		sio_irdy : in  std_logic;
-		sio_trdy : out std_logic;
-		si_data  : in  std_logic_vector;
-		so_data  : out std_logic_vector);
+		clk     : in  std_logic;
+		frm     : in  std_logic;
+		irdy    : in  std_logic;
+		trdy    : buffer std_logic := '1';
+		si_data : in  std_logic_vector;
+		so_data : out std_logic_vector);
 end;
 
-architecture def of ipv4_adjlen is
-	signal si_b   : std_logic_vector(si_data'range);
-	signal si_ci  : std_logic;
-	signal si_co  : std_logic;
-	signal so_sum : std_logic_vector(so_data'range);
-
-	constant crtn_data : std_logic_vector := reverse(reverse(adjust), si_b'length);
+architecture def of mii_adjlen is
 begin
-
-	crtnmux_e : entity hdl4fpga.sio_mux
-	port map (
-		mux_data => crtn_data,
-		sio_clk  => sio_clk,
-		sio_frm  => sio_frm,
-		sio_irdy => sio_irdy,
-		sio_trdy => open,
-		so_data  => si_b);
-
-	si_adder_e : entity hdl4fpga.adder
-	port map (
-		ci  => si_ci,
-		a   => si_data,
-		b   => si_b,
-		s   => so_sum,
-		co  => si_co);
-
-	si_cy_p : process (sio_clk)
+	process (clk)
+		variable value  : unsigned(diff'range);
+		variable miib   : std_logic_vector(0 to si_data'length-1);
+		variable cy     : std_logic;
+		variable sum    : unsigned(0 to si_data'length+1);
+		variable op1    : unsigned(sum'range);
+		variable op2    : unsigned(sum'range);
+		variable active : std_logic;
 	begin
-		if rising_edge(sio_clk) then
-			if sio_frm='0' then
-				si_ci <= '0';
-			elsif sio_irdy='1' then
-				si_ci <= si_co;
+		if rising_edge(clk) then
+			if (frm or active)='0' then
+				value := unsigned(reverse(diff));
+				cy    := '0';
+			elsif irdy='1' then
+				if trdy='1' then
+					op1 := unsigned('0' & reverse(si_data) & '1');
+					op2 := unsigned('0' & reverse(miib) & cy);
+					sum := op1 + op2;
+					cy  := sum(0);
+					value := rotate_left(value, si_data'length);
+					if frm='0' then
+						active := '0';
+					else
+						active := '1';
+					end if;
+				end if;
+			elsif frm='0' then
+				active := '0';
 			end if;
 		end if;
 	end process;
-
-	so_data <= so_sum;
 end;

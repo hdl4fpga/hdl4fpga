@@ -241,6 +241,8 @@ HDL4FPGA__mii_buffer__def = $(LIB_HDL4FPGA)/mii_buffer/def.dat
 HDL4FPGA__mii_buffer = $(LIB_HDL4FPGA)/mii_buffer/_primary.dat
 HDL4FPGA__mii_arbiter__mix = $(LIB_HDL4FPGA)/mii_arbiter/mix.dat
 HDL4FPGA__mii_arbiter = $(LIB_HDL4FPGA)/mii_arbiter/_primary.dat
+HDL4FPGA__mii_adjlen__def = $(LIB_HDL4FPGA)/mii_adjlen/def.dat
+HDL4FPGA__mii_adjlen = $(LIB_HDL4FPGA)/mii_adjlen/_primary.dat
 HDL4FPGA__link_mii__graphics = $(LIB_HDL4FPGA)/link_mii/graphics.dat
 HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
 HDL4FPGA__link_hdlc__def = $(LIB_HDL4FPGA)/link_hdlc/def.dat
@@ -621,6 +623,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_buffer) \
     $(HDL4FPGA__mii_arbiter__mix) \
     $(HDL4FPGA__mii_arbiter) \
+    $(HDL4FPGA__mii_adjlen__def) \
+    $(HDL4FPGA__mii_adjlen) \
     $(HDL4FPGA__link_mii__graphics) \
     $(HDL4FPGA__link_mii) \
     $(HDL4FPGA__link_hdlc__def) \
@@ -1413,11 +1417,11 @@ $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
 		$(HDL4FPGA__icmpd) \
 		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__mii_chksum1) \
+		$(HDL4FPGA__sio_rom) \
 		$(HDL4FPGA__mii_arbiter) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__sio_cmp) \
-		$(HDL4FPGA__sio_rom) \
 		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
@@ -1472,6 +1476,16 @@ $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../apps/link_mii.vhd
 
+$(HDL4FPGA__mii_adjlen) \
+$(HDL4FPGA__mii_adjlen__def) : ../mii/mii_adjlen.vhd \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/mii_adjlen.vhd
+
 $(HDL4FPGA__mii_arbiter) \
 $(HDL4FPGA__mii_arbiter__mix) : ../mii/mii_arbiter.vhd \
 		$(HDL4FPGA__base) \
@@ -1506,7 +1520,7 @@ $(HDL4FPGA__mii_cmp__def) : ../mii/mii_cmp.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -2002 -work hdl4fpga ../mii/mii_cmp.vhd
+	$(VCOM) -93 -work hdl4fpga ../mii/mii_cmp.vhd
 
 $(HDL4FPGA__mii_ipoe) \
 $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
@@ -1515,6 +1529,7 @@ $(HDL4FPGA__mii_ipoe__def) : ../mii/mii_ipoe.vhd \
 		$(HDL4FPGA__mii_arbiter) \
 		$(HDL4FPGA__arpd) \
 		$(HDL4FPGA__mii_cmp) \
+		$(HDL4FPGA__sio_cmp) \
 		$(HDL4FPGA__eth_rx) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
@@ -2321,12 +2336,14 @@ $(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \
 $(HDL4FPGA__udp) \
 $(HDL4FPGA__udp__def) : ../mii/udp.vhd \
 		$(HDL4FPGA__dhcpcd) \
+		$(HDL4FPGA__mii_arbiter) \
 		$(HDL4FPGA__mii_cmp) \
+		$(HDL4FPGA__dpram) \
 		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../mii/udp.vhd
