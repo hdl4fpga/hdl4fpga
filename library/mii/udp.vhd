@@ -280,8 +280,8 @@ begin
 			size  => udprx_data'length)
 		port map (
 			clk    => miitx_clk,
-			frm    => udprx_frm,
-			irdy   => udprx_irdy,
+			frm    => udptx_frm,
+			irdy   => decode_irdy,
 			act(0) => tha_act,
 			act(1) => length_act,
 			act(2) => adjlen_act,
@@ -305,7 +305,7 @@ begin
 			diff => std_logic_vector(to_unsigned(summation(hdo(frames)**".format.udp"),hdo(frames)**".format.ipv4.length")))
 		port map (
 			clk     => miirx_clk,
-			frm     => udprx_frm,
+			frm     => udptx_frm,
 			irdy    => adjlen_irdy,
 			si_data => xxx_data,
 			so_data => adjlen_data);

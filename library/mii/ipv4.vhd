@@ -428,9 +428,10 @@ begin
 			signal miichksum_frm    : std_logic;
 			signal miichksum_irdy   : std_logic;
 			signal miichksum_data   : std_logic_vector(ipv4rx_data'range);
-			signal act3 : std_logic;
+			signal act4 : std_logic;
 
-			alias  lentx_frm is ipv4lentx_act;
+			-- alias  lentx_frm is ipv4lentx_act;
+			signal lentx_frm  : std_logic;
 			signal lentx_irdy : std_logic;
 
 			alias  spatx_frm is spa_act;
@@ -445,6 +446,7 @@ begin
 			generic map (
 				frame => compact('{'                                                       &
 					"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+					"ajdlen:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 					"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 					"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & '}'), -- &
 				size  => ipv4tx_data'length)
@@ -453,10 +455,27 @@ begin
 				frm    => ipv4pyltx_frm,
 				irdy   => decode_irdy,
 				act(0) => ipv4lentx_act,
-				act(1) => ipv4tpatx_act,
-				act(2) => spa_act,
-				act(3) => act3);
+				act(1) => adjlen_act,
+				act(2) => ipv4tpatx_act,
+				act(3) => spa_act,
+				act(4) => act3);
 
+			adjlen_irdy <= ipv4lentx_act and adjlen_act;
+			xxx_data <= 
+				ipv4pyltx_data when ipv4lentx_act='1' else
+				(udptx_data'range => '0');
+
+			miiadjlen_i : entity hdl4fpga.mii_adjlen
+			generic map (
+				diff => std_logic_vector(to_unsigned(summation(hdo(frames)**".format.ipv4"),hdo(frames)**".format.ipv4.length")))
+			port map (
+				clk     => miirx_clk,
+				frm     => ipv4pyltx_frm,
+				irdy    => adjlen_irdy,
+				si_data => xxx_data,
+				so_data => adjlen_data);
+
+			lentx_frm  <= adjlen_act;
 			lentx_irdy <= lentx_frm and decode_irdy;
 			length_i : entity hdl4fpga.sio_ram
 			generic map (
@@ -466,7 +485,8 @@ begin
 				si_frm  => lentx_frm,
 				si_irdy => lentx_irdy,
 				si_trdy => open,
-				si_data => ipv4pyltx_data,
+				-- si_data => ipv4pyltx_data,
+				si_data => adjlen_data,
 				so_clk  => miitx_clk,
 				so_frm  => length_act,
 				so_irdy => decode_irdy,
@@ -507,7 +527,8 @@ begin
 			miichksum_frm  <= (ipv4pyltx_frm or ipv4pyltx_irdy);
 			miichksum_irdy <= lentx_irdy or tpatx_irdy or spa_act or chksum_act;
 			miichksum_data <=
-				ipv4pyltx_data when lentx_frm='1' else
+				-- ipv4pyltx_data when lentx_frm='1' else
+				   adjlen_data when lentx_frm='1' else
 				ipv4pyltx_data when tpatx_frm='1' else
 				      spa_data when   spa_act='1' else
 				(miichksum_data'range => '0');
