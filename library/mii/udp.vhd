@@ -246,23 +246,32 @@ begin
 	end block;
 
 	tx_b : block
-		signal udppyltx_frm  : std_logic;
-		signal udppyltx_irdy : std_logic;
-		signal udppyltx_trdy : std_logic;
+		alias  udppyltx_frm  is udptx_frms(1);
+		alias  udppyltx_irdy is udptx_irdys(1);
+		alias  udppyltx_trdy is udptx_trdys(0);
+		signal udppyltx_data : std_logic_vector(udptx_data'range);
 
 		signal tha_act    : std_logic;
 		signal length_act : std_logic;
+		signal adjlen_act : std_logic;
 		signal da_act     : std_logic;
 		signal ports_act  : std_logic;
 		signal chksum_act : std_logic;
 		signal pyl_act    : std_logic;
+		signal adjlen_irdy : std_logic;
+		signal xxx_data : std_logic_vector(udptx_data'range);
+		signal adjlen_data : std_logic_vector(udptx_data'range);
+		signal decode_irdy : std_logic;
+
 	begin
 
+		decode_irdy <= udptx_irdy and udppyltx_trdy;
 		udp_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
 				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				"adjlen:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 				" ports:" & natural'image(
 					hdo(frames)**".format.udp.sp" +
@@ -275,20 +284,31 @@ begin
 			irdy   => udprx_irdy,
 			act(0) => tha_act,
 			act(1) => length_act,
+			act(2) => adjlen_act,
 			act(3) => da_act,
-			act(2) => ports_act,
-			act(4) => chksum_act,
-			act(5) => pyl_act);
+			act(4) => ports_act,
+			act(5) => chksum_act,
+			act(6) => pyl_act);
 
-		miiadjlen_i : entity hdl4fpga.adjlen
+		udppyltx_irdy <= '1' when length_act='0' else '1';
+		udppyltx_data <= 
+			adjlen_data when length_act='1' else
+			udptx_data;
+
+		adjlen_irdy <= length_act and adjlen_act;
+		xxx_data <= 
+			udptx_data when adjlen_act='1' else
+			(udptx_data'range => '0');
+
+		miiadjlen_i : entity hdl4fpga.mii_adjlen
 		generic map (
-			diff => summation(hdo(frame)**".format.udp"))
+			diff => std_logic_vector(to_unsigned(summation(hdo(frames)**".format.udp"),hdo(frames)**".format.ipv4.length")))
 		port map (
-			clk => miirx_clk,
-			frm => udprx_frm,
-			irdy => ,
-			si_data => pyltx_data,
-			so_data =>);
+			clk     => miirx_clk,
+			frm     => udprx_frm,
+			irdy    => adjlen_irdy,
+			si_data => xxx_data,
+			so_data => adjlen_data);
 
 		arbiter_b : block
 			signal gntd  : std_logic_vector(0 to 2-1);
