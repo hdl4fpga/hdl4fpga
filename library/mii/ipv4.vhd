@@ -443,7 +443,7 @@ begin
 			signal tpatx_irdy : std_logic;
 			signal adjlen_irdy : std_logic;
 			signal adjlen_data   : std_logic_vector(ipv4rx_data'range);
-			signal xxx_data   : std_logic_vector(ipv4rx_data'range);
+			signal si_data   : std_logic_vector(ipv4rx_data'range);
 		begin
 			decode_irdy <= ipv4pyltx_irdy when tha_act='0' else '0';
 			chksum_i : entity hdl4fpga.frame_decode
@@ -467,7 +467,7 @@ begin
 				buffer_trdy when    length_act='1' else
 				'0';
 
-			xxx_data <= 
+			si_data <= 
 				ipv4pyltx_data when ipv4lentx_act='1' else
 				(udptx_data'range => '0');
 
@@ -478,7 +478,7 @@ begin
 				clk     => miirx_clk,
 				frm     => ipv4pyltx_frm,
 				irdy    => adjlen_irdy,
-				si_data => xxx_data,
+				si_data => si_data,
 				so_data => adjlen_data);
 
 			lentx_frm  <= adjlen_act;
