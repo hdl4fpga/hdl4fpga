@@ -61,8 +61,8 @@ begin
 					sum := op1 + op2;
 					miib := reverse(sum(1 to si_data'length));
 					cy  := sum(0);
-					so_data <= std_logic_vector(miib);
 					value := rotate_left(value, si_data'length);
+					so_data <= std_logic_vector(miib);
 					if frm='0' then
 						active := '0';
 					else
