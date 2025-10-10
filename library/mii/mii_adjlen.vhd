@@ -42,8 +42,8 @@ end;
 architecture def of mii_adjlen is
 begin
 	process (clk)
-		variable value  : unsigned(diff'range);
-		variable miib   : std_logic_vector(0 to si_data'length-1);
+		variable value  : unsigned(0 to diff'length-1);
+		alias  miib is value(0 to si_data'length-1);
 		variable cy     : std_logic;
 		variable sum    : unsigned(0 to si_data'length+1);
 		variable op1    : unsigned(sum'range);
@@ -52,14 +52,16 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (frm or active)='0' then
-				value := unsigned(reverse(diff));
+				value := unsigned(reverse(diff,8));
 				cy    := '0';
 			elsif irdy='1' then
 				if trdy='1' then
 					op1 := unsigned('0' & reverse(si_data) & '1');
 					op2 := unsigned('0' & reverse(miib) & cy);
 					sum := op1 + op2;
+					miib := reverse(sum(1 to si_data'length));
 					cy  := sum(0);
+					so_data <= std_logic_vector(miib);
 					value := rotate_left(value, si_data'length);
 					if frm='0' then
 						active := '0';
@@ -68,6 +70,8 @@ begin
 					end if;
 				end if;
 			elsif frm='0' then
+				value := unsigned(reverse(diff,8));
+				cy    := '0';
 				active := '0';
 			end if;
 		end if;
