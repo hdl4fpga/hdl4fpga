@@ -154,30 +154,15 @@ begin
 		udppyltx_irdy => udppyltx_irdy,
 		udppyltx_data => udppyltx_data);
 
-	ser_clk <= mii_rxc;
-	process (ser_clk)
-	begin
-		if rising_edge(ser_clk) then
-			ser_frm  <= udppylrx_frm;
-			ser_irdy <= udppylrx_irdy;
-			ser_data <= udppylrx_data;
-		end if;
-	end process;
-
-	-- mii_txen <= '0';
-	-- mii_txd <= (others =>'Z');
-
-	-- ser_clk  <= mii_txc;
-	-- ser_frm  <= mii_txen;
-	-- ser_irdy <= mii_txen;
-	-- ser_data <= mii_txd;
-	-- ser_frm  <= mii_rxdv;
-	-- ser_irdy <= mii_rxdv;
-	-- ser_data <= mii_rxd;
-	-- ser_clk  <= mii_rxc;
-	-- ser_frm  <= tp(1);
-	-- ser_irdy <= tp(1);
-	-- ser_data <= tp(2 to 2+mii_rxd'length-1);
+	-- ser_clk <= mii_rxc;
+	-- process (ser_clk)
+	-- begin
+	-- 	if rising_edge(ser_clk) then
+	-- 		ser_frm  <= udppylrx_frm;
+	-- 		ser_irdy <= udppylrx_irdy;
+	-- 		ser_data <= udppylrx_data;
+	-- 	end if;
+	-- end process;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

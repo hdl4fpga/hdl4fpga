@@ -214,7 +214,7 @@ begin
 		generic map (
 			bitdata => reverse(
 				bcst_tha                                                         &
-				ipv4_length                                                      &
+				udp_length                                                       &
 				bcst_tpa                                                         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.sp")         &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.dp")         &

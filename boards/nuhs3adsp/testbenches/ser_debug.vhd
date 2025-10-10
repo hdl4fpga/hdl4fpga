@@ -206,11 +206,11 @@ architecture nuhs3adsp_serdebug of testbench is
 			"dddddddd"             &
 			"dddddddd"             &
 			"dddddddd"             &
-			"dddddddd"             &
+			"dddddddd,"            &
 		"icmp:0x"                  &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
-			"0054"                 & -- IP Length
+			"a5a5"                 & -- IP Length
 			"0000"                 & -- IP Identification
 			"0000"                 & -- IP Fragmentation
 			"0501"                 & -- IP TTL, protocol
@@ -237,10 +237,10 @@ begin
 
 	arp_req <= '0', '1' after 8 us;
 
-	sw1 <= '1', '0' after 1 us;
+	sw1 <= '1', '1' after 1 us;
 
 	tb_b : block
-		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".dhcp");
+		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".icmp");
 		signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
 	begin
 		process (mii_rxc)
