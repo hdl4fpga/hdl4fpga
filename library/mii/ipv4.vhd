@@ -478,7 +478,7 @@ begin
 			generic map (
 				diff => ipv4hdr_length)
 			port map (
-				clk     => miirx_clk,
+				clk     => miitx_clk,
 				frm     => ipv4pyltx_frm,
 				irdy    => adjlen_irdy,
 				si_data => si_data,

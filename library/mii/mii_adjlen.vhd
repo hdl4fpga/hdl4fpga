@@ -70,8 +70,6 @@ begin
 					end if;
 				end if;
 			elsif frm='0' then
-				value := unsigned(reverse(diff,8));
-				cy    := '0';
 				active := '0';
 			end if;
 		end if;
