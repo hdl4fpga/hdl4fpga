@@ -246,8 +246,8 @@ begin
 	end block;
 
 	tx_b : block
-		alias  udppyltx_frm  is udptx_frms(1);
-		alias  udppyltx_irdy is udptx_irdys(1);
+		alias  udppyltx_frm  is udptx_frms(0);
+		alias  udppyltx_irdy is udptx_irdys(0);
 		alias  udppyltx_trdy is udptx_trdys(0);
 		signal udppyltx_data : std_logic_vector(udptx_data'range);
 
@@ -290,7 +290,7 @@ begin
 			act(5) => chksum_act,
 			act(6) => pyl_act);
 
-		udppyltx_irdy <= '1' when length_act='0' else '1';
+		-- udppyltx_irdy <= '1' when length_act='0' else '1';
 		udppyltx_data <= 
 			adjlen_data when length_act='1' else
 			udptx_data;
@@ -316,8 +316,9 @@ begin
 
 			udptx_frms(0)  <= pyltx_frm;
 			udptx_irdys(0) <= pyltx_irdy;
-			pyltx_trdy     <= udptx_trdys(0);
+			pyltx_trdy     <= udptx_trdys(0) when length_act='0' else '0';
 
+		-- udppyltx_irdy <= '1' when length_act='0' else '1';
 			arbiter_i : entity hdl4fpga.mii_arbiter
 			port map (
 				clk   => miitx_clk,
