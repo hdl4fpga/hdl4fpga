@@ -42,12 +42,12 @@ end;
 architecture def of mii_adjlen is
 begin
 	process (clk)
-		variable value  : unsigned(0 to diff'length-1);
+		variable value : unsigned(0 to diff'length-1);
 		alias  miib is value(0 to si_data'length-1);
-		variable sum    : unsigned(0 to si_data'length+1);
+		variable sum : unsigned(0 to si_data'length+1);
 		alias    cy  is sum(0);
-		variable op1    : unsigned(sum'range);
-		variable op2    : unsigned(sum'range);
+		variable op1 : unsigned(sum'range);
+		variable op2 : unsigned(sum'range);
 		variable active : std_logic;
 	begin
 		if rising_edge(clk) then
