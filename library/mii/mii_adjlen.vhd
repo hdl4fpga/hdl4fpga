@@ -44,8 +44,8 @@ begin
 	process (clk)
 		variable value  : unsigned(0 to diff'length-1);
 		alias  miib is value(0 to si_data'length-1);
-		variable cy     : std_logic;
 		variable sum    : unsigned(0 to si_data'length+1);
+		alias    cy  is sum(0);
 		variable op1    : unsigned(sum'range);
 		variable op2    : unsigned(sum'range);
 		variable active : std_logic;
@@ -54,13 +54,11 @@ begin
 			if (frm or active)='1' then
 				if irdy='1' then
 					if trdy='1' then
-						op1 := unsigned('0' & reverse(si_data) & '1');
-						op2 := unsigned('0' & reverse(miib) & cy);
-						sum := op1 + op2;
-						miib := reverse(sum(1 to si_data'length));
-						cy  := sum(0);
+						op1   := unsigned('0' & reverse(si_data) & '1');
+						op2   := unsigned('0' & reverse(miib)    &  cy);
+						sum   := op1 + op2;
+						miib  := reverse(sum(1 to si_data'length));
 						value := rotate_left(value, si_data'length);
-						so_data <= std_logic_vector(miib);
 						if frm='0' then
 							active := '0';
 						else
@@ -72,11 +70,14 @@ begin
 				else
 					active := '1';
 				end if;
+			else
+				active := '0';
 			end if;
 			if active='0' then
 				value := unsigned(reverse(diff,8));
 				cy    := '0';
 			end if;
 		end if;
+		so_data <= std_logic_vector(reverse(reverse(miib) + sum(0 to 0)));
 	end process;
 end;

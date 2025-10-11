@@ -111,7 +111,6 @@ begin
 		constant bcst_tpa : std_logic_vector := x"ff_ff_ff_ff";
 		constant discover_length : natural := 250;
 		constant udp_length  : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8,16));
-		constant ipv4_length : std_logic_vector := std_logic_vector(to_unsigned(discover_length+8+20,16));
 		constant udp_chksum  : std_logic_vector := not chksum1 (
 				x"00" & std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp")   &
 				udp_length                                                       &
