@@ -69,6 +69,8 @@ begin
 					end if;
 				elsif frm='0' then
 					active := '0';
+				else
+					active := '1';
 				end if;
 			end if;
 			if active='0' then
