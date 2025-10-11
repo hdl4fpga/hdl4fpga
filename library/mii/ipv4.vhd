@@ -431,7 +431,6 @@ begin
 			signal miichksum_data   : std_logic_vector(ipv4rx_data'range);
 			signal act3 : std_logic;
 
-			-- alias  lentx_frm is ipv4lentx_act;
 			signal lentx_frm  : std_logic;
 			signal lentx_irdy : std_logic;
 
@@ -442,8 +441,8 @@ begin
 			signal tpatx_irdy  : std_logic;
 			signal adjlen_irdy : std_logic;
 			signal adjlen_data : std_logic_vector(ipv4rx_data'range);
-			signal si_data : std_logic_vector(ipv4rx_data'range);
-			signal so_data : std_logic_vector(ipv4rx_data'range);
+			signal si_data     : std_logic_vector(ipv4rx_data'range);
+			signal so_data     : std_logic_vector(ipv4rx_data'range);
 		begin
 			decode_irdy <= ipv4pyltx_irdy when tha_act='0' else '0';
 			chksum_i : entity hdl4fpga.frame_decode
