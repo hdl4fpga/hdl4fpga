@@ -246,10 +246,13 @@ begin
 	end block;
 
 	tx_b : block
+		constant udphdr_length : std_logic_vector := std_logic_vector(to_unsigned(summation(hdo(frames)**".format.udp")/8, hdo(frames)**".format.udp.length"));
 		alias  udppyltx_frm  is udptx_frms(0);
 		alias  udppyltx_irdy is udptx_irdys(0);
 		alias  udppyltx_trdy is udptx_trdys(0);
 		signal udppyltx_data : std_logic_vector(udptx_data'range);
+
+		signal gntd  : std_logic_vector(0 to 2-1);
 
 		signal tha_act     : std_logic;
 		signal length_act  : std_logic;
@@ -264,6 +267,26 @@ begin
 		signal decode_irdy : std_logic;
 
 	begin
+
+		udppyltx_frm  <= pyltx_frm;
+		udppyltx_irdy <= pyltx_irdy    when length_act='1' else '0';
+		pyltx_trdy    <= udppyltx_trdy when length_act='0' else '0';
+
+		arbiter_i : entity hdl4fpga.mii_arbiter
+		port map (
+			clk   => miitx_clk,
+			gntd  => gntd,
+			frms  => udptx_frms,
+			irdys => udptx_irdys,
+			trdys => udptx_trdys,
+			frm   => udptx_frm,
+			irdy  => udptx_irdy,
+			trdy  => udptx_trdy);
+
+		udptx_data <= 
+			udppyltx_data when gntd(0)='1' else
+			dhcpcdtx_data when gntd(1)='1' else
+			(udptx_data'range => '-');
 
 		decode_irdy <= udptx_irdy and udppyltx_trdy;
 		udp_i : entity hdl4fpga.frame_decode
@@ -290,11 +313,6 @@ begin
 			act(5) => chksum_act,
 			act(6) => pyl_act);
 
-		-- udppyltx_irdy <= '1' when length_act='0' else '1';
-		udppyltx_data <= 
-			adjlen_data when length_act='1' else
-			udptx_data;
-
 		adjlen_irdy <= length_act and adjlen_act;
 		si_data <= 
 			udptx_data when adjlen_act='1' else
@@ -302,7 +320,7 @@ begin
 
 		miiadjlen_i : entity hdl4fpga.mii_adjlen
 		generic map (
-			diff => std_logic_vector(to_unsigned(summation(hdo(frames)**".format.udp"),hdo(frames)**".format.ipv4.length")))
+			diff => udphdr_length)
 		port map (
 			clk     => miirx_clk,
 			frm     => udptx_frm,
@@ -310,32 +328,10 @@ begin
 			si_data => si_data,
 			so_data => adjlen_data);
 
-		arbiter_b : block
-			signal gntd  : std_logic_vector(0 to 2-1);
-		begin
-
-			udptx_frms(0)  <= pyltx_frm;
-			udptx_irdys(0) <= pyltx_irdy;
-			pyltx_trdy     <= udptx_trdys(0) when length_act='0' else '0';
-
-		-- udppyltx_irdy <= '1' when length_act='0' else '1';
-			arbiter_i : entity hdl4fpga.mii_arbiter
-			port map (
-				clk   => miitx_clk,
-				gntd  => gntd,
-				frms  => udptx_frms,
-				irdys => udptx_irdys,
-				trdys => udptx_trdys,
-				frm   => udptx_frm,
-				irdy  => udptx_irdy,
-				trdy  => udptx_trdy);
-
-			udptx_data <= 
-				pyltx_data    when gntd(0)='1' else
-				dhcpcdtx_data when gntd(1)='1' else
-				(udptx_data'range => '-');
-
-		end block;
+		udppyltx_data <= 
+			adjlen_data               when adjlen_act='1' else
+			(udptx_data'range => '0') when chksum_act='0' else
+			udptx_data;
 
 	end block;
 
