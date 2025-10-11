@@ -132,6 +132,81 @@ begin
 		end if;
 	end process;
 
+	tb_b : block
+		constant bitrom : std_logic_vector := std_logic_vector'(
+		hdo(string'("udp:0x"               &
+			"0f_27_0e_0f_f5_95" & -- mac source address
+			"00fa"              & -- packet length
+			"c0a80002"          & -- IP Source IP address
+			"0043"              &
+			"0044"              &
+			"aaaa"              &
+			"ffff"              &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"          &
+			"dddddddd"))**".udp");
+		signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
+	signal rst   : std_logic;
+	begin
+		rst <= '1', '0' after 1 us;
+		process (mii_txc)
+		begin
+			if rising_edge(mii_txc) then
+				if rst='1' then
+					udppyltx_frm <= '0';
+					addr <= (others => '0');
+				elsif addr < (bitrom'length/mii_rxd'length-1) then
+					udppyltx_frm <= '1';
+					if udppyltx_trdy='1' then
+						addr <= (addr + 1);
+					end if;
+				else
+					udppyltx_frm <= '0';
+				end if;
+			end if;
+		end process;
+	
+		eth_e: entity hdl4fpga.rom
+		generic map (
+			bitdata => reverse(bitrom,8))
+		port map (
+			addr => std_logic_vector(addr),
+			data => udppyltx_data);
+udppyltx_irdy <= udppyltx_frm;
+	end block;
+
 	miiipoe_i : entity hdl4fpga.mii_ipoe
 	port map (
 		tp       => tp,
@@ -152,6 +227,7 @@ begin
 
 		udppyltx_frm  => udppyltx_frm,
 		udppyltx_irdy => udppyltx_irdy,
+		udppyltx_trdy => udppyltx_trdy,
 		udppyltx_data => udppyltx_data);
 
 	-- ser_clk <= mii_rxc;
