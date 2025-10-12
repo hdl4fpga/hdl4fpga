@@ -190,6 +190,7 @@ begin
 						udppyltx_frm <= '0';
 					end if;
 					if (not udppyltx_frm and udppyltx_irdy and udppyltx_trdy)='1' then
+						dhcpcd_rdy <= dhcpcd_req;
 						udppyltx_irdy <= '0';
 					else
 						udppyltx_irdy <= '1';
@@ -223,7 +224,7 @@ begin
 	port map (
 		tp       => tp,
 		dhcpcd_req => '0', --dhcpcd_req,
-		dhcpcd_rdy => dhcpcd_rdy,
+		-- dhcpcd_rdy => dhcpcd_rdy,
 		miirx_clk  => mii_rxc,
 		miirx_frm  => mii_rxdv,
 		miirx_irdy => mii_rxdv,
