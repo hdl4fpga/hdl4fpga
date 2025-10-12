@@ -134,7 +134,7 @@ begin
 
 	pyl_b : block
 		constant bitrom : std_logic_vector := std_logic_vector'(
-		hdo(string'("udp:0x"               &
+		hdo(string'("{udp:0x"               &
 			"0f_27_0e_0f_f5_95" & -- mac source address
 			"00fa"              & -- packet length
 			"c0a80002"          & -- IP Source IP address
@@ -176,7 +176,7 @@ begin
 			"dddddddd"          &
 			"dddddddd"          &
 			"dddddddd"          &
-			"dddddddd"))**".udp");
+			"12345678}"))**".udp");
 		signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
 
 	begin
@@ -194,7 +194,7 @@ begin
 					else
 						udppyltx_irdy <= '1';
 					end if;
-					if udppyltx_trdy='1' then
+					if (udppyltx_irdy and udppyltx_trdy)='1' then
 						addr <= addr + 1;
 					end if;
 				elsif (dhcpcd_rdy xor dhcpcd_req)='1' then
