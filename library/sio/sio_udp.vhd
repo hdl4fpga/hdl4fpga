@@ -140,7 +140,6 @@ begin
 	begin
 		sio_flow_e : entity hdl4fpga.sio_flow
 		port map (
-			-- tp => tp,
 			rx_clk  => so_clk,
 			rx_frm  => plrx_frm,
 			rx_irdy => plrx_irdy,
