@@ -141,7 +141,7 @@ begin
 				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum")  & ',' &
 				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")      & ',' &
 				"             da:" & string'(hdo(frames)**".format.ipv4.da")      & '}'),
-			size  => ipv4tx_data'length)
+			size  => ipv4rx_data'length)
 		port map (
 			clk    => miirx_clk,
 			frm    => ipv4rx_frm,
@@ -305,26 +305,26 @@ begin
 		signal decode_frm  : std_logic;
 		signal decode_irdy : std_logic;
 		signal decode_fin  : std_logic;
-		signal decode_data : std_logic_vector(ipv4rx_data'range);
+		signal decode_data : std_logic_vector(ipv4tx_data'range);
 
 		signal tha_act       : std_logic;
 		signal verihltos_act : std_logic;
 		signal identflgsfrgttl_act : std_logic;
 
 		signal length_act  : std_logic;
-		signal length_data : std_logic_vector(ipv4rx_data'range);
+		signal length_data : std_logic_vector(ipv4tx_data'range);
 
 		signal protoid_act  : std_logic;
-		signal protoid_data : std_logic_vector(ipv4rx_data'range);
+		signal protoid_data : std_logic_vector(ipv4tx_data'range);
 
 		signal chksum_act   : std_logic;
-		signal chksum_data  : std_logic_vector(ipv4rx_data'range);
+		signal chksum_data  : std_logic_vector(ipv4tx_data'range);
 
 		signal spa_act      : std_logic;
-		signal spa_data     : std_logic_vector(ipv4rx_data'range);
+		signal spa_data     : std_logic_vector(ipv4tx_data'range);
 		signal da_act       : std_logic;
 		alias  da_irdy is da_act;
-		signal da_data      : std_logic_vector(ipv4rx_data'range);
+		signal da_data      : std_logic_vector(ipv4tx_data'range);
 		signal pyl_act      : std_logic;
 
 		constant ipv4hdr_bitdata : std_logic_vector := 
@@ -486,7 +486,6 @@ begin
 			lentx_frm <= 
 				ipv4lentx_act when icmp_gntd='1' else
 				adjlen_act;
-
 			lentx_irdy <= lentx_frm and decode_irdy;
 			so_data <=
 				ipv4pyltx_data when icmp_gntd='1' else

@@ -259,6 +259,7 @@ begin
 		signal adjlen_act  : std_logic;
 		signal da_act      : std_logic;
 		signal ports_act   : std_logic;
+		signal lentx_act   : std_logic;
 		signal chksum_act  : std_logic;
 		signal pyl_act     : std_logic;
 		signal adjlen_irdy : std_logic;
@@ -303,6 +304,7 @@ begin
 				" ports:" & natural'image(
 					hdo(frames)**".format.udp.sp" +
 					hdo(frames)**".format.udp.dp")                      & ',' &
+				"udplen:" & string'(hdo(frames)**".format.udp.length")  & ',' &
 				"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}'),
 			size  => udprx_data'length)
 		port map (
@@ -314,10 +316,11 @@ begin
 			act(2) => adjlen_act,
 			act(3) => da_act,
 			act(4) => ports_act,
-			act(5) => chksum_act,
-			act(6) => pyl_act);
+			act(5) => lentx_act,
+			act(6) => chksum_act,
+			act(7) => pyl_act);
 
-		adjlen_irdy <= length_act or adjlen_act;
+		adjlen_irdy <= length_act or adjlen_act or lentx_act;
 		si_data <= 
 			pyltx_data when length_act='1' else
 			(udptx_data'range => '0');
@@ -334,6 +337,7 @@ begin
 
 		udppyltx_data <= 
 			adjlen_data               when adjlen_act='1' else
+			adjlen_data               when  lentx_act='1' else
 			(udptx_data'range => '0') when chksum_act='1' else
 			pyltx_data;
 

@@ -280,7 +280,7 @@ begin
 
 	arp_req <= '0', '1' after 8 us;
 
-	sw1 <= '1', '1' after 1 us;
+	sw1 <= '1', '0' after 1 us;
 
 	rst <= '1', '1' after 1 us;
 	tb_b : block
