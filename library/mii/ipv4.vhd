@@ -466,7 +466,7 @@ begin
 			adjlen_irdy <= 
 				decode_irdy when ipv4lentx_act='1' else
 				buffer_trdy when    length_act='1' else
-				'1'         when    adjlen_act='1' else
+				decode_irdy when    adjlen_act='1' else
 				'0';
 
 			si_data <= 

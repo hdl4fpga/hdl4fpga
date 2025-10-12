@@ -85,7 +85,12 @@ package ipoepkg is
     			"  cookie:32,"                    &
     			"vendordata:24,"                  &
     			"iprequest:48,"                   &
-    			"  endmark:8}},"                  &
+    			"  endmark:8},"                   &
+    		"pyl:{"                               &
+    			"tha:48,"                         &
+    			"tpa:32,"                         &
+    			" dp:16,"                         &
+    			" sp:16}},"                       &
 		"data:{"                                  &
     		"mac:{"                               &
 				"type:{"                          &

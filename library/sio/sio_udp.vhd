@@ -24,31 +24,28 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
-use hdl4fpga.ethpkg.all;
 use hdl4fpga.ipoepkg.all;
 
 entity sio_udp is
 	generic (
-		debug         : boolean := false;
-		default_ipv4a : std_logic_vector(0 to 32-1);
-		my_mac        : std_logic_vector(0 to 48-1));
+		hwaddr        : std_logic_vector(0 to 48-1);
+		ipv4addr      : std_logic_vector(0 to 32-1));
 	port (
-		hdplx         : in  std_logic;
-		mii_clk       : in  std_logic;
 		dhcpcd_req    : in  std_logic := '0';
-		dhcpcd_rdy    : out std_logic := '0';
+		dhcpcd_rdy    : buffer std_logic := '0';
 
-
+		miirx_clk     : in  std_logic;
 		miirx_frm     : in  std_logic;
 		miirx_irdy    : in  std_logic;
 		miirx_trdy    : out std_logic;
 		miirx_data    : in  std_logic_vector;
 
+		miitx_clk     : in  std_logic;
 		miitx_frm     : buffer std_logic;
 		miitx_irdy    : buffer std_logic;
 		miitx_trdy    : in  std_logic;
-		miitx_end     : buffer std_logic;
 		miitx_data    : out std_logic_vector;
 
 		so_clk        : in  std_logic;
@@ -60,7 +57,6 @@ entity sio_udp is
 		si_frm        : in  std_logic;
 		si_irdy       : in  std_logic;
 		si_trdy       : out std_logic;
-		si_end        : in  std_logic := '0';
 		si_data       : in  std_logic_vector;
 
 		tp            : out std_logic_vector(1 to 32));
@@ -68,53 +64,72 @@ end;
 
 architecture struct of sio_udp is
 
-		signal plrx_frm   : std_logic;
-		signal plrx_irdy  : std_logic;
-		signal plrx_trdy  : std_logic;
-		signal plrx_end   : std_logic;
-		signal plrx_data  : std_logic_vector(so_data'range);
+	signal udppylrx_frm  : std_logic;
+	signal udppylrx_irdy : std_logic;
+	signal udppylrx_trdy : std_logic;
+	signal udppylrx_data : std_logic_vector(miirx_data'range);
 
-		signal pltx_frm   : std_logic;
-		signal pltx_irdy  : std_logic;
-		signal pltx_trdy  : std_ulogic;
-		signal pltx_end   : std_logic;
-		signal pltx_data  : std_logic_vector(si_data'range);
+	signal udppyltx_frm  : std_logic;
+	signal udppyltx_irdy : std_logic;
+	signal udppyltx_trdy : std_ulogic;
+	signal udppyltx_data : std_logic_vector(miitx_data'range);
 
 begin
 
-	mii_ipoe_e : entity hdl4fpga.mii_ipoe
+	miiipoe_i : entity hdl4fpga.mii_ipoe
 	generic map (
-		default_ipv4a => default_ipv4a,
-		my_mac        => my_mac)
+		hwaddr     => hwaddr,
+		ipv4addr   => ipv4addr)
 	port map (
-		tp         => tp,
-		hdplx      => hdplx,
-		mii_clk    => mii_clk,
-		dhcpcd_req => dhcpcd_req,
-		dhcpcd_rdy => dhcpcd_rdy,
-		miirx_frm  => miirx_frm,
-		miirx_irdy => miirx_irdy,
-		miirx_trdy => miirx_trdy,
-		miirx_data => miirx_data,
+		dhcpcd_req    => dhcpcd_req,
+		dhcpcd_rdy    => dhcpcd_rdy,
 
-		plrx_clk   => so_clk,
-		plrx_frm   => plrx_frm,
-		plrx_irdy  => plrx_irdy,
-		plrx_trdy  => plrx_trdy,
-		plrx_end   => plrx_end,
-		plrx_data  => plrx_data,
+		miirx_clk     => miirx_clk,
+		miirx_frm     => miirx_frm,
+		miirx_irdy    => miirx_irdy,
+		miirx_data    => miirx_data,
 
-		pltx_frm   => pltx_frm,
-		pltx_irdy  => pltx_irdy,
-		pltx_trdy  => pltx_trdy,
-		pltx_end   => pltx_end,
-		pltx_data  => pltx_data,
+		udppylrx_frm  => udppylrx_frm,
+		udppylrx_irdy => udppylrx_irdy,
+		udppylrx_trdy => udppylrx_trdy,
+		udppylrx_data => udppylrx_data,
 
-		miitx_frm  => miitx_frm,
-		miitx_irdy => miitx_irdy,
-		miitx_trdy => miitx_trdy,
-		miitx_end  => miitx_end,
-		miitx_data => miitx_data);
+		udppyltx_frm  => udppyltx_frm,
+		udppyltx_irdy => udppyltx_irdy,
+		udppyltx_trdy => udppyltx_trdy,
+		udppyltx_data => udppyltx_data,
+
+		miitx_clk     => miitx_clk,
+		miitx_frm     => miitx_frm,
+		miitx_irdy    => miitx_irdy,
+		miitx_data    => miitx_data);
+
+	-- decode_i : entity hdl4fpga.frame_decode
+	-- generic map (
+	-- 	frame => compact('{'                                                &
+	-- 		"pylhdr:" & natural'image(summation(hdo(frames)**".format.pyl")) & '}'),
+	-- 	size  => miirx_data'length)
+	-- port map (
+	-- 	clk    => miirx_clk,
+	-- 	frm    => udppylrx_frm,
+	-- 	irdy   => udppylrx_irdy,
+	-- 	act(0) => header_act,
+	-- 	act(1) => pyl_act);
+
+	process (miirx_clk)
+		constant pfx : unsigned := x"00" & to_unsigned(summation(hdo(frames)**".format.pyl"),8);
+		variable shr : unsigned(pfx'range);
+	begin
+		if rising_edge(miirx_clk) then
+			if (udppylrx_frm or udppylrx_irdy)='1' then
+				shr(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
+				shr := rotate_left(shr, udppylrx_data'length);
+			else
+				shr := reverse(pfx, 8);
+			end if;
+		end if;
+		udppylrx_data <= std_logic_vector(shr(0 to udppylrx_data'length-1));
+	end process;
 
 	sio_flow_b : block
 		signal tx_frm  : std_logic;
@@ -124,8 +139,6 @@ begin
 		signal tx_data : std_logic_vector(pltx_data'range);
 	begin
 		sio_flow_e : entity hdl4fpga.sio_flow
-		generic map (
-			debug   => debug)
 		port map (
 			-- tp => tp,
 			rx_clk  => so_clk,

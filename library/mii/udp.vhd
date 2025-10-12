@@ -171,8 +171,8 @@ begin
 
 					wr_addr <= std_logic_vector(wr_cntr);
 					wr_data <= udprx_data;
-					if (sharx_frm and sharx_irdy)='1' or
-					   (sparx_frm and sparx_irdy)='1' or
+					if    (sharx_frm and sharx_irdy)='1' or
+					      (sparx_frm and sparx_irdy)='1' or
 					   (sp_act or dp_act or pyl_act)='1' then
 						wr_ena  <= '1';
 						wr_cntr := wr_cntr + 1;
