@@ -132,34 +132,30 @@ begin
 		pylrx_data <= std_logic_vector(shr_data(0 to udppylrx_data'length-1));
 	end process;
 
-	sio_flow_b : block
-	begin
-		sio_flow_e : entity hdl4fpga.sio_flow
-		port map (
-			rx_clk  => miirx_clk,
-			rx_frm  => pylrx_frm,
-			rx_irdy => pylrx_irdy,
-			rx_trdy => pylrx_trdy,
-			rx_data => pylrx_data,
-	
-			so_clk  => so_clk,
-			so_frm  => so_frm,
-			so_irdy => so_irdy,
-			so_trdy => so_trdy,
-			so_data => so_data,
-	
-			si_clk  => si_clk,
-			si_frm  => si_frm,
-			si_irdy => si_irdy,
-			si_trdy => si_trdy,
-			si_data => si_data,
-	
-			tx_clk  => miitx_clk,
-			tx_frm  => udppyltx_frm,
-			tx_irdy => udppyltx_irdy,
-			tx_trdy => udppyltx_trdy,
-			tx_data => udppyltx_data);
+	sio_flow_e : entity hdl4fpga.sio_flow
+	port map (
+		rx_clk  => miirx_clk,
+		rx_frm  => pylrx_frm,
+		rx_irdy => pylrx_irdy,
+		rx_trdy => pylrx_trdy,
+		rx_data => pylrx_data,
 
-	end block;
+		so_clk  => so_clk,
+		so_frm  => so_frm,
+		so_irdy => so_irdy,
+		so_trdy => so_trdy,
+		so_data => so_data,
+
+		si_clk  => si_clk,
+		si_frm  => si_frm,
+		si_irdy => si_irdy,
+		si_trdy => si_trdy,
+		si_data => si_data,
+
+		tx_clk  => miitx_clk,
+		tx_frm  => udppyltx_frm,
+		tx_irdy => udppyltx_irdy,
+		tx_trdy => udppyltx_trdy,
+		tx_data => udppyltx_data);
 
 end;
