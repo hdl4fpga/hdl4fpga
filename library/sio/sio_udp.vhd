@@ -54,6 +54,7 @@ entity sio_udp is
 		so_trdy       : in  std_logic := '1';
 		so_data       : out std_logic_vector;
 
+		si_clk        : in  std_logic;
 		si_frm        : in  std_logic;
 		si_irdy       : in  std_logic;
 		si_trdy       : out std_logic;
@@ -124,8 +125,8 @@ begin
 			end if;
 			shr_frm(0)  := udppylrx_frm;
 			shr_irdy(0) := udppylrx_irdy;
-			shr_frm  := rotate_left(shr_frm,  1);
-			shr_irdy := rotate_left(shr_irdy, 1);
+			shr_frm     := rotate_left(shr_frm,  1);
+			shr_irdy    := rotate_left(shr_irdy, 1);
 		end if;
 		pylrx_frm  <= udppylrx_frm  or shr_frm(0);
 		pylrx_irdy <= udppylrx_irdy or shr_irdy(0);
