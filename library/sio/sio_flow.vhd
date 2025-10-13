@@ -34,7 +34,6 @@ entity sio_flow is
 		rx_frm  : in std_logic;
 		rx_irdy : in std_logic;
 		rx_trdy : out std_logic;
-		rx_end  : in std_logic := '0';
 		rx_data : in std_logic_vector;
 
 		so_clk  : in std_logic;
@@ -43,17 +42,16 @@ entity sio_flow is
 		so_trdy : in  std_logic := '1';
 		so_data : out std_logic_vector;
 
+		si_clk  : in  std_logic := '-';
 		si_frm  : in  std_logic;
 		si_irdy : in  std_logic;
 		si_trdy : out std_logic;
-		si_end  : in  std_logic := '0';
 		si_data : in  std_logic_vector;
 
 		tx_clk  : in std_logic;
 		tx_frm  : buffer std_logic;
 		tx_irdy : buffer std_logic;
 		tx_trdy : in  std_logic := '1';
-		tx_end  : out std_logic;
 		tx_data : buffer std_logic_vector;
 		tp      : out std_logic_vector(1 to 32));
 
@@ -101,7 +99,7 @@ architecture struct of sio_flow is
 	signal ackrx_dup    : std_logic;
 begin
 
-	rx_trdy <= sin_trdy when rx_end='0' else not so_irdy;
+	-- rx_trdy <= sin_trdy when rx_end='0' else not so_irdy;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
 		sin_clk   => rx_clk,
@@ -288,7 +286,7 @@ begin
 		tp(5 to 6) <= gnt;
 		tx_frm  <= wirebus(acktx_frm  & si_frm,  gnt);
 		tx_irdy <= wirebus(acktx_irdy & si_irdy, gnt);
-		tx_end  <= wirebus(acktx_end  & si_end,  gnt);
+		-- tx_end  <= wirebus(acktx_end  & si_end,  gnt);
 		tx_data <= wirebus(acktx_data & si_data, gnt);
 		-- GHDL bug : translate_signal_target_array_aggr: cannot handle IIR_KIND_CHOICE_BY_EXPRESSION
         -- GHDL release: 5.0.1 (tarball) [Dunoon edition]
