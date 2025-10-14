@@ -202,9 +202,7 @@ begin
 
 		signal rgtr_frm       : std_logic;
 		signal rgtr_irdy      : std_logic;
-		signal rgtr_idv       : std_logic;
 		signal rgtr_id        : std_logic_vector(8-1 downto 0);
-		signal rgtr_lv        : std_logic;
 		signal rgtr_len       : std_logic_vector(8-1 downto 0);
 		signal rgtr_dv        : std_logic;
 		signal rgtr_data      : std_logic_vector(0 to max(32,ctlr_di'length)-1);
@@ -266,9 +264,7 @@ begin
 			data_irdy => data_irdy,
 			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy,
-			rgtr_idv  => rgtr_idv,
 			rgtr_id   => rgtr_id,
-			rgtr_lv   => rgtr_lv,
 			rgtr_len  => rgtr_len,
 			rgtr_dv   => rgtr_dv,
 			rgtr_data => rgtr_data);

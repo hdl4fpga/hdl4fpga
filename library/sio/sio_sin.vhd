@@ -27,36 +27,25 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity sio_sin is
-	generic (
-		debug     : boolean := false);
 	port (
-		clk  : in  std_logic;
-		frm  : in  std_logic;
-		irdy : in  std_logic := '1';
-		trdy : buffer std_logic;
-		data : in  std_logic_vector;
+		clk      : in  std_logic;
+		frm      : in  std_logic;
+		irdy     : in  std_logic := '1';
+		trdy     : buffer std_logic;
+		data     : in  std_logic_vector;
 
-		data_frm  : out std_logic;
-		data_irdy : out std_logic;
-		sout_irdy : out std_logic;
-		data_ptr  : out std_logic_vector(8-1 downto 0);
-
-		rgtr_frm  : out std_logic;
-		rgtr_irdy : buffer std_logic;
-		rgtr_trdy : in  std_logic := '1';
-		rgtr_idv  : out std_logic;
-		rgtr_id   : out std_logic_vector(8-1 downto 0);
-		rgtr_lv   : out std_logic;
-		rgtr_len  : buffer std_logic_vector(8-1 downto 0);
-		rgtr_dv   : out std_logic;
-		rgtr_data : out std_logic_vector;
-		tp        : out std_logic_vector(1 to 32));
+		rid      : out std_logic_vector(0 to 8-1);
+		length   : out std_logic_vector(0 to 8-1);
+		pyl_frm  : out std_logic;
+		pyl_irdy : out std_logic;
+		pyl_trdy : in  std_logic;
+		pyl_data : out std_logic_vector(8-1 downto 0));
 end;
 
 architecture beh of sio_sin is
 	signal decode_irdy : std_logic;
 begin
-	decode_irdy <= irdy;
+
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => compact('{' &
@@ -65,84 +54,52 @@ begin
 		size  => icmprx_data'length)
 	port map (
 		clk    => clk,
-		frm    => frm,
+		frm    => decode_frm,
 		irdy   => decode_irdy,
 		act(0) => rid_act,
 		act(1) => length_act,
 		act(2) => data_act);
 
-	process (clk)
-		variable rid    : unsigned(0 to hdo(frame)**".rid"-1);
-		variable length : unsigned(0 to hdo(frame)**".length");
-		variable data   : unsigned(rgtr_data'range);
-		variable ptr    : unsigned(rgtr_id'range);
+	process (frm, irdy, clk)
+		type states (s_rid, s_length, s_data)
+		variable state : states;
+
+		variable shr_rid    : unsigned(0 to hdo(frame)**".rid"-1);
+		variable shr_length : unsigned(0 to hdo(frame)**".length");
+		variable shr_data   : unsigned(rgtr_data'range);
 	begin
 		if rising_edge(sin_clk) then
 			if (frm or irdy)='1' then
+				case state is 
+				when s_rid    =>
+				when s_length =>
+				when s_data   =>
+				end case;
 				if (irdy and trdy)='1' then
-					if rid_act='1' then
-						rid(data'range) := unsigned(data);
-						rid := rotate_left(rid, data'length);
+					if data_act='1' then
+						shr_data(data'range) := unsigned(shr_data);
+						shr_data := rotate_left(shr_data, data'length);
+						shr_length := shr_length - 1;
 					end if;
 					if length_act='1' then
-						length(data'range) := unsigned(data);
-						length := rotate_left(length, data'length);
+						shr_length(data'range) := unsigned(data);
+						shr_length := rotate_left(shr_length, data'length);
 					end if;
-					if data_act='1' then
-						length(data'range) := unsigned(data);
-						length := rotate_left(length, data'length);
-					end if;
-					when s_data =>
-						ptr := ptr + 1;
-						len := len - 1;
-						if len(0)='1' then
-							state <= s_id;
-						else
-							idv := '1';
-							state <= s_data;
-						end if;
-						lv  := '0';
-						dv  := '1';
-					end case;
-
-				end if;
-				rgtr_frm  <= to_stdulogic(to_bit(sin_frm));
-				data_frm  <= setif(state=s_data);
-				rgtr_irdy <= des8_irdy;
-				sout_irdy <= sin_irdy;
-				data_irdy <= des8_irdy and setif(state=s_data);
-				rgtr_dv   <= des8_irdy and len(0);
-
-				rgtr_idv  <= idv;
-				rgtr_id   <= rid;
-				rgtr_lv   <= lv;
-				rgtr_len  <= std_logic_vector(len(1 to des8_data'length));
-
-				if sin_irdy='1' then
-					if sin_data'ascending=data'ascending then
-						data(sin_data'range) := unsigned(sin_data);
-						if sin_data'ascending then
-							data := data rol sin_data'length;
-						else
-							data := data ror sin_data'length;
-						end if;
-					else
-						if sin_data'ascending then
-							data := data rol sin_data'length;
-						else
-							data := data ror sin_data'length;
-						end if;
-						data(sin_data'reverse_range) := unsigned(sin_data);
+					if rid_act='1' then
+						shr_rid(data'range) := unsigned(data);
+						shr_rid := rotate_left(shr_rid, data'shr_length);
 					end if;
 				end if;
-
-				rgtr_data <= setif(rgtr_data'ascending=sin_data'ascending, std_logic_vector(data), reverse(std_logic_vector(data)));
-
-				data_ptr  <= std_logic_vector(ptr);
+			else
+				state := s_rid;
+				shr_length := (others => '0');
 			end if;
 		end if;
+		rid    <= std_logic_vector(shr_rid);
+		length <= std_logic_vector(shr_length(1 to shr_length'right));
+		decode_frm  <= not shr_length(0) and (frm or irdy);
+		decode_irdy <= irdy;
 	end process;
-	sin_trdy <= not to_stdulogic(to_bit(rgtr_irdy)) or rgtr_trdy;
 
 
 end;
