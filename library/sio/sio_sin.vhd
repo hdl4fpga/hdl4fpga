@@ -97,7 +97,7 @@ begin
 		end if;
 		rid    <= std_logic_vector(shr_rid);
 		length <= std_logic_vector(shr_length(1 to shr_length'right));
-		decode_frm  <= not shr_length(0) and (frm or irdy);
+		decode_frm  <= not decode_fin; 
 		decode_irdy <= irdy;
 	end process;
 
