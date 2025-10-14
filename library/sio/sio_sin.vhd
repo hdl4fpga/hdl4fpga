@@ -64,22 +64,22 @@ begin
 		type states (s_rid, s_length, s_data)
 		variable state : states;
 
-		variable shr_rid    : unsigned(0 to hdo(frame)**".rid"-1);
+		variable shr : unsigned(0 to 8-1);
 		variable shr_length : unsigned(0 to hdo(frame)**".length");
 		variable shr_data   : unsigned(rgtr_data'range);
 	begin
 		if rising_edge(sin_clk) then
 			if (frm or irdy)='1' then
-				case state is 
-				when s_rid    =>
-				when s_length =>
-				when s_data   =>
-				end case;
 				if (irdy and trdy)='1' then
+					case state is 
+					when s_rid    =>
+					when s_length =>
+						shr_length := shr_length - 1;
+					when s_data   =>
+					end case;
 					if data_act='1' then
 						shr_data(data'range) := unsigned(shr_data);
 						shr_data := rotate_left(shr_data, data'length);
-						shr_length := shr_length - 1;
 					end if;
 					if length_act='1' then
 						shr_length(data'range) := unsigned(data);
