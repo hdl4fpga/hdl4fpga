@@ -31,9 +31,13 @@ entity sio_sin is
 	port (
 		clk      : in  std_logic;
 		frm      : in  std_logic;
-		irdy     : in  std_logic := '1';
-		trdy     : buffer std_logic;
+		irdy     : in  std_logic;
+		trdy     : buffer std_logic := '1';
 		data     : in  std_logic_vector;
+
+		rgtr_frm  : buffer std_logic;
+		rgtr_irdy : buffer std_logic;
+		rgtr_trdy : in  std_logic := '1';
 
 		rid      : out std_logic_vector(0 to 8-1);
 		length   : out std_logic_vector(0 to 8-1);
@@ -46,12 +50,10 @@ end;
 architecture beh of sio_sin is
 	constant frame : string := "{rid:8,length:8}";
 
-	signal decode_frm  : std_logic;
-	signal decode_irdy : std_logic;
-	signal decode_last : std_logic;
-	signal rid_act     : std_logic;
-	signal length_act  : std_logic;
-	signal act2        : std_logic;
+	signal rgtr_last  : std_logic;
+	signal rid_act    : std_logic;
+	signal length_act : std_logic;
+	signal act2       : std_logic;
 
 begin
 
@@ -61,17 +63,14 @@ begin
 		size  => data'length)
 	port map (
 		clk    => clk,
-		frm    => decode_frm,
-		irdy   => decode_irdy,
-		last   => decode_last,
+		frm    => rgtr_frm,
+		irdy   => rgtr_irdy,
+		last   => rgtr_last,
 		act(0) => rid_act,
 		act(1) => length_act,
 		act(2) => act2);
 
 	process (frm, irdy, clk)
-		type states is (s_header, s_data);
-		variable state : states;
-
 		variable shr_rid    : unsigned(0 to 8-1);
 		variable shr_length : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1);
 		variable shr_data   : unsigned(pyl_data'range);
@@ -79,41 +78,27 @@ begin
 		if rising_edge(clk) then
 			if (frm or irdy)='1' then
 				if (irdy and trdy)='1' then
-					case state is 
-					when s_header =>
-						if rid_act='1' then
-							shr_rid(data'range) := unsigned(data);
-							shr_rid := rotate_left(shr_rid, data'length);
+					if rid_act='1' then
+						shr_rid(data'range) := unsigned(data);
+						shr_rid := rotate_left(shr_rid, data'length);
+					end if;
+					if length_act='1' then
+						shr_length(data'range) := unsigned(data);
+						shr_length := rotate_left(shr_length, data'length);
+						if rgtr_last='1' then
+							if data'length < 8 then
+								shr_length(0) := '1';
+								shr_length := rotate_left(shr_length, unsigned_num_bits(8/data'length)-1);
+							end if;
+							shr_length := shr_length - 1;
 						end if;
-						if length_act='1' then
-							shr_length(data'range) := unsigned(data);
-							shr_length := rotate_left(shr_length, data'length);
-						end if;
-						if decode_last='1' then
-							shr_length(0) := '1';
-							shr_length := rotate_left(shr_length, unsigned_num_bits(8/data'length)-1);
-							state := s_data;
-						end if;
-					when s_data   =>
-						shr_data(data'range) := unsigned(shr_data);
-						shr_data := rotate_left(shr_data, data'length);
-					end case;
+					end if;
 				end if;
-			else
-				state := s_header;
 			end if;
+			rgtr_frm  <= frm and not shr_length(0);
+			rgtr_irdy <= rgtr_frm;
 		end if;
-		case state is
-		when s_header =>
-			decode_frm  <= frm;
-			decode_irdy <= irdy;
-		when s_data =>
-			decode_frm  <= '0';
-			decode_irdy <= '0';
-		end case;
 		rid    <= std_logic_vector(shr_rid);
-		length <= std_logic_vector(shr_length(1 to shr_length'right));
+		length <= std_logic_vector(resize(rotate_left(shr_length, length'length+1), length'length));
 	end process;
-
-
 end;

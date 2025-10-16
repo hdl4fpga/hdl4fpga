@@ -253,21 +253,21 @@ begin
 		signal tp_meta        : std_logic_vector(tp'range);
 	begin
 
-		siosin_e : entity hdl4fpga.sio_sin
-		port map (
-			sin_clk   => sin_clk,
-			sin_frm   => sin_frm,
-			sin_irdy  => sin_irdy,
-			sin_data  => sin_data,
-			data_frm  => data_frm,
-			data_ptr  => data_ptr,
-			data_irdy => data_irdy,
-			rgtr_frm  => rgtr_frm,
-			rgtr_irdy => rgtr_irdy,
-			rgtr_id   => rgtr_id,
-			rgtr_len  => rgtr_len,
-			rgtr_dv   => rgtr_dv,
-			rgtr_data => rgtr_data);
+		-- siosin_e : entity hdl4fpga.sio_sin
+		-- port map (
+		-- 	sin_clk   => sin_clk,
+		-- 	sin_frm   => sin_frm,
+		-- 	sin_irdy  => sin_irdy,
+		-- 	sin_data  => sin_data,
+		-- 	data_frm  => data_frm,
+		-- 	data_ptr  => data_ptr,
+		-- 	data_irdy => data_irdy,
+		-- 	rgtr_frm  => rgtr_frm,
+		-- 	rgtr_irdy => rgtr_irdy,
+		-- 	rgtr_id   => rgtr_id,
+		-- 	rgtr_len  => rgtr_len,
+		-- 	rgtr_dv   => rgtr_dv,
+		-- 	rgtr_data => rgtr_data);
 		rgtr_revs <= reverse(rgtr_data,8);
 
 		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");

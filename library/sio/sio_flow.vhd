@@ -104,10 +104,74 @@ begin
 		frm      => rx_frm,
 		irdy     => rx_irdy,
 		data     => rx_data,
-		pyl_frm  => pyl_frm,
-		pyl_irdy => pyl_irdy,
-		pyl_trdy => pyl_trdy,
+		rgtr_frm  => pyl_frm,
+		rgtr_irdy => pyl_irdy,
+		rgtr_trdy => pyl_trdy,
 		pyl_data => pyl_data);
+
+	ack_b : block
+		signal rom_data : std_logic_vector(rx_data'range);
+
+		signal ram_frm  : std_logic;
+		signal ram_irdy : std_logic;
+		signal ram_data : std_logic_vector(rx_data'range);
+		signal ack_equ  : std_logic;
+	begin
+
+		rom_i : entity hdl4fpga.sio_rom
+		generic map (
+			bitdata => reverse(x"01"))
+		port map (
+			so_clk  => rx_clk,
+			so_frm  => rgtr_frm,
+			so_irdy => rgtr_irdy,
+			so_data => rom_data,
+
+		cmp_i : entity hdl4fpga.sio_cmp
+		port map (
+			clk     => rx_clk,
+			mr_frm  => rx_frm,
+			mr_irdy => rx_irdy,
+			mr_data => rx_data,
+			sl_frm  => rx_frm,
+			sl_irdy => rom_frm,
+			sl_trdy => rom_irdy,
+			sl_data => rom_data,
+			equ     => ack_equ);
+
+		process (rgtr_irdy, ack_equ, rx_clk)
+			variable equ : std_logic;
+		begin
+			if rising_edge(rx_clk) then
+				if equ='0' then
+					if (rgtr_frm or rgtr_irdy)='1' then
+						equ := ack_equ;
+					end if;
+				elsif (not rgtr_frm and rgtr_irdy and rgtr_trdy)='1' then
+					equ := '0';
+				end if;
+			end if;
+			ram_irdy <= (ack_equ or equ) and rgtr_irdy;
+		end process;
+
+		ram_data <=
+			rx_data  when ram_irdy='1' else
+			rom_data;
+
+		mem_i : entity hdl4fpga.sio_ram
+		generic map (
+			bitdata => (0 to 24-1 => '-'))
+		port map
+			si_clk  => rx_clk,
+			si_frm  => rgtr_frm,
+			si_irdy => ram_irdy,
+			si_data => ram_data,
+			so_clk  => tx_clk,
+			so_frm  => tx_frm,
+			so_irdy => tx_irdy,
+			so_trdy => tx_trdy,
+
+	end block;
 
 	process (rx_clk)
 		variable last : unsigned(ackrx_data'range) := (others => '0');
@@ -194,19 +258,19 @@ begin
 			dst_trdy  => acktx_trdy,
 			dst_data  => meta_data);
 
-		wait_fifo_latency : process (acktx_frm, tx_clk)
-			variable q : unsigned(0 to 2-1);
-		begin
-			if rising_edge(tx_clk) then
-				if acktx_frm='0' then
-					q := (others => '0');
-				else
-					q(0) := acktx_frm;
-					q := q rol 1;
-				end if;
-			end if;
-			tx_frm <= acktx_frm and q(0);
-		end process;
+		-- wait_fifo_latency : process (acktx_frm, tx_clk)
+		-- 	variable q : unsigned(0 to 2-1);
+		-- begin
+		-- 	if rising_edge(tx_clk) then
+		-- 		if acktx_frm='0' then
+		-- 			q := (others => '0');
+		-- 		else
+		-- 			q(0) := acktx_frm;
+		-- 			q := q rol 1;
+		-- 		end if;
+		-- 	end if;
+		-- 	tx_frm <= acktx_frm and q(0);
+		-- end process;
 
 		acktx_e : entity hdl4fpga.sio_mux
 		port map (

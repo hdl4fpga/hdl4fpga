@@ -199,7 +199,7 @@ begin
 		rx_frm  => rx_frm,
 		rx_irdy => rx_irdy,
 		rx_trdy => rx_trdy,
-		rx_end  => rx_end,
+		-- rx_end  => rx_end,
 		rx_data => rx_data,
 
 		so_clk  => uart_clk,
@@ -211,14 +211,14 @@ begin
 		si_frm  => si_frm,
 		si_irdy => si_irdy,
 		si_trdy => si_trdy,
-		si_end  => si_end,
+		-- si_end  => si_end,
 		si_data => si_data,
 
 		tx_clk  => uart_clk,
 		tx_frm  => tx_frm,
 		tx_irdy => tx_irdy,
 		tx_trdy => tx_trdy,
-		tx_end  => tx_end ,
+		-- tx_end  => tx_end ,
 		tx_data => tx_data);
 
 end;

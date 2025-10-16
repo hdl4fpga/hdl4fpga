@@ -103,7 +103,7 @@ begin
 				step  := 0;
 				cntr  := to_unsigned(2**cntr'length-total, cntr'length);
 				limit := boundary(step);
-				last   <= '0';
+				last  <= '0';
 			end if;
 		end if;
 		fin  <= not cntr(0);
