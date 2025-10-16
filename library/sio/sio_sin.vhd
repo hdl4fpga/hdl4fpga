@@ -73,7 +73,7 @@ begin
 		variable state : states;
 
 		variable shr_rid    : unsigned(0 to 8-1);
-		variable shr_length : unsigned(0 to hdo(frame)**".length");
+		variable shr_length : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1);
 		variable shr_data   : unsigned(pyl_data'range);
 	begin
 		if rising_edge(clk) then
@@ -90,6 +90,8 @@ begin
 							shr_length := rotate_left(shr_length, data'length);
 						end if;
 						if decode_last='1' then
+							shr_length(0) := '1';
+							shr_length := rotate_left(shr_length, unsigned_num_bits(8/data'length)-1);
 							state := s_data;
 						end if;
 					when s_data   =>

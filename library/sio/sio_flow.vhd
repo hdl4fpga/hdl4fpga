@@ -72,8 +72,7 @@ architecture struct of sio_flow is
 	signal meta_rllbk   : std_logic;
 	signal meta_ovfl    : std_logic;
 
-	signal sin_trdy     : std_logic;
-	signal rgtr_frm     : std_logic;
+	signal pyl_frm     : std_logic;
 	signal rgtr_irdy    : std_logic;
 	signal rgtr_id      : std_logic_vector(8-1 downto 0);
 	signal rgtr_idv     : std_logic;
@@ -99,59 +98,16 @@ architecture struct of sio_flow is
 	signal ackrx_dup    : std_logic;
 begin
 
-	-- rx_trdy <= sin_trdy when rx_end='0' else not so_irdy;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
-		sin_clk   => rx_clk,
-		sin_frm   => rx_frm,
-		sin_irdy  => rx_irdy,
-		sin_trdy  => sin_trdy,
-		sin_data  => rx_data,
-		rgtr_frm  => rgtr_frm,
-		rgtr_id   => rgtr_id,
-		rgtr_idv  => rgtr_idv,
-		rgtr_dv   => rgtr_dv,
-		rgtr_irdy => rgtr_irdy,
-		data_frm  => data_frm,
-		data_irdy => data_irdy,
-		rgtr_data => rgtr_data);
-
-	metarx_irdy <= rgtr_irdy and setif(rgtr_id=rgtrmeta_id);
-	metarx_data <= std_logic_vector(resize(unsigned(rgtr_data), metarx_data'length));
-
-	meta_e : entity hdl4fpga.fifo
-	generic map (
-		max_depth => 64,
-		latency   => 1,
-		check_sov => true,
-		check_dov => true)
-	port map(
-		src_clk   => rx_clk,
-		src_irdy  => rx_irdy,
-		src_trdy  => open,
-		src_data  => rx_data,
-
-		rollback  => buffer_rllbk,
-		commit    => buffer_cmmt,
-		overflow  => buffer_ovfl,
-
-		dst_clk   => so_clk,
-		dst_irdy  => so_irdy,
-		dst_trdy  => so_trdy,
-		dst_data  => so_data);
-
-	so_frm <= so_irdy;
-
-	sigseq_e : entity hdl4fpga.sio_rgtr
-	generic map (
-		rid  => std_logic_vector'(x"01"))
-	port map (
-		rgtr_clk  => rx_clk,
-		rgtr_id   => rgtr_id,
-		rgtr_dv   => rgtr_dv,
-		rgtr_data => rgtr_data,
-		dv        => ackrx_dv,
-		data      => ackrx_data);
+		clk      => rx_clk,
+		frm      => rx_frm,
+		irdy     => rx_irdy,
+		data     => rx_data,
+		pyl_frm  => pyl_frm,
+		pyl_irdy => pyl_irdy,
+		pyl_trdy => pyl_trdy,
+		pyl_data => pyl_data);
 
 	process (rx_clk)
 		variable last : unsigned(ackrx_data'range) := (others => '0');
