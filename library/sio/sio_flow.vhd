@@ -70,8 +70,16 @@ architecture struct of sio_flow is
 	signal buffer_rllbk : std_logic;
 	signal buffer_ovfl  : std_logic;
 
-	signal rply_req  : std_logic := '0';
-	signal rply_rdy  : std_logic := '0';
+	signal rply_req     : std_logic := '0';
+	signal rply_rdy     : std_logic := '0';
+
+	signal tx_frms      : std_logic_vector(0 to 2-1);
+	signal tx_irdys     : std_logic_vector(0 to 2-1);
+	signal tx_trdys     : std_logic_vector(0 to 2-1) := (others => '1');
+
+	alias  acktx_frm  is tx_frms(0);
+	alias  acktx_irdy is tx_irdys(0);
+	alias  acktx_trdy is tx_trdys(0);
 
 	signal acktx_data : std_logic_vector(tx_data'range);
 begin
@@ -145,31 +153,23 @@ begin
 			rx_data  when ram_irdy='1' else
 			rom_data;
 
-		-- mem_i : entity hdl4fpga.sio_ram
-		-- generic map (
-		-- 	bitdata => (0 to 24-1 => '-'))
-		-- port map (
-		-- 	si_clk  => rx_clk,
-		-- 	si_frm  => rgtr_frm,
-		-- 	si_irdy => ram_irdy,
-		-- 	si_data => ram_data,
-		-- 	so_clk  => tx_clk,
-		-- 	so_frm  => tx_frm,
-		-- 	so_irdy => tx_irdy,
-		-- 	so_trdy => tx_trdy);
+		mem_i : entity hdl4fpga.sio_ram
+		generic map (
+			bitdata => (0 to 24-1 => '-'))
+		port map (
+			si_clk  => rx_clk,
+			si_frm  => rgtr_frm,
+			si_irdy => ram_irdy,
+			si_data => ram_data,
+			so_clk  => tx_clk,
+			so_frm  => tx_frm,
+			so_irdy => tx_irdy,
+			so_trdy => tx_trdy);
 
 	end block;
 
 
 	artibiter_b : block
-		signal tx_frms  : std_logic_vector(0 to 2-1);
-		signal tx_irdys : std_logic_vector(0 to 2-1);
-		signal tx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
-
-		alias  acktx_frm  is tx_frms(0);
-		alias  acktx_irdy is tx_irdys(0);
-		alias  acktx_trdy is tx_trdys(0);
-
 		signal gntd  : std_logic_vector(0 to 2-1);
 	begin
 
