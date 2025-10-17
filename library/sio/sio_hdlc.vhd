@@ -56,20 +56,23 @@ end;
 
 architecture def of sio_hdlc is
 
-	signal rx_frm  : std_logic := '0';
-	signal rx_irdy : std_logic;
-	signal rx_trdy : std_logic;
-	signal rx_end  : std_logic;
-	signal rx_data : std_logic_vector(si_data'range);
+	signal rx_frm     : std_logic := '0';
+	signal rx_irdy    : std_logic;
+	signal rx_trdy    : std_logic;
+	signal rx_end     : std_logic;
+	signal rx_data    : std_logic_vector(si_data'range);
 
-	signal tx_frm  : std_logic;
-	signal tx_irdy : std_logic;
-	signal tx_trdy : std_logic;
-	signal tx_end  : std_logic;
-	signal tx_data : std_logic_vector(si_data'range);
+	signal tx_frm     : std_logic;
+	signal tx_irdy    : std_logic;
+	signal tx_trdy    : std_logic;
+	signal tx_end     : std_logic;
+	signal tx_data    : std_logic_vector(si_data'range);
 
 	signal tagtx_irdy : std_logic;
 	signal tagtx_trdy : std_logic;
+
+	signal fcs_sb     :  std_logic;
+	signal fcs_vld 	  :  std_logic;
 
 begin
 
@@ -201,6 +204,9 @@ begin
 		rx_trdy => rx_trdy,
 		-- rx_end  => rx_end,
 		rx_data => rx_data,
+		fcs_sb	=> fcs_sb,
+		fcs_vld => fcs_vld,
+
 
 		so_clk  => uart_clk,
 		so_frm  => so_frm,
