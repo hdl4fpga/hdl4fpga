@@ -29,31 +29,26 @@ use hdl4fpga.base.all;
 
 entity sio_sin is
 	port (
-		clk      : in  std_logic;
-		frm      : in  std_logic;
-		irdy     : in  std_logic;
-		trdy     : buffer std_logic := '1';
-		data     : in  std_logic_vector;
+		clk        : in  std_logic;
+		frm        : in  std_logic;
+		irdy       : in  std_logic;
+		trdy       : buffer std_logic := '1';
+		data       : in  std_logic_vector;
 
-		rgtr_frm  : buffer std_logic;
-		rgtr_irdy : buffer std_logic;
-		rgtr_trdy : in  std_logic := '1';
+		rid_act    : buffer std_logic;
+		length_act : buffer std_logic;
+		data_act   : buffer std_logic;
 
-		rid      : out std_logic_vector(0 to 8-1);
-		length   : out std_logic_vector(0 to 8-1);
-		pyl_frm  : out std_logic;
-		pyl_irdy : out std_logic;
-		pyl_trdy : in  std_logic;
-		pyl_data : out std_logic_vector(8-1 downto 0));
+		rgtr_frm   : buffer std_logic;
+		rgtr_irdy  : buffer std_logic;
+		rgtr_trdy  : in  std_logic := '1');
+
 end;
 
 architecture beh of sio_sin is
 	constant frame : string := "{rid:8,length:8}";
 
 	signal rgtr_last  : std_logic;
-	signal rid_act    : std_logic;
-	signal length_act : std_logic;
-	signal act2       : std_logic;
 
 begin
 
@@ -68,37 +63,29 @@ begin
 		last   => rgtr_last,
 		act(0) => rid_act,
 		act(1) => length_act,
-		act(2) => act2);
+		act(2) => data_act);
 
 	process (frm, irdy, clk)
-		variable shr_rid    : unsigned(0 to 8-1);
-		variable shr_length : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1);
-		variable shr_data   : unsigned(pyl_data'range);
+		variable length : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1);
 	begin
 		if rising_edge(clk) then
 			if (frm or irdy)='1' then
 				if (irdy and trdy)='1' then
-					if rid_act='1' then
-						shr_rid(data'range) := unsigned(data);
-						shr_rid := rotate_left(shr_rid, data'length);
-					end if;
 					if length_act='1' then
-						shr_length(data'range) := unsigned(data);
-						shr_length := rotate_left(shr_length, data'length);
+						length(data'range) := unsigned(data);
+						length := rotate_left(length, data'length);
 						if rgtr_last='1' then
 							if data'length < 8 then
-								shr_length(0) := '1';
-								shr_length := rotate_left(shr_length, unsigned_num_bits(8/data'length)-1);
+								length(0) := '1';
+								length := rotate_left(length, unsigned_num_bits(8/data'length)-1);
 							end if;
-							shr_length := shr_length - 1;
+							length := length - 1;
 						end if;
 					end if;
 				end if;
 			end if;
-			rgtr_frm  <= frm and not shr_length(0);
+			rgtr_frm  <= frm and not length(0);
 			rgtr_irdy <= rgtr_frm;
 		end if;
-		rid    <= std_logic_vector(shr_rid);
-		length <= std_logic_vector(resize(rotate_left(shr_length, length'length+1), length'length));
 	end process;
 end;
