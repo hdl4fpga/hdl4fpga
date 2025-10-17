@@ -51,8 +51,8 @@ entity sio_flow is
 		si_data : in  std_logic_vector;
 
 		tx_clk  : in std_logic;
-		tx_frm  : buffer std_logic;
-		tx_irdy : buffer std_logic;
+		tx_frm  : out std_logic;
+		tx_irdy : out std_logic;
 		tx_trdy : in  std_logic := '1';
 		tx_data : buffer std_logic_vector;
 		tp      : out std_logic_vector(1 to 32));
@@ -162,9 +162,10 @@ begin
 			si_irdy => ram_irdy,
 			si_data => ram_data,
 			so_clk  => tx_clk,
-			so_frm  => tx_frm,
-			so_irdy => tx_irdy,
-			so_trdy => tx_trdy);
+			so_frm  => acktx_frm,
+			so_irdy => acktx_irdy,
+			so_trdy => acktx_trdy,
+			so_data => acktx_data);
 
 	end block;
 
