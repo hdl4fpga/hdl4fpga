@@ -80,8 +80,8 @@ architecture struct of sio_udp is
 	signal udppyltx_trdy : std_ulogic;
 	signal udppyltx_data : std_logic_vector(miitx_data'range);
 
-	signal fcs_sb		  :  std_logic;
-	signal fcs_vld 		  :  std_logic;
+	signal fcs_sb		 :  std_logic;
+	signal fcs_vld 		 :  std_logic;
 
 begin
 
@@ -145,6 +145,8 @@ begin
 		rx_irdy => pylrx_irdy,
 		rx_trdy => pylrx_trdy,
 		rx_data => pylrx_data,
+		fcs_sb	=> fcs_sb,
+		fcs_vld => fcs_vld,
 
 		so_clk  => so_clk,
 		so_frm  => so_frm,
