@@ -169,7 +169,6 @@ begin
 
 	end block;
 
-
 	artibiter_b : block
 		signal gntd  : std_logic_vector(0 to 2-1);
 	begin
