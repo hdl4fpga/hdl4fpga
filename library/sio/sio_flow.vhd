@@ -39,10 +39,10 @@ entity sio_flow is
 		fcs_vld : in  std_logic;
 
 		so_clk  : in std_logic;
-		so_frm  : out std_logic;
+		so_frm  : buffer std_logic;
 		so_irdy : buffer std_logic;
 		so_trdy : in  std_logic := '1';
-		so_data : out std_logic_vector;
+		so_data : buffer std_logic_vector;
 
 		si_clk  : in  std_logic := '-';
 		si_frm  : in  std_logic;
@@ -61,35 +61,56 @@ end;
 
 architecture struct of sio_flow is
 
-	signal rgtr_frm     : std_logic;
-	signal rgtr_irdy    : std_logic;
-	signal rgtr_trdy    : std_logic;
-	signal rid_act      : std_logic;
+	signal rgtr_frm  : std_logic;
+	signal rgtr_irdy : std_logic;
+	signal rgtr_trdy : std_logic;
+	signal rid_act   : std_logic;
 
-	signal buffer_cmmt  : std_logic;
-	signal buffer_rllbk : std_logic;
-	signal buffer_ovfl  : std_logic;
+	signal commit    : std_logic;
+	signal rollback  : std_logic;
 
-	signal rply_req     : std_logic := '0';
-	signal rply_rdy     : std_logic := '0';
+	signal rply_req  : std_logic := '0';
+	signal rply_rdy  : std_logic := '0';
 
-	signal tx_frms      : std_logic_vector(0 to 2-1);
-	signal tx_irdys     : std_logic_vector(0 to 2-1);
-	signal tx_trdys     : std_logic_vector(0 to 2-1) := (others => '1');
+	signal tx_frms   : std_logic_vector(0 to 2-1);
+	signal tx_irdys  : std_logic_vector(0 to 2-1);
+	signal tx_trdys  : std_logic_vector(0 to 2-1) := (others => '1');
 
 	alias  acktx_frm  is tx_frms(0);
 	alias  acktx_irdy is tx_irdys(0);
 	alias  acktx_trdy is tx_trdys(0);
 
 	signal acktx_data : std_logic_vector(tx_data'range);
+
 begin
 
+	commit   <= fcs_sb and fcs_vld;
+	rollback <= fcs_sb and not fcs_vld;
+	fifo_i : entity hdl4fpga.fifo
+	generic map (
+		max_depth => (2048*8)/rx_data'length)
+	port map (
+		src_clk    => rx_clk,
+		src_frm    => rx_frm,
+		src_irdy   => rx_irdy,
+		src_trdy   => rx_trdy,
+		src_data   => rx_data,
+
+		commit     => commit,
+		rollback   => rollback,
+
+		dst_clk    => so_clk,
+		dst_irdy   => so_irdy,
+		dst_trdy   => so_trdy,
+		dst_data   => so_data);
+
+	so_frm <= so_irdy;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
-		clk       => rx_clk,
-		frm       => rx_frm,
-		irdy      => rx_irdy,
-		data      => rx_data,
+		clk       => so_clk,
+		frm       => so_frm,
+		irdy      => so_irdy,
+		data      => so_data,
 		rid_act   => rid_act,
 		rgtr_frm  => rgtr_frm,
 		rgtr_irdy => rgtr_irdy,

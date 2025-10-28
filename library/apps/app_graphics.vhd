@@ -335,12 +335,13 @@ begin
 					check_dov  => false)
 				port map (
 					src_clk    => sin_clk,
+					src_frm    => ctlr_inirdy,
 					src_irdy   => dmaaddr_irdy,
 					src_trdy   => dmaaddr_trdy,
 					src_data   => src_data,
 
 					dst_clk    => sin_clk,
-					dst_frm    => ctlr_inirdy,
+					-- dst_frm    => ctlr_inirdy,
 					dst_irdy   => dmaioaddr_irdy,
 					dst_trdy   => dmaio_next,
 					dst_data   => dst_data);
@@ -449,12 +450,13 @@ begin
 				check_dov  => true)
 			port map (
 				src_clk    => sin_clk,
+				src_frm    => ctlr_inirdy,
 				src_irdy   => dmaio_next,
 				src_trdy   => open, --tp(6),
 				src_data   => src_data,
 
 				dst_clk    => sout_clk,
-				dst_frm    => ctlr_inirdy,
+				-- dst_frm    => ctlr_inirdy,
 				dst_irdy   => acktx_irdy,
 				dst_trdy   => acktx_trdy,
 				dst_data   => dst_data);
@@ -578,12 +580,13 @@ begin
 					check_dov  => true)
 				port map (
 					src_clk  => ctlr_clk,
+					src_frm  => ctlr_inirdy,
 					src_irdy => dmaso_irdy,
 					src_trdy => dmaso_trdy,
 					src_data => dmaso_data,
 
 					dst_clk  => sout_clk,
-					dst_frm  => ctlr_inirdy,
+					-- dst_frm  => ctlr_inirdy,
 					dst_irdy => fifo_irdy,
 					dst_trdy => fifo_trdy,
 					dst_data => fifo_data);

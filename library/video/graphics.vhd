@@ -265,11 +265,12 @@ begin
     		check_dov  => true)
     	port map (
     		src_clk  => ctlr_clk,
+    		src_frm  => video_frm,
     		src_data => ctlr_di,
 			src_irdy => ctlr_di_dv,
 
     		dst_clk  => video_clk,
-    		dst_frm  => video_frm,
+    		-- dst_frm  => video_frm,
     		dst_irdy => vram_irdy,
     		dst_trdy => vram_trdy,
     		dst_data => vram_word);
