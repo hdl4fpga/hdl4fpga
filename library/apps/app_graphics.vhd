@@ -253,21 +253,21 @@ begin
 		signal tp_meta        : std_logic_vector(tp'range);
 	begin
 
-		siosin_e : entity hdl4fpga.sio_sin
-		port map (
-			sin_clk   => sin_clk,
-			sin_frm   => sin_frm,
-			sin_irdy  => sin_irdy,
-			sin_data  => sin_data,
-			data_frm  => data_frm,
-			data_ptr  => data_ptr,
-			data_irdy => data_irdy,
-			rgtr_frm  => rgtr_frm,
-			rgtr_irdy => rgtr_irdy,
-			rgtr_id   => rgtr_id,
-			rgtr_len  => rgtr_len,
-			rgtr_dv   => rgtr_dv,
-			rgtr_data => rgtr_data);
+		-- siosin_e : entity hdl4fpga.sio_sin
+		-- port map (
+		-- 	sin_clk   => sin_clk,
+		-- 	sin_frm   => sin_frm,
+		-- 	sin_irdy  => sin_irdy,
+		-- 	sin_data  => sin_data,
+		-- 	data_frm  => data_frm,
+		-- 	data_ptr  => data_ptr,
+		-- 	data_irdy => data_irdy,
+		-- 	rgtr_frm  => rgtr_frm,
+		-- 	rgtr_irdy => rgtr_irdy,
+		-- 	rgtr_id   => rgtr_id,
+		-- 	rgtr_len  => rgtr_len,
+		-- 	rgtr_dv   => rgtr_dv,
+		-- 	rgtr_data => rgtr_data);
 		rgtr_revs <= reverse(rgtr_data,8);
 
 		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
@@ -335,12 +335,13 @@ begin
 					check_dov  => false)
 				port map (
 					src_clk    => sin_clk,
+					src_frm    => ctlr_inirdy,
 					src_irdy   => dmaaddr_irdy,
 					src_trdy   => dmaaddr_trdy,
 					src_data   => src_data,
 
 					dst_clk    => sin_clk,
-					dst_frm    => ctlr_inirdy,
+					-- dst_frm    => ctlr_inirdy,
 					dst_irdy   => dmaioaddr_irdy,
 					dst_trdy   => dmaio_next,
 					dst_data   => dst_data);
@@ -449,12 +450,13 @@ begin
 				check_dov  => true)
 			port map (
 				src_clk    => sin_clk,
+				src_frm    => ctlr_inirdy,
 				src_irdy   => dmaio_next,
 				src_trdy   => open, --tp(6),
 				src_data   => src_data,
 
 				dst_clk    => sout_clk,
-				dst_frm    => ctlr_inirdy,
+				-- dst_frm    => ctlr_inirdy,
 				dst_irdy   => acktx_irdy,
 				dst_trdy   => acktx_trdy,
 				dst_data   => dst_data);
@@ -578,12 +580,13 @@ begin
 					check_dov  => true)
 				port map (
 					src_clk  => ctlr_clk,
+					src_frm  => ctlr_inirdy,
 					src_irdy => dmaso_irdy,
 					src_trdy => dmaso_trdy,
 					src_data => dmaso_data,
 
 					dst_clk  => sout_clk,
-					dst_frm  => ctlr_inirdy,
+					-- dst_frm  => ctlr_inirdy,
 					dst_irdy => fifo_irdy,
 					dst_trdy => fifo_trdy,
 					dst_data => fifo_data);

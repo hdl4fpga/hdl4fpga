@@ -278,11 +278,12 @@ begin
 			check_dov => true)
 		port map (
 			src_clk   => dmatrans_clk,
+			src_frm   => col_frm,
 			src_irdy  => ena,
 			src_trdy  => open,
 			src_data  => col,
 			dst_clk   => dmatrans_clk,
-			dst_frm   => col_frm,
+			-- dst_frm   => col_frm,
 			dst_irdy  => open,
 			dst_trdy  => ctlr_cas,
 			dst_data  => ddrdma_col);

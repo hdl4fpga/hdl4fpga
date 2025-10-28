@@ -163,12 +163,12 @@ begin
 		check_dov  => true)
 	port map (
 		src_clk  => stream_clk,
-		-- src_frm  => stream_frm,
+		src_frm  => stream_frm,
 		src_irdy => src1_irdy,
 		src_data => stream_data,
 
 		dst_clk  => ctlr_clk,
-		dst_frm  => fifo1_frm,
+		-- dst_frm  => fifo1_frm,
 		dst_irdy => fifo1_irdy,
 		dst_trdy => fifo1_trdy,
 		dst_data => fifo1_data);

@@ -91,42 +91,36 @@ entity fifo is
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '0');
 		latency    : natural := 1;
-		dst_offset : natural := 0;
-		src_offset : natural := 0;
 		check_sov  : boolean := false;
 		check_dov  : boolean := false);
 	port (
 		src_clk    : in  std_logic;
-		src_mode   : in  std_logic := '0';
 		src_frm    : in  std_logic := '1';
-		src_writ   : in  std_logic := '0';
-		src_auto   : in  std_logic := '1';
 		src_irdy   : in  std_logic := '1';
 		src_trdy   : buffer std_logic;
 		src_data   : in  std_logic_vector;
 
 		rollback   : in  std_logic := '0';
 		commit     : in  std_logic := '1';
-		overflow   : out std_logic := '0';
+		overflow   : out std_logic;
 
 		dst_clk    : in  std_logic;
-		dst_mode   : in  std_logic := '0';
-		dst_frm    : in  std_logic := '1';
 		dst_irdy   : buffer std_logic;
 		dst_trdy   : in  std_logic := '1';
 		dst_data   : buffer std_logic_vector);
+
+	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
+
 end;
 
 architecture def of fifo is
 
-	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
-
 	signal wr_ena    : std_logic;
-	signal wr_ptr    : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
-	signal wr_cntr   : unsigned(0 to addr_length) := to_unsigned(dst_offset, addr_length+1);
-	signal wr_cmp    : std_logic_vector(0 to addr_length) := std_logic_vector(to_unsigned(dst_offset, addr_length+1));
-	signal rd_cntr   : unsigned(0 to addr_length) := to_unsigned(src_offset, addr_length+1);
-	signal rd_cmp    : std_logic_vector(0 to addr_length) := std_logic_vector(to_unsigned(src_offset, addr_length+1));
+	signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
+	signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
+	signal wr_cmp    : std_logic_vector(0 to addr_length) := (others => '0');
+	signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
+	signal rd_cmp    : std_logic_vector(0 to addr_length) := (others => '0');
 	signal dst_irdy1 : std_logic;
 
 	signal feed_ena  : std_logic;
@@ -134,12 +128,12 @@ architecture def of fifo is
 begin
 
 	assert max_depth=2**addr_length
-	report "fifo_depth should be a power of 2"
-	severity FAILURE;
+		report "fifo_depth should be a power of 2"
+		severity FAILURE;
 
-	wr_ena <=
-		((src_irdy and src_auto) or src_writ) and (src_trdy or setif(not check_sov)) when src_frm='1' else
-		src_writ;
+	wr_ena <= 
+		src_frm and src_irdy and src_trdy when check_sov else
+		src_frm and src_irdy;
 
 	max_depthgt1_g : if max_depth > 1 generate
 
@@ -173,16 +167,15 @@ begin
 
 		src_trdy <=
 			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
-			setif(wr_cntr(addr_range) /= unsigned(to_stdlogicvector(to_bitvector(rd_cmp(addr_range))))  or wr_cntr(0) = to_stdulogic(to_bit(rd_cmp(0))));
+			setif(wr_cntr(addr_range) /= unsigned(rd_cmp(addr_range)) or wr_cntr(0) = rd_cmp(0));
 
-		dst_ini <= not to_stdulogic(to_bit(dst_frm)) or not to_stdulogic(to_bit(src_frm));
-
+		dst_ini <= not src_frm;
 
 		latencygt1_g : if latency > 1 generate
-			signal fill     : std_logic;
-			signal b_reg    : unsigned(0 to (latency-1)) := (others => '0');
-			signal v_reg    : unsigned(0 to (latency-1)-1) := (others => '0');
-			signal q_reg    : unsigned(0 to (latency-1)) := (others => '0');
+			signal fill  : std_logic;
+			signal b_reg : unsigned(0 to (latency-1))   := (others => '0');
+			signal v_reg : unsigned(0 to (latency-1)-1) := (others => '0');
+			signal q_reg : unsigned(0 to (latency-1))   := (others => '0');
 		begin
 
 			booking_p : process (dst_clk)
@@ -267,7 +260,7 @@ begin
 					v_reg    <= v;
 				end if;
 			end process;
-			feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
+			feed_ena <= dst_trdy or (fill and dst_irdy1);
 		end generate;
 
 		latencyeq1_g : if latency=1 generate
@@ -305,7 +298,7 @@ begin
 				dst_irdy <= v or q;
 				fill     <= not v and not q;
 				dst_data <= primux(data & rdata, q & v, rdata);
-				feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
+				feed_ena <= dst_trdy or (fill and dst_irdy1);
 			end generate;
 
 			no_syncread_g : if not sync_read generate
@@ -334,13 +327,13 @@ begin
 				end process;
 
 				dst_irdy <= v;
-				feed_ena <= to_stdulogic(to_bit(dst_trdy)) or (fill and dst_irdy1);
+				feed_ena <= dst_trdy or (fill and dst_irdy1);
 				fill     <= not v;
 			end generate;
 		end generate;
 
 		nolatency_g : if latency = 0 generate
-			feed_ena <= to_stdulogic(to_bit(dst_trdy));
+			feed_ena <= dst_trdy;
 			dst_irdy <= dst_irdy1;
 			dst_data <= rdata;
 		end generate;
@@ -369,17 +362,12 @@ begin
 	begin
 		if rising_edge(src_clk) then
 			if src_frm='0' then
-				if src_mode='0' then
-					if async_mode then
-						wr_cntr <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
-						wr_ptr  <= unsigned(to_stdlogicvector(to_bitvector(rd_cmp)));
-					else
-						wr_cntr <= rd_cntr;
-						wr_ptr  <= rd_cntr;
-					end if;
+				if async_mode then
+					wr_cntr <= unsigned(rd_cmp);
+					wr_ptr  <= unsigned(rd_cmp);
 				else
-					wr_cntr <= to_unsigned(src_offset, wr_cntr'length);
-					wr_ptr  <= to_unsigned(src_offset, wr_cntr'length);
+					wr_cntr <= rd_cntr;
+					wr_ptr  <= rd_cntr;
 				end if;
 			elsif rollback='1' then
 				wr_cntr  <= wr_ptr;
@@ -407,25 +395,13 @@ begin
 
 	dst_irdy1 <=
 		setif(wr_ptr /= rd_cntr) when not async_mode else
-		setif(unsigned(to_stdlogicvector(to_bitvector(wr_cmp))) /= rd_cntr);
+		setif(unsigned(wr_cmp) /= rd_cntr);
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
-			if dst_frm='0' then
-				if dst_mode='0' then
-					if async_mode then
-						rd_cntr <= unsigned(to_stdlogicvector(to_bitvector(wr_cmp)));
-					else
-						rd_cntr <= wr_ptr;
-					end if;
-				else
-					rd_cntr <= to_unsigned(dst_offset, rd_cntr'length);
-				end if;
-			else
-				if feed_ena='1' then
-					if dst_irdy1='1' or not check_dov then
-						rd_cntr <= rd_cntr + 1;
-					end if;
+			if feed_ena='1' then
+				if dst_irdy1='1' or not check_dov then
+					rd_cntr <= rd_cntr + 1;
 				end if;
 			end if;
 		end if;
