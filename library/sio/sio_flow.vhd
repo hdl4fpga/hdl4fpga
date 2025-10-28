@@ -66,8 +66,6 @@ architecture struct of sio_flow is
 	signal rgtr_trdy : std_logic;
 	signal rid_act   : std_logic;
 
-	signal commit    : std_logic;
-	signal rollback  : std_logic;
 
 	signal rply_req  : std_logic := '0';
 	signal rply_rdy  : std_logic := '0';
@@ -79,38 +77,18 @@ architecture struct of sio_flow is
 	alias  acktx_frm  is tx_frms(0);
 	alias  acktx_irdy is tx_irdys(0);
 	alias  acktx_trdy is tx_trdys(0);
+	signal acktx_last : std_logic;
 
 	signal acktx_data : std_logic_vector(tx_data'range);
 
 begin
 
-	commit   <= fcs_sb and fcs_vld;
-	rollback <= fcs_sb and not fcs_vld;
-	fifo_i : entity hdl4fpga.fifo
-	generic map (
-		max_depth => (2048*8)/rx_data'length)
-	port map (
-		src_clk    => rx_clk,
-		src_frm    => rx_frm,
-		src_irdy   => rx_irdy,
-		src_trdy   => rx_trdy,
-		src_data   => rx_data,
-
-		commit     => commit,
-		rollback   => rollback,
-
-		dst_clk    => so_clk,
-		dst_irdy   => so_irdy,
-		dst_trdy   => so_trdy,
-		dst_data   => so_data);
-
-	so_frm <= so_irdy;
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
-		clk       => so_clk,
-		frm       => so_frm,
-		irdy      => so_irdy,
-		data      => so_data,
+		clk       => rx_clk,
+		frm       => rx_frm,
+		irdy      => rx_irdy,
+		data      => rx_data,
 		rid_act   => rid_act,
 		rgtr_frm  => rgtr_frm,
 		rgtr_irdy => rgtr_irdy,
@@ -174,6 +152,19 @@ begin
 			rx_data  when ram_irdy='1' else
 			rom_data;
 
+		process (tx_clk)
+		begin
+			if rising_edge(tx_clk) then
+				if (acktx_last and acktx_irdy and acktx_trdy)='1' then
+					rply_rdy <= rply_req;
+				elsif (fcs_sb and fcs_vld)='1' then
+					rply_req <= not rply_rdy;
+				end if;
+			end if;
+		end process;
+
+		acktx_frm  <= (rply_req xor rply_rdy);
+		acktx_irdy <= acktx_frm;
 		mem_i : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => (0 to 24-1 => '-'))
@@ -186,12 +177,13 @@ begin
 			so_frm  => acktx_frm,
 			so_irdy => acktx_irdy,
 			so_trdy => acktx_trdy,
+			so_last => acktx_last,
 			so_data => acktx_data);
 
 	end block;
 
 	artibiter_b : block
-		signal gntd  : std_logic_vector(0 to 2-1);
+		signal gntd : std_logic_vector(0 to 2-1);
 	begin
 
 		tx_frms(1)  <= si_frm;
@@ -214,6 +206,32 @@ begin
 			si_data    when gntd(1)='1' else
 			(tx_data'range => '-');
 
+	end block;
+
+	so_frm <= so_irdy;
+	fifo_b : block
+		signal commit   : std_logic;
+		signal rollback : std_logic;
+	begin
+		commit   <= fcs_sb and fcs_vld;
+		rollback <= fcs_sb and not fcs_vld;
+		fifo_i : entity hdl4fpga.fifo
+		generic map (
+			max_depth => (2048*8)/rx_data'length)
+		port map (
+			src_clk    => rx_clk,
+			src_frm    => rx_frm,
+			src_irdy   => rx_irdy,
+			src_trdy   => rx_trdy,
+			src_data   => rx_data,
+
+			commit     => commit,
+			rollback   => rollback,
+
+			dst_clk    => so_clk,
+			dst_irdy   => so_irdy,
+			dst_trdy   => so_trdy,
+			dst_data   => so_data);
 	end block;
 
 end;

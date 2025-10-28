@@ -40,6 +40,8 @@ entity sio_ram is
 		so_frm  : in  std_logic := '0';
 		so_irdy : in  std_logic := '0';
 		so_trdy : out std_logic := '0';
+		so_last : out std_logic := '0';
+		so_fin  : out std_logic := '0';
 		so_data : out std_logic_vector);
 end;
 
@@ -77,6 +79,12 @@ begin
 			end if;
 			rd_addr <= std_logic_vector(cntr(rd_addr'range));
 		end if;
+		if cntr(rd_addr'range)=(rd_addr'range => '1') then
+			so_last <= '1';
+		else
+			so_last <= '0';
+		end if;
+		so_fin  <= cntr(0);
 		so_trdy <= (so_frm or last) and so_irdy;
 	end process;
 
