@@ -30,17 +30,21 @@ architecture ser_debug of acyiib is
 	constant settings : string := "{"                                                      &
 		"io_link: io_ipoe,"                                                                &
 		"video:{"                                                                          &
-			"dcm:"     & string'(hdl4fpga.xc3s_profiles.video_dcm(".'20mhz'.'40mhz'"))     & ',' &
-			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'640x400'.'@60'.'25mhz'") & ',' &
 			"pixel:"   & "{R:1,G:1,B:1}}}";
 
-	alias sys_clk is osc_50mhz;
+	signal video_clk : std_logic;
+	alias video_hzsync is p1(1);
+	alias video_vtsync is p1(1);
+
+	signal video_pixel : std_logic_vector(0 to 3-1);
 
 begin
 
 	process (osc_50mhz)
 	begin
 		if rising_edge(osc_50mhz) then
+			video_clk <= not video_clk;
 		end if;
 	end process;
 
@@ -58,5 +62,7 @@ begin
 		video_vtsync => video_vtsync,
 		video_blank  => video_blank,
 		video_pixel  => video_pixel);
+
+
 
 end;
