@@ -184,7 +184,7 @@ begin
 			signal cmp_frm  : std_logic;
 			signal cmp_irdy : std_logic;
 			signal cmp_data : std_logic_vector(rx_data'range);
-			signal ack_equ  : std_logic;
+			signal dup_equ  : std_logic;
 		begin
 
 			cmp_i : entity hdl4fpga.sio_cmp
@@ -196,7 +196,7 @@ begin
 				sl_frm  => cmp_frm,
 				sl_irdy => cmp_irdy,
 				sl_data => cmp_data,
-				equ     => ack_equ);
+				equ     => dup_equ);
 
 			ack_i : entity hdl4fpga.sio_ram
 			generic map (
