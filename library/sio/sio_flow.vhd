@@ -181,10 +181,12 @@ begin
 			so_data => acktx_data);
 
 		dup_b : block
+
 			signal cmp_frm  : std_logic;
 			signal cmp_irdy : std_logic;
 			signal cmp_data : std_logic_vector(rx_data'range);
 			signal dup_equ  : std_logic;
+
 		begin
 
 			cmp_i : entity hdl4fpga.sio_cmp
