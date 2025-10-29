@@ -180,6 +180,39 @@ begin
 			so_last => acktx_last,
 			so_data => acktx_data);
 
+		dup_b : block
+			signal cmp_frm  : std_logic;
+			signal cmp_irdy : std_logic;
+			signal cmp_data : std_logic_vector(rx_data'range);
+			signal ack_equ  : std_logic;
+		begin
+
+			cmp_i : entity hdl4fpga.sio_cmp
+			port map (
+				clk     => rx_clk,
+				mr_frm  => rgtr_frm,
+				mr_irdy => ram_irdy,
+				mr_data => ram_data,
+				sl_frm  => cmp_frm,
+				sl_irdy => cmp_irdy,
+				sl_data => cmp_data,
+				equ     => ack_equ);
+
+			ack_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => (0 to 24-1 => '-'))
+			port map (
+				si_clk  => tx_clk,
+				si_frm  => acktx_frm,
+				si_irdy => acktx_irdy,
+				si_data => acktx_data,
+				so_clk  => rx_clk,
+				so_frm  => cmp_frm,
+				so_irdy => cmp_irdy,
+				so_data => cmp_data);
+
+		end block;
+
 	end block;
 
 	artibiter_b : block
