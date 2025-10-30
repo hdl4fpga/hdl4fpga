@@ -229,6 +229,42 @@ begin
 
 		end block;
 
+		siosin_e : entity hdl4fpga.sio_decode
+		generic map (
+			rids => "[0x00]")
+		port map (
+			clk       => rx_clk,
+			frm       => rgtr_frm,
+			irdy      => rgtr_irdy,
+			data      => rx_data,
+			rid_act   => rid_act,
+			data_act  => data_act,
+			data_frm  => pyl_frm,
+			data_irdy => pyl_irdy,
+			data_trdy => pyl_trdy);
+
+		fifo_irdy <= pyl_irdy or actrx_irdy;
+		fifo_data <= 
+			rx_data when (data_frm or data_irdy)='1' else
+			acktx_data;
+
+		fifo_i : entity hdl4fpga.fifo
+		generic map (
+			max_depth => (64*8)/rx_data'length)
+		port map (
+			src_clk    => rx_clk,
+			src_irdy   => fifo_irdy,
+			src_trdy   => fifo_trdy,
+			src_data   => fifo_data,
+
+			commit     => commit,
+			rollback   => rollback,
+
+			dst_clk    => tx_clk,
+			dst_irdy   => tx_irdy,
+			dst_trdy   => tx_trdy,
+			dst_data   => tx_data);
+
 	end block;
 
 	artibiter_b : block
@@ -282,33 +318,6 @@ begin
 			dst_irdy   => so_irdy,
 			dst_trdy   => so_trdy,
 			dst_data   => so_data);
-
-		siosin_e : entity hdl4fpga.sio_sin
-		port map (
-			clk       => so_clk,
-			frm       => so_frm,
-			irdy      => so_irdy,
-			data      => so_data,
-			rid_act   => rid_act,
-			data_act  => data_act,
-			rgtr_frm  => rgtr_frm,
-			rgtr_irdy => rgtr_irdy,
-			rgtr_trdy => rgtr_trdy);
-
-		siosin_e : entity hdl4fpga.sio_decode
-		generic map (
-			rids => "[0x00]")
-		port map (
-			clk       => so_clk,
-			frm       => rgtr_frm,
-			irdy      => rgtr_irdy,
-			data      => rgtr_data,
-			rid_act   => rid_act,
-			data_act  => data_act,
-			data_frm  => rgtr_frm,
-			data_irdy => rgtr_irdy,
-			data_trdy => rgtr_trdy);
-
 
 	end block;
 

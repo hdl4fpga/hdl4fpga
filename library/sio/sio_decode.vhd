@@ -37,7 +37,7 @@ entity sio_decode is
 		data       : in  std_logic_vector;
 		
 		rid_act    : in  std_logic;
-		length_act : in  std_logic;
+		length_act : in  std_logic := '0';
 		data_act   : in  std_logic;
 
 		data_frm   : out std_logic_vector(0 to length(rids)-1);
@@ -61,7 +61,7 @@ begin
 		data_frm <= (others => '0');
 		for i in 0 to length-1 loop
 			if hdo(rids)**(".["&natural'image(i)&"]")=std_logic_vector(rid) then
-				data_frm(i) <= length_act or data_act;
+				data_frm(i) <= data_act or length_act;
 			end if;
 		end loop;
 	end process;
