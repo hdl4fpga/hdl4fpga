@@ -95,6 +95,7 @@ begin
 		rgtr_trdy => rgtr_trdy);
 
 	ack_b : block
+
 		signal cmp_frm  : std_logic;
 		signal cmp_irdy : std_logic;
 		signal cmp_data : std_logic_vector(rx_data'range);
@@ -107,6 +108,8 @@ begin
 		signal ram_irdy : std_logic;
 		signal ram_data : std_logic_vector(rx_data'range);
 		signal ack_equ  : std_logic;
+		signal dup_equ  : std_logic;
+
 	begin
 
 		cmp_frm  <= rgtr_frm and rid_act;
@@ -157,7 +160,7 @@ begin
 			if rising_edge(tx_clk) then
 				if (acktx_last and acktx_irdy and acktx_trdy)='1' then
 					rply_rdy <= rply_req;
-				elsif (fcs_sb and fcs_vld)='1' then
+				elsif (fcs_sb and fcs_vld and not dup_equ)='1' then
 					rply_req <= not rply_rdy;
 				end if;
 			end if;
@@ -185,7 +188,7 @@ begin
 			signal cmp_frm  : std_logic;
 			signal cmp_irdy : std_logic;
 			signal cmp_data : std_logic_vector(rx_data'range);
-			signal dup_equ  : std_logic;
+			signal cmp_equ  : std_logic;
 
 		begin
 
@@ -198,7 +201,7 @@ begin
 				sl_frm  => cmp_frm,
 				sl_irdy => cmp_irdy,
 				sl_data => cmp_data,
-				equ     => dup_equ);
+				equ     => cmp_equ);
 
 			ack_i : entity hdl4fpga.sio_ram
 			generic map (
@@ -212,6 +215,17 @@ begin
 				so_frm  => cmp_frm,
 				so_irdy => cmp_irdy,
 				so_data => cmp_data);
+
+			process (rx_clk)
+			begin
+				if rising_edge(rx_clk) then
+					if dup_equ='0' then
+						dup_equ <= cmp_equ;
+					elsif fcs_sb='1' then
+						dup_equ <= '0';
+					end if;
+				end if;
+			end process;
 
 		end block;
 
@@ -248,7 +262,8 @@ begin
 		signal commit   : std_logic;
 		signal rollback : std_logic;
 	begin
-		commit   <= fcs_sb and fcs_vld;
+
+		commit   <= fcs_sb and fcs_vld and not dup_equ;
 		rollback <= fcs_sb and not fcs_vld;
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
@@ -267,6 +282,34 @@ begin
 			dst_irdy   => so_irdy,
 			dst_trdy   => so_trdy,
 			dst_data   => so_data);
+
+		siosin_e : entity hdl4fpga.sio_sin
+		port map (
+			clk       => so_clk,
+			frm       => so_frm,
+			irdy      => so_irdy,
+			data      => so_data,
+			rid_act   => rid_act,
+			data_act  => data_act,
+			rgtr_frm  => rgtr_frm,
+			rgtr_irdy => rgtr_irdy,
+			rgtr_trdy => rgtr_trdy);
+
+		siosin_e : entity hdl4fpga.sio_decode
+		generic map (
+			rids => "[0x00]")
+		port map (
+			clk       => so_clk,
+			frm       => rgtr_frm,
+			irdy      => rgtr_irdy,
+			data      => rgtr_data,
+			rid_act   => rid_act,
+			data_act  => data_act,
+			data_frm  => rgtr_frm,
+			data_irdy => rgtr_irdy,
+			data_trdy => rgtr_trdy);
+
+
 	end block;
 
 end;
