@@ -46,8 +46,23 @@ set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
 
+
+set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/cp850x8x16x128to255.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/cp850x8x16x0to127.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/cp850x8x8x128to255.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/cp850x8x8x0to127.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/fonts/bcdfonts.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/bram.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/base.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/basic/hdo.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/cga_adapter.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/cga_rom.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/cgafonts.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/cgaram.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/dvi.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/ser_display.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/tmds_encoder.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/video.vhd -library hdl4fpga
+set_global_assignment -name VHDL_FILE ../../../../library/video/videopkg.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../apps/ser_debug.vhd
 set_global_assignment -name VHDL_FILE ../../common/acyiib.vhd
