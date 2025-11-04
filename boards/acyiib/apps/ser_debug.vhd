@@ -63,6 +63,4 @@ begin
 		video_blank  => video_blank,
 		video_pixel  => video_pixel);
 
-
-
 end;
