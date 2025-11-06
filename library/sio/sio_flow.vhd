@@ -52,7 +52,7 @@ entity sio_flow is
 
 		tx_clk  : in std_logic;
 		tx_frm  : out std_logic;
-		tx_irdy : out std_logic;
+		tx_irdy : buffer std_logic;
 		tx_trdy : in  std_logic := '1';
 		tx_data : buffer std_logic_vector;
 		tp      : out std_logic_vector(1 to 32));
