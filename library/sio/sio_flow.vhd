@@ -79,11 +79,9 @@ architecture struct of sio_flow is
 	alias  acktx_trdy is tx_trdys(0);
 	signal acktx_last : std_logic;
 
-	signal pyl_frm  : std_logic_vector(0 to 0);
-	signal pyl_irdy : std_logic_vector(0 to 0);
-	signal pyl_trdy : std_logic_vector(0 to 0);
 
 	signal acktx_data : std_logic_vector(tx_data'range);
+		signal dup_equ  : std_logic;
 
 begin
 
@@ -112,8 +110,22 @@ begin
 		signal ram_irdy : std_logic;
 		signal ram_data : std_logic_vector(rx_data'range);
 		signal ack_equ  : std_logic;
-		signal dup_equ  : std_logic;
 		signal data_act : std_logic;
+
+		signal pyl_frm  : std_logic_vector(0 to 0);
+		signal pyl_irdy : std_logic_vector(0 to 0);
+		signal pyl_trdy : std_logic_vector(0 to 0);
+
+		signal data_frm  : std_logic;
+		signal data_irdy : std_logic;
+
+		signal fifo_frm  : std_logic;
+		signal fifo_irdy : std_logic;
+		signal fifo_trdy : std_logic;
+		signal fifo_data : std_logic_vector(rx_data'range);
+
+		signal commit   : std_logic;
+		signal rollback : std_logic;
 
 	begin
 
@@ -195,9 +207,6 @@ begin
 			signal cmp_data : std_logic_vector(rx_data'range);
 			signal cmp_equ  : std_logic;
 
-			signal commit   : std_logic;
-			signal rollback : std_logic;
-
 		begin
 
 			cmp_i : entity hdl4fpga.sio_cmp
@@ -251,7 +260,7 @@ begin
 			data_irdy => pyl_irdy,
 			data_trdy => pyl_trdy);
 
-		fifo_irdy <= pyl_irdy or actrx_irdy;
+		-- fifo_irdy <= pyl_irdy or actrx_irdy;
 		fifo_data <= 
 			rx_data when (data_frm or data_irdy)='1' else
 			acktx_data;
