@@ -79,6 +79,10 @@ architecture struct of sio_flow is
 	alias  acktx_trdy is tx_trdys(0);
 	signal acktx_last : std_logic;
 
+	signal pyl_frm  : std_logic_vector(0 to 0);
+	signal pyl_irdy : std_logic_vector(0 to 0);
+	signal pyl_trdy : std_logic_vector(0 to 0);
+
 	signal acktx_data : std_logic_vector(tx_data'range);
 
 begin
@@ -109,6 +113,7 @@ begin
 		signal ram_data : std_logic_vector(rx_data'range);
 		signal ack_equ  : std_logic;
 		signal dup_equ  : std_logic;
+		signal data_act : std_logic;
 
 	begin
 
@@ -190,6 +195,9 @@ begin
 			signal cmp_data : std_logic_vector(rx_data'range);
 			signal cmp_equ  : std_logic;
 
+			signal commit   : std_logic;
+			signal rollback : std_logic;
+
 		begin
 
 			cmp_i : entity hdl4fpga.sio_cmp
@@ -248,6 +256,8 @@ begin
 			rx_data when (data_frm or data_irdy)='1' else
 			acktx_data;
 
+		commit   <= fcs_sb and fcs_vld;
+		rollback <= fcs_sb and not fcs_vld;
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
 			max_depth => (64*8)/rx_data'length)
