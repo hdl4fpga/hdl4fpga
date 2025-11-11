@@ -260,7 +260,7 @@ begin
 			data_irdy => pyl_irdy,
 			data_trdy => pyl_trdy);
 
-		-- fifo_irdy <= pyl_irdy or actrx_irdy;
+		fifo_irdy <= pyl_irdy or ackrx_irdy;
 		fifo_data <= 
 			rx_data when (data_frm or data_irdy)='1' else
 			acktx_data;
