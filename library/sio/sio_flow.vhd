@@ -248,7 +248,7 @@ begin
 
 		siosin_e : entity hdl4fpga.sio_decode
 		generic map (
-			rids => "[0x00]")
+			rids => "[0x00, 0x01]")
 		port map (
 			clk       => rx_clk,
 			frm       => rgtr_frm,
@@ -259,6 +259,26 @@ begin
 			data_frm  => pyl_frm,
 			data_irdy => pyl_irdy,
 			data_trdy => pyl_trdy);
+
+		fifo0_irdy <= rgtr_irdy;
+		commit0   <= pyl_frm or pyl_irdy;
+		rollback0 <= not rgtr_frm or rgtr_irdy;
+		fifo0_i : entity hdl4fpga.fifo
+		generic map (
+			max_depth => (2*8)/rx_data'length)
+		port map (
+			src_clk    => rx_clk,
+			src_irdy   => fifo0_irdy,
+			src_trdy   => fifo0_trdy,
+			src_data   => fifo0_data,
+
+			commit     => commit,
+			rollback   => rollback,
+
+			dst_clk    => tx_clk,
+			dst_irdy   => tx_irdy,
+			dst_trdy   => tx_trdy,
+			dst_data   => tx_data);
 
 		fifo_irdy <= pyl_irdy or ackrx_irdy;
 		fifo_data <= 
