@@ -33,7 +33,7 @@ entity acyiib is
 	attribute chip_pin : string;
 	attribute chip_pin of osc_50mhz : signal is "17";
 	attribute chip_pin of p1        : signal is "40,41,42,43,44,45,47,48,51,52,53,55,57,58,59,60,63,64,65,67,69,70,71,72";
-	attribute chip_pin of p2        : signal is "73,74,75,18,79,80,81,86,87,88,89,90,91,92,93,94,96,97,99,100,101,103,104";
+	attribute chip_pin of p2        : signal is "73,74,75,76,79,80,81,86,87,88,89,90,91,92,93,94,96,97,99,100,101,103,104";
 
 	constant osc50mhz_freq : real := 50.0e6;
 
