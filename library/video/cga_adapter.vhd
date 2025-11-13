@@ -228,7 +228,7 @@ begin
 	don_e : entity hdl4fpga.latency
 	generic map (
 		n     => 1,
-		d     => (1 to 1 => 4))
+		d     => (0 to 1-1 => 4))
 	port map (
 		clk   => video_clk,
 		di(0) => video_on,
