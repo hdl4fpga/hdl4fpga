@@ -66,5 +66,5 @@ begin
 		video_blank  => open,
 		video_pixel  => video_pixel);
 
-	p2(5 to 7) <= video_pixel;
+	p2(20 to 22) <= video_pixel;
 end;
