@@ -66,7 +66,6 @@ architecture struct of sio_flow is
 	signal rgtr_trdy : std_logic;
 	signal rid_act   : std_logic;
 
-
 	signal rply_req  : std_logic := '0';
 	signal rply_rdy  : std_logic := '0';
 
@@ -74,14 +73,14 @@ architecture struct of sio_flow is
 	signal tx_irdys  : std_logic_vector(0 to 2-1);
 	signal tx_trdys  : std_logic_vector(0 to 2-1) := (others => '1');
 
-	alias  acktx_frm  is tx_frms(0);
-	alias  acktx_irdy is tx_irdys(0);
-	alias  acktx_trdy is tx_trdys(0);
-	signal acktx_last : std_logic;
+	alias  ackrx_frm  is tx_frms(0);
+	alias  ackrx_irdy is tx_irdys(0);
+	alias  ackrx_trdy is tx_trdys(0);
+	signal ackrx_last : std_logic;
 
-
+	signal ackrx_data : std_logic_vector(rx_data'range);
 	signal acktx_data : std_logic_vector(tx_data'range);
-		signal dup_equ  : std_logic;
+	signal dup_equ    : std_logic;
 
 begin
 
@@ -112,9 +111,9 @@ begin
 		signal ack_equ  : std_logic;
 		signal data_act : std_logic;
 
-		signal pyl_frm  : std_logic_vector(0 to 0);
-		signal pyl_irdy : std_logic_vector(0 to 0);
-		signal pyl_trdy : std_logic_vector(0 to 0);
+		signal pyl_frm  : std_logic_vector(0 to 2-1);
+		signal pyl_irdy : std_logic_vector(0 to 2-1);
+		signal pyl_trdy : std_logic_vector(0 to 2-1);
 
 		signal data_frm  : std_logic;
 		signal data_irdy : std_logic;
@@ -124,8 +123,10 @@ begin
 		signal fifo_trdy : std_logic;
 		signal fifo_data : std_logic_vector(rx_data'range);
 
-		signal commit   : std_logic;
-		signal rollback : std_logic;
+		signal commit0   : std_logic;
+		signal rollback0 : std_logic;
+		signal commit    : std_logic;
+		signal rollback  : std_logic;
 
 	begin
 
@@ -175,7 +176,7 @@ begin
 		process (tx_clk)
 		begin
 			if rising_edge(tx_clk) then
-				if (acktx_last and acktx_irdy and acktx_trdy)='1' then
+				if (ackrx_last and ackrx_irdy and ackrx_trdy)='1' then
 					rply_rdy <= rply_req;
 				elsif (fcs_sb and fcs_vld and not dup_equ)='1' then
 					rply_req <= not rply_rdy;
@@ -183,8 +184,8 @@ begin
 			end if;
 		end process;
 
-		acktx_frm  <= (rply_req xor rply_rdy);
-		acktx_irdy <= acktx_frm;
+		ackrx_frm  <= (rply_req xor rply_rdy);
+		ackrx_irdy <= ackrx_frm;
 		mem_i : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => (0 to 24-1 => '-'))
@@ -194,11 +195,11 @@ begin
 			si_irdy => ram_irdy,
 			si_data => ram_data,
 			so_clk  => tx_clk,
-			so_frm  => acktx_frm,
-			so_irdy => acktx_irdy,
-			so_trdy => acktx_trdy,
-			so_last => acktx_last,
-			so_data => acktx_data);
+			so_frm  => ackrx_frm,
+			so_irdy => ackrx_irdy,
+			so_trdy => ackrx_trdy,
+			so_last => ackrx_last,
+			so_data => ackrx_data);
 
 		dup_b : block
 
@@ -225,9 +226,9 @@ begin
 				bitdata => (0 to 24-1 => '-'))
 			port map (
 				si_clk  => tx_clk,
-				si_frm  => acktx_frm,
-				si_irdy => acktx_irdy,
-				si_data => acktx_data,
+				si_frm  => ackrx_frm,
+				si_irdy => ackrx_irdy,
+				si_data => ackrx_data,
 				so_clk  => rx_clk,
 				so_frm  => cmp_frm,
 				so_irdy => cmp_irdy,
@@ -260,30 +261,24 @@ begin
 			data_irdy => pyl_irdy,
 			data_trdy => pyl_trdy);
 
-		fifo0_irdy <= rgtr_irdy;
-		commit0   <= pyl_frm or pyl_irdy;
+		commit0   <= pyl_frm(0) or pyl_irdy(0);
 		rollback0 <= not rgtr_frm or rgtr_irdy;
 		fifo0_i : entity hdl4fpga.fifo
 		generic map (
 			max_depth => (2*8)/rx_data'length)
 		port map (
 			src_clk    => rx_clk,
-			src_irdy   => fifo0_irdy,
-			src_trdy   => fifo0_trdy,
-			src_data   => fifo0_data,
+			src_irdy   => rgtr_irdy,
+			src_trdy   => open,
+			src_data   => rx_data,
 
 			commit     => commit,
 			rollback   => rollback,
 
-			dst_clk    => tx_clk,
-			dst_irdy   => tx_irdy,
-			dst_trdy   => tx_trdy,
-			dst_data   => tx_data);
-
-		fifo_irdy <= pyl_irdy or ackrx_irdy;
-		fifo_data <= 
-			rx_data when (data_frm or data_irdy)='1' else
-			acktx_data;
+			dst_clk    => rx_clk,
+			dst_irdy   => fifo_irdy,
+			dst_trdy   => fifo_trdy,
+			dst_data   => fifo_data);
 
 		commit   <= fcs_sb and fcs_vld;
 		rollback <= fcs_sb and not fcs_vld;
@@ -300,9 +295,9 @@ begin
 			rollback   => rollback,
 
 			dst_clk    => tx_clk,
-			dst_irdy   => tx_irdy,
-			dst_trdy   => tx_trdy,
-			dst_data   => tx_data);
+			dst_irdy   => tx_irdys(0),
+			dst_trdy   => tx_trdys(0),
+			dst_data   => acktx_data);
 
 	end block;
 
