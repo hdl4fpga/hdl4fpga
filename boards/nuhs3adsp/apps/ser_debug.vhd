@@ -220,7 +220,7 @@ begin
 
 	end block;
 
-	sioupd_i : entity hdl4fpga.sio_udp
+	sioudp_i : entity hdl4fpga.sio_udp
 	port map (
 		tp       => tp,
 		dhcpcd_req => '0', --dhcpcd_req,
@@ -241,9 +241,10 @@ begin
 		so_data    => udppylrx_data,
 
 		si_clk     => mii_txc,
-		si_frm     => udppylrx_frm,
-		si_irdy    => udppylrx_irdy,
-		si_data    => udppylrx_data);
+		si_frm     => udppyltx_frm,
+		si_irdy    => udppyltx_irdy,
+		si_trdy    => udppyltx_trdy,
+		si_data    => udppyltx_data);
 
 	-- miiipoe_i : entity hdl4fpga.mii_ipoe
 	-- port map (
