@@ -130,6 +130,8 @@ HDL4FPGA__sio_ff__def = $(LIB_HDL4FPGA)/sio_ff/def.dat
 HDL4FPGA__sio_ff = $(LIB_HDL4FPGA)/sio_ff/_primary.dat
 HDL4FPGA__sio_dmahdsk__def = $(LIB_HDL4FPGA)/sio_dmahdsk/def.dat
 HDL4FPGA__sio_dmahdsk = $(LIB_HDL4FPGA)/sio_dmahdsk/_primary.dat
+HDL4FPGA__sio_decode__beh = $(LIB_HDL4FPGA)/sio_decode/beh.dat
+HDL4FPGA__sio_decode = $(LIB_HDL4FPGA)/sio_decode/_primary.dat
 HDL4FPGA__sio_dayusb__beh = $(LIB_HDL4FPGA)/sio_dayusb/beh.dat
 HDL4FPGA__sio_dayusb = $(LIB_HDL4FPGA)/sio_dayusb/_primary.dat
 HDL4FPGA__sio_dayhdlc__beh = $(LIB_HDL4FPGA)/sio_dayhdlc/beh.dat
@@ -457,6 +459,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sio_ff) \
     $(HDL4FPGA__sio_dmahdsk__def) \
     $(HDL4FPGA__sio_dmahdsk) \
+    $(HDL4FPGA__sio_decode__beh) \
+    $(HDL4FPGA__sio_decode) \
     $(HDL4FPGA__sio_dayusb__beh) \
     $(HDL4FPGA__sio_dayusb) \
     $(HDL4FPGA__sio_dayhdlc__beh) \
@@ -726,7 +730,6 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(HDL4FPGA__sio_dmahdsk) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__sio_rgtr) \
-		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__videopkg) \
 		$(IEEE__math_real) \
 		$(HDL4FPGA__sdrampkg) \
@@ -1666,6 +1669,14 @@ $(HDL4FPGA__sio_dayusb__beh) : ../sio/sio_dayusb.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../sio/sio_dayusb.vhd
 
+$(HDL4FPGA__sio_decode) \
+$(HDL4FPGA__sio_decode__beh) : ../sio/sio_decode.vhd \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../sio/sio_decode.vhd
+
 $(HDL4FPGA__sio_dmahdsk) \
 $(HDL4FPGA__sio_dmahdsk__def) : ../sio/sio_dmahdsk.vhd \
 		$(HDL4FPGA__base) \
@@ -1684,10 +1695,14 @@ $(HDL4FPGA__sio_ff__def) : ../sio/sio_ff.vhd \
 
 $(HDL4FPGA__sio_flow) \
 $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
-		$(HDL4FPGA__arbiter) \
-		$(HDL4FPGA__sio_mux) \
+		$(HDL4FPGA__mii_arbiter) \
 		$(HDL4FPGA__fifo) \
-		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__sio_decode) \
+		$(HDL4FPGA__sio_ram) \
+		$(HDL4FPGA__sio_rom) \
+		$(HDL4FPGA__sio_cmp) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__sio_sin) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \

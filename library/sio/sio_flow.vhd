@@ -97,23 +97,23 @@ begin
 
 	ack_b : block
 
-		signal cmp_frm  : std_logic;
-		signal cmp_irdy : std_logic;
-		signal cmp_data : std_logic_vector(rx_data'range);
+		signal cmp_frm   : std_logic;
+		signal cmp_irdy  : std_logic;
+		signal cmp_data  : std_logic_vector(rx_data'range);
 
-		signal rom_frm  : std_logic;
-		signal rom_irdy : std_logic;
-		signal rom_data : std_logic_vector(rx_data'range);
+		signal rom_frm   : std_logic;
+		signal rom_irdy  : std_logic;
+		signal rom_data  : std_logic_vector(rx_data'range);
 
-		signal ram_frm  : std_logic;
-		signal ram_irdy : std_logic;
-		signal ram_data : std_logic_vector(rx_data'range);
-		signal ack_equ  : std_logic;
-		signal data_act : std_logic;
+		signal ram_frm   : std_logic;
+		signal ram_irdy  : std_logic;
+		signal ram_data  : std_logic_vector(rx_data'range);
+		signal ack_equ   : std_logic;
+		signal pyl_act   : std_logic;
 
-		signal pyl_frm  : std_logic_vector(0 to 2-1);
-		signal pyl_irdy : std_logic_vector(0 to 2-1);
-		signal pyl_trdy : std_logic_vector(0 to 2-1);
+		signal pyl_frm   : std_logic_vector(0 to 2-1);
+		signal pyl_irdy  : std_logic_vector(0 to 2-1);
+		signal pyl_trdy  : std_logic_vector(0 to 2-1);
 
 		signal data_frm  : std_logic;
 		signal data_irdy : std_logic;
@@ -251,15 +251,15 @@ begin
 		generic map (
 			rids => "[0x00, 0x01]")
 		port map (
-			clk       => rx_clk,
-			frm       => rgtr_frm,
-			irdy      => rgtr_irdy,
-			data      => rx_data,
-			rid_act   => rid_act,
-			data_act  => data_act,
-			data_frm  => pyl_frm,
-			data_irdy => pyl_irdy,
-			data_trdy => pyl_trdy);
+			clk      => rx_clk,
+			frm      => rgtr_frm,
+			irdy     => rgtr_irdy,
+			data     => rx_data,
+			rid_act  => rid_act,
+			pyl_act  => pyl_act,
+			pyl_frm  => pyl_frm,
+			pyl_irdy => pyl_irdy,
+			pyl_trdy => pyl_trdy);
 
 		commit0   <= pyl_frm(0) or pyl_irdy(0);
 		rollback0 <= not rgtr_frm or rgtr_irdy;

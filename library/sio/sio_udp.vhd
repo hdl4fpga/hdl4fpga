@@ -30,8 +30,8 @@ use hdl4fpga.ipoepkg.all;
 
 entity sio_udp is
 	generic (
-		hwaddr        : std_logic_vector(0 to 48-1);
-		ipv4addr      : std_logic_vector(0 to 32-1));
+		ipv4addr      : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
+		hwaddr        : std_logic_vector := x"00_40_00_01_02_03");
 	port (
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : buffer std_logic := '0';

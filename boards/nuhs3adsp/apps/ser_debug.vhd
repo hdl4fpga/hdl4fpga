@@ -221,10 +221,7 @@ begin
 	end block;
 
 	sioupd_i : entity hdl4fpga.sio_udp
-	generic (
-		hwaddr        : std_logic_vector(0 to 48-1);
-		ipv4addr      : std_logic_vector(0 to 32-1));
-	port (
+	port map (
 		tp       => tp,
 		dhcpcd_req => '0', --dhcpcd_req,
 		-- dhcpcd_rdy => dhcpcd_rdy,
