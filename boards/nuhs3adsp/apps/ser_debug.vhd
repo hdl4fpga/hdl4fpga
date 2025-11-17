@@ -135,46 +135,12 @@ begin
 	pyl_b : block
 		constant bitrom : std_logic_vector := std_logic_vector'(
 		hdo(string'("{udp:0x"               &
-			"0f_27_0e_0f_f5_95" & -- mac source address
-			"00fa"              & -- packet length
-			"c0a80002"          & -- IP Source IP address
-			"0043"              &
-			"0044"              &
-			"aaaa"              &
-			"ffff"              &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
-			"dddddddd"          &
+			-- "000f"              &
+				"0f_27_0e_0f_f5_95" & -- mac source address
+				"00fa"              & -- packet length
+				"c0a80002"          & -- IP Source IP address
+				"0043"              &
+				"0044"              &
 			"dddddddd"          &
 			"12345678}"))**".udp");
 		signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
