@@ -265,7 +265,7 @@ begin
 		rollback0 <= not rgtr_frm or rgtr_irdy;
 		fifo0_i : entity hdl4fpga.fifo
 		generic map (
-			max_depth => (2*8)/rx_data'length)
+			max_depth => (4*8)/rx_data'length)
 		port map (
 			src_clk    => rx_clk,
 			src_irdy   => rgtr_irdy,

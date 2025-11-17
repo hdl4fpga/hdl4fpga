@@ -45,7 +45,7 @@ entity sio_udp is
 		miitx_clk     : in  std_logic;
 		miitx_frm     : buffer std_logic;
 		miitx_irdy    : buffer std_logic;
-		miitx_trdy    : in  std_logic;
+		miitx_trdy    : in  std_logic := '1';
 		miitx_data    : out std_logic_vector;
 
 		so_clk        : in  std_logic;

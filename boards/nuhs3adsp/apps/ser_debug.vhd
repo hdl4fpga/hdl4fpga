@@ -220,28 +220,53 @@ begin
 
 	end block;
 
-	miiipoe_i : entity hdl4fpga.mii_ipoe
-	port map (
+	sioupd_i : entity hdl4fpga.sio_udp
+	generic (
+		hwaddr        : std_logic_vector(0 to 48-1);
+		ipv4addr      : std_logic_vector(0 to 32-1));
+	port (
 		tp       => tp,
 		dhcpcd_req => '0', --dhcpcd_req,
 		-- dhcpcd_rdy => dhcpcd_rdy,
+
 		miirx_clk  => mii_rxc,
 		miirx_frm  => mii_rxdv,
 		miirx_irdy => mii_rxdv,
 		miirx_data => mii_rxd,
 
-		udppylrx_frm  => udppylrx_frm,
-		udppylrx_irdy => udppylrx_irdy,
-		udppylrx_data => udppylrx_data,
-
 		miitx_clk  => mii_txc,
 		miitx_frm  => mii_txen,
 		miitx_data => mii_txd,
 
-		udppyltx_frm  => udppyltx_frm,
-		udppyltx_irdy => udppyltx_irdy,
-		udppyltx_trdy => udppyltx_trdy,
-		udppyltx_data => udppyltx_data);
+		so_clk     => mii_rxc,
+		so_frm     => udppylrx_frm,
+		so_irdy    => udppylrx_irdy,
+		so_data    => udppylrx_data,
+
+		si_clk     => mii_txc,
+		si_frm     => udppylrx_frm,
+		si_irdy    => udppylrx_irdy,
+		si_data    => udppylrx_data);
+
+	-- miiipoe_i : entity hdl4fpga.mii_ipoe
+	-- port map (
+	-- 	tp       => tp,
+	-- 	dhcpcd_req => '0', --dhcpcd_req,
+	-- 	-- dhcpcd_rdy => dhcpcd_rdy,
+	-- 	miirx_clk  => mii_rxc,
+	-- 	miirx_frm  => mii_rxdv,
+	-- 	miirx_irdy => mii_rxdv,
+	-- 	miirx_data => mii_rxd,
+	--
+	--
+	-- 	miitx_clk  => mii_txc,
+	-- 	miitx_frm  => mii_txen,
+	-- 	miitx_data => mii_txd,
+	--
+	-- 	udppyltx_frm  => udppyltx_frm,
+	-- 	udppyltx_irdy => udppyltx_irdy,
+	-- 	udppyltx_trdy => udppyltx_trdy,
+	-- 	udppyltx_data => udppyltx_data);
 
 	-- ser_clk <= mii_rxc;
 	-- process (ser_clk)
