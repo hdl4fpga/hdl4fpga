@@ -158,12 +158,12 @@ architecture nuhs3adsp_serdebug of testbench is
 			"00_00_00_00"          & -- arp_spa  
 			"00_00_00_00_00_00"    & -- arp_tha  
 			"c0_a8_00_0e,"         & -- arp_tpa  
-		"udp:0x"                  &
-			"0f_27_0e_0f_f5_95,"   & -- mac source address
+		"pkt:0x"                   &
+			"0f_27_0e_0f_f5_95"    & -- mac source address
 			"0x00fa"               &
 			"c0a80002"             & -- IP Source IP address
-			"0043"                 &
-			"0044"                 &
+			"0046"                 &
+			"0047"                 &
 			"aaaa"                 &
 			"ffff"                 &
 			"dddddddd"             &
@@ -201,6 +201,21 @@ architecture nuhs3adsp_serdebug of testbench is
 			"dddddddd"             &
 			"dddddddd"             &
 			"dddddddd,"            &
+		"udp:0x"                  &
+			"0800"                 & -- mac type
+			"4500"                 & -- IP Version, TOS
+			"0054"                 & -- IP Length
+			"0000"                 & -- IP Identification
+			"0000"                 & -- IP Fragmentation
+			"0511"                 & -- IP TTL, protocol
+			"0000"                 & -- IP Header Checksum
+			"c0a80002"             & -- IP Source IP address
+			"c0a8000e"             & -- IP Destiantion IP Address
+			"0046"                 &
+			"0047"                 &
+			"dddddddd"             &
+			"dddddddd"             &
+			"ddddddda,"            &
 		"dhcp:0x"                  &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
@@ -280,12 +295,12 @@ begin
 
 	arp_req <= '0', '1' after 8 us;
 
-	sw1 <= '1', '0' after 1 us;
+	sw1 <= '1', '1' after 1 us;
 
-	rst <= '1', '1' after 1 us;
+	rst <= '1', '0' after 1 us;
 	tb_b : block
-		-- constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".dhcp");
-		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".udp");
+		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".udp");
+		-- constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".udp");
 		signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
 	begin
 		process (mii_rxc)

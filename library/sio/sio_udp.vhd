@@ -39,7 +39,7 @@ entity sio_udp is
 		miirx_clk     : in  std_logic;
 		miirx_frm     : in  std_logic;
 		miirx_irdy    : in  std_logic;
-		miirx_trdy    : out std_logic;
+		miirx_trdy    : out std_logic := '1';
 		miirx_data    : in  std_logic_vector;
 
 		miitx_clk     : in  std_logic;
@@ -67,7 +67,7 @@ architecture struct of sio_udp is
 
 	signal udppylrx_frm  : std_logic;
 	signal udppylrx_irdy : std_logic;
-	signal udppylrx_trdy : std_logic;
+	signal udppylrx_trdy : std_logic := '1';
 	signal udppylrx_data : std_logic_vector(miirx_data'range);
 
 	signal pylrx_frm     : std_logic;
