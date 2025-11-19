@@ -66,6 +66,10 @@ architecture struct of sio_flow is
 	signal rgtr_trdy : std_logic;
 	signal rid_act   : std_logic;
 
+	signal pyl_frm   : std_logic_vector(0 to 2-1);
+	signal pyl_irdy  : std_logic_vector(0 to 2-1);
+	signal pyl_trdy  : std_logic_vector(0 to 2-1);
+
 	signal rply_req  : std_logic := '0';
 	signal rply_rdy  : std_logic := '0';
 
@@ -95,26 +99,26 @@ begin
 		rgtr_irdy => rgtr_irdy,
 		rgtr_trdy => rgtr_trdy);
 
+	siodecode_e : entity hdl4fpga.sio_decode
+	generic map (
+		rids => "[0x00, 0x01]")
+	port map (
+		clk      => rx_clk,
+		frm      => rgtr_frm,
+		irdy     => rgtr_irdy,
+		trdy     => rgtr_trdy,
+		data     => rx_data,
+		rid_act  => rid_act,
+		pyl_frm  => pyl_frm,
+		pyl_irdy => pyl_irdy,
+		pyl_trdy => pyl_trdy);
+
 	ack_b : block
 
-		signal cmp_frm   : std_logic;
-		signal cmp_irdy  : std_logic;
-		signal cmp_data  : std_logic_vector(rx_data'range);
-
-		signal rom_frm   : std_logic;
-		signal rom_irdy  : std_logic;
-		signal rom_data  : std_logic_vector(rx_data'range);
-
+		signal rom_data : std_logic_vector(rx_data'range);
 		signal ram_frm   : std_logic;
 		signal ram_irdy  : std_logic;
 		signal ram_data  : std_logic_vector(rx_data'range);
-		signal ack_equ   : std_logic;
-		signal pyl_act   : std_logic;
-
-		signal pyl_frm   : std_logic_vector(0 to 2-1);
-		signal pyl_irdy  : std_logic_vector(0 to 2-1);
-		signal pyl_trdy  : std_logic_vector(0 to 2-1);
-
 		signal data_frm  : std_logic;
 		signal data_irdy : std_logic;
 
@@ -130,35 +134,13 @@ begin
 
 	begin
 
-		cmp_frm  <= rgtr_frm and rid_act;
-		cmp_irdy <= cmp_frm  and rx_irdy;
-		cmp_i : entity hdl4fpga.sio_cmp
-		port map (
-			clk     => rx_clk,
-			mr_frm  => cmp_frm,
-			mr_irdy => cmp_irdy,
-			mr_data => cmp_data,
-			sl_frm  => rom_frm,
-			sl_irdy => rom_irdy,
-			sl_data => rom_data,
-			equ     => ack_equ);
-
-		rom_i : entity hdl4fpga.sio_rom
-		generic map (
-			bitdata => reverse(x"01"))
-		port map (
-			so_clk  => rx_clk,
-			so_frm  => rom_frm,
-			so_irdy => rom_irdy,
-			so_data => rom_data);
-
-		process (rgtr_irdy, ack_equ, rx_clk)
+		process (rgtr_irdy, pyl_frm(1), rx_clk)
 			variable equ : std_logic;
 		begin
 			if rising_edge(rx_clk) then
 				if equ='0' then
 					if (rgtr_frm or rgtr_irdy)='1' then
-						equ := ack_equ;
+						equ := pyl_frm(1);
 					end if;
 				elsif (rgtr_frm or rgtr_irdy)='0' then
 					equ := '0';
@@ -166,8 +148,17 @@ begin
 					equ := '0';
 				end if;
 			end if;
-			ram_irdy <= (ack_equ or equ) and rgtr_irdy;
+			ram_irdy <= (pyl_frm(1) or equ) and rgtr_irdy;
 		end process;
+
+		rom_i : entity hdl4fpga.sio_rom
+		generic map (
+			bitdata => reverse(x"01"))
+		port map (
+			so_clk  => rx_clk,
+			so_frm  => rgtr_frm,
+			so_irdy => rgtr_irdy,
+			so_data => rom_data);
 
 		ram_data <=
 			rx_data  when ram_irdy='1' else
@@ -246,20 +237,6 @@ begin
 			end process;
 
 		end block;
-
-		siosin_e : entity hdl4fpga.sio_decode
-		generic map (
-			rids => "[0x00, 0x01]")
-		port map (
-			clk      => rx_clk,
-			frm      => rgtr_frm,
-			irdy     => rgtr_irdy,
-			data     => rx_data,
-			rid_act  => rid_act,
-			pyl_act  => pyl_act,
-			pyl_frm  => pyl_frm,
-			pyl_irdy => pyl_irdy,
-			pyl_trdy => pyl_trdy);
 
 		commit0   <= pyl_frm(0) or pyl_irdy(0);
 		rollback0 <= not rgtr_frm or rgtr_irdy;

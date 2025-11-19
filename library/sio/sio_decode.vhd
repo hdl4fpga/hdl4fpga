@@ -38,11 +38,11 @@ entity sio_decode is
 		
 		rid_act    : in  std_logic;
 		length_act : in  std_logic := '0';
-		pyl_act   : in  std_logic;
+		pyl_act    : in  std_logic := '1';
 
-		pyl_frm   : out std_logic_vector(0 to length(rids)-1);
-		pyl_irdy  : out std_logic_vector(0 to length(rids)-1);
-		pyl_trdy  : in  std_logic_vector(0 to length(rids)-1) := (others => '1'));
+		pyl_frm    : out std_logic_vector(0 to length(rids)-1);
+		pyl_irdy   : out std_logic_vector(0 to length(rids)-1);
+		pyl_trdy   : in  std_logic_vector(0 to length(rids)-1) := (others => '1'));
 
 end;
 

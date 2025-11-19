@@ -83,6 +83,8 @@ begin
 						end if;
 					end if;
 				end if;
+			else
+				length := (others => '0');
 			end if;
 			rgtr_frm  <= frm and not length(0);
 			rgtr_irdy <= rgtr_frm;

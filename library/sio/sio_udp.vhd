@@ -115,8 +115,8 @@ begin
 		miitx_irdy    => miitx_irdy,
 		miitx_data    => miitx_data);
 
-	process (miirx_clk)
-		constant prefix   : unsigned := x"00" & to_unsigned(summation(hdo(frames)**".format.pyl"),8);
+	process (udppylrx_frm, udppylrx_irdy, miirx_clk)
+		constant prefix   : unsigned := x"00" & to_unsigned(summation(hdo(frames)**".format.pyl")/8-1,8);
 		variable shr_frm  : unsigned(0 to prefix'length/miirx_data'length-1);
 		variable shr_irdy : unsigned(shr_frm'range);
 		variable shr_data : unsigned(prefix'range);
