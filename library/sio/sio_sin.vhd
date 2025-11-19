@@ -67,27 +67,25 @@ begin
 
 	process (frm, irdy, clk)
 		variable length : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1);
+		alias xxx : unsigned(0 to hdo(frame)**".length"-1) is length(1 to hdo(frame)**".length");
 	begin
 		if rising_edge(clk) then
 			if (frm or irdy)='1' then
 				if (irdy and trdy)='1' then
 					if length_act='1' then
-						length(data'range) := unsigned(data);
-						length := rotate_left(length, data'length);
-						if rgtr_last='1' then
-							if data'length < 8 then
-								length(0) := '1';
-								length := rotate_left(length, unsigned_num_bits(8/data'length)-1);
-							end if;
-							length := length - 1;
-						end if;
+						xxx := rotate_left(xxx, data'length);
+						xxx(data'range) := reverse(unsigned(data));
+					elsif length(0)='1' then
+						length := (others => '0');
+					elsif data_act='1' then
+						length := length - 1;
 					end if;
 				end if;
 			else
 				length := (others => '0');
 			end if;
-			rgtr_frm  <= frm and not length(0);
-			rgtr_irdy <= rgtr_frm;
 		end if;
+		rgtr_frm  <= frm and not length(0);
+		rgtr_irdy <= frm and not length(0);
 	end process;
 end;

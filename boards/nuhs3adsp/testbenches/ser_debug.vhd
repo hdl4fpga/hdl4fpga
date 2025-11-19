@@ -201,7 +201,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"dddddddd"             &
 			"dddddddd"             &
 			"dddddddd,"            &
-		"udp:0x"                  &
+		"udp:0x"                   &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
 			"0054"                 & -- IP Length
@@ -213,9 +213,10 @@ architecture nuhs3adsp_serdebug of testbench is
 			"c0a8000e"             & -- IP Destiantion IP Address
 			"0046"                 &
 			"0047"                 &
-			"dddddddd"             &
-			"dddddddd"             &
-			"ddddddda,"            &
+			"0000"                 &
+			"0000"                 &
+			"01004200,"              &
+			"dddddddd,"            &
 		"dhcp:0x"                  &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
