@@ -159,7 +159,7 @@ begin
 				variable rd_cntr : unsigned (rd_addr'range);
 			begin
 				if rising_edge(miirx_clk) then
-					ne_addr <= wr_cntr /= rd_cntr;
+					ne_addr <= wr_cntr /= (rd_cntr+1);
 				end if;
 
 				if rising_edge(miirx_clk) then

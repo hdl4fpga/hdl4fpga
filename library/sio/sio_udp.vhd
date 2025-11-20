@@ -125,6 +125,9 @@ begin
 			if (udppylrx_frm or udppylrx_irdy)='1' then
 				shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
 				shr_data := rotate_left(shr_data, udppylrx_data'length);
+			elsif (pylrx_frm or pylrx_irdy)='1' then
+				shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
+				shr_data := rotate_left(shr_data, udppylrx_data'length);
 			else
 				shr_data := reverse(prefix, 8);
 			end if;

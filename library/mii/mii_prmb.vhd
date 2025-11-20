@@ -66,7 +66,7 @@ begin
 					end loop;
 				end if;
 			end if;
-			dll_frm <= mii_frm and vld;
 		end if;
+		dll_frm <= mii_frm and vld;
 	end process;
 end;

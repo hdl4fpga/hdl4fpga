@@ -215,8 +215,8 @@ architecture nuhs3adsp_serdebug of testbench is
 			"0047"                 &
 			"0000"                 &
 			"0000"                 &
-			"01004200,"              &
-			"dddddddd,"            &
+			"010042,"              &
+			"ddddddab,"            &
 		"dhcp:0x"                  &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
