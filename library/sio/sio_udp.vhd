@@ -30,37 +30,37 @@ use hdl4fpga.ipoepkg.all;
 
 entity sio_udp is
 	generic (
-		ipv4addr      : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
-		hwaddr        : std_logic_vector := x"00_40_00_01_02_03");
+		ipv4addr   : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
+		hwaddr     : std_logic_vector := x"00_40_00_01_02_03");
 	port (
-		dhcpcd_req    : in  std_logic := '0';
-		dhcpcd_rdy    : buffer std_logic := '0';
+		dhcpcd_req : in  std_logic := '0';
+		dhcpcd_rdy : buffer std_logic := '0';
 
-		miirx_clk     : in  std_logic;
-		miirx_frm     : in  std_logic;
-		miirx_irdy    : in  std_logic;
-		miirx_trdy    : out std_logic := '1';
-		miirx_data    : in  std_logic_vector;
+		miirx_clk  : in  std_logic;
+		miirx_frm  : in  std_logic;
+		miirx_irdy : in  std_logic;
+		miirx_trdy : out std_logic := '1';
+		miirx_data : in  std_logic_vector;
 
-		miitx_clk     : in  std_logic;
-		miitx_frm     : buffer std_logic;
-		miitx_irdy    : buffer std_logic;
-		miitx_trdy    : in  std_logic := '1';
-		miitx_data    : out std_logic_vector;
+		miitx_clk  : in  std_logic;
+		miitx_frm  : buffer std_logic;
+		miitx_irdy : buffer std_logic;
+		miitx_trdy : in  std_logic := '1';
+		miitx_data : out std_logic_vector;
 
-		so_clk        : in  std_logic;
-		so_frm        : out std_logic;
-		so_irdy       : buffer std_logic;
-		so_trdy       : in  std_logic := '1';
-		so_data       : out std_logic_vector;
+		so_clk     : in  std_logic;
+		so_frm     : out std_logic;
+		so_irdy    : buffer std_logic;
+		so_trdy    : in  std_logic := '1';
+		so_data    : out std_logic_vector;
 
-		si_clk        : in  std_logic;
-		si_frm        : in  std_logic;
-		si_irdy       : in  std_logic;
-		si_trdy       : out std_logic;
-		si_data       : in  std_logic_vector;
+		si_clk     : in  std_logic;
+		si_frm     : in  std_logic;
+		si_irdy    : in  std_logic;
+		si_trdy    : out std_logic;
+		si_data    : in  std_logic_vector;
 
-		tp            : out std_logic_vector(1 to 32));
+		tp         : out std_logic_vector(1 to 32));
 end;
 
 architecture struct of sio_udp is
@@ -168,5 +168,4 @@ begin
 		tx_irdy => udppyltx_irdy,
 		tx_trdy => udppyltx_trdy,
 		tx_data => udppyltx_data);
-
 end;
