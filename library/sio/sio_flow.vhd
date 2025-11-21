@@ -68,7 +68,6 @@ architecture struct of sio_flow is
 
 	signal pyl_frm   : std_logic_vector(0 to 2-1);
 	signal pyl_irdy  : std_logic_vector(0 to 2-1);
-	signal pyl_trdy  : std_logic_vector(0 to 2-1);
 
 	signal rply_req  : std_logic := '0';
 	signal rply_rdy  : std_logic := '0';
@@ -110,8 +109,7 @@ begin
 		data     => rx_data,
 		rid_act  => rid_act,
 		pyl_frm  => pyl_frm,
-		pyl_irdy => pyl_irdy,
-		pyl_trdy => pyl_trdy);
+		pyl_irdy => pyl_irdy);
 
 	ack_b : block
 
@@ -183,7 +181,7 @@ begin
 		port map (
 			si_clk  => rx_clk,
 			si_frm  => rgtr_frm,
-			si_irdy => ram_irdy,
+			si_irdy => rgtr_irdy,
 			si_data => ram_data,
 			so_clk  => tx_clk,
 			so_frm  => ackrx_frm,

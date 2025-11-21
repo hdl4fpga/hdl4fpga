@@ -25,6 +25,7 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
+use hdl4fpga.base.all;
 
 entity sio_decode is
 	generic (
@@ -49,19 +50,21 @@ end;
 architecture beh of sio_decode is
 	constant length : natural := length(rids);
 begin
-	process (length_act, pyl_act, clk)
-		variable rid : unsigned(0 to 8-1);
+	process (frm, irdy, rid_act, length_act, pyl_act, clk)
+		variable rid : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
 			if rid_act='1' then
-				rid(data'range) := unsigned(data);
-				rid := rotate_left(rid, data'left);
+				rid(data'reverse_range) := reverse(unsigned(data));
+				rid := rotate_right(rid, data'length);
 			end if;
 		end if;
-		pyl_frm <= (others => '0');
+		pyl_frm  <= (others => '0');
+		pyl_irdy <= (others => '0');
 		for i in 0 to length-1 loop
-			if hdo(rids)**(".["&natural'image(i)&"]")=std_logic_vector(rid) then
-				pyl_frm(i) <= pyl_act or length_act;
+			if hdo(rids)**("["&natural'image(i)&"]")=std_logic_vector(rid) then
+				pyl_frm(i)  <= frm  and not rid_act and (pyl_act or length_act);
+				pyl_irdy(i) <= irdy and not rid_act and (pyl_act or length_act);
 			end if;
 		end loop;
 	end process;
