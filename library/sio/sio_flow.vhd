@@ -212,7 +212,7 @@ begin
 
 			ack_i : entity hdl4fpga.sio_ram
 			generic map (
-				bitdata => (0 to 24-1 => '-'))
+				bitdata => (0 to 16-1 => '-'))
 			port map (
 				si_clk  => tx_clk,
 				si_frm  => ackrx_frm,
