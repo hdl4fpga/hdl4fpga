@@ -24,9 +24,14 @@ use ieee.std_logic_1164.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
+use hdl4fpga.ep2c_profiles.all;
+
+library altera_mf;
+use altera_mf.altera_mf_components.all;
 
 architecture ser_debug of acyiib is
 
+	constant usb_oversampling : natural := 3;
 	constant settings : string := "{"                                                      &
 		"io_link: io_ipoe,"                                                                &
 		"video:{"                                                                          &
@@ -34,22 +39,79 @@ architecture ser_debug of acyiib is
 			"pixel:"   & "{R:1,G:1,B:1}}}";
 
 	signal video_clk : std_logic;
+	signal videoio_clk : std_logic;
+	signal video_shift_clk : std_logic;
+	signal video_lck : std_logic;
 	alias  video_hzsync is p2_io1(3);
 	alias  video_vtsync is p2_io1(4);
-	signal video_pixel  : std_logic_vector(0 to 3-1);
+	alias video_pixel : std_logic_vector(0 to 3-1) is p2_io1(5 to 7);
 
-	alias ser_clk  is p2_io1(8);
-	alias ser_frm  is p2_io1(9);
-	alias ser_irdy is p2_io1(10);
-	alias ser_data is p2_io1(11 to 11);
+	alias usb_fpga_dp is p2_io1(8);
+	alias usb_fpga_dn is p2_io1(9);
+	alias usb_clk     is p2_io1(10);
+	alias rxdv        is p2_io2(16);
+	alias rxbs        is p2_io2(17);
+	alias rxd         is p2_io2(18);
+	alias txen        is p2_io2(19);
+	alias txbs        is p2_io2(20);
+	alias txd         is p2_io2(21);
+
+	signal ser_clk  : std_logic;
+	signal ser_frm  : std_logic;
+	signal ser_irdy : std_logic;
+	signal ser_data : std_logic_vector(0 to 0);
+
 begin
 
-	process (osc_50mhz)
-	begin
-		if rising_edge(osc_50mhz) then
-			video_clk <= not video_clk;
-		end if;
-	end process;
+	videopll_e : entity hdl4fpga.ep2c_videodcm
+	generic map (
+		dcm => video_dcm(".'50mhz'.'40mhz'", 12.0e6*real(usb_oversampling)))
+	port map (
+		clk             => osc_50mhz,
+		video_clk       => video_clk,
+		videoio_clk     => videoio_clk,
+		video_shift_clk => video_shift_clk,
+		locked          => video_lck);
+
+	usbdev_e : entity hdl4fpga.usbdev
+	generic map (
+		oversampling => usb_oversampling)
+	port map (
+		-- tp   => tp,
+		dp   => usb_fpga_dp,
+		dn   => usb_fpga_dn,
+		clk  => videoio_clk,
+		-- dev_cfgd => cfgd,
+		-- cken => cken,
+		txen => txen, 
+		txbs => txbs,
+		txd  => txd,
+		rxdv => rxdv, 
+		rxbs => rxbs,
+		rxd  => rxd);
+		
+	clk_i : altddio_bidir
+	generic map (
+		width             => 1,
+		extend_oe_disable => "OFF",
+		invert_output     => "OFF",
+		power_up_high     => "OFF",
+		oe_reg            => "UNREGISTERED",
+		lpm_hint          => "UNUSED",
+		lpm_type          => "altddio_out",
+		intended_device_family => "Cyclone II")
+	port map (
+		datain_h(0) => '0',
+		datain_l(0) => '1',
+		outclock    => videoio_clk,
+		outclocken  => '1',
+		oe          => '1',
+		padio(0)    => usb_clk);
+
+	ser_clk     <= videoio_clk;
+	ser_frm     <= rxdv; 
+	ser_irdy    <= rxbs;
+	ser_data(0) <= rxd;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
@@ -66,5 +128,5 @@ begin
 		video_blank  => open,
 		video_pixel  => video_pixel);
 
-	p2_io2(20 to 22) <= video_pixel;
+	p2_io1(5 to 7) <= video_pixel;
 end;

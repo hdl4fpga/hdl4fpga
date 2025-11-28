@@ -29,7 +29,7 @@ entity acyiib is
 		osc_50mhz : in std_logic;
 		p1        : inout std_logic_vector(1  to 24);
 		p2_io1    : inout std_logic_vector(3  to 11);
-		p2_in     : inout std_logic_vector(12 to 15);
+		p2_in     : in    std_logic_vector(12 to 15);
 		p2_io2    : inout std_logic_vector(16 to 25));
 
 	attribute chip_pin : string;
