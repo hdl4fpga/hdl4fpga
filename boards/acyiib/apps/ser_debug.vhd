@@ -128,5 +128,4 @@ begin
 		video_blank  => open,
 		video_pixel  => video_pixel);
 
-	p2_io1(5 to 7) <= video_pixel;
 end;
