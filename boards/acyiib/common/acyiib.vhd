@@ -27,13 +27,17 @@ entity acyiib is
 		debug : boolean := false);
 	port (
 		osc_50mhz : in std_logic;
-		p1        : inout std_logic_vector(1 to 24);
-		p2        : inout std_logic_vector(3 to 25));
+		p1        : inout std_logic_vector(1  to 24);
+		p2_io1    : inout std_logic_vector(3  to 11);
+		p2_in     : inout std_logic_vector(12 to 15);
+		p2_io2    : inout std_logic_vector(16 to 25));
 
 	attribute chip_pin : string;
 	attribute chip_pin of osc_50mhz : signal is "17";
 	attribute chip_pin of p1        : signal is "40,41,42,43,44,45,47,48,51,52,53,55,57,58,59,60,63,64,65,67,69,70,71,72";
-	attribute chip_pin of p2        : signal is "73,74,75,76,79,80,81,86,87,88,89,90,91,92,93,94,96,97,99,100,101,103,104";
+	attribute chip_pin of p2_io1    : signal is "73,74,75,76,79,80,81,86,87";
+	attribute chip_pin of p2_in     : signal is "88,89,90,91";
+	attribute chip_pin of p2_io2    : signal is "92,93,94,96,97,99,100,101,103,104";
 
 	constant osc50mhz_freq : real := 50.0e6;
 
@@ -62,29 +66,29 @@ entity acyiib is
 	alias pin71  is p1(23);
 	alias pin72  is p1(24);
 
-	alias pin73  is p2(3);
-	alias pin74  is p2(4);
-	alias pin75  is p2(5);
-	-- alias pin76  is p2(6);
-	alias pin79  is p2(7);
-	alias pin80  is p2(8);
-	alias pin81  is p2(9);
-	alias pin86  is p2(10);
-	alias pin87  is p2(11);
-	alias pin88  is p2(12);
-	alias pin89  is p2(13);
-	alias pin90  is p2(14);
-	alias pin91  is p2(15);
-	alias pin92  is p2(16);
-	alias pin93  is p2(17);
-	alias pin94  is p2(18);
-	alias pin96  is p2(19);
-	alias pin97  is p2(20);
-	alias pin99  is p2(21);
-	alias pin100 is p2(22);
-	alias pin101 is p2(23);
-	alias pin103 is p2(24);
-	alias pin104 is p2(25);
+	alias pin73  is p2_io1(3);
+	alias pin74  is p2_io1(4);
+	alias pin75  is p2_io1(5);
+	alias pin76  is p2_io1(6);
+	alias pin79  is p2_io1(7);
+	alias pin80  is p2_io1(8);
+	alias pin81  is p2_io1(9);
+	alias pin86  is p2_io1(10);
+	alias pin87  is p2_io1(11);
+	alias pin88  is p2_in(12);
+	alias pin89  is p2_in(13);
+	alias pin90  is p2_in(14);
+	alias pin91  is p2_in(15);
+	alias pin92  is p2_io2(16);
+	alias pin93  is p2_io2(17);
+	alias pin94  is p2_io2(18);
+	alias pin96  is p2_io2(19);
+	alias pin97  is p2_io2(20);
+	alias pin99  is p2_io2(21);
+	alias pin100 is p2_io2(22);
+	alias pin101 is p2_io2(23);
+	alias pin103 is p2_io2(24);
+	alias pin104 is p2_io2(25);
 
 end;
 

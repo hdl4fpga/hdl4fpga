@@ -34,14 +34,14 @@ architecture ser_debug of acyiib is
 			"pixel:"   & "{R:1,G:1,B:1}}}";
 
 	signal video_clk : std_logic;
-	alias  video_hzsync is p2(3);
-	alias  video_vtsync is p2(4);
+	alias  video_hzsync is p2_io1(3);
+	alias  video_vtsync is p2_io1(4);
 	signal video_pixel  : std_logic_vector(0 to 3-1);
 
-	alias ser_clk  is p2(8);
-	alias ser_frm  is p2(9);
-	alias ser_irdy is p2(10);
-	alias ser_data is p2(11 to 11);
+	alias ser_clk  is p2_io1(8);
+	alias ser_frm  is p2_io1(9);
+	alias ser_irdy is p2_io1(10);
+	alias ser_data is p2_io1(11 to 11);
 begin
 
 	process (osc_50mhz)
@@ -66,5 +66,5 @@ begin
 		video_blank  => open,
 		video_pixel  => video_pixel);
 
-	p2(20 to 22) <= video_pixel;
+	p2_io2(20 to 22) <= video_pixel;
 end;

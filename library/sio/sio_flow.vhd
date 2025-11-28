@@ -113,7 +113,7 @@ begin
 
 	ack_b : block
 
-		signal rom_data : std_logic_vector(rx_data'range);
+		signal rom_data  : std_logic_vector(rx_data'range);
 		signal ram_frm   : std_logic;
 		signal ram_irdy  : std_logic;
 		signal ram_data  : std_logic_vector(rx_data'range);
