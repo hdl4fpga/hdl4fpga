@@ -31,6 +31,8 @@ use altera_mf.altera_mf_components.all;
 
 architecture ser_debug of acyiib is
 
+	constant up   : std_logic := '0';
+	constant down : std_logic := '1';
 	constant usb_oversampling : natural := 3;
 	constant settings : string := "{"                                                      &
 		"io_link: io_ipoe,"                                                                &
@@ -38,23 +40,31 @@ architecture ser_debug of acyiib is
 			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'640x480'.'@60'.'25mhz'") & ',' &
 			"pixel:"   & "{R:1,G:1,B:1}}}";
 
-	signal video_clk : std_logic;
-	signal videoio_clk : std_logic;
+	signal video_clk    : std_logic;
+	signal videoio_clk  : std_logic;
 	signal video_shift_clk : std_logic;
-	signal video_lck : std_logic;
+	signal video_lck    : std_logic;
 	alias  video_hzsync is p2_io1(3);
 	alias  video_vtsync is p2_io1(4);
-	alias video_pixel : std_logic_vector(0 to 3-1) is p2_io1(5 to 7);
+	alias  video_pixel  : std_logic_vector(0 to 3-1) is p2_io1(5 to 7);
 
-	alias usb_fpga_dp is p2_io1(8);
-	alias usb_fpga_dn is p2_io1(9);
-	alias usb_clk     is p2_io1(10);
-	alias rxdv        is p2_io2(16);
-	alias rxbs        is p2_io2(17);
-	alias rxd         is p2_io2(18);
-	alias txen        is p2_io2(19);
-	alias txbs        is p2_io2(20);
-	alias txd         is p2_io2(21);
+	signal usb_cfgd    : std_logic;
+	signal usb_cken    : std_logic;
+	signal usb_tp      : std_logic_vector(1 to 32);
+	alias  usb_fpga_dp is p2_io1(8);
+	alias  usb_fpga_dn is p2_io1(9);
+	alias  usb_clk     is p2_io1(10);
+	alias  rxdv        is p2_io2(16);
+	alias  rxbs        is p2_io2(17);
+	alias  rxd         is p2_io2(18);
+	alias  txen        is p2_io2(19);
+	alias  txbs        is p2_io2(20);
+	alias  txd         is p2_io2(21);
+
+	signal fltr_on : std_logic;
+	signal fltr_en : std_logic;
+	signal fltr_bs : std_logic;
+	signal fltr_d  : std_logic;
 
 	signal ser_clk  : std_logic;
 	signal ser_frm  : std_logic;
@@ -77,12 +87,12 @@ begin
 	generic map (
 		oversampling => usb_oversampling)
 	port map (
-		-- tp   => tp,
+		tp   => usb_tp,
 		dp   => usb_fpga_dp,
 		dn   => usb_fpga_dn,
 		clk  => videoio_clk,
-		-- dev_cfgd => cfgd,
-		-- cken => cken,
+		cken => usb_cken,
+		dev_cfgd => usb_cfgd,
 		txen => txen, 
 		txbs => txbs,
 		txd  => txd,
@@ -90,6 +100,34 @@ begin
 		rxbs => rxbs,
 		rxd  => rxd);
 		
+	process (videoio_clk)
+	begin
+		if rising_edge(videoio_clk) then
+			if up='1' then
+				fltr_on <= '0';
+			elsif down='1' then
+				fltr_on <= '1';
+			end if;
+		end if;
+	end process;
+
+	usbfltrsof_e : entity hdl4fpga.usbfltr_sof
+	port map (
+		usb_clk  => videoio_clk,
+		usb_cken => usb_cken,
+		phy_en   => usb_tp(1),
+		phy_bs   => usb_tp(2),
+		phy_d    => usb_tp(3),
+		fltr_on  => fltr_on,
+		fltr_en  => fltr_en,
+		fltr_bs  => fltr_bs,
+		fltr_d   => fltr_d);
+
+	ser_clk     <= videoio_clk;
+	ser_frm     <= fltr_en; 
+	ser_irdy    <= not fltr_bs;
+	ser_data(0) <= fltr_d;
+
 	clk_i : altddio_bidir
 	generic map (
 		width             => 1,
@@ -107,11 +145,6 @@ begin
 		outclocken  => '1',
 		oe          => '1',
 		padio(0)    => usb_clk);
-
-	ser_clk     <= videoio_clk;
-	ser_frm     <= rxdv; 
-	ser_irdy    <= rxbs;
-	ser_data(0) <= rxd;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (

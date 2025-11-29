@@ -66,6 +66,7 @@ set_global_assignment -name RESERVE_ALL_UNUSED_PINS "AS INPUT TRI-STATED"
 set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"
 set_global_assignment -name RESERVE_ASDO_AFTER_CONFIGURATION "USE AS REGULAR IO"
 set_global_assignment -name RESERVE_ALL_UNUSED_PINS_NO_OUTPUT_GND "AS INPUT TRI-STATED"
+set_global_assignment -name VHDL_FILE ../../../../library/usb/usbfltr_sof.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbpkt_tx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbpkt_rx.vhd -library hdl4fpga
 set_global_assignment -name VHDL_FILE ../../../../library/usb/usbpkg.vhd -library hdl4fpga
