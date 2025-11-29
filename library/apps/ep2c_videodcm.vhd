@@ -127,11 +127,11 @@ architecture def of ep2c_videodcm is
 	signal dummy_inclk1 : std_logic;
 	signal dummy_clks   : std_logic_vector(3-1 downto 0);
 
-	constant m  : natural := hdo(dcm)**".m"; --16;
-	constant n  : natural := hdo(dcm)**".n"; --1;
-	constant c1 : natural := hdo(dcm)**".c1"; --2;
-	constant c0 : natural := hdo(dcm)**".c0"; --video_ratio*2;
-	constant c2 : natural := hdo(dcm)**".c2"; --natural(clkref_freq*real(m)/(2.0*real(n)*clkio_freq));
+	constant m  : natural := hdo(dcm)**".m";
+	constant n  : natural := hdo(dcm)**".n";
+	constant c1 : natural := hdo(dcm)**".c1";
+	constant c0 : natural := hdo(dcm)**".c0";
+	constant c2 : natural := hdo(dcm)**".c2";
 
 begin
 
