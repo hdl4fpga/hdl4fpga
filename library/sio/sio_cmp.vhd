@@ -72,7 +72,7 @@ begin
 				active := '1';
 			end if;
 		end if;
-		equ <= cy and not (mr_frm or mr_irdy) and active;
+		equ <= cy and not (mr_frm or mr_irdy);
 	end process;
 
 end;
