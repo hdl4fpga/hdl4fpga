@@ -80,8 +80,10 @@ architecture struct of sio_udp is
 	signal udppyltx_trdy : std_ulogic;
 	signal udppyltx_data : std_logic_vector(miitx_data'range);
 
-	signal fcs_sb		 :  std_logic;
-	signal fcs_vld 		 :  std_logic;
+	signal fcs_sb        : std_logic;
+	signal fcs_vld       : std_logic;
+	signal pylfcs_sb     : std_logic;
+	signal pylfcs_vld    : std_logic;
 
 begin
 
@@ -141,6 +143,26 @@ begin
 		pylrx_data <= std_logic_vector(shr_data(0 to udppylrx_data'length-1));
 	end process;
 
+	process (miirx_clk)
+		variable vld : std_logic;
+		variable sb  : std_logic;
+	begin
+		if rising_edge(miirx_clk) then
+			if pylrx_frm='1' then
+				if fcs_sb='1' then
+					vld := fcs_vld;
+					vld := '1';
+					sb  := '1';
+				end if;
+			else
+				pylfcs_vld <= vld;
+				pylfcs_sb  <= sb;
+				vld := '0';
+				sb  := '0';
+			end if;
+		end if;
+	end process;
+
 	sio_flow_e : entity hdl4fpga.sio_flow
 	port map (
 		rx_clk  => miirx_clk,
@@ -148,8 +170,8 @@ begin
 		rx_irdy => pylrx_irdy,
 		rx_trdy => pylrx_trdy,
 		rx_data => pylrx_data,
-		fcs_sb	=> fcs_sb,
-		fcs_vld => fcs_vld,
+		fcs_sb	=> pylfcs_sb,
+		fcs_vld => pylfcs_vld,
 
 		so_clk  => so_clk,
 		so_frm  => so_frm,

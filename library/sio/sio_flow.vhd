@@ -227,7 +227,7 @@ begin
 			process (rx_clk)
 			begin
 				if rising_edge(rx_clk) then
-					if dup_equ='0' then
+					if dup_equ/='1' then
 						dup_equ <= cmp_equ;
 					elsif fcs_sb='1' then
 						dup_equ <= '0';
@@ -238,9 +238,11 @@ begin
 		end block;
 
 		commit0   <= pyl_frm(0) or pyl_irdy(0);
-		rollback0 <= not rgtr_frm or rgtr_irdy;
+		rollback0 <= not commit0;
 		fifo0_i : entity hdl4fpga.fifo
 		generic map (
+			check_sov => true,
+			check_dov => true,
 			max_depth => (4*8)/rx_data'length)
 		port map (
 			src_clk    => rx_clk,
@@ -248,8 +250,8 @@ begin
 			src_trdy   => open,
 			src_data   => rx_data,
 
-			commit     => commit,
-			rollback   => rollback,
+			commit     => commit0,
+			rollback   => rollback0,
 
 			dst_clk    => rx_clk,
 			dst_irdy   => fifo_irdy,
@@ -260,6 +262,7 @@ begin
 		rollback <= fcs_sb and not fcs_vld;
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
+			check_sov => true,
 			max_depth => (64*8)/rx_data'length)
 		port map (
 			src_clk    => rx_clk,
