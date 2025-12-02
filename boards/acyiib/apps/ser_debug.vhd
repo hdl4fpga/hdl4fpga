@@ -37,15 +37,15 @@ architecture ser_debug of acyiib is
 	constant settings : string := "{"                                                      &
 		"io_link: io_ipoe,"                                                                &
 		"video:{"                                                                          &
-			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'640x480'.'@60'.'25mhz'") & ',' &
+			"timings:" & string'(hdl4fpga.videopkg.timings_db**".'800x600'.'@60'.'40mhz'") & ',' &
 			"pixel:"   & "{R:1,G:1,B:1}}}";
 
 	signal video_clk    : std_logic;
 	signal videoio_clk  : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_lck    : std_logic;
-	alias  video_hzsync is p2_io1(3);
-	alias  video_vtsync is p2_io1(4);
+	alias  video_hzsync is p2_io1(4);
+	alias  video_vtsync is p2_io1(3);
 	alias  video_pixel  : std_logic_vector(0 to 3-1) is p2_io1(5 to 7);
 
 	signal usb_cfgd    : std_logic;
