@@ -174,7 +174,7 @@ begin
 		end process;
 
 		ackrx_frm  <= (rply_req xor rply_rdy);
-		ackrx_irdy <= ackrx_frm;
+		-- ackrx_irdy <= ackrx_frm;
 		mem_i : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => (0 to 24-1 => '-'))
@@ -212,8 +212,8 @@ begin
 
 			ack_i : entity hdl4fpga.sio_ram
 			generic map (
-				-- bitdata => (0 to 16-1 => '-'))
-				bitdata => reverse(x"0042",8))
+				bitdata => (0 to 16-1 => '-'))
+				-- bitdata => reverse(x"0042",8))
 			port map (
 				si_clk  => tx_clk,
 				si_frm  => ackrx_frm,
@@ -237,7 +237,27 @@ begin
 
 		end block;
 
-		commit0   <= pyl_frm(0) or pyl_irdy(0);
+		process (pyl_frm, pyl_irdy, rx_clk)
+			type states is ();
+			variable state : states;
+		begin
+			if rising_edge(rx_clk) then
+				case state is 
+					when s1 =>
+						if pyl_frm(0)='1' then
+							state := s2;
+						end if;
+					when s2 => 
+						if pyl_frm(1)='1' then
+							state := s3;
+						end if;
+					when s3 =>
+
+
+				end case;
+			end if;
+		end process;
+st		commit0   <= (pyl_frm(0) or pyl_irdy(0)) or (pyl_frm(1) or pyl_irdy(1));
 		rollback0 <= not commit0;
 		fifo0_i : entity hdl4fpga.fifo
 		generic map (
@@ -259,7 +279,7 @@ begin
 			dst_data   => fifo_data);
 
 		commit   <= fcs_sb and fcs_vld;
-		rollback <= fcs_sb and not fcs_vld;
+		rollback <= '0'; --fcs_sb and not fcs_vld;
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
 			check_sov => true,
