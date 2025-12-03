@@ -164,11 +164,11 @@ begin
 	process (video_clk)
 	begin
 		if rising_edge(video_clk) then
-			p2_io1(4) <= video_hzsync;
-			p2_io1(3) <= video_vtsync;
-			p2_io1(5) <= video_pixel(0);
-			p2_io1(6) <= video_pixel(1);
-			p2_io1(7) <= video_pixel(2);
+			pin74 <= video_hzsync;
+			pin73 <= video_vtsync;
+			pin75 <= video_pixel(0);
+			pin76 <= video_pixel(1);
+			pin79 <= video_pixel(2);
 		end if;
 	end process;
 
