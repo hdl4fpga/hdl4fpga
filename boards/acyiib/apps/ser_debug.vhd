@@ -44,9 +44,9 @@ architecture ser_debug of acyiib is
 	signal videoio_clk  : std_logic;
 	signal video_shift_clk : std_logic;
 	signal video_lck    : std_logic;
-	alias  video_hzsync is p2_io1(4);
-	alias  video_vtsync is p2_io1(3);
-	alias  video_pixel  : std_logic_vector(0 to 3-1) is p2_io1(5 to 7);
+	signal video_hzsync : std_logic;
+	signal video_vtsync : std_logic;
+	signal video_pixel  : std_logic_vector(0 to 3-1);
 
 	signal usb_cfgd    : std_logic;
 	signal usb_cken    : std_logic;
@@ -160,5 +160,16 @@ begin
 		video_vtsync => video_vtsync,
 		video_blank  => open,
 		video_pixel  => video_pixel);
+
+	process (video_clk)
+	begin
+		if rising_edge(video_clk) then
+			p2_io1(4) <= video_hzsync;
+			p2_io1(3) <= video_vtsync;
+			p2_io1(5) <= video_pixel(0);
+			p2_io1(6) <= video_pixel(1);
+			p2_io1(5) <= video_pixel(2);
+		end if;
+	end process;
 
 end;
