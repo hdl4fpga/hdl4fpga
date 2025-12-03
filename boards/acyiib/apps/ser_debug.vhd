@@ -168,7 +168,7 @@ begin
 			p2_io1(3) <= video_vtsync;
 			p2_io1(5) <= video_pixel(0);
 			p2_io1(6) <= video_pixel(1);
-			p2_io1(5) <= video_pixel(2);
+			p2_io1(7) <= video_pixel(2);
 		end if;
 	end process;
 
