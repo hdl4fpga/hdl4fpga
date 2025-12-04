@@ -237,27 +237,37 @@ begin
 
 		end block;
 
-		process (pyl_frm, pyl_irdy, rx_clk)
-			type states is ();
+		process (pyl_irdy, rx_clk)
+			type states is (s1, s2, s3);
 			variable state : states;
 		begin
 			if rising_edge(rx_clk) then
-				case state is 
+				if (rgtr_frm or rgtr_irdy)='1' then
+					case state is
 					when s1 =>
-						if pyl_frm(0)='1' then
+						if pyl_irdy(0)='1' then
 							state := s2;
 						end if;
 					when s2 => 
-						if pyl_frm(1)='1' then
+						if pyl_irdy(1)='1' then
 							state := s3;
 						end if;
 					when s3 =>
-
-
-				end case;
+						if pyl_irdy(1)='0' then
+							state := s1;
+						end if;
+					end case;
+				else
+					state := s1;
+				end if;
+			end if;
+			if state=s2 then
+				commit0 <= '1';
+			else
+				commit0 <= pyl_irdy(0) or pyl_irdy(1);
 			end if;
 		end process;
-st		commit0   <= (pyl_frm(0) or pyl_irdy(0)) or (pyl_frm(1) or pyl_irdy(1));
+
 		rollback0 <= not commit0;
 		fifo0_i : entity hdl4fpga.fifo
 		generic map (
