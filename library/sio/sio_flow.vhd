@@ -69,9 +69,6 @@ architecture struct of sio_flow is
 	signal pyl_frm   : std_logic_vector(0 to 2-1);
 	signal pyl_irdy  : std_logic_vector(0 to 2-1);
 
-	signal rply_req  : std_logic := '0';
-	signal rply_rdy  : std_logic := '0';
-
 	signal tx_frms   : std_logic_vector(0 to 2-1);
 	signal tx_irdys  : std_logic_vector(0 to 2-1);
 	signal tx_trdys  : std_logic_vector(0 to 2-1) := (others => '1');
@@ -162,33 +159,22 @@ begin
 			rx_data  when ram_irdy='1' else
 			rom_data;
 
-		process (tx_clk)
-		begin
-			if rising_edge(tx_clk) then
-				if (ackrx_last and ackrx_irdy and ackrx_trdy)='1' then
-					rply_rdy <= rply_req;
-				elsif (fcs_sb and fcs_vld and not dup_equ)='1' then
-					rply_req <= not rply_rdy;
-				end if;
-			end if;
-		end process;
-
-		ackrx_frm  <= (rply_req xor rply_rdy);
 		-- ackrx_irdy <= ackrx_frm;
-		mem_i : entity hdl4fpga.sio_ram
-		generic map (
-			bitdata => (0 to 24-1 => '-'))
-		port map (
-			si_clk  => rx_clk,
-			si_frm  => rgtr_frm,
-			si_irdy => rgtr_irdy,
-			si_data => ram_data,
-			so_clk  => tx_clk,
-			so_frm  => ackrx_frm,
-			so_irdy => ackrx_irdy,
-			so_trdy => ackrx_trdy,
-			so_last => ackrx_last,
-			so_data => ackrx_data);
+		tx_frms(0) <= tx_irdys(0);
+		-- mem_i : entity hdl4fpga.sio_ram
+		-- generic map (
+		-- 	bitdata => (0 to 24-1 => '-'))
+		-- port map (
+		-- 	si_clk  => rx_clk,
+		-- 	si_frm  => rgtr_frm,
+		-- 	si_irdy => rgtr_irdy,
+		-- 	si_data => ram_data,
+		-- 	so_clk  => tx_clk,
+		-- 	so_frm  => ackrx_frm,
+		-- 	so_irdy => ackrx_irdy,
+		-- 	so_trdy => ackrx_trdy,
+		-- 	so_last => ackrx_last,
+		-- 	so_data => ackrx_data);
 
 		dup_b : block
 
@@ -238,30 +224,26 @@ begin
 		end block;
 
 		process (pyl_irdy, rx_clk)
-			type states is (s1, s2, s3);
+			type states is (s_start, s_bridge);
 			variable state : states;
 		begin
 			if rising_edge(rx_clk) then
 				if (rgtr_frm or rgtr_irdy)='1' then
 					case state is
-					when s1 =>
+					when s_start =>
 						if pyl_irdy(0)='1' then
-							state := s2;
+							state := s_bridge;
 						end if;
-					when s2 => 
+					when s_bridge =>
 						if pyl_irdy(1)='1' then
-							state := s3;
-						end if;
-					when s3 =>
-						if pyl_irdy(1)='0' then
-							state := s1;
+							state := s_start;
 						end if;
 					end case;
 				else
-					state := s1;
+					state := s_start;
 				end if;
 			end if;
-			if state=s2 then
+			if state=s_bridge then
 				commit0 <= '1';
 			else
 				commit0 <= pyl_irdy(0) or pyl_irdy(1);
@@ -289,10 +271,11 @@ begin
 			dst_data   => fifo_data);
 
 		commit   <= fcs_sb and fcs_vld;
-		rollback <= '0'; --fcs_sb and not fcs_vld;
+		rollback <= fcs_sb and not fcs_vld;
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
 			check_sov => true,
+			check_dov => true,
 			max_depth => (64*8)/rx_data'length)
 		port map (
 			src_clk    => rx_clk,
