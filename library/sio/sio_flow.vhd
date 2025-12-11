@@ -159,31 +159,30 @@ begin
 			rx_data  when ram_irdy='1' else
 			rom_data;
 
-		-- ackrx_irdy <= ackrx_frm;
 		tx_frms(0) <= tx_irdys(0);
-		-- mem_i : entity hdl4fpga.sio_ram
-		-- generic map (
-		-- 	bitdata => (0 to 24-1 => '-'))
-		-- port map (
-		-- 	si_clk  => rx_clk,
-		-- 	si_frm  => rgtr_frm,
-		-- 	si_irdy => rgtr_irdy,
-		-- 	si_data => ram_data,
-		-- 	so_clk  => tx_clk,
-		-- 	so_frm  => ackrx_frm,
-		-- 	so_irdy => ackrx_irdy,
-		-- 	so_trdy => ackrx_trdy,
-		-- 	so_last => ackrx_last,
-		-- 	so_data => ackrx_data);
 
 		dup_b : block
 
-			signal cmp_frm  : std_logic;
-			signal cmp_irdy : std_logic;
-			signal cmp_data : std_logic_vector(rx_data'range);
-			signal cmp_equ  : std_logic;
+			signal cmp_frm   : std_logic;
+			signal cmp_irdy  : std_logic;
+			signal cmp_data  : std_logic_vector(rx_data'range);
+			signal cmp2_data : std_logic_vector(rx_data'range);
+			signal cmp1_data : std_logic_vector(rx_data'range);
+			signal cmp_equ   : std_logic;
+
+			signal ram1_frm  : std_logic;
+			signal ram1_irdy : std_logic;
+
+			signal ram2_frm  : std_logic;
+			signal ram2_irdy : std_logic;
+
+			signal ram_t     : std_logic;
 
 		begin
+
+			cmp_data  <= 
+				cmp1_data when not ram_t='0' else
+				cmp2_data;
 
 			cmp_i : entity hdl4fpga.sio_cmp
 			port map (
@@ -196,19 +195,37 @@ begin
 				sl_data => cmp_data,
 				equ     => cmp_equ);
 
-			ack_i : entity hdl4fpga.sio_ram
+			ram1_frm  <= ackrx_frm  and not ram_t;
+			ram1_irdy <= ackrx_irdy and not ram_t;
+			ram2_frm  <= ackrx_frm  and ram_t;
+			ram2_irdy <= ackrx_irdy and ram_t;
+
+			ram1_i : entity hdl4fpga.sio_ram
 			generic map (
 				bitdata => (0 to 16-1 => '-'))
 				-- bitdata => reverse(x"0042",8))
 			port map (
-				si_clk  => tx_clk,
-				si_frm  => ackrx_frm,
-				si_irdy => ackrx_irdy,
+				si_clk  => rx_clk,
+				si_frm  => ram1_frm,
+				si_irdy => ram1_irdy,
 				si_data => ackrx_data,
 				so_clk  => rx_clk,
 				so_frm  => cmp_frm,
 				so_irdy => cmp_irdy,
-				so_data => cmp_data);
+				so_data => cmp1_data);
+
+			ram2_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => (0 to 16-1 => '-'))
+			port map (
+				si_clk  => rx_clk,
+				si_frm  => ram2_frm,
+				si_irdy => ram2_irdy,
+				si_data => ackrx_data,
+				so_clk  => rx_clk,
+				so_frm  => cmp_frm,
+				so_irdy => cmp_irdy,
+				so_data => cmp2_data);
 
 			process (rx_clk)
 			begin
