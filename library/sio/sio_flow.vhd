@@ -77,9 +77,8 @@ architecture struct of sio_flow is
 	alias  ackrx_irdy is tx_irdys(0);
 	alias  ackrx_trdy is tx_trdys(0);
 
-	signal ackrx_data : std_logic_vector(rx_data'range);
 	signal acktx_data : std_logic_vector(tx_data'range);
-	signal dup_equ    : std_logic;
+	signal dup_equ    : std_logic := '0';
 
 begin
 
@@ -191,10 +190,10 @@ begin
 			process (rx_clk)
 			begin
 				if rising_edge(rx_clk) then
-					if rx_frm='0' then
+					if fcs_vld='1' then
 						dup_equ <= '0';
-					elsif dup_equ='0' then
-						dup_equ <= cmp_equ;
+					elsif cmp_equ='1' then
+						dup_equ <= '1';
 					end if;
 				end if;
 			end process;
@@ -221,13 +220,13 @@ begin
 
 			ram1_i : entity hdl4fpga.sio_ram
 			generic map (
-				-- bitdata => (0 to 16-1 => '-'))
-				bitdata => reverse(x"0042",8))
+				bitdata => (0 to 16-1 => '-'))
+				-- bitdata => reverse(x"0042",8))
 			port map (
 				si_clk  => rx_clk,
 				si_frm  => ram1_frm,
 				si_irdy => ram1_irdy,
-				si_data => ackrx_data,
+				si_data => rx_data,
 				so_clk  => rx_clk,
 				so_frm  => cmp_frm,
 				so_irdy => cmp_irdy,
@@ -235,12 +234,13 @@ begin
 
 			ram2_i : entity hdl4fpga.sio_ram
 			generic map (
-				bitdata => (0 to 16-1 => '-'))
+				-- bitdata => (0 to 16-1 => '-'))
+				bitdata => reverse(x"0042",8))
 			port map (
 				si_clk  => rx_clk,
 				si_frm  => ram2_frm,
 				si_irdy => ram2_irdy,
-				si_data => ackrx_data,
+				si_data => rx_data,
 				so_clk  => rx_clk,
 				so_frm  => cmp_frm,
 				so_irdy => cmp_irdy,
@@ -295,8 +295,8 @@ begin
 			dst_trdy   => fifo_trdy,
 			dst_data   => fifo_data);
 
-		commit   <= fcs_sb and fcs_vld;
-		rollback <= fcs_sb and not fcs_vld;
+		commit   <= fcs_sb and     (fcs_vld and not dup_equ);
+		rollback <= fcs_sb and not (fcs_vld and not dup_equ);
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
 			check_sov => true,
