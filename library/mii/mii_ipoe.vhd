@@ -66,11 +66,6 @@ entity mii_ipoe is
 end;
 
 architecture def of mii_ipoe is
-	signal dll_frm       : std_logic;
-	signal dll_irdy      : std_logic;
-	signal dll_trdy      : std_logic;
-	signal dll_data      : std_logic_vector(miirx_data'range);
-
 	signal ethda_frm     : std_logic;
 	signal ethda_irdy    : std_logic;
 	signal ethsa_frm     : std_logic;
@@ -130,11 +125,6 @@ begin
 		mii_frm  => miirx_frm,
 		mii_irdy => miirx_irdy,
 		mii_data => miirx_data,
-
-		dll_frm  => dll_frm,
-		dll_irdy => dll_irdy,
-		dll_trdy => dll_trdy,
-		dll_data => dll_data,
 
 		da_frm   => ethda_frm,
 		da_irdy  => ethda_irdy,

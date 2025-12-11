@@ -34,11 +34,6 @@ entity eth_rx is
 		mii_trdy : buffer std_logic;
 		mii_data : in  std_logic_vector;
 
-		dll_frm  : buffer std_logic;
-		dll_irdy : buffer std_logic := '0';
-		dll_trdy : in  std_logic := '1';
-		dll_data : buffer std_logic_vector;
-
 		da_frm   : out std_logic := '0';
 		da_irdy  : out std_logic := '0';
 		sa_frm   : out std_logic := '0';
@@ -55,6 +50,7 @@ entity eth_rx is
 end;
 
 architecture def of eth_rx is
+	signal dll_frm : std_logic;
 begin
 
 	prmb_i : entity hdl4fpga.mii_prmb
@@ -83,5 +79,7 @@ begin
 		crc_sb   => fcs_sb,
 		crc_equ  => fcs_vld,
 		crc_rem  => fcs_rem);
+
+	mii_trdy <= mii_irdy;
 
 end;

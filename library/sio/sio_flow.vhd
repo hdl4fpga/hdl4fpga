@@ -76,7 +76,6 @@ architecture struct of sio_flow is
 	alias  ackrx_frm  is tx_frms(0);
 	alias  ackrx_irdy is tx_irdys(0);
 	alias  ackrx_trdy is tx_trdys(0);
-	signal ackrx_last : std_logic;
 
 	signal ackrx_data : std_logic_vector(rx_data'range);
 	signal acktx_data : std_logic_vector(tx_data'range);
@@ -176,9 +175,29 @@ begin
 			signal ram2_frm  : std_logic;
 			signal ram2_irdy : std_logic;
 
-			signal ram_t     : std_logic;
+			signal ram_t     : std_logic := '0';
 
 		begin
+
+			process (rx_clk)
+			begin
+				if rising_edge(rx_clk) then
+					if (fcs_sb and fcs_vld and not dup_equ)='1' then
+						ram_t <= not ram_t;
+					end if;
+				end if;
+			end process;
+
+			process (rx_clk)
+			begin
+				if rising_edge(rx_clk) then
+					if rx_frm='0' then
+						dup_equ <= '0';
+					elsif dup_equ='0' then
+						dup_equ <= cmp_equ;
+					end if;
+				end if;
+			end process;
 
 			cmp_data  <= 
 				cmp1_data when not ram_t='0' else
@@ -202,8 +221,8 @@ begin
 
 			ram1_i : entity hdl4fpga.sio_ram
 			generic map (
-				bitdata => (0 to 16-1 => '-'))
-				-- bitdata => reverse(x"0042",8))
+				-- bitdata => (0 to 16-1 => '-'))
+				bitdata => reverse(x"0042",8))
 			port map (
 				si_clk  => rx_clk,
 				si_frm  => ram1_frm,
@@ -226,17 +245,6 @@ begin
 				so_frm  => cmp_frm,
 				so_irdy => cmp_irdy,
 				so_data => cmp2_data);
-
-			process (rx_clk)
-			begin
-				if rising_edge(rx_clk) then
-					if dup_equ/='1' then
-						dup_equ <= cmp_equ;
-					elsif fcs_sb='1' then
-						dup_equ <= '0';
-					end if;
-				end if;
-			end process;
 
 		end block;
 
