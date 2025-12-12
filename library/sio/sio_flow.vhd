@@ -73,9 +73,9 @@ architecture struct of sio_flow is
 	signal tx_irdys  : std_logic_vector(0 to 2-1);
 	signal tx_trdys  : std_logic_vector(0 to 2-1) := (others => '1');
 
-	alias  ackrx_frm  is tx_frms(0);
-	alias  ackrx_irdy is tx_irdys(0);
-	alias  ackrx_trdy is tx_trdys(0);
+	alias  ackrx_frm  is tx_frms(1);
+	alias  ackrx_irdy is tx_irdys(1);
+	alias  ackrx_trdy is tx_trdys(1);
 
 	signal acktx_data : std_logic_vector(tx_data'range);
 	signal dup_equ    : std_logic := '0';
@@ -157,7 +157,7 @@ begin
 			rx_data  when ram_irdy='1' else
 			rom_data;
 
-		tx_frms(0) <= tx_irdys(0);
+		ackrx_frm <= ackrx_irdy;
 
 		dup_b : block
 
@@ -221,7 +221,6 @@ begin
 			ram1_i : entity hdl4fpga.sio_ram
 			generic map (
 				bitdata => (0 to 16-1 => '-'))
-				-- bitdata => reverse(x"0042",8))
 			port map (
 				si_clk  => rx_clk,
 				si_frm  => ram1_frm,
@@ -234,8 +233,8 @@ begin
 
 			ram2_i : entity hdl4fpga.sio_ram
 			generic map (
-				-- bitdata => (0 to 16-1 => '-'))
-				bitdata => reverse(x"0042",8))
+				bitdata => (0 to 16-1 => '-'))
+				-- bitdata => reverse(x"0042",8))
 			port map (
 				si_clk  => rx_clk,
 				si_frm  => ram2_frm,
@@ -312,8 +311,8 @@ begin
 			rollback   => rollback,
 
 			dst_clk    => tx_clk,
-			dst_irdy   => tx_irdys(0),
-			dst_trdy   => tx_trdys(0),
+			dst_irdy   => ackrx_irdy,
+			dst_trdy   => ackrx_trdy,
 			dst_data   => acktx_data);
 
 	end block;
@@ -322,8 +321,8 @@ begin
 		signal gntd : std_logic_vector(0 to 2-1);
 	begin
 
-		tx_frms(1)  <= si_frm;
-		tx_irdys(1) <= si_irdy;
+		tx_frms(0)  <= si_frm;
+		tx_irdys(0) <= si_irdy;
 		si_trdy     <= tx_trdys(1);
 
 		arbiter_i : entity hdl4fpga.mii_arbiter
