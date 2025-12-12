@@ -28,7 +28,7 @@ use hdl4fpga.base.all;
 
 entity sio_flow is
 	generic (
-		reply   : boolean := true;
+		reply   : boolean := false;
 		debug   : boolean := false);
 	port (
 		rx_clk  : in std_logic;
@@ -107,7 +107,7 @@ begin
 		pyl_frm  => pyl_frm,
 		pyl_irdy => pyl_irdy);
 
-	ack_b : block
+	ack_b : if reply generate
 
 		signal rom_data  : std_logic_vector(rx_data'range);
 		signal ram_frm   : std_logic;
@@ -160,7 +160,7 @@ begin
 
 		ackrx_frm <= ackrx_irdy;
 
-		dup_b : if reply generate
+		dup_b : block
 
 			signal cmp_frm   : std_logic;
 			signal cmp_irdy  : std_logic;
@@ -246,7 +246,7 @@ begin
 				so_irdy => cmp_irdy,
 				so_data => cmp2_data);
 
-		end generate;
+		end block;
 
 		process (pyl_irdy, rx_clk)
 			type states is (s_start, s_bridge);
@@ -316,7 +316,7 @@ begin
 			dst_trdy   => ackrx_trdy,
 			dst_data   => acktx_data);
 
-	end block;
+	end generate;
 
 	artibiter_b : block
 		signal gntd : std_logic_vector(0 to 2-1);
