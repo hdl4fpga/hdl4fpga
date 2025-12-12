@@ -107,61 +107,9 @@ begin
 		pyl_frm  => pyl_frm,
 		pyl_irdy => pyl_irdy);
 
-	ack_b : if reply generate
-
-		signal rom_data  : std_logic_vector(rx_data'range);
-		signal ram_frm   : std_logic;
-		signal ram_irdy  : std_logic;
-		signal ram_data  : std_logic_vector(rx_data'range);
-		signal data_frm  : std_logic;
-		signal data_irdy : std_logic;
-
-		signal fifo_frm  : std_logic;
-		signal fifo_irdy : std_logic;
-		signal fifo_trdy : std_logic;
-		signal fifo_data : std_logic_vector(rx_data'range);
-
-		signal commit0   : std_logic;
-		signal rollback0 : std_logic;
-		signal commit    : std_logic;
-		signal rollback  : std_logic;
-
-	begin
-
-		process (rgtr_irdy, pyl_frm(1), rx_clk)
-			variable equ : std_logic;
-		begin
-			if rising_edge(rx_clk) then
-				if equ='0' then
-					if (rgtr_frm or rgtr_irdy)='1' then
-						equ := pyl_frm(1);
-					end if;
-				elsif (rgtr_frm or rgtr_irdy)='0' then
-					equ := '0';
-				elsif (rgtr_frm or not rgtr_trdy)='0' then
-					equ := '0';
-				end if;
-			end if;
-			ram_irdy <= (pyl_frm(1) or equ) and rgtr_irdy;
-		end process;
-
-		rom_i : entity hdl4fpga.sio_rom
-		generic map (
-			bitdata => reverse(x"01"))
-		port map (
-			so_clk  => rx_clk,
-			so_frm  => rgtr_frm,
-			so_irdy => rgtr_irdy,
-			so_data => rom_data);
-
-		ram_data <=
-			rx_data  when ram_irdy='1' else
-			rom_data;
-
-		ackrx_frm <= ackrx_irdy;
-
 		dup_b : block
 
+			signal mr_irdy   : std_logic;
 			signal cmp_frm   : std_logic;
 			signal cmp_irdy  : std_logic;
 			signal cmp_data  : std_logic_vector(rx_data'range);
@@ -178,6 +126,23 @@ begin
 			signal ram_t     : std_logic := '0';
 
 		begin
+
+			process (rgtr_irdy, pyl_frm(1), rx_clk)
+				variable equ : std_logic;
+			begin
+				if rising_edge(rx_clk) then
+					if equ='0' then
+						if (rgtr_frm or rgtr_irdy)='1' then
+							equ := pyl_frm(1);
+						end if;
+					elsif (rgtr_frm or rgtr_irdy)='0' then
+						equ := '0';
+					elsif (rgtr_frm or not rgtr_trdy)='0' then
+						equ := '0';
+					end if;
+				end if;
+				mr_irdy <= (pyl_frm(1) or equ) and rgtr_irdy;
+			end process;
 
 			process (rx_clk)
 			begin
@@ -207,8 +172,8 @@ begin
 			port map (
 				clk     => rx_clk,
 				mr_frm  => rgtr_frm,
-				mr_irdy => ram_irdy,
-				mr_data => ram_data,
+				mr_irdy => mr_irdy,
+				mr_data => rx_data,
 				sl_frm  => cmp_frm,
 				sl_irdy => cmp_irdy,
 				sl_data => cmp_data,
@@ -247,6 +212,25 @@ begin
 				so_data => cmp2_data);
 
 		end block;
+
+	ack_b : if reply generate
+
+		signal data_frm  : std_logic;
+		signal data_irdy : std_logic;
+
+		signal fifo_frm  : std_logic;
+		signal fifo_irdy : std_logic;
+		signal fifo_trdy : std_logic;
+		signal fifo_data : std_logic_vector(rx_data'range);
+
+		signal commit0   : std_logic;
+		signal rollback0 : std_logic;
+		signal commit    : std_logic;
+		signal rollback  : std_logic;
+
+	begin
+
+		ackrx_frm <= ackrx_irdy;
 
 		process (pyl_irdy, rx_clk)
 			type states is (s_start, s_bridge);
