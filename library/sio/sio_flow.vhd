@@ -28,7 +28,7 @@ use hdl4fpga.base.all;
 
 entity sio_flow is
 	generic (
-		reply   : boolean := false;
+		reply   : boolean := true;
 		debug   : boolean := false);
 	port (
 		rx_clk  : in std_logic;
@@ -73,10 +73,6 @@ architecture struct of sio_flow is
 	signal tx_frms   : std_logic_vector(0 to 2-1) := (others => '0');
 	signal tx_irdys  : std_logic_vector(0 to 2-1) := (others => '0');
 	signal tx_trdys  : std_logic_vector(0 to 2-1) := (others => '1');
-
-	alias  ackrx_frm  is tx_frms(1);
-	alias  ackrx_irdy is tx_irdys(1);
-	alias  ackrx_trdy is tx_trdys(1);
 
 	signal acktx_data : std_logic_vector(tx_data'range);
 	signal dup_equ    : std_logic := '0';
@@ -179,10 +175,10 @@ begin
 			sl_data => cmp_data,
 			equ     => cmp_equ);
 
-		ram1_frm  <= ackrx_frm  and not ram_t;
-		ram1_irdy <= ackrx_irdy and not ram_t;
-		ram2_frm  <= ackrx_frm  and ram_t;
-		ram2_irdy <= ackrx_irdy and ram_t;
+		ram1_frm  <= rgtr_frm and not ram_t;
+		ram1_irdy <= mr_irdy  and not ram_t;
+		ram2_frm  <= rgtr_frm and ram_t;
+		ram2_irdy <= mr_irdy  and ram_t;
 
 		ram1_i : entity hdl4fpga.sio_ram
 		generic map (
@@ -215,6 +211,10 @@ begin
 
 	ack_b : if reply generate
 
+		alias  ackrx_frm  is tx_frms(1);
+		alias  ackrx_irdy is tx_irdys(1);
+		alias  ackrx_trdy is tx_trdys(1);
+
 		signal data_frm  : std_logic;
 		signal data_irdy : std_logic;
 
@@ -231,7 +231,6 @@ begin
 	begin
 
 		ackrx_frm <= ackrx_irdy;
-
 		process (pyl_irdy, rx_clk)
 			type states is (s_start, s_bridge);
 			variable state : states;
