@@ -107,111 +107,111 @@ begin
 		pyl_frm  => pyl_frm,
 		pyl_irdy => pyl_irdy);
 
-		dup_b : block
+	dup_b : block
 
-			signal mr_irdy   : std_logic;
-			signal cmp_frm   : std_logic;
-			signal cmp_irdy  : std_logic;
-			signal cmp_data  : std_logic_vector(rx_data'range);
-			signal cmp2_data : std_logic_vector(rx_data'range);
-			signal cmp1_data : std_logic_vector(rx_data'range);
-			signal cmp_equ   : std_logic;
+		signal mr_irdy   : std_logic;
+		signal cmp_frm   : std_logic;
+		signal cmp_irdy  : std_logic;
+		signal cmp_data  : std_logic_vector(rx_data'range);
+		signal cmp2_data : std_logic_vector(rx_data'range);
+		signal cmp1_data : std_logic_vector(rx_data'range);
+		signal cmp_equ   : std_logic;
 
-			signal ram1_frm  : std_logic;
-			signal ram1_irdy : std_logic;
+		signal ram1_frm  : std_logic;
+		signal ram1_irdy : std_logic;
 
-			signal ram2_frm  : std_logic;
-			signal ram2_irdy : std_logic;
+		signal ram2_frm  : std_logic;
+		signal ram2_irdy : std_logic;
 
-			signal ram_t     : std_logic := '0';
+		signal ram_t     : std_logic := '0';
 
+	begin
+
+		process (rgtr_irdy, pyl_frm(1), rx_clk)
+			variable equ : std_logic;
 		begin
-
-			process (rgtr_irdy, pyl_frm(1), rx_clk)
-				variable equ : std_logic;
-			begin
-				if rising_edge(rx_clk) then
-					if equ='0' then
-						if (rgtr_frm or rgtr_irdy)='1' then
-							equ := pyl_frm(1);
-						end if;
-					elsif (rgtr_frm or rgtr_irdy)='0' then
-						equ := '0';
-					elsif (rgtr_frm or not rgtr_trdy)='0' then
-						equ := '0';
+			if rising_edge(rx_clk) then
+				if equ='0' then
+					if (rgtr_frm or rgtr_irdy)='1' then
+						equ := pyl_frm(1);
 					end if;
+				elsif (rgtr_frm or rgtr_irdy)='0' then
+					equ := '0';
+				elsif (rgtr_frm or not rgtr_trdy)='0' then
+					equ := '0';
 				end if;
-				mr_irdy <= (pyl_frm(1) or equ) and rgtr_irdy;
-			end process;
+			end if;
+			mr_irdy <= (pyl_frm(1) or equ) and rgtr_irdy;
+		end process;
 
-			process (rx_clk)
-			begin
-				if rising_edge(rx_clk) then
-					if (fcs_sb and fcs_vld and not dup_equ)='1' then
-						ram_t <= not ram_t;
-					end if;
+		process (rx_clk)
+		begin
+			if rising_edge(rx_clk) then
+				if (fcs_sb and fcs_vld and not dup_equ)='1' then
+					ram_t <= not ram_t;
 				end if;
-			end process;
+			end if;
+		end process;
 
-			process (rx_clk)
-			begin
-				if rising_edge(rx_clk) then
-					if fcs_vld='1' then
-						dup_equ <= '0';
-					elsif cmp_equ='1' then
-						dup_equ <= '1';
-					end if;
+		process (rx_clk)
+		begin
+			if rising_edge(rx_clk) then
+				if fcs_vld='1' then
+					dup_equ <= '0';
+				elsif cmp_equ='1' then
+					dup_equ <= '1';
 				end if;
-			end process;
+			end if;
+		end process;
 
-			cmp_data  <= 
-				cmp1_data when not ram_t='0' else
-				cmp2_data;
+		cmp_data  <= 
+			cmp1_data when not ram_t='0' else
+			cmp2_data;
 
-			cmp_i : entity hdl4fpga.sio_cmp
-			port map (
-				clk     => rx_clk,
-				mr_frm  => rgtr_frm,
-				mr_irdy => mr_irdy,
-				mr_data => rx_data,
-				sl_frm  => cmp_frm,
-				sl_irdy => cmp_irdy,
-				sl_data => cmp_data,
-				equ     => cmp_equ);
+		cmp_i : entity hdl4fpga.sio_cmp
+		port map (
+			clk     => rx_clk,
+			mr_frm  => rgtr_frm,
+			mr_irdy => mr_irdy,
+			mr_data => rx_data,
+			sl_frm  => cmp_frm,
+			sl_irdy => cmp_irdy,
+			sl_data => cmp_data,
+			equ     => cmp_equ);
 
-			ram1_frm  <= ackrx_frm  and not ram_t;
-			ram1_irdy <= ackrx_irdy and not ram_t;
-			ram2_frm  <= ackrx_frm  and ram_t;
-			ram2_irdy <= ackrx_irdy and ram_t;
+		ram1_frm  <= ackrx_frm  and not ram_t;
+		ram1_irdy <= ackrx_irdy and not ram_t;
+		ram2_frm  <= ackrx_frm  and ram_t;
+		ram2_irdy <= ackrx_irdy and ram_t;
 
-			ram1_i : entity hdl4fpga.sio_ram
-			generic map (
-				bitdata => (0 to 16-1 => '-'))
-			port map (
-				si_clk  => rx_clk,
-				si_frm  => ram1_frm,
-				si_irdy => ram1_irdy,
-				si_data => rx_data,
-				so_clk  => rx_clk,
-				so_frm  => cmp_frm,
-				so_irdy => cmp_irdy,
-				so_data => cmp1_data);
+		ram1_i : entity hdl4fpga.sio_ram
+		generic map (
+			bitdata => (0 to 16-1 => '-'))
+		port map (
+			si_clk  => rx_clk,
+			si_frm  => ram1_frm,
+			si_irdy => ram1_irdy,
+			si_data => rx_data,
+			so_clk  => rx_clk,
+			so_frm  => cmp_frm,
+			so_irdy => cmp_irdy,
+			so_data => cmp1_data);
 
-			ram2_i : entity hdl4fpga.sio_ram
-			generic map (
-				bitdata => (0 to 16-1 => '-'))
-				-- bitdata => reverse(x"0042",8))
-			port map (
-				si_clk  => rx_clk,
-				si_frm  => ram2_frm,
-				si_irdy => ram2_irdy,
-				si_data => rx_data,
-				so_clk  => rx_clk,
-				so_frm  => cmp_frm,
-				so_irdy => cmp_irdy,
-				so_data => cmp2_data);
+		ram2_i : entity hdl4fpga.sio_ram
+		generic map (
+			bitdata => (0 to 16-1 => '-'))
+			-- bitdata => reverse(x"0042",8))
+		port map (
+			si_clk  => rx_clk,
+			si_frm  => ram2_frm,
+			si_irdy => ram2_irdy,
+			si_data => rx_data,
+			so_clk  => rx_clk,
+			so_frm  => cmp_frm,
+			so_irdy => cmp_irdy,
+			so_data => cmp2_data);
 
-		end block;
+	end block;
 
 	ack_b : if reply generate
 
