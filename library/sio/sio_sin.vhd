@@ -66,15 +66,18 @@ begin
 		act(2) => data_act);
 
 	process (frm, clk)
-		variable cntr : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1);
-		alias xxx : unsigned(0 to hdo(frame)**".length"-1) is cntr(1 to hdo(frame)**".length");
+		-- variable cntr : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1); -- Xilinx ISE 14.7 bug
+		-- alias    algn : unsigned(0 to hdo(frame)**".length"-1) is cntr(1 to hdo(frame)**".length"); -- Xilinx ISE 14.7 bug
+		constant length : natural := hdo(frame)**".length"; -- Xilinx ISE 14.7 bug
+		variable cntr   : unsigned(0 to length+unsigned_num_bits(8/data'length)-1);
+		alias    algn   : unsigned(0 to length-1) is cntr(1 to length);
 	begin
 		if rising_edge(clk) then
 			if (frm or irdy)='1' then
 				if (irdy and trdy)='1' then
 					if length_act='1' then
-						xxx := rotate_left(xxx, data'length);
-						xxx(data'range) := reverse(unsigned(data));
+						algn := rotate_left(algn, data'length);
+						algn(data'range) := reverse(unsigned(data));
 					elsif cntr(0)='1' then
 						cntr := (others => '0');
 					elsif data_act='1' then
