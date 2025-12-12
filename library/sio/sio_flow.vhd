@@ -195,8 +195,8 @@ begin
 
 		ram2_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => (0 to 16-1 => '-'))
-			-- bitdata => reverse(x"0042",8))
+			-- bitdata => (0 to 16-1 => '-'))
+			bitdata => reverse(x"0042",8))
 		port map (
 			si_clk  => rx_clk,
 			si_frm  => ram2_frm,
@@ -278,8 +278,8 @@ begin
 			dst_trdy   => fifo_trdy,
 			dst_data   => fifo_data);
 
-		commit   <= fcs_sb and     (fcs_vld and not dup_equ);
-		rollback <= fcs_sb and not (fcs_vld and not dup_equ);
+		commit   <= fcs_sb and     (fcs_vld and dup_equ);
+		rollback <= fcs_sb and not (fcs_vld and dup_equ);
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
 			check_sov => true,
