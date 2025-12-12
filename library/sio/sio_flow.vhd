@@ -28,6 +28,7 @@ use hdl4fpga.base.all;
 
 entity sio_flow is
 	generic (
+		reply   : boolean := true;
 		debug   : boolean := false);
 	port (
 		rx_clk  : in std_logic;
@@ -69,8 +70,8 @@ architecture struct of sio_flow is
 	signal pyl_frm   : std_logic_vector(0 to 2-1);
 	signal pyl_irdy  : std_logic_vector(0 to 2-1);
 
-	signal tx_frms   : std_logic_vector(0 to 2-1);
-	signal tx_irdys  : std_logic_vector(0 to 2-1);
+	signal tx_frms   : std_logic_vector(0 to 2-1) := (others => '0');
+	signal tx_irdys  : std_logic_vector(0 to 2-1) := (others => '0');
 	signal tx_trdys  : std_logic_vector(0 to 2-1) := (others => '1');
 
 	alias  ackrx_frm  is tx_frms(1);
@@ -159,7 +160,7 @@ begin
 
 		ackrx_frm <= ackrx_irdy;
 
-		dup_b : block
+		dup_b : if reply generate
 
 			signal cmp_frm   : std_logic;
 			signal cmp_irdy  : std_logic;
@@ -245,7 +246,7 @@ begin
 				so_irdy => cmp_irdy,
 				so_data => cmp2_data);
 
-		end block;
+		end generate;
 
 		process (pyl_irdy, rx_clk)
 			type states is (s_start, s_bridge);
@@ -323,7 +324,7 @@ begin
 
 		tx_frms(0)  <= si_frm;
 		tx_irdys(0) <= si_irdy;
-		si_trdy     <= tx_trdys(1);
+		si_trdy     <= tx_trdys(0);
 
 		arbiter_i : entity hdl4fpga.mii_arbiter
 		port map (
