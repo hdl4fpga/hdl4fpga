@@ -49,8 +49,6 @@ architecture def of sio_ram is
 	signal rd_addr : std_logic_vector(1 to unsigned_num_bits(bitdata'length/so_data'length-1));
 	signal wr_addr : std_logic_vector(rd_addr'range);
 	signal wr_ena  : std_logic;
-	signal rd_cntr : unsigned(0 to rd_addr'length);
-	signal rd_last : std_logic;
 
 begin
 
@@ -58,29 +56,34 @@ begin
 		report "sio_ram() : so_data => " & natural'image(so_data'length) & " and si_data => " & natural'image(si_data'length) & " have different length"
 		severity failure;
 
-	process (so_clk)
+	rd_b : block
+		signal cntr : unsigned(0 to rd_addr'length);
+		signal last : std_logic;
 	begin
-		if rising_edge(so_clk) then
-			if (so_frm or so_irdy)='0' then
-				rd_cntr <= to_unsigned(0, rd_cntr'length)-bitdata'length/so_data'length;
-			elsif ((rd_last or so_frm) and so_irdy)='1' then
-				rd_cntr <= rd_cntr + 1;
-			end if;
-			if so_frm='0' then
-				if so_irdy='0' then
-					rd_last <= '0';
-				elsif rd_last='1' then
-					rd_last <= '0';
+		process (so_clk)
+		begin
+			if rising_edge(so_clk) then
+				if (so_frm or so_irdy)='0' then
+					cntr <= to_unsigned(0, cntr'length)-bitdata'length/so_data'length;
+				elsif ((last or so_frm) and so_irdy)='1' then
+					cntr <= cntr + 1;
 				end if;
-			elsif so_irdy='1' then
-				rd_last <= '1';
+				if so_frm='0' then
+					if so_irdy='0' then
+						last <= '0';
+					elsif last='1' then
+						last <= '0';
+					end if;
+				elsif so_irdy='1' then
+					last <= '1';
+				end if;
 			end if;
-		end if;
-	end process;
-	rd_addr <= std_logic_vector(rd_cntr(rd_addr'range));
-	so_last <= '1' when rd_cntr(rd_addr'range)=(rd_addr'range => '1') else '0';
-	so_fin  <= rd_cntr(0);
-	so_trdy <= (so_frm or last) and so_irdy;
+		end process;
+		rd_addr <= std_logic_vector(cntr(rd_addr'range));
+		so_last <= '1' when cntr(rd_addr'range)=(rd_addr'range => '1') else '0';
+		so_fin  <= cntr(0);
+		so_trdy <= (so_frm or last) and so_irdy;
+	end block;
 
 	process (si_frm, si_irdy, si_clk)
 		variable cntr : unsigned(0 to rd_addr'length);
