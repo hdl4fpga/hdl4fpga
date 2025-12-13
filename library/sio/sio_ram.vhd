@@ -85,30 +85,33 @@ begin
 		so_trdy <= (so_frm or last) and so_irdy;
 	end block;
 
-	process (si_frm, si_irdy, si_clk)
-		variable cntr : unsigned(0 to rd_addr'length);
-		variable last : std_logic;
+	wr_b : block
+		signal cntr : unsigned(0 to wr_addr'length);
+		signal last : std_logic;
 	begin
-		if rising_edge(si_clk) then
-			if (si_frm or si_irdy)='0' then
-				cntr := to_unsigned(0, cntr'length)-bitdata'length/so_data'length;
-			elsif ((last or si_frm) and si_irdy)='1' then
-				cntr := cntr + 1;
-			end if;
-			if si_frm='0' then
-				if si_irdy='0' then
-					last := '0';
-				elsif last='1' then
-					last := '0';
+		process (si_frm, si_irdy, si_clk)
+		begin
+			if rising_edge(si_clk) then
+				if (si_frm or si_irdy)='0' then
+					cntr <= to_unsigned(0, cntr'length)-bitdata'length/so_data'length;
+				elsif ((last or si_frm) and si_irdy)='1' then
+					cntr <= cntr + 1;
 				end if;
-			elsif si_irdy='1' then
-				last := '1';
+				if si_frm='0' then
+					if si_irdy='0' then
+						last <= '0';
+					elsif last='1' then
+						last <= '0';
+					end if;
+				elsif si_irdy='1' then
+					last <= '1';
+				end if;
 			end if;
-			wr_addr <= std_logic_vector(cntr(rd_addr'range));
-		end if;
-		si_trdy <= (si_frm or last) and si_irdy;
+		end process;
+		wr_addr <= std_logic_vector(cntr(wr_addr'range));
 		wr_ena  <= (si_frm or last) and si_irdy;
-	end process;
+		si_trdy <= (si_frm or last) and si_irdy;
+	end block;
 
 	mem_i : entity hdl4fpga.dpram
 	generic map (
