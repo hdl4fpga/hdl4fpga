@@ -90,13 +90,10 @@ begin
 		variable last : std_logic;
 	begin
 		if rising_edge(si_clk) then
-			if ((last or si_frm) and si_irdy)='1' then
-				cntr := cntr + 1;
-			end if;
 			if (si_frm or si_irdy)='0' then
-				-- cntr := (others => '0');
-				-- cntr := cntr-bitdata'length/si_data'length;
 				cntr := to_unsigned(0, cntr'length)-bitdata'length/so_data'length;
+			elsif ((last or si_frm) and si_irdy)='1' then
+				cntr := cntr + 1;
 			end if;
 			if si_frm='0' then
 				if si_irdy='0' then
