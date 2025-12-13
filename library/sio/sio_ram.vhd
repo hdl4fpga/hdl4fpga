@@ -65,9 +65,11 @@ begin
 				cntr := cntr + 1;
 			end if;
 			if (so_frm or so_irdy)='0' then
-				cntr := (others => '0');
-				cntr := cntr-bitdata'length/so_data'length;
+				-- cntr := (others => '0');
+				-- cntr := cntr-bitdata'length/so_data'length;
+				cntr := to_unsigned(0, cntr'length)-bitdata'length/so_data'length;
 			end if;
+			rd_addr <= std_logic_vector(cntr(rd_addr'range));
 			if so_frm='0' then
 				if so_irdy='0' then
 					last := '0';
@@ -77,7 +79,6 @@ begin
 			elsif so_irdy='1' then
 				last := '1';
 			end if;
-			rd_addr <= std_logic_vector(cntr(rd_addr'range));
 		end if;
 		if cntr(rd_addr'range)=(rd_addr'range => '1') then
 			so_last <= '1';
