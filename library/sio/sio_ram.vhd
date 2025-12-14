@@ -89,7 +89,7 @@ begin
 		signal cntr : unsigned(0 to wr_addr'length);
 		signal last : std_logic;
 	begin
-		process (si_frm, si_irdy, si_clk)
+		process (si_clk)
 		begin
 			if rising_edge(si_clk) then
 				if (si_frm or si_irdy)='0' then
