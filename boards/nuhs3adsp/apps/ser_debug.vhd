@@ -212,35 +212,15 @@ begin
 		si_trdy    => udppyltx_trdy,
 		si_data    => udppyltx_data);
 
-	-- miiipoe_i : entity hdl4fpga.mii_ipoe
-	-- port map (
-	-- 	tp       => tp,
-	-- 	dhcpcd_req => '0', --dhcpcd_req,
-	-- 	-- dhcpcd_rdy => dhcpcd_rdy,
-	-- 	miirx_clk  => mii_rxc,
-	-- 	miirx_frm  => mii_rxdv,
-	-- 	miirx_irdy => mii_rxdv,
-	-- 	miirx_data => mii_rxd,
-	--
-	--
-	-- 	miitx_clk  => mii_txc,
-	-- 	miitx_frm  => mii_txen,
-	-- 	miitx_data => mii_txd,
-	--
-	-- 	udppyltx_frm  => udppyltx_frm,
-	-- 	udppyltx_irdy => udppyltx_irdy,
-	-- 	udppyltx_trdy => udppyltx_trdy,
-	-- 	udppyltx_data => udppyltx_data);
-
-	-- ser_clk <= mii_rxc;
-	-- process (ser_clk)
-	-- begin
-	-- 	if rising_edge(ser_clk) then
-	-- 		ser_frm  <= udppylrx_frm;
-	-- 		ser_irdy <= udppylrx_irdy;
-	-- 		ser_data <= udppylrx_data;
-	-- 	end if;
-	-- end process;
+	ser_clk <= mii_rxc;
+	process (ser_clk)
+	begin
+		if rising_edge(ser_clk) then
+			ser_frm  <= udppylrx_frm;
+			ser_irdy <= udppylrx_irdy;
+			ser_data <= udppylrx_data;
+		end if;
+	end process;
 
 	ser_debug_e : entity hdl4fpga.ser_debug
 	generic map (
