@@ -30,6 +30,7 @@ use hdl4fpga.ipoepkg.all;
 
 entity sio_udp is
 	generic (
+		latency    : natural := 1;
 		ipv4addr   : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
 		hwaddr     : std_logic_vector := x"00_40_00_01_02_03");
 	port (
@@ -85,6 +86,10 @@ architecture struct of sio_udp is
 	signal pylfcs_sb     : std_logic;
 	signal pylfcs_vld    : std_logic;
 
+	signal ipoetx_frm    : std_logic;
+	signal ipoetx_irdy   : std_logic;
+	signal ipoetx_data   : std_logic_vector(miitx_data'range);
+
 begin
 
 	miiipoe_i : entity hdl4fpga.mii_ipoe
@@ -113,9 +118,36 @@ begin
 		udppyltx_data => udppyltx_data,
 
 		miitx_clk     => miitx_clk,
-		miitx_frm     => miitx_frm,
-		miitx_irdy    => miitx_irdy,
-		miitx_data    => miitx_data);
+		miitx_frm     => ipoetx_frm,
+		miitx_irdy    => ipoetx_irdy,
+		miitx_data    => ipoetx_data);
+
+	ipoefrm_i : entity hdl4fpga.latency
+	generic map (
+		n => 1,
+		d => (0 to 1-1 => latency))
+	port map (
+		clk   => miitx_clk,
+		di(0) => ipoetx_frm,
+		do(0) => miitx_frm);
+
+	ipoeirdy_i : entity hdl4fpga.latency
+	generic map (
+		n => 1,
+		d => (0 to 1-1 => latency))
+	port map (
+		clk   => miitx_clk,
+		di(0) => ipoetx_irdy,
+		do(0) => miitx_irdy);
+
+	ipoedata_i : entity hdl4fpga.latency
+	generic map (
+		n => miitx_data'length,
+		d => (0 to miitx_data'length-1 => latency))
+	port map (
+		clk => miitx_clk,
+		di  => ipoetx_data,
+		do  => miitx_data);
 
 	process (udppylrx_frm, udppylrx_irdy, miirx_clk)
 		constant prefix   : unsigned := x"00" & to_unsigned(summation(hdo(frames)**".format.pyl")/8-1,8);
