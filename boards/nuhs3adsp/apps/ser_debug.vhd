@@ -216,9 +216,9 @@ begin
 	process (ser_clk)
 	begin
 		if rising_edge(ser_clk) then
-			ser_frm  <= udppylrx_frm;
-			ser_irdy <= udppylrx_irdy;
-			ser_data <= udppylrx_data;
+			ser_frm  <= mii_txen; --udppylrx_frm;
+			ser_irdy <= mii_txen; --udppylrx_irdy;
+			ser_data <= mii_txd; -- udppylrx_data;
 		end if;
 	end process;
 
