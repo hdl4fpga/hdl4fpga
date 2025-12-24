@@ -20,4 +20,4 @@
 # SOFTWARE.                                                                      #
 #                                                                                #
 
-echo -n "$2"|xxd -r -ps|socat - udp:"$1"
+echo -n "$2"|xxd -r -ps|socat - udp4-sendto:"$1",shut-none
