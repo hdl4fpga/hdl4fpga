@@ -228,9 +228,13 @@ begin
 		signal commit    : std_logic;
 		signal rollback  : std_logic;
 
+		signal dst_irdy  : std_logic;
+		signal dst_trdy  : std_logic;
+		signal dst_data  : std_logic_vector(rx_data'range);
+
 	begin
 
-		ackrx_frm <= ackrx_irdy;
+		-- ackrx_frm <= ackrx_irdy;
 		process (pyl_irdy, rx_clk)
 			type states is (s_start, s_bridge);
 			variable state : states;
@@ -295,9 +299,23 @@ begin
 			rollback   => rollback,
 
 			dst_clk    => tx_clk,
-			dst_irdy   => ackrx_irdy,
-			dst_trdy   => ackrx_trdy,
-			dst_data   => acktx_data);
+			dst_irdy   => dst_irdy,
+			dst_trdy   => dst_trdy,
+			dst_data   => dst_data);
+
+		dst_trdy <= ackrx_trdy;
+		process (tx_clk)
+		begin
+			if rising_edge(tx_clk) then
+				ackrx_frm <= dst_irdy;
+				if dst_irdy='1' then
+					ackrx_irdy <= dst_irdy;
+				elsif ackrx_frm='0' and tx_trdy='1' then
+					ackrx_irdy <= dst_irdy;
+				end if;
+				acktx_data <= dst_data;
+			end if;
+		end process;
 
 	end generate;
 
@@ -305,8 +323,8 @@ begin
 		signal gntd : std_logic_vector(0 to 2-1);
 	begin
 
-		tx_frms(0)  <= si_frm;
-		tx_irdys(0) <= si_irdy;
+		tx_frms(0)  <= '0'; --si_frm;
+		tx_irdys(0) <= '0'; --si_irdy;
 		si_trdy     <= tx_trdys(0);
 
 		arbiter_i : entity hdl4fpga.mii_arbiter
@@ -319,6 +337,20 @@ begin
 			frm   => tx_frm,
 			irdy  => tx_irdy,
 			trdy  => tx_trdy);
+
+
+		-- process (tx_clk)
+		-- begin
+		-- 	if rising_edge(tx_clk) then
+		-- 		if gntd(0)='1' then
+		-- 			tx_data <= acktx_data;
+		-- 		elsif gntd(1)='1' then
+		-- 			tx_data <= si_data;
+		-- 		else
+		-- 			tx_data <= (tx_data'range => '-');
+		-- 		end if;
+		-- 	end if;
+		-- end process;
 
 		-- process (tx_clk)
 		-- begin
