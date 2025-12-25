@@ -195,6 +195,11 @@ begin
 		end if;
 	end process;
 
+	tp(1) <= udppyltx_frm;
+	tp(2) <= udppyltx_irdy;
+	tp(3) <= udppyltx_trdy;
+	tp(4 to 7) <= udppyltx_data;
+
 	sio_flow_e : entity hdl4fpga.sio_flow
 	port map (
 		rx_clk  => miirx_clk,
