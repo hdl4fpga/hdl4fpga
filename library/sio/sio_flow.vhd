@@ -366,8 +366,8 @@ begin
 		-- end process;
 
 		tx_data <=
-			acktx_data when gntd(0)='1' else
-			si_data    when gntd(1)='1' else
+			si_data    when gntd(0)='1' else
+			acktx_data when gntd(1)='1' else
 			(tx_data'range => '-');
 	end block;
 
