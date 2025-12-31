@@ -310,10 +310,11 @@ begin
 				ackrx_frm <= dst_irdy;
 				if dst_irdy='1' then
 					ackrx_irdy <= dst_irdy;
+					acktx_data <= dst_data;
 				elsif ackrx_frm='0' and tx_trdy='1' then
 					ackrx_irdy <= dst_irdy;
+					acktx_data <= dst_data;
 				end if;
-				acktx_data <= dst_data;
 			end if;
 		end process;
 
