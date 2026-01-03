@@ -303,19 +303,28 @@ begin
 			dst_trdy   => dst_trdy,
 			dst_data   => dst_data);
 
-		dst_trdy <= ackrx_trdy;
-		process (tx_clk)
+		process (ackrx_trdy, tx_clk)
+			variable prefecth : std_logic;
 		begin
 			if rising_edge(tx_clk) then
 				ackrx_frm <= dst_irdy;
 				if dst_irdy='1' then
 					ackrx_irdy <= dst_irdy;
-					acktx_data <= dst_data;
-				elsif ackrx_frm='0' and tx_trdy='1' then
-					ackrx_irdy <= dst_irdy;
-					acktx_data <= dst_data;
+					if ackrx_trdy='1' then
+						acktx_data <= dst_data;
+					elsif prefecth='1' then
+						acktx_data <= dst_data;
+						prefecth := '0';
+					end if;
+				elsif ackrx_frm='0' then
+					prefecth := '1';
+					if tx_trdy='1' then
+						ackrx_irdy <= dst_irdy;
+						acktx_data <= dst_data;
+					end if;
 				end if;
 			end if;
+			dst_trdy <= ackrx_trdy or prefecth;
 		end process;
 
 	end generate;
