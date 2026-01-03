@@ -286,22 +286,23 @@ begin
 		rollback <= fcs_sb and not (fcs_vld and dup_equ);
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
+			latency   => 0,
 			check_sov => true,
 			check_dov => true,
 			max_depth => (64*8)/rx_data'length)
 		port map (
-			src_clk    => rx_clk,
-			src_irdy   => fifo_irdy,
-			src_trdy   => fifo_trdy,
-			src_data   => fifo_data,
+			src_clk   => rx_clk,
+			src_irdy  => fifo_irdy,
+			src_trdy  => fifo_trdy,
+			src_data  => fifo_data,
 
-			commit     => commit,
-			rollback   => rollback,
+			commit    => commit,
+			rollback  => rollback,
 
-			dst_clk    => tx_clk,
-			dst_irdy   => dst_irdy,
-			dst_trdy   => dst_trdy,
-			dst_data   => dst_data);
+			dst_clk   => tx_clk,
+			dst_irdy  => dst_irdy,
+			dst_trdy  => dst_trdy,
+			dst_data  => dst_data);
 
 		process (ackrx_trdy, tx_clk)
 			variable prefecth : std_logic;
