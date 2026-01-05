@@ -243,22 +243,19 @@ begin
 				if (rgtr_frm or rgtr_irdy)='1' then
 					case state is
 					when s_start =>
-						if pyl_irdy(0)='1' then
+						if pyl_irdy(1)='1' then
 							state := s_bridge;
 						end if;
 					when s_bridge =>
-						if pyl_irdy(1)='1' then
-							state := s_start;
-						end if;
 					end case;
 				else
 					state := s_start;
 				end if;
 			end if;
 			if state=s_bridge then
-				commit0 <= '1';
+				commit0 <= pyl_irdy(1);
 			else
-				commit0 <= pyl_irdy(0) or pyl_irdy(1);
+				commit0 <= rgtr_irdy;
 			end if;
 		end process;
 
