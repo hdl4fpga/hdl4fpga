@@ -243,19 +243,22 @@ begin
 				if (rgtr_frm or rgtr_irdy)='1' then
 					case state is
 					when s_start =>
-						if pyl_irdy(1)='1' then
+						if pyl_irdy(0)='1' then
 							state := s_bridge;
 						end if;
 					when s_bridge =>
+						if pyl_irdy(1)='1' then
+							state := s_start;
+						end if;
 					end case;
 				else
 					state := s_start;
 				end if;
 			end if;
 			if state=s_bridge then
-				commit0 <= pyl_irdy(1);
+				commit0 <= '1';
 			else
-				commit0 <= rgtr_irdy;
+				commit0 <= pyl_irdy(0) or pyl_irdy(1);
 			end if;
 		end process;
 
@@ -283,23 +286,22 @@ begin
 		rollback <= fcs_sb and not (fcs_vld and dup_equ);
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
-			latency   => 0,
 			check_sov => true,
 			check_dov => true,
 			max_depth => (64*8)/rx_data'length)
 		port map (
-			src_clk   => rx_clk,
-			src_irdy  => fifo_irdy,
-			src_trdy  => fifo_trdy,
-			src_data  => fifo_data,
+			src_clk    => rx_clk,
+			src_irdy   => fifo_irdy,
+			src_trdy   => fifo_trdy,
+			src_data   => fifo_data,
 
-			commit    => commit,
-			rollback  => rollback,
+			commit     => commit,
+			rollback   => rollback,
 
-			dst_clk   => tx_clk,
-			dst_irdy  => dst_irdy,
-			dst_trdy  => dst_trdy,
-			dst_data  => dst_data);
+			dst_clk    => tx_clk,
+			dst_irdy   => dst_irdy,
+			dst_trdy   => dst_trdy,
+			dst_data   => dst_data);
 
 		process (ackrx_trdy, tx_clk)
 			variable prefecth : std_logic;
@@ -384,6 +386,30 @@ begin
 		signal commit   : std_logic;
 		signal rollback : std_logic;
 	begin
+
+		-- process (rgtr_irdy, pyl_irdy, rx_clk)
+		-- 	type states is (s_start, s_bridge);
+		-- 	variable state : states;
+		-- begin
+		-- 	if rising_edge(rx_clk) then
+		-- 		if (rgtr_frm or rgtr_irdy)='1' then
+		-- 			case state is
+		-- 			when s_start =>
+		-- 				if pyl_irdy(1)='1' then
+		-- 					state := s_bridge;
+		-- 				end if;
+		-- 			when s_bridge =>
+		-- 			end case;
+		-- 		else
+		-- 			state := s_start;
+		-- 		end if;
+		-- 	end if;
+		-- 	if state=s_bridge then
+		-- 		commit0 <= pyl_irdy(1);
+		-- 	else
+		-- 		commit0 <= rgtr_irdy;
+		-- 	end if;
+		-- end process;
 
 		commit   <= fcs_sb and fcs_vld and not dup_equ;
 		rollback <= fcs_sb and not fcs_vld;
