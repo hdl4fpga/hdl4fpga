@@ -37,7 +37,7 @@ entity sio_sin is
 
 		rid_act    : buffer std_logic;
 		length_act : buffer std_logic;
-		data_act   : buffer std_logic;
+		pyl_act   : buffer std_logic;
 
 		rgtr_frm   : buffer std_logic;
 		rgtr_irdy  : buffer std_logic;
@@ -63,7 +63,7 @@ begin
 		last   => rgtr_last,
 		act(0) => rid_act,
 		act(1) => length_act,
-		act(2) => data_act);
+		act(2) => pyl_act);
 
 	process (frm, clk)
 		-- variable cntr : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1); -- Xilinx ISE 14.7 bug
@@ -80,7 +80,7 @@ begin
 						algn(data'range) := reverse(unsigned(data));
 					elsif cntr(0)='1' then
 						cntr := (others => '0');
-					elsif data_act='1' then
+					elsif pyl_act='1' then
 						cntr := cntr - 1;
 					end if;
 				end if;
