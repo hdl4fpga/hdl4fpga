@@ -123,7 +123,7 @@ begin
 			data       => rx_data,
 			rid_act    => rid_act,
 			length_act => '0',
-		pyl_act => pyl_act,
+			pyl_act    => pyl_act,
 			pyl_frm    => pyl_frm,
 			pyl_irdy   => pyl_irdy);
 
@@ -186,7 +186,7 @@ begin
 
 		ram1_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => (0 to 16-1 => '-'))
+			bitdata => (0 to 8-1 => '-'))
 		port map (
 			si_clk  => rx_clk,
 			si_frm  => ram1_frm,
@@ -200,7 +200,7 @@ begin
 		ram2_i : entity hdl4fpga.sio_ram
 		generic map (
 			-- bitdata => (0 to 16-1 => '-'))
-			bitdata => reverse(x"0042",8))
+			bitdata => reverse(x"42",8))
 		port map (
 			si_clk  => rx_clk,
 			si_frm  => ram2_frm,
