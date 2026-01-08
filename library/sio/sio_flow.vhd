@@ -84,7 +84,7 @@ begin
 		irdy       => rx_irdy,
 		data       => rx_data,
 		rid_act    => rid_act,
-		pyl_act => pyl_act,
+		pyl_act    => pyl_act,
 		rgtr_frm   => rgtr_frm,
 		rgtr_irdy  => rgtr_irdy,
 		rgtr_trdy  => rgtr_trdy);
@@ -268,6 +268,7 @@ begin
 			rollback0 <= not commit0;
 			fifo0_i : entity hdl4fpga.fifo
 			generic map (
+				latency   => 0,
 				check_sov => true,
 				check_dov => true,
 				max_depth => (4*8)/rx_data'length)
@@ -289,6 +290,7 @@ begin
 			rollback <= fcs_sb and not (fcs_vld and dup_equ);
 			fifo_i : entity hdl4fpga.fifo
 			generic map (
+				latency   => 0,
 				check_sov => true,
 				check_dov => true,
 				max_depth => (64*8)/rx_data'length)

@@ -37,7 +37,7 @@ entity sio_sin is
 
 		rid_act    : buffer std_logic;
 		length_act : buffer std_logic;
-		pyl_act   : buffer std_logic;
+		pyl_act    : buffer std_logic;
 
 		rgtr_frm   : buffer std_logic;
 		rgtr_irdy  : buffer std_logic;

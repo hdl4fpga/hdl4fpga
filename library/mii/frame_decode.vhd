@@ -110,7 +110,7 @@ begin
 		trdy <= (frm or active) and irdy;
 
 		act <= (others => '0');
-		act(step) <= frm;
+		act(step) <= frm or irdy;
 	end process;
 
 end;
