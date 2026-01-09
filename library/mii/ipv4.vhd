@@ -311,8 +311,8 @@ begin
 		signal verihltos_act : std_logic;
 		signal identflgsfrgttl_act : std_logic;
 
-		signal length_act  : std_logic;
-		signal length_data : std_logic_vector(ipv4tx_data'range);
+		signal length_act   : std_logic;
+		signal length_data  : std_logic_vector(ipv4tx_data'range);
 
 		signal protoid_act  : std_logic;
 		signal protoid_data : std_logic_vector(ipv4tx_data'range);
@@ -356,7 +356,7 @@ begin
 			 udptx_data when gntd(1)='1' else
 			(ipv4pyltx_data'range => '-');
 
-		decode_frm  <= ipv4pyltx_frm or ipv4pyltx_irdy;
+		decode_frm  <= ipv4pyltx_frm;
 		decode_irdy <= buffer_trdy;
 
 		ipv4_i : entity hdl4fpga.frame_decode
