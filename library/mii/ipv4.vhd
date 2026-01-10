@@ -356,7 +356,7 @@ begin
 			 udptx_data when gntd(1)='1' else
 			(ipv4pyltx_data'range => '-');
 
-		decode_frm  <= ipv4pyltx_frm;
+		decode_frm  <= ipv4pyltx_frm or ipv4pyltx_irdy;
 		decode_irdy <= buffer_trdy;
 
 		ipv4_i : entity hdl4fpga.frame_decode
