@@ -48,7 +48,13 @@ end;
 architecture beh of sio_sin is
 	constant frame : string := "{rid:8,length:8}";
 
-	signal rgtr_last  : std_logic;
+	signal rgtr_last   : std_logic;
+	signal rid_frm     : std_logic;
+	signal length_frm  : std_logic;
+	signal pyl_frm     : std_logic;
+	signal rid_irdy    : std_logic;
+	signal length_irdy : std_logic;
+	signal pyl_irdy    : std_logic;
 
 begin
 
@@ -57,13 +63,20 @@ begin
 		frame => frame,
 		size  => data'length)
 	port map (
-		clk    => clk,
-		frm    => rgtr_frm,
-		irdy   => rgtr_irdy,
-		last   => rgtr_last,
-		frms(0) => rid_act,
-		frms(1) => length_act,
-		frms(2) => pyl_act);
+		clk      => clk,
+		frm      => rgtr_frm,
+		irdy     => rgtr_irdy,
+		last     => rgtr_last,
+		frms(0)  => rid_frm,
+		frms(1)  => length_frm,
+		frms(2)  => pyl_frm,
+		irdys(0) => rid_irdy,
+		irdys(1) => length_irdy,
+		irdys(2) => pyl_irdy);
+
+	rid_act    <= rid_irdy or rid_frm;
+	length_act <= length_irdy or length_frm;
+	pyl_act    <= pyl_irdy or pyl_frm;
 
 	process (frm, clk)
 		-- variable cntr : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1); -- Xilinx ISE 14.7 bug

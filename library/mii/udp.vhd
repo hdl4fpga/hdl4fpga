@@ -318,7 +318,15 @@ begin
 			frms(4) => ports_act,
 			frms(5) => lentx_act,
 			frms(6) => chksum_act,
-			frms(7) => pyl_act);
+			frms(7) => pyl_act,
+			irdys(0) => tha_irdy,
+			irdys(1) => da_irdy,
+			irdys(2) => length_irdy,
+			irdys(3) => adjlen_irdy,
+			irdys(4) => ports_irdy,
+			irdys(5) => lentx_irdy,
+			irdys(6) => chksum_irdy,
+			irdys(7) => pyl_irdy);
 
 		adjlen_irdy <= length_act or adjlen_act or lentx_act;
 		si_data <= 
