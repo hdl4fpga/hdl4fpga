@@ -146,14 +146,14 @@ begin
 			clk    => miirx_clk,
 			frm    => ipv4rx_frm,
 			irdy   => ipv4rx_irdy,
-			act(0) => discard0,
-			act(1) => length_frm,
-			act(2) => discard2,
-			act(3) => proto_frm,
-			act(4) => chksum,
-			act(5) => spa_frm,
-			act(6) => ipv4da_frm,
-			act(7) => pyl_frm);
+			frms(0) => discard0,
+			frms(1) => length_frm,
+			frms(2) => discard2,
+			frms(3) => proto_frm,
+			frms(4) => chksum,
+			frms(5) => spa_frm,
+			frms(6) => ipv4da_frm,
+			frms(7) => pyl_frm);
 
 		process (miirx_clk)
 		begin
@@ -382,15 +382,15 @@ begin
 			frm    => decode_frm,
 			irdy   => decode_irdy,
 			fin    => decode_fin,
-			act(0) => tha_act,
-			act(1) => verihltos_act,
-			act(2) => length_act,
-			act(3) => identflgsfrgttl_act,
-			act(4) => protoid_act,
-			act(5) => chksum_act,
-			act(6) => spa_act,
-			act(7) => da_act,
-			act(8) => pyl_act);
+			frms(0) => tha_act,
+			frms(1) => verihltos_act,
+			frms(2) => length_act,
+			frms(3) => identflgsfrgttl_act,
+			frms(4) => protoid_act,
+			frms(5) => chksum_act,
+			frms(6) => spa_act,
+			frms(7) => da_act,
+			frms(8) => pyl_act);
 
 		ipv4pyltx_trdy <= 
 			buffer_trdy    when       tha_act='1' else
@@ -457,11 +457,11 @@ begin
 				clk    => miitx_clk,
 				frm    => ipv4pyltx_frm,
 				irdy   => decode_irdy,
-				act(0) => ipv4lentx_act,
-				act(1) => adjlen_act,
-				act(2) => ipv4tpatx_act,
-				act(3) => spa_act,
-				act(4) => act3);
+				frms(0) => ipv4lentx_act,
+				frms(1) => adjlen_act,
+				frms(2) => ipv4tpatx_act,
+				frms(3) => spa_act,
+				frms(4) => act3);
 
 			adjlen_irdy <= 
 				decode_irdy when ipv4lentx_act='1' else
@@ -607,7 +607,7 @@ begin
 		begin
 			buffer_frm  <= ipv4pyltx_frm;
 			buffer_irdy <= 
-				ipv4pyltx_irdy when     icmp_gntd='1' else
+				ipv4pyltx_irdy when icmp_gntd='1' else
 				ipv4pyltx_irdy;
 
 			buffer_i : entity hdl4fpga.mii_buffer

@@ -61,9 +61,9 @@ begin
 		frm    => rgtr_frm,
 		irdy   => rgtr_irdy,
 		last   => rgtr_last,
-		act(0) => rid_act,
-		act(1) => length_act,
-		act(2) => pyl_act);
+		frms(0) => rid_act,
+		frms(1) => length_act,
+		frms(2) => pyl_act);
 
 	process (frm, clk)
 		-- variable cntr : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1); -- Xilinx ISE 14.7 bug

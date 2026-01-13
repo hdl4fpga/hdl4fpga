@@ -96,12 +96,12 @@ begin
 		irdy   => pyl_irdy,
 		fin    => decode_fin,
 		last   => decode_last,
-		act(0) => prmb_act,
-		act(1) => tha_act,
-		act(2) => sha_act,
-		act(3) => typ_act,
-		act(4) => pad_act,
-		act(5) => act5);
+		frms(0) => prmb_act,
+		frms(1) => tha_act,
+		frms(2) => sha_act,
+		frms(3) => typ_act,
+		frms(4) => pad_act,
+		frms(5) => act5);
 
 	rom_frm  <= pyl_frm;
 	rom_irdy <= prmb_act or sha_act;

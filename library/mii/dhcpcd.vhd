@@ -84,9 +84,9 @@ begin
 			clk    => miirx_clk,
 			frm    => dhcpcdrx_frm,
 			irdy   => dhcpcdrx_irdy,
-			act(0) => discard0,
-			act(1) => yiaddr_act,
-			act(2) => discard2);
+			frms(0) => discard0,
+			frms(1) => yiaddr_act,
+			frms(2) => discard2);
 		
 		process (miirx_clk)
 			variable refresh_req : std_logic := '0';
@@ -201,12 +201,12 @@ begin
 			frm    => decode_frm,
 			irdy   => decode_irdy,
 			last   => decode_last,
-			act(0) => rom0_act,
-			act(1) => discard1,
-			act(2) => rom2_act,
-			act(3) => discard3,
-			act(4) => rom4_act,
-			act(5) => discard5);
+			frms(0) => rom0_act,
+			frms(1) => discard1,
+			frms(2) => rom2_act,
+			frms(3) => discard3,
+			frms(4) => rom4_act,
+			frms(5) => discard5);
 		
 		rom_irdy <= (rom0_act or rom2_act or rom4_act) and dhcpcdtx_trdy when decode_frm='1' else '0';
 		rom_i : entity hdl4fpga.sio_rom

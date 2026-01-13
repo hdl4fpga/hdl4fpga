@@ -115,11 +115,11 @@ begin
 			clk    => miirx_clk,
 			frm    => udprx_frm,
 			irdy   => udprx_irdy,
-			act(0) => sp_act,
-			act(1) => dp_act,
-			act(2) => act2,
-			act(3) => act3,
-			act(4) => pyl_act);
+			frms(0) => sp_act,
+			frms(1) => dp_act,
+			frms(2) => act2,
+			frms(3) => act3,
+			frms(4) => pyl_act);
 
 		fifo_b : block
 			signal ne_addr : boolean;
@@ -298,9 +298,9 @@ begin
 		generic map (
 			frame => compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
+				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 				"adjlen:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 				" ports:" & natural'image(
 					hdo(frames)**".format.udp.sp" +
 					hdo(frames)**".format.udp.dp")                      & ',' &
@@ -309,16 +309,16 @@ begin
 			size  => udprx_data'length)
 		port map (
 			clk    => miitx_clk,
-			frm    => pyltx_frm,
+			frm    => udppyltx_frm,
 			irdy   => decode_irdy,
-			act(0) => tha_act,
-			act(1) => length_act,
-			act(2) => adjlen_act,
-			act(3) => da_act,
-			act(4) => ports_act,
-			act(5) => lentx_act,
-			act(6) => chksum_act,
-			act(7) => pyl_act);
+			frms(0) => tha_act,
+			frms(1) => da_act,
+			frms(2) => length_act,
+			frms(3) => adjlen_act,
+			frms(4) => ports_act,
+			frms(5) => lentx_act,
+			frms(6) => chksum_act,
+			frms(7) => pyl_act);
 
 		adjlen_irdy <= length_act or adjlen_act or lentx_act;
 		si_data <= 

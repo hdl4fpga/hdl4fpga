@@ -86,9 +86,9 @@ begin
 			clk    => miirx_clk,
 			frm    => arprx_frm,
 			irdy   => arprx_irdy,
-			act(0) => discard,
-			act(1) => tpa_frm,
-			act(2) => pyl_frm);
+			frms(0) => discard,
+			frms(1) => tpa_frm,
+			frms(2) => pyl_frm);
 
 		tpacmp_b : block
 			signal tpa_equ : std_logic;
@@ -219,11 +219,11 @@ begin
 			frm    => decode_frm,
 			irdy   => decode_irdy,
 			last   => decode_last,
-			act(0) => rom_frm,
-			act(1) => spa_frm,
-			act(2) => tha_frm,
-			act(3) => tpa_frm,
-			act(4) => pyl_frm);
+			frms(0) => rom_frm,
+			frms(1) => spa_frm,
+			frms(2) => tha_frm,
+			frms(3) => tpa_frm,
+			frms(4) => pyl_frm);
 		pa_frm  <= spa_frm or tpa_frm;
 		pa_irdy <= spa_frm or tpa_frm;
 

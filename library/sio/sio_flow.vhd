@@ -359,33 +359,6 @@ begin
 			irdy  => tx_irdy,
 			trdy  => tx_trdy);
 
-
-		-- process (tx_clk)
-		-- begin
-		-- 	if rising_edge(tx_clk) then
-		-- 		if gntd(0)='1' then
-		-- 			tx_data <= acktx_data;
-		-- 		elsif gntd(1)='1' then
-		-- 			tx_data <= si_data;
-		-- 		else
-		-- 			tx_data <= (tx_data'range => '-');
-		-- 		end if;
-		-- 	end if;
-		-- end process;
-
-		-- process (tx_clk)
-		-- begin
-		-- 	if rising_edge(tx_clk) then
-		-- 		if gntd(0)='1' then
-		-- 			tx_data <= acktx_data;
-		-- 		elsif gntd(1)='1' then
-		-- 			tx_data <= si_data;
-		-- 		else
-		-- 			tx_data <= (tx_data'range => '-');
-		-- 		end if;
-		-- 	end if;
-		-- end process;
-
 		tx_data <=
 			si_data    when gntd(0)='1' else
 			acktx_data when gntd(1)='1' else

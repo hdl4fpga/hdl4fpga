@@ -87,10 +87,10 @@ begin
 			clk    => miirx_clk,
 			frm    => icmprx_frm,
 			irdy   => icmprx_irdy,
-			act(0) => type_frm,
-			act(1) => code_frm,
-			act(2) => chksum_frm,
-			act(3) => pyl_frm);
+			frms(0) => type_frm,
+			frms(1) => code_frm,
+			frms(2) => chksum_frm,
+			frms(3) => pyl_frm);
 
 		rom_frm <= type_frm or code_frm;
 		rom_i : entity hdl4fpga.sio_rom
@@ -273,9 +273,9 @@ begin
 			frm    => decode_frm,
 			irdy   => decode_irdy,
 			fin    => decode_fin ,
-			act(0) => lead_frm,
-			act(1) => chksum_frm,
-			act(2) => pyl_frm);
+			frms(0) => lead_frm,
+			frms(1) => chksum_frm,
+			frms(2) => pyl_frm);
 
 		buffer_frm  <= decode_frm when unsigned(rd_addr) /= unsigned(wr_addr) else '0';
 		-- buffer_frm  <= decode_frm when eq_addr else '0';

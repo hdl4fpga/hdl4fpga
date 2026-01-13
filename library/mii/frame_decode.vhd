@@ -33,13 +33,15 @@ entity frame_decode is
         frame : string := hdo(frames)**".format.mac";
         size  : natural := 4);
 	port (
-		clk  : in  std_logic := '0';
-		frm  : in  std_logic := '0';
-		irdy : in  std_logic := '0';
-		trdy : out std_logic := '0';
-		fin  : out std_logic := '0';
-		last : out std_logic := '0';
-		act  : out std_logic_vector(0 to length(frame)));
+		clk   : in  std_logic := '0';
+		frm   : in  std_logic := '0';
+		irdy  : in  std_logic := '0';
+		trdy  : out std_logic := '0';
+		fin   : out std_logic := '0';
+		last  : out std_logic := '0';
+		frms  : out std_logic_vector(0 to length(frame));
+		irdys : out std_logic_vector(0 to length(frame)) := (others => '1');
+		trdys : in  std_logic_vector(0 to length(frame)) := (others => '1'));
 end;
 
 architecture def of frame_decode is
@@ -52,14 +54,14 @@ begin
 			return natural_vector is
 			variable boundary : natural;
 			constant psize  : natural := 2**unsigned_num_bits(total-1);
-			variable retval : natural_vector(act'range);
+			variable retval : natural_vector(frms'range);
 		begin
 			boundary := 2*psize-total;
-			for i in act'range loop
+			for i in frms'range loop
 				assert true
 					report "frame_decode.boundaries() : boundary => " & natural'image(boundary)
 					severity note;
-				if i=act'right then
+				if i=frms'right then
 					retval(i) := 0;
 				else
 					boundary  := hdo(frame)**('['&natural'image(i)&']')/size + boundary;
@@ -71,7 +73,7 @@ begin
 
 		constant boundary : natural_vector := boundaries;
 		variable cntr  : unsigned(0 to unsigned_num_bits(total-1)) := ('1', others => '0');
-		variable step  : natural range 0 to act'length-1;
+		variable step  : natural range 0 to frms'length-1;
 		variable limit : natural range 0 to 2**cntr'length-1;
 
 		variable active : std_logic;
@@ -107,10 +109,13 @@ begin
 			end if;
 		end if;
 		fin  <= not cntr(0);
-		trdy <= (frm or active) and irdy;
+		trdy <= trdys(step);
 
-		act <= (others => '0');
-		act(step) <= frm or (active and irdy);
+		irdys <= (others => '0');
+		irdys(step) <= irdy;
+
+		frms <= (others => '0');
+		frms(step) <= frm;
 	end process;
 
 end;

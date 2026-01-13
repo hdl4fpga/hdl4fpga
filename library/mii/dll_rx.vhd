@@ -69,10 +69,10 @@ begin
 		clk    => mii_clk,
 		frm    => dll_frm,
 		irdy   => irdy,
-		act(0) => da_frm,
-		act(1) => sa_frm,
-		act(2) => typ_frm,
-		act(3) => pyl_frm);
+		frms(0) => da_frm,
+		frms(1) => sa_frm,
+		frms(2) => typ_frm,
+		frms(3) => pyl_frm);
 
 	crc_i : entity hdl4fpga.crc
 	port map (
