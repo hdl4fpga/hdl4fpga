@@ -39,6 +39,7 @@ entity frame_decode is
 		trdy  : out std_logic := '0';
 		fin   : out std_logic := '0';
 		last  : out std_logic := '0';
+		act   : out std_logic_vector(0 to length(frame));
 		frms  : out std_logic_vector(0 to length(frame));
 		irdys : out std_logic_vector(0 to length(frame)) := (others => '1');
 		trdys : in  std_logic_vector(0 to length(frame)) := (others => '1'));
@@ -116,6 +117,9 @@ begin
 
 		frms <= (others => '0');
 		frms(step) <= frm;
+
+		act <= (others => '0');
+		act(step) <= frm or (active and irdy);
 	end process;
 
 end;
