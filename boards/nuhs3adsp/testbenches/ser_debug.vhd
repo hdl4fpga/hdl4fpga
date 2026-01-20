@@ -211,10 +211,10 @@ architecture nuhs3adsp_serdebug of testbench is
 			"0000"                 & -- IP Header Checksum
 			"c0a80002"             & -- IP Source IP address
 			"c0a8000e"             & -- IP Destiantion IP Address
-			"0046"                 &
+			"0048"                 &
 			"0047"                 &
-			"0000"                 &
-			"0000"                 &
+			"a5a5"                 &
+			"a5a5"                 &
 			"010042,"              &
 			"ddddddab,"            &
 		"dhcp:0x"                  &
