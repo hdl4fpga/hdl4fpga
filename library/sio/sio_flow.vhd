@@ -211,7 +211,6 @@ begin
 			so_irdy => cmp_irdy,
 			so_data => cmp2_data);
 
-
 		ack_b : if reply generate
 
 			alias  ackrx_frm  is tx_frms(1);

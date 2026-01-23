@@ -254,14 +254,26 @@ begin
 
 		signal gntd  : std_logic_vector(0 to 2-1);
 
-		signal tha_act     : std_logic;
-		signal length_act  : std_logic;
-		signal adjlen_act  : std_logic;
-		signal da_act      : std_logic;
-		signal ports_act   : std_logic;
-		signal lentx_act   : std_logic;
-		signal chksum_act  : std_logic;
-		signal pyl_act     : std_logic;
+		constant udp_frame : string := compact('{' &
+				"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
+				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
+				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				"adjlen:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				" ports:" & natural'image(
+					hdo(frames)**".format.udp.sp" +
+					hdo(frames)**".format.udp.dp")                      & ',' &
+				"udplen:" & string'(hdo(frames)**".format.udp.length")  & ',' &
+				"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}');
+		signal udp_act : std_logic_vector(0 to 7);
+		alias tha_act     is udp_act(0);
+		alias da_act      is udp_act(1);
+		alias length_act  is udp_act(2);
+		alias adjlen_act  is udp_act(3);
+		alias ports_act   is udp_act(4);
+		alias lentx_act   is udp_act(5);
+		alias chksum_act  is udp_act(6);
+		alias pyl_act     is udp_act(7);
+
 		signal adjlen_irdy : std_logic;
 		signal si_data     : std_logic_vector(udptx_data'range);
 		signal adjlen_data : std_logic_vector(udptx_data'range);
@@ -296,29 +308,13 @@ begin
 		decode_irdy <= pyltx_irdy when length_act='1' else pyltx_irdy and udppyltx_trdy;
 		udp_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{' &
-				"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
-				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
-				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				"adjlen:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				" ports:" & natural'image(
-					hdo(frames)**".format.udp.sp" +
-					hdo(frames)**".format.udp.dp")                      & ',' &
-				"udplen:" & string'(hdo(frames)**".format.udp.length")  & ',' &
-				"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}'),
+			frame => udp_frame,
 			size  => udprx_data'length)
 		port map (
-			clk    => miitx_clk,
-			frm    => udppyltx_frm,
-			irdy   => decode_irdy,
-			act(0) => tha_act,
-			act(1) => da_act,
-			act(2) => length_act,
-			act(3) => adjlen_act,
-			act(4) => ports_act,
-			act(5) => lentx_act,
-			act(6) => chksum_act,
-			act(7) => pyl_act);
+			clk  => miitx_clk,
+			frm  => udppyltx_frm,
+			irdy => decode_irdy,
+			act  => udp_act);
 
 		adjlen_irdy <= length_act or adjlen_act or lentx_act;
 		si_data <= 
