@@ -24,7 +24,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;		
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 entity sio_flow is
 	generic (
@@ -233,6 +235,13 @@ begin
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 			signal dst_data  : std_logic_vector(rx_data'range);
+
+			constant udp_frame : string := compact('{' &
+					"  addr:" & natural'image(
+						hdo(frames)**".format.mac.hwda" +
+						hdo(frames)**".format.ipv4.da")                     & ',' &
+					"length:" & string'(hdo(frames)**".format.ipv4.length") & '}');
+			signal udp_act : std_logic_vector(0 to length(udp_frame));
 
 		begin
 
