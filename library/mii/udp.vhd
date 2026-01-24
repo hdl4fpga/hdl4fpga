@@ -265,14 +265,15 @@ begin
 				"udplen:" & string'(hdo(frames)**".format.udp.length")  & ',' &
 				"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}');
 		signal udp_act : std_logic_vector(0 to 7);
-		alias tha_act     is udp_act(0);
-		alias da_act      is udp_act(1);
-		alias length_act  is udp_act(2);
-		alias adjlen_act  is udp_act(3);
-		alias ports_act   is udp_act(4);
-		alias lentx_act   is udp_act(5);
-		alias chksum_act  is udp_act(6);
-		alias pyl_act     is udp_act(7);
+
+		alias tha_act    is udp_act(0);
+		alias da_act     is udp_act(1);
+		alias length_act is udp_act(2);
+		alias adjlen_act is udp_act(3);
+		alias ports_act  is udp_act(4);
+		alias lentx_act  is udp_act(5);
+		alias chksum_act is udp_act(6);
+		alias pyl_act    is udp_act(7);
 
 		signal adjlen_irdy : std_logic;
 		signal si_data     : std_logic_vector(udptx_data'range);
