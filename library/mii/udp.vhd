@@ -306,7 +306,10 @@ begin
 			dhcpcdtx_data when gntd(1)='1' else
 			(udptx_data'range => '-');
 
-		decode_irdy <= pyltx_irdy when length_act='1' else pyltx_irdy and udppyltx_trdy;
+		decode_irdy <= 
+			pyltx_irdy when length_act='1' else 
+			pyltx_irdy and udppyltx_trdy;
+
 		udp_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => udp_frame,
