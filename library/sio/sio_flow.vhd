@@ -235,6 +235,7 @@ begin
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 			signal dst_data  : std_logic_vector(rx_data'range);
+			signal length_data  : std_logic_vector(rx_data'range);
 
 			constant frame : string := compact('{' &
 					"  addr:" & natural'image(
@@ -242,6 +243,7 @@ begin
 						hdo(frames)**".format.ipv4.da")                     & ',' &
 					"length:" & string'(hdo(frames)**".format.udp.length") & '}');
 			signal acts : std_logic_vector(0 to length(frame));
+			signal frms : std_logic_vector(0 to length(frame));
 
 		begin
 
@@ -326,14 +328,27 @@ begin
 				irdy  => dst_irdy,
 				act   => acts);
 
+			length_i : entity hdl4fpga.sio_mux
+			port map (
+				mux_data => x"1234",
+				sio_clk  => tx_clk,
+				sio_frm  => frms(1),
+				sio_irdy => dst_trdy,
+				sio_trdy => open,
+				so_data  => length_data);
+
 			process (ackrx_trdy, acts(1), dst_irdy, tx_clk)
 				variable prefecth : std_logic;
 			begin
 				if rising_edge(tx_clk) then
 					if dst_irdy='1' then
 						ackrx_irdy <= dst_irdy;
-						if (ackrx_trdy and not acts(1))='1' then
-							acktx_data <= dst_data;
+						if ackrx_trdy='1' then
+							if not acts(1)='0' then
+								acktx_data <= dst_data;
+							else
+								acktx_data <= length_data;
+							end if;
 						elsif prefecth='1' then
 							acktx_data <= dst_data;
 							prefecth := '0';
