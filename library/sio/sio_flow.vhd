@@ -341,17 +341,17 @@ begin
 				sio_trdy => open,
 				so_data  => length_data);
 
-			process (ackrx_trdy, acts(1), dst_irdy, tx_clk)
+			process (ackrx_trdy, acts, dst_irdy, tx_clk)
 				variable prefecth : std_logic;
 			begin
 				if rising_edge(tx_clk) then
 					if dst_irdy='1' then
 						ackrx_irdy <= dst_irdy;
 						if ackrx_trdy='1' then
-							if not acts(1)='0' then
-								acktx_data <= dst_data;
-							else
+							if acts(1)='1' then
 								acktx_data <= length_data;
+							else
+								acktx_data <= dst_data;
 							end if;
 						elsif prefecth='1' then
 							acktx_data <= dst_data;
