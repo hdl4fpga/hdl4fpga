@@ -244,6 +244,7 @@ begin
 					"length:" & string'(hdo(frames)**".format.udp.length") & '}');
 			signal acts : std_logic_vector(0 to length(frame));
 			signal frms : std_logic_vector(0 to length(frame));
+			signal trdys : std_logic_vector(0 to length(frame)) := (others => '1');
 
 		begin
 
@@ -318,6 +319,7 @@ begin
 				dst_trdy   => dst_trdy,
 				dst_data   => dst_data);
 
+			trdys(1) <= ackrx_trdy;
 			udp_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => frame,
@@ -326,6 +328,8 @@ begin
 				clk   => tx_clk,
 				frm   => dst_irdy,
 				irdy  => dst_irdy,
+				frms  => frms,
+				trdys => trdys,
 				act   => acts);
 
 			length_i : entity hdl4fpga.sio_mux
@@ -333,7 +337,7 @@ begin
 				mux_data => x"1234",
 				sio_clk  => tx_clk,
 				sio_frm  => frms(1),
-				sio_irdy => dst_trdy,
+				sio_irdy => ackrx_trdy,
 				sio_trdy => open,
 				so_data  => length_data);
 
