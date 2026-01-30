@@ -319,7 +319,7 @@ begin
 				dst_trdy   => dst_trdy,
 				dst_data   => dst_data);
 
-			trdys(1) <= ackrx_trdy;
+			trdys <= (1 => ackrx_trdy, others => ackrx_trdy);
 			udp_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => frame,
