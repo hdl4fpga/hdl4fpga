@@ -332,7 +332,7 @@ begin
 
 			length_i : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => x"a9cb",
+				mux_data => x"9abc",
 				sio_clk  => tx_clk,
 				sio_frm  => frms(1),
 				sio_irdy => ackrx_trdy,
