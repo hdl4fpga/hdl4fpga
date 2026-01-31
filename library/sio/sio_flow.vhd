@@ -238,12 +238,10 @@ begin
 			signal length_data  : std_logic_vector(rx_data'range);
 
 			constant frame : string := compact('{' &
-					"  addr:" & natural'image(
-						hdo(frames)**".format.mac.hwda" +
-						hdo(frames)**".format.ipv4.da")                     & ',' &
+					"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
 					"length:" & string'(hdo(frames)**".format.udp.length") & '}');
-			signal acts : std_logic_vector(0 to length(frame));
-			signal frms : std_logic_vector(0 to length(frame));
+			signal acts  : std_logic_vector(0 to length(frame));
+			signal frms  : std_logic_vector(0 to length(frame));
 			signal trdys : std_logic_vector(0 to length(frame)) := (others => '1');
 
 		begin
@@ -334,7 +332,7 @@ begin
 
 			length_i : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => x"1234",
+				mux_data => x"a9cb",
 				sio_clk  => tx_clk,
 				sio_frm  => frms(1),
 				sio_irdy => ackrx_trdy,

@@ -209,7 +209,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"0000"                 & -- IP Fragmentation
 			"0511"                 & -- IP TTL, protocol
 			"0000"                 & -- IP Header Checksum
-			"c0a8000c"             & -- IP Source IP address
+			"21436587"             & -- IP Source IP address
 			"c0a8000e"             & -- IP Destiantion IP Address
 			"0048"                 &
 			"0047"                 &
