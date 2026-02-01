@@ -317,7 +317,6 @@ begin
 				dst_trdy   => dst_trdy,
 				dst_data   => dst_data);
 
-			trdys <= (1 => ackrx_trdy, others => ackrx_trdy);
 			udp_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => frame,
@@ -332,7 +331,7 @@ begin
 
 			length_i : entity hdl4fpga.sio_mux
 			port map (
-				mux_data => x"9abc",
+				mux_data => x"cdef",
 				sio_clk  => tx_clk,
 				sio_frm  => frms(1),
 				sio_irdy => ackrx_trdy,
@@ -367,6 +366,7 @@ begin
 						end if;
 					end if;
 				end if;
+				trdys <= (others => ackrx_trdy or prefecth);
 				dst_trdy  <= (ackrx_trdy and not acts(1)) or prefecth;
 				ackrx_frm <= dst_irdy and not prefecth;
 			end process;
