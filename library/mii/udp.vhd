@@ -264,18 +264,16 @@ begin
 					hdo(frames)**".format.udp.dp")                      & ',' &
 				"udplen:" & string'(hdo(frames)**".format.udp.length")  & ',' &
 				"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}');
-		signal udp_acts  : std_logic_vector(0 to length(udp_frame));
-		signal udp_irdys : std_logic_vector(0 to length(udp_frame));
-		signal udp_trdys : std_logic_vector(0 to length(udp_frame));
+		signal udp_act : std_logic_vector(0 to 7);
 
-		alias tha_act    is udp_acts(0);
-		alias da_act     is udp_acts(1);
-		alias length_act is udp_acts(2);
-		alias adjlen_act is udp_acts(3);
-		alias ports_act  is udp_acts(4);
-		alias lentx_act  is udp_acts(5);
-		alias chksum_act is udp_acts(6);
-		alias pyl_act    is udp_acts(7);
+		alias tha_act    is udp_act(0);
+		alias da_act     is udp_act(1);
+		alias length_act is udp_act(2);
+		alias adjlen_act is udp_act(3);
+		alias ports_act  is udp_act(4);
+		alias lentx_act  is udp_act(5);
+		alias chksum_act is udp_act(6);
+		alias pyl_act    is udp_act(7);
 
 		signal adjlen_irdy : std_logic;
 		signal si_data     : std_logic_vector(udptx_data'range);
@@ -320,8 +318,7 @@ begin
 			clk  => miitx_clk,
 			frm  => udppyltx_frm,
 			irdy => decode_irdy,
-			irdys => udp_irdys,
-			act  => udp_acts);
+			act  => udp_act);
 
 		adjlen_irdy <= length_act or adjlen_act or lentx_act;
 		si_data <= 
