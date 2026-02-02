@@ -302,30 +302,30 @@ begin
 		alias icmp_gntd is gntd(0);
 		alias udp_gntd  is gntd(1);
 
-		signal decode_frm  : std_logic;
-		signal decode_irdy : std_logic;
-		signal decode_fin  : std_logic;
-		signal decode_data : std_logic_vector(ipv4tx_data'range);
+		signal decode_frm     : std_logic;
+		signal decode_irdy    : std_logic;
+		signal decode_fin     : std_logic;
+		signal decode_data    : std_logic_vector(ipv4tx_data'range);
 
-		signal tha_act       : std_logic;
-		signal verihltos_act : std_logic;
+		signal tha_act        : std_logic;
+		signal verihltos_act  : std_logic;
 		signal identflgsfrgttl_act : std_logic;
 
-		signal length_act   : std_logic;
-		signal length_data  : std_logic_vector(ipv4tx_data'range);
+		signal length_act     : std_logic;
+		signal length_data    : std_logic_vector(ipv4tx_data'range);
 
-		signal protoid_act  : std_logic;
-		signal protoid_data : std_logic_vector(ipv4tx_data'range);
+		signal protoid_act    : std_logic;
+		signal protoid_data   : std_logic_vector(ipv4tx_data'range);
 
-		signal chksum_act   : std_logic;
-		signal chksum_data  : std_logic_vector(ipv4tx_data'range);
+		signal chksum_act     : std_logic;
+		signal chksum_data    : std_logic_vector(ipv4tx_data'range);
 
-		signal spa_act      : std_logic;
-		signal spa_data     : std_logic_vector(ipv4tx_data'range);
-		signal da_act       : std_logic;
+		signal spa_act        : std_logic;
+		signal spa_data       : std_logic_vector(ipv4tx_data'range);
+		signal da_act         : std_logic;
 		alias  da_irdy is da_act;
-		signal da_data      : std_logic_vector(ipv4tx_data'range);
-		signal pyl_act      : std_logic;
+		signal da_data        : std_logic_vector(ipv4tx_data'range);
+		signal pyl_act        : std_logic;
 
 		constant ipv4hdr_bitdata : std_logic_vector := 
 			std_logic_vector'(hdo(frames)**".data.ipv4.verihl")  &
