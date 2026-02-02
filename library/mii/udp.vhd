@@ -257,8 +257,8 @@ begin
 		constant udp_frame : string := compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
 				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 				"adjlen:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 				" ports:" & natural'image(
 					hdo(frames)**".format.udp.sp" +
 					hdo(frames)**".format.udp.dp")                      & ',' &
@@ -268,8 +268,8 @@ begin
 
 		alias tha_act    is udp_act(0);
 		alias length_act is udp_act(1);
-		alias da_act     is udp_act(2);
-		alias adjlen_act is udp_act(3);
+		alias adjlen_act is udp_act(2);
+		alias da_act     is udp_act(3);
 		alias ports_act  is udp_act(4);
 		alias lentx_act  is udp_act(5);
 		alias chksum_act is udp_act(6);
