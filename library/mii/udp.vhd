@@ -288,6 +288,7 @@ begin
 			'1'   when length_act='1' else
 			'0'   when adjlen_act='1' else
 			'0'   when chksum_act='1' else
+			'0'   when lentx_act='1' else
 			udppyltx_trdy;
 
 		arbiter_i : entity hdl4fpga.mii_arbiter
