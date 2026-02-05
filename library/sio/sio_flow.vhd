@@ -295,8 +295,8 @@ begin
 				dst_trdy   => fifo_trdy,
 				dst_data   => fifo_data);
 
-			commit   <= fcs_sb and     (fcs_vld and dup_equ);
-			rollback <= fcs_sb and not (fcs_vld and dup_equ);
+			commit   <= fcs_sb and     (fcs_vld and (dup_equ or '1'));
+			rollback <= fcs_sb and not (fcs_vld and (dup_equ or '1'));
 			fifo_i : entity hdl4fpga.fifo
 			generic map (
 				latency   => 0,

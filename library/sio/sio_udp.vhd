@@ -183,7 +183,7 @@ begin
 			if pylrx_frm='1' then
 				if fcs_sb='1' then
 					vld := fcs_vld;
-					vld := '1';
+					-- vld := '1';
 					sb  := '1';
 				end if;
 			else
