@@ -109,8 +109,8 @@ begin
 
 		signal ram_t     : std_logic := '0';
 
-		signal pyl_frm   : std_logic_vector(0 to 2-1);
-		signal pyl_irdy  : std_logic_vector(0 to 2-1);
+		signal pyl_frms   : std_logic_vector(0 to 2-1);
+		signal pyl_irdys  : std_logic_vector(0 to 2-1);
 
 	begin
 
@@ -126,16 +126,16 @@ begin
 			rid_act    => rid_act,
 			length_act => '0',
 			pyl_act    => pyl_act,
-			pyl_frm    => pyl_frm,
-			pyl_irdy   => pyl_irdy);
+			pyl_frm    => pyl_frms,
+			pyl_irdy   => pyl_irdys);
 
-		process (rgtr_irdy, pyl_frm(1), rx_clk)
+		process (rgtr_irdy, pyl_frms(1), rx_clk)
 			variable equ : std_logic;
 		begin
 			if rising_edge(rx_clk) then
 				if equ='0' then
 					if (rgtr_frm or rgtr_irdy)='1' then
-						equ := pyl_frm(1);
+						equ := pyl_frms(1);
 					end if;
 				elsif (rgtr_frm or rgtr_irdy)='0' then
 					equ := '0';
@@ -143,7 +143,7 @@ begin
 					equ := '0';
 				end if;
 			end if;
-			mr_irdy <= (pyl_frm(1) or equ) and rgtr_irdy;
+			mr_irdy <= (pyl_frms(1) or equ) and rgtr_irdy;
 		end process;
 
 		process (rx_clk)
@@ -232,22 +232,23 @@ begin
 			signal commit    : std_logic;
 			signal rollback  : std_logic;
 
+			signal src_irdy  : std_logic;
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 			signal dst_data  : std_logic_vector(rx_data'range);
 			signal length_data  : std_logic_vector(rx_data'range);
 
-			constant frame : string := compact('{' &
+			constant dst_frame : string := compact('{' &
 					"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
 					"length:" & string'(hdo(frames)**".format.udp.length") & '}');
-			signal acts  : std_logic_vector(0 to length(frame));
-			signal frms  : std_logic_vector(0 to length(frame));
-			signal trdys : std_logic_vector(0 to length(frame)) := (others => '1');
+			signal dst_acts  : std_logic_vector(0 to length(dst_frame));
+			signal dst_frms  : std_logic_vector(0 to length(dst_frame));
+			signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
 
 		begin
 
 			-- ackrx_frm <= ackrx_irdy;
-			process (pyl_irdy, rx_clk)
+			process (pyl_irdys, rx_clk)
 				type states is (s_start, s_bridge);
 				variable state : states;
 			begin
@@ -255,11 +256,11 @@ begin
 					if (rgtr_frm or rgtr_irdy)='1' then
 						case state is
 						when s_start =>
-							if pyl_irdy(0)='1' then
+							if pyl_irdys(0)='1' then
 								state := s_bridge;
 							end if;
 						when s_bridge =>
-							if pyl_irdy(1)='1' then
+							if pyl_irdys(1)='1' then
 								state := s_start;
 							end if;
 						end case;
@@ -270,10 +271,23 @@ begin
 				if state=s_bridge then
 					commit0 <= '1';
 				else
-					commit0 <= pyl_irdy(0) or pyl_irdy(1);
+					commit0 <= pyl_irdys(0) or pyl_irdys(1);
 				end if;
 			end process;
 
+			src_i : entity hdl4fpga.frame_decode
+			generic map (
+				frame => src_frame,
+				size  => rx_data'length)
+			port map (
+				clk   => tx_clk,
+				frm   => pyl_frms(0),
+				irdy  => dst_irdy,
+				frms  => dst_frms,
+				trdys => dst_trdys,
+				act   => dst_acts);
+
+			src_irdy <= rgtr_irdy;
 			rollback0 <= not commit0;
 			fifo0_i : entity hdl4fpga.fifo
 			generic map (
@@ -283,7 +297,7 @@ begin
 				max_depth => (4*8)/rx_data'length)
 			port map (
 				src_clk    => rx_clk,
-				src_irdy   => rgtr_irdy,
+				src_irdy   => src_irdy,
 				src_trdy   => open,
 				src_data   => rx_data,
 
@@ -317,35 +331,35 @@ begin
 				dst_trdy   => dst_trdy,
 				dst_data   => dst_data);
 
-			udp_i : entity hdl4fpga.frame_decode
+			dst_i : entity hdl4fpga.frame_decode
 			generic map (
-				frame => frame,
+				frame => dst_frame,
 				size  => tx_data'length)
 			port map (
 				clk   => tx_clk,
 				frm   => dst_irdy,
 				irdy  => dst_irdy,
-				frms  => frms,
-				trdys => trdys,
-				act   => acts);
+				frms  => dst_frms,
+				trdys => dst_trdys,
+				act   => dst_acts);
 
 			length_i : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => reverse(x"0003",8),
 				sio_clk  => tx_clk,
-				sio_frm  => frms(1),
+				sio_frm  => dst_frms(1),
 				sio_irdy => ackrx_trdy,
 				sio_trdy => open,
 				so_data  => length_data);
 
-			process (ackrx_trdy, acts, dst_irdy, tx_clk)
+			process (ackrx_trdy, dst_acts, dst_irdy, tx_clk)
 				variable prefecth : std_logic;
 			begin
 				if rising_edge(tx_clk) then
 					if dst_irdy='1' then
 						ackrx_irdy <= dst_irdy;
 						if ackrx_trdy='1' then
-							if acts(1)='1' then
+							if dst_acts(1)='1' then
 								acktx_data <= length_data;
 							else
 								acktx_data <= dst_data;
@@ -355,7 +369,7 @@ begin
 							prefecth := '0';
 						end if;
 					elsif ackrx_frm='0' then
-						if (ackrx_irdy and (ackrx_trdy and not acts(1)))='1' then
+						if (ackrx_irdy and (ackrx_trdy and not dst_acts(1)))='1' then
 							prefecth := '1';
 						elsif ackrx_irdy='0' then
 							prefecth := '1';
@@ -366,8 +380,8 @@ begin
 						end if;
 					end if;
 				end if;
-				trdys <= (others => ackrx_trdy or prefecth);
-				dst_trdy  <= (ackrx_trdy and not acts(1)) or prefecth;
+				dst_trdys <= (others => ackrx_trdy or prefecth);
+				dst_trdy  <= (ackrx_trdy and not dst_acts(1)) or prefecth;
 				ackrx_frm <= dst_irdy and not prefecth;
 			end process;
 

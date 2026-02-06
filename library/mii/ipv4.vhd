@@ -327,6 +327,21 @@ begin
 		signal da_data        : std_logic_vector(ipv4tx_data'range);
 		signal pyl_act        : std_logic;
 
+		constant ipv4_frame : string := compact('{'                                &
+				"            tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
+				"      verihltos:" & natural'image(
+					hdo(frames)**".format.mac.type"     +
+					hdo(frames)**".format.ipv4.verihl"  +
+					hdo(frames)**".format.ipv4.tos")                             & ',' & 
+				"         length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				"identflgsfrgttl:" & natural'image(
+					hdo(frames)**".format.ipv4.ident"   +
+					hdo(frames)**".format.ipv4.flgsfrg" +
+					hdo(frames)**".format.ipv4.ttl")                             & ',' &
+				"          proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
+				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
+				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
+				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}');
 		constant ipv4hdr_bitdata : std_logic_vector := 
 			std_logic_vector'(hdo(frames)**".data.ipv4.verihl")  &
 			std_logic_vector'(hdo(frames)**".data.ipv4.tos")     &
@@ -361,21 +376,7 @@ begin
 
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                                                 &
-				"            tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
-				"      verihltos:" & natural'image(
-					hdo(frames)**".format.mac.type"     +
-					hdo(frames)**".format.ipv4.verihl"  +
-					hdo(frames)**".format.ipv4.tos")                             & ',' & 
-				"         length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				"identflgsfrgttl:" & natural'image(
-					hdo(frames)**".format.ipv4.ident"   +
-					hdo(frames)**".format.ipv4.flgsfrg" +
-					hdo(frames)**".format.ipv4.ttl")                             & ',' &
-				"          proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
-				"         chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
-				"             sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
-				"             da:" & string'(hdo(frames)**".format.ipv4.da")     & '}'),
+			frame => ipv4_frame,
 			size  => ipv4tx_data'length)
 		port map (
 			clk    => miitx_clk,
