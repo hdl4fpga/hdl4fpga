@@ -232,15 +232,22 @@ begin
 			signal commit    : std_logic;
 			signal rollback  : std_logic;
 
+			constant src_frame : string := compact('{' &
+					"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
+					"length:" & string'(hdo(frames)**".format.udp.length") & '}');
 			signal src_irdy  : std_logic;
+			signal src_acts  : std_logic_vector(0 to length(src_frame));
+			signal src_frms  : std_logic_vector(0 to length(src_frame));
+			signal src_trdys : std_logic_vector(0 to length(src_frame)) := (others => '1');
+
+			constant dst_frame : string := compact('{' &
+					"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
+					"length:" & string'(hdo(frames)**".format.udp.length") & '}');
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 			signal dst_data  : std_logic_vector(rx_data'range);
 			signal length_data  : std_logic_vector(rx_data'range);
 
-			constant dst_frame : string := compact('{' &
-					"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
-					"length:" & string'(hdo(frames)**".format.udp.length") & '}');
 			signal dst_acts  : std_logic_vector(0 to length(dst_frame));
 			signal dst_frms  : std_logic_vector(0 to length(dst_frame));
 			signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
@@ -282,10 +289,11 @@ begin
 			port map (
 				clk   => tx_clk,
 				frm   => pyl_frms(0),
-				irdy  => dst_irdy,
-				frms  => dst_frms,
-				trdys => dst_trdys,
-				act   => dst_acts);
+				irdy  => src_irdy,
+				frms  => src_frms,
+				trdys => src_trdys,
+				irdys => src_irdys,
+				act   => src_acts);
 
 			src_irdy <= rgtr_irdy;
 			rollback0 <= not commit0;
