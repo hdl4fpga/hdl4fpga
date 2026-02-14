@@ -301,7 +301,10 @@ begin
 				act   => src_acts);
 
 			src_irdy <= 
-				rgtr_irdy when pyl_frms=(pyl_frms'range => '0');
+				rgtr_irdy when   pyl_frms=(pyl_frms'range  => '0') else
+				'1'       when pyl_irdys/=(pyl_irdys'range => '0') else
+				'0';
+
 			rollback0 <= not commit0;
 			fifo0_i : entity hdl4fpga.fifo
 			generic map (
