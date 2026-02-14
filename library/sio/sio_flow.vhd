@@ -259,7 +259,6 @@ begin
 
 		begin
 
-			-- ackrx_frm <= ackrx_irdy;
 			process (pyl_irdys, rx_clk)
 				type states is (s_start, s_bridge);
 				variable state : states;
