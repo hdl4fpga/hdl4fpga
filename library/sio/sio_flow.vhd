@@ -236,7 +236,7 @@ begin
 				"addr:" & natural'image(
 					hdo(frames)**".format.mac.hwda" +
 					hdo(frames)**".format.ipv4.da")             & ',' &
-				" sp:" & string'(hdo(frames)**".format.udp.sp"));
+				" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
 			signal src_irdy  : std_logic;
 			signal src_acts  : std_logic_vector(0 to length(src_frame));
 			signal src_frms  : std_logic_vector(0 to length(src_frame));
@@ -246,8 +246,10 @@ begin
 			constant dst_frame : string := compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
 				"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
-				"    sp:" & string'(hdo(frames)**".format.udp.sp")     & ',' &
-				"    dp:" & string'(hdo(frames)**".format.udp.dp")     & '}');
+				"  dasp:" & natural'image(
+					hdo(frames)**".format.ipv4.da" +
+					hdo(frames)**".format.udp.sp") & ',' &
+				"    sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 			signal dst_data  : std_logic_vector(rx_data'range);
@@ -300,8 +302,9 @@ begin
 				act   => src_acts);
 
 			src_irdy <= 
-				rgtr_irdy when   pyl_frms=(pyl_frms'range  => '0') else
-				'1'       when pyl_irdys/=(pyl_irdys'range => '0') else
+				rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
+				'1'       when src_irdys(0)='1' else
+				'1'       when src_irdys(2)='1' else
 				'0';
 
 			rollback0 <= not commit0;
@@ -346,6 +349,19 @@ begin
 				dst_irdy   => dst_irdy,
 				dst_trdy   => dst_trdy,
 				dst_data   => dst_data);
+
+			dp_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => x"0000")
+			port map (
+				si_clk  => rx_clk,
+				si_frm  => src_frms(1),
+				si_irdy => src_irdys(1),
+				si_data => rx_data,
+				so_clk  => tx_clk,
+				so_frm  => dp_frm,
+				so_irdy => dp_irdy,
+				so_data => dp_data);
 
 			dst_i : entity hdl4fpga.frame_decode
 			generic map (
