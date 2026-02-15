@@ -249,7 +249,7 @@ begin
 				"  dasp:" & natural'image(
 					hdo(frames)**".format.ipv4.da" +
 					hdo(frames)**".format.udp.sp") & ',' &
-				"    sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
+				"    dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
 			signal dst_data  : std_logic_vector(rx_data'range);
@@ -350,19 +350,6 @@ begin
 				dst_trdy   => dst_trdy,
 				dst_data   => dst_data);
 
-			dp_i : entity hdl4fpga.sio_ram
-			generic map (
-				bitdata => x"0000")
-			port map (
-				si_clk  => rx_clk,
-				si_frm  => src_frms(1),
-				si_irdy => src_irdys(1),
-				si_data => rx_data,
-				so_clk  => tx_clk,
-				so_frm  => dp_frm,
-				so_irdy => dp_irdy,
-				so_data => dp_data);
-
 			dst_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => dst_frame,
@@ -383,6 +370,19 @@ begin
 				sio_irdy => ackrx_trdy,
 				sio_trdy => open,
 				so_data  => length_data);
+
+			dp_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => x"0000")
+			port map (
+				si_clk  => rx_clk,
+				si_frm  => src_frms(1),
+				si_irdy => src_irdys(1),
+				si_data => rx_data,
+				so_clk  => tx_clk,
+				so_frm  => dst_frms(3),
+				so_irdy => dst_irdys(3),
+				so_data => dp_data);
 
 			process (ackrx_trdy, dst_acts, dst_irdy, tx_clk)
 				variable prefecth : std_logic;
