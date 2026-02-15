@@ -254,6 +254,7 @@ begin
 			signal dst_trdy  : std_logic;
 			signal dst_data  : std_logic_vector(rx_data'range);
 			signal length_data  : std_logic_vector(rx_data'range);
+			signal dp_data  : std_logic_vector(rx_data'range);
 
 			signal dst_acts  : std_logic_vector(0 to length(dst_frame));
 			signal dst_frms  : std_logic_vector(0 to length(dst_frame));
@@ -381,7 +382,7 @@ begin
 				si_data => rx_data,
 				so_clk  => tx_clk,
 				so_frm  => dst_frms(3),
-				so_irdy => dst_irdys(3),
+				so_irdy => ackrx_trdy,
 				so_data => dp_data);
 
 			process (ackrx_trdy, dst_acts, dst_irdy, tx_clk)
@@ -393,6 +394,8 @@ begin
 						if ackrx_trdy='1' then
 							if dst_acts(1)='1' then
 								acktx_data <= length_data;
+							elsif dst_acts(1)='1' then
+								acktx_data <= dp_data;
 							else
 								acktx_data <= dst_data;
 							end if;
@@ -401,7 +404,7 @@ begin
 							prefecth := '0';
 						end if;
 					elsif ackrx_frm='0' then
-						if (ackrx_irdy and (ackrx_trdy and not dst_acts(1)))='1' then
+						if (ackrx_irdy and (ackrx_trdy and not (dst_acts(1) or dst_acts(3))))='1' then
 							prefecth := '1';
 						elsif ackrx_irdy='0' then
 							prefecth := '1';
@@ -413,7 +416,7 @@ begin
 					end if;
 				end if;
 				dst_trdys <= (others => ackrx_trdy or prefecth);
-				dst_trdy  <= (ackrx_trdy and not dst_acts(1)) or prefecth;
+				dst_trdy  <= (ackrx_trdy and not (dst_acts(1) or dst_acts(3))) or prefecth;
 				ackrx_frm <= dst_irdy and not prefecth;
 			end process;
 
