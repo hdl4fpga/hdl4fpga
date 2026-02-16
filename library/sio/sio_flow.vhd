@@ -294,9 +294,9 @@ begin
 				frame => src_frame,
 				size  => rx_data'length)
 			port map (
-				clk   => tx_clk,
+				clk   => rx_clk,
 				frm   => pyl_frms(0),
-				irdy  => src_irdy,
+				irdy  => rgtr_irdy,
 				frms  => src_frms,
 				trdys => src_trdys,
 				irdys => src_irdys,
@@ -394,7 +394,7 @@ begin
 						if ackrx_trdy='1' then
 							if dst_acts(1)='1' then
 								acktx_data <= length_data;
-							elsif dst_acts(1)='1' then
+							elsif dst_acts(3)='1' then
 								acktx_data <= dp_data;
 							else
 								acktx_data <= dst_data;
