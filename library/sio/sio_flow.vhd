@@ -79,6 +79,16 @@ architecture struct of sio_flow is
 	signal acktx_data : std_logic_vector(tx_data'range);
 	signal dup_equ    : std_logic := '0';
 
+	constant rgtr_frame : string := compact('{' &
+		"addr:" & natural'image(
+			hdo(frames)**".format.mac.hwda" +
+			hdo(frames)**".format.ipv4.da")             & ',' &
+		" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
+
+	signal rgtr_acts  : std_logic_vector(0 to length(rgtr_frame));
+	signal frame_frms  : std_logic_vector(0 to length(rgtr_frame));
+	signal frame_irdys : std_logic_vector(0 to length(rgtr_frame));
+
 begin
 
 	siosin_e : entity hdl4fpga.sio_sin
@@ -108,6 +118,18 @@ begin
 		pyl_frm    => pyl_frms,
 		pyl_irdy   => pyl_irdys);
 
+	src_i : entity hdl4fpga.frame_decode
+	generic map (
+		frame => rgtr_frame,
+		size  => rx_data'length)
+	port map (
+		clk   => rx_clk,
+		frm   => pyl_frms(0),
+		irdy  => rgtr_irdy,
+		frms  => frame_frms,
+		irdys => frame_irdys,
+		act   => rgtr_acts);
+
 	dup_b : block
 
 		signal mr_irdy   : std_logic;
@@ -120,10 +142,8 @@ begin
 
 		signal ram1_frm  : std_logic;
 		signal ram1_irdy : std_logic;
-
 		signal ram2_frm  : std_logic;
 		signal ram2_irdy : std_logic;
-
 		signal ram_t     : std_logic := '0';
 
 	begin
@@ -200,8 +220,7 @@ begin
 
 		ram2_i : entity hdl4fpga.sio_ram
 		generic map (
-			-- bitdata => (0 to 16-1 => '-'))
-			bitdata => reverse(x"42",8))
+			bitdata => (0 to 16-1 => '-'))
 		port map (
 			si_clk  => rx_clk,
 			si_frm  => ram2_frm,
@@ -221,6 +240,7 @@ begin
 			signal data_frm  : std_logic;
 			signal data_irdy : std_logic;
 
+			signal fifo0_irdy  : std_logic;
 			signal fifo_frm  : std_logic;
 			signal fifo_irdy : std_logic;
 			signal fifo_trdy : std_logic;
@@ -230,17 +250,6 @@ begin
 			signal rollback0 : std_logic;
 			signal commit    : std_logic;
 			signal rollback  : std_logic;
-
-			constant src_frame : string := compact('{' &
-				"addr:" & natural'image(
-					hdo(frames)**".format.mac.hwda" +
-					hdo(frames)**".format.ipv4.da")             & ',' &
-				" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
-			signal src_irdy  : std_logic;
-			signal src_acts  : std_logic_vector(0 to length(src_frame));
-			signal src_frms  : std_logic_vector(0 to length(src_frame));
-			signal src_irdys : std_logic_vector(0 to length(src_frame));
-			signal src_trdys : std_logic_vector(0 to length(src_frame)) := (others => '1');
 
 			constant dst_frame : string := compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
@@ -288,23 +297,10 @@ begin
 				end if;
 			end process;
 
-			src_i : entity hdl4fpga.frame_decode
-			generic map (
-				frame => src_frame,
-				size  => rx_data'length)
-			port map (
-				clk   => rx_clk,
-				frm   => pyl_frms(0),
-				irdy  => rgtr_irdy,
-				frms  => src_frms,
-				trdys => src_trdys,
-				irdys => src_irdys,
-				act   => src_acts);
-
-			src_irdy <= 
+			fifo0_irdy <= 
 				rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
-				'1'       when src_irdys(0)='1' else
-				'1'       when src_irdys(2)='1' else
+				'1'       when frame_irdys(0)='1' else
+				'1'       when frame_irdys(2)='1' else
 				'0';
 
 			rollback0 <= not commit0;
@@ -316,7 +312,7 @@ begin
 				max_depth => (4*8)/rx_data'length)
 			port map (
 				src_clk    => rx_clk,
-				src_irdy   => src_irdy,
+				src_irdy   => fifo0_irdy,
 				src_trdy   => open,
 				src_data   => rx_data,
 
@@ -376,8 +372,8 @@ begin
 				bitdata => x"0000")
 			port map (
 				si_clk  => rx_clk,
-				si_frm  => src_frms(1),
-				si_irdy => src_irdys(1),
+				si_frm  => frame_frms(1),
+				si_irdy => frame_irdys(1),
 				si_data => rx_data,
 				so_clk  => tx_clk,
 				so_frm  => dst_frms(3),
