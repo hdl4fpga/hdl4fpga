@@ -86,8 +86,8 @@ architecture struct of sio_flow is
 		" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
 
 	signal rgtr_acts  : std_logic_vector(0 to length(rgtr_frame));
-	signal frame_frms  : std_logic_vector(0 to length(rgtr_frame));
-	signal frame_irdys : std_logic_vector(0 to length(rgtr_frame));
+	signal rgtr_frms  : std_logic_vector(0 to length(rgtr_frame));
+	signal rgtr_irdys : std_logic_vector(0 to length(rgtr_frame));
 
 begin
 
@@ -126,8 +126,8 @@ begin
 		clk   => rx_clk,
 		frm   => pyl_frms(0),
 		irdy  => rgtr_irdy,
-		frms  => frame_frms,
-		irdys => frame_irdys,
+		frms  => rgtr_frms,
+		irdys => rgtr_irdys,
 		act   => rgtr_acts);
 
 	dup_b : block
@@ -299,8 +299,8 @@ begin
 
 			fifo0_irdy <= 
 				rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
-				'1'       when frame_irdys(0)='1' else
-				'1'       when frame_irdys(2)='1' else
+				'1'       when rgtr_irdys(0)='1' else
+				'1'       when rgtr_irdys(2)='1' else
 				'0';
 
 			rollback0 <= not commit0;
@@ -372,8 +372,8 @@ begin
 				bitdata => x"0000")
 			port map (
 				si_clk  => rx_clk,
-				si_frm  => frame_frms(1),
-				si_irdy => frame_irdys(1),
+				si_frm  => rgtr_frms(1),
+				si_irdy => rgtr_irdys(1),
 				si_data => rx_data,
 				so_clk  => tx_clk,
 				so_frm  => dst_frms(3),
