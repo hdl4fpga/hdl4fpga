@@ -64,11 +64,13 @@ end;
 
 architecture struct of sio_flow is
 
-	signal rgtr_frm   : std_logic;
-	signal rgtr_irdy  : std_logic;
-	signal rgtr_trdy  : std_logic;
-	signal rid_act    : std_logic;
-	signal pyl_act : std_logic;
+	signal rgtr_frm  : std_logic;
+	signal rgtr_irdy : std_logic;
+	signal rgtr_trdy : std_logic;
+	signal rid_act   : std_logic;
+	signal pyl_act   : std_logic;
+	signal pyl_frms  : std_logic_vector(0 to 2-1);
+	signal pyl_irdys : std_logic_vector(0 to 2-1);
 
 	signal tx_frms   : std_logic_vector(0 to 2-1) := (others => '0');
 	signal tx_irdys  : std_logic_vector(0 to 2-1) := (others => '0');
@@ -81,15 +83,30 @@ begin
 
 	siosin_e : entity hdl4fpga.sio_sin
 	port map (
+		clk       => rx_clk,
+		frm       => rx_frm,
+		irdy      => rx_irdy,
+		data      => rx_data,
+		rid_act   => rid_act,
+		pyl_act   => pyl_act,
+		rgtr_frm  => rgtr_frm,
+		rgtr_irdy => rgtr_irdy,
+		rgtr_trdy => rgtr_trdy);
+
+	siodecode_e : entity hdl4fpga.sio_decode
+	generic map (
+		rids => "[0x00, 0x01]")
+	port map (
 		clk        => rx_clk,
-		frm        => rx_frm,
-		irdy       => rx_irdy,
+		frm        => rgtr_frm,
+		irdy       => rgtr_irdy,
+		trdy       => rgtr_trdy,
 		data       => rx_data,
 		rid_act    => rid_act,
+		length_act => '0',
 		pyl_act    => pyl_act,
-		rgtr_frm   => rgtr_frm,
-		rgtr_irdy  => rgtr_irdy,
-		rgtr_trdy  => rgtr_trdy);
+		pyl_frm    => pyl_frms,
+		pyl_irdy   => pyl_irdys);
 
 	dup_b : block
 
@@ -109,25 +126,7 @@ begin
 
 		signal ram_t     : std_logic := '0';
 
-		signal pyl_frms   : std_logic_vector(0 to 2-1);
-		signal pyl_irdys  : std_logic_vector(0 to 2-1);
-
 	begin
-
-		siodecode_e : entity hdl4fpga.sio_decode
-		generic map (
-			rids => "[0x00, 0x01]")
-		port map (
-			clk        => rx_clk,
-			frm        => rgtr_frm,
-			irdy       => rgtr_irdy,
-			trdy       => rgtr_trdy,
-			data       => rx_data,
-			rid_act    => rid_act,
-			length_act => '0',
-			pyl_act    => pyl_act,
-			pyl_frm    => pyl_frms,
-			pyl_irdy   => pyl_irdys);
 
 		process (rgtr_irdy, pyl_frms(1), rx_clk)
 			variable equ : std_logic;
