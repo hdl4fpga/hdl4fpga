@@ -84,7 +84,6 @@ architecture struct of sio_flow is
 			hdo(frames)**".format.mac.hwda" +
 			hdo(frames)**".format.ipv4.da")             & ',' &
 		" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
-
 	signal rgtr_acts  : std_logic_vector(0 to length(rgtr_frame));
 	signal rgtr_frms  : std_logic_vector(0 to length(rgtr_frame));
 	signal rgtr_irdys : std_logic_vector(0 to length(rgtr_frame));
@@ -118,7 +117,7 @@ begin
 		pyl_frm    => pyl_frms,
 		pyl_irdy   => pyl_irdys);
 
-	src_i : entity hdl4fpga.frame_decode
+	rxrgtr_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => rgtr_frame,
 		size  => rx_data'length)
@@ -129,6 +128,33 @@ begin
 		frms  => rgtr_frms,
 		irdys => rgtr_irdys,
 		act   => rgtr_acts);
+
+			process (pyl_irdys, rx_clk)
+				type states is (s_start, s_bridge);
+				variable state : states;
+			begin
+				if rising_edge(rx_clk) then
+					if (rgtr_frm or rgtr_irdy)='1' then
+						case state is
+						when s_start =>
+							if pyl_irdys(0)='1' then
+								state := s_bridge;
+							end if;
+						when s_bridge =>
+							if pyl_irdys(1)='1' then
+								state := s_start;
+							end if;
+						end case;
+					else
+						state := s_start;
+					end if;
+				end if;
+				if state=s_bridge then
+					commit0 <= '1';
+				else
+					commit0 <= pyl_irdys(0) or pyl_irdys(1);
+				end if;
+			end process;
 
 	dup_b : block
 
@@ -269,33 +295,6 @@ begin
 			signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
 
 		begin
-
-			process (pyl_irdys, rx_clk)
-				type states is (s_start, s_bridge);
-				variable state : states;
-			begin
-				if rising_edge(rx_clk) then
-					if (rgtr_frm or rgtr_irdy)='1' then
-						case state is
-						when s_start =>
-							if pyl_irdys(0)='1' then
-								state := s_bridge;
-							end if;
-						when s_bridge =>
-							if pyl_irdys(1)='1' then
-								state := s_start;
-							end if;
-						end case;
-					else
-						state := s_start;
-					end if;
-				end if;
-				if state=s_bridge then
-					commit0 <= '1';
-				else
-					commit0 <= pyl_irdys(0) or pyl_irdys(1);
-				end if;
-			end process;
 
 			fifo0_irdy <= 
 				rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
