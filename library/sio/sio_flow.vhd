@@ -239,7 +239,7 @@ begin
 			signal data_frm  : std_logic;
 			signal data_irdy : std_logic;
 
-			signal fifo0_irdy  : std_logic;
+			signal fifo0_irdy : std_logic;
 			signal fifo_frm  : std_logic;
 			signal fifo_irdy : std_logic;
 			signal fifo_trdy : std_logic;
@@ -445,9 +445,16 @@ begin
 
 	so_frm <= so_irdy;
 	fifo_b : block
-		signal commit   : std_logic;
-		signal rollback : std_logic;
+		signal commit    : std_logic;
+		signal rollback  : std_logic;
+		signal fifo_irdy : std_logic;
 	begin
+
+		fifo_irdy <= 
+			rx_irdy when pyl_frms=(pyl_frms'range => '0') else
+			'1'     when rgtr_irdys(0)='1' else
+			'1'     when rgtr_irdys(2)='1' else
+			'0';
 
 		commit   <= fcs_sb and fcs_vld and not dup_equ;
 		rollback <= fcs_sb and not fcs_vld;
@@ -457,7 +464,7 @@ begin
 		port map (
 			src_clk    => rx_clk,
 			src_frm    => rx_frm,
-			src_irdy   => rx_irdy,
+			src_irdy   => fifo_irdy,
 			src_trdy   => rx_trdy,
 			src_data   => rx_data,
 
