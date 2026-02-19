@@ -445,12 +445,13 @@ begin
 
 	so_frm <= so_irdy;
 	fifo_b : block
-		signal commit    : std_logic;
-		signal rollback  : std_logic;
-		signal fifo_irdy : std_logic;
+		signal commit   : std_logic;
+		signal rollback : std_logic;
+		signal src_irdy : std_logic;
+		signal dp_data  : std_logic_vector(so_data'range);
 	begin
 
-		fifo_irdy <= 
+		src_irdy <= 
 			rx_irdy when pyl_frms=(pyl_frms'range => '0') else
 			'1'     when rgtr_irdys(0)='1' else
 			'1'     when rgtr_irdys(2)='1' else
@@ -464,7 +465,7 @@ begin
 		port map (
 			src_clk    => rx_clk,
 			src_frm    => rx_frm,
-			src_irdy   => fifo_irdy,
+			src_irdy   => src_irdy,
 			src_trdy   => rx_trdy,
 			src_data   => rx_data,
 
@@ -475,6 +476,19 @@ begin
 			dst_irdy   => so_irdy,
 			dst_trdy   => so_trdy,
 			dst_data   => so_data);
+
+		dp_i : entity hdl4fpga.sio_ram
+		generic map (
+			bitdata => x"0000")
+		port map (
+			si_clk  => rx_clk,
+			si_frm  => rgtr_frms(1),
+			si_irdy => rgtr_irdys(1),
+			si_data => rx_data,
+			so_clk  => so_clk,
+			so_frm  => dst_frms(3),
+			so_irdy => so_trdy,
+			so_data => dp_data);
 
 	end block;
 
