@@ -486,7 +486,7 @@ begin
 			si_irdy => rgtr_irdys(1),
 			si_data => rx_data,
 			so_clk  => so_clk,
-			so_frm  => dst_frms(3),
+			so_frm  => '0', --dst_frms(3),
 			so_irdy => so_trdy,
 			so_data => dp_data);
 
