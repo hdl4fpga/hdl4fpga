@@ -502,6 +502,7 @@ begin
 			frms  => dst_frms,
 			trdys => dst_trdys,
 			act   => dst_acts);
+		dst_trdys <= (others => so_trdy);
 
 		dp_i : entity hdl4fpga.sio_ram
 		generic map (
@@ -512,7 +513,7 @@ begin
 			si_irdy => rgtr_irdys(1),
 			si_data => rx_data,
 			so_clk  => so_clk,
-			so_frm  => '0', --dst_frms(3),
+			so_frm  => dst_frms(1),
 			so_irdy => so_trdy,
 			so_data => dp_data);
 
