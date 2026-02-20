@@ -443,12 +443,26 @@ begin
 			(tx_data'range => '-');
 	end block;
 
-	so_frm <= so_irdy;
 	fifo_b : block
-		signal commit   : std_logic;
-		signal rollback : std_logic;
-		signal src_irdy : std_logic;
-		signal dp_data  : std_logic_vector(so_data'range);
+		constant dst_frame : string := compact('{' &
+			"   tha:" & natural'image(
+				16 +
+				hdo(frames)**".format.mac.hwda" +
+				hdo(frames)**".format.ipv4.da"  +
+				hdo(frames)**".format.udp.sp") & ',' &
+			"    dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
+
+		signal commit    : std_logic;
+		signal rollback  : std_logic;
+		signal src_irdy  : std_logic;
+		signal dst_irdy  : std_logic;
+		signal dst_trdy  : std_logic;
+		signal dst_data  : std_logic_vector(so_data'range);
+		signal dst_acts  : std_logic_vector(0 to length(dst_frame));
+		signal dst_frms  : std_logic_vector(0 to length(dst_frame));
+		signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
+		signal dp_data   : std_logic_vector(so_data'range);
+
 	begin
 
 		src_irdy <= 
@@ -473,9 +487,21 @@ begin
 			rollback   => rollback,
 
 			dst_clk    => so_clk,
-			dst_irdy   => so_irdy,
-			dst_trdy   => so_trdy,
-			dst_data   => so_data);
+			dst_irdy   => dst_irdy,
+			dst_trdy   => dst_trdy,
+			dst_data   => dst_data);
+
+		dst_i : entity hdl4fpga.frame_decode
+		generic map (
+			frame => dst_frame,
+			size  => so_data'length)
+		port map (
+			clk   => so_clk,
+			frm   => dst_irdy,
+			irdy  => dst_irdy,
+			frms  => dst_frms,
+			trdys => dst_trdys,
+			act   => dst_acts);
 
 		dp_i : entity hdl4fpga.sio_ram
 		generic map (
@@ -489,6 +515,10 @@ begin
 			so_frm  => '0', --dst_frms(3),
 			so_irdy => so_trdy,
 			so_data => dp_data);
+
+		so_frm  <= dst_irdy;
+		so_irdy <= dst_irdy;
+		so_data <= dst_data when true else dp_data;
 
 	end block;
 
