@@ -277,13 +277,13 @@ begin
 			check_sov => false,
 			check_dov => true)
 		port map (
+			mode(0)   => col_frm,
+			mode(1)   => col_frm,
 			src_clk   => dmatrans_clk,
-			src_frm   => col_frm,
 			src_irdy  => ena,
 			src_trdy  => open,
 			src_data  => col,
 			dst_clk   => dmatrans_clk,
-			-- dst_frm   => col_frm,
 			dst_irdy  => open,
 			dst_trdy  => ctlr_cas,
 			dst_data  => ddrdma_col);

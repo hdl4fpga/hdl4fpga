@@ -94,15 +94,14 @@ entity fifo is
 		check_sov  : boolean := false;
 		check_dov  : boolean := false);
 	port (
+		mode       : in  std_logic_vector(0 to 1);
+		overflow   : out std_logic;
+
 		src_clk    : in  std_logic;
-		src_frm    : in  std_logic := '1';
 		src_irdy   : in  std_logic := '1';
 		src_trdy   : buffer std_logic;
 		src_data   : in  std_logic_vector;
 
-		commit     : in  std_logic := '1';
-		rollback   : in  std_logic := '0';
-		overflow   : out std_logic;
 
 		dst_clk    : in  std_logic;
 		dst_irdy   : buffer std_logic;
@@ -114,6 +113,10 @@ entity fifo is
 end;
 
 architecture def of fifo is
+
+	constant rollback : std_logic_vector := "01";
+	constant commit   : std_logic_vector := "10";
+	constant flush    : std_logic_vector := "11";
 
 	signal wr_ena    : std_logic;
 	signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
@@ -132,8 +135,8 @@ begin
 		severity FAILURE;
 
 	wr_ena <= 
-		src_frm and src_irdy and src_trdy when check_sov else
-		src_frm and src_irdy;
+		src_irdy and src_trdy when check_sov else
+		src_irdy;
 
 	max_depthgt1_g : if max_depth > 1 generate
 
@@ -143,7 +146,6 @@ begin
 		signal wdata   : std_logic_vector(0 to src_data'length-1);
 		signal raddr   : std_logic_vector(addr_range);  -- Ghdl annoyance
 		signal rdata   : std_logic_vector(0 to src_data'length-1);
-		signal dst_ini : std_logic;
 
 	begin
 
@@ -169,8 +171,6 @@ begin
 			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
 			setif(wr_cntr(addr_range) /= unsigned(rd_cmp(addr_range)) or wr_cntr(0) = rd_cmp(0));
 
-		dst_ini <= not src_frm;
-
 		latencygt1_g : if latency > 1 generate
 			signal fill  : std_logic;
 			signal b_reg : unsigned(0 to (latency-1))   := (others => '0');
@@ -184,7 +184,7 @@ begin
 				if rising_edge(dst_clk) then
 					b := b_reg;			-- Xilinx XST confuses b with latches if it's not copied from a signal
 
-					if dst_ini='1' then
+					if mode=flush then
 						b := (others => '0');
 					elsif to_bit(b(b'right))='0' then
 						if dst_irdy1='0' then
@@ -231,7 +231,7 @@ begin
 					slr(rdata'range) := unsigned(rdata);
 					slr := slr rol rdata'length;
 
-					if dst_ini='1' then
+					if mode=flush then
 						q := (others => '0');
 						v := (others => '0');
 					else
@@ -274,7 +274,7 @@ begin
 				dstirdy_p : process (dst_clk)
 				begin
 					if rising_edge(dst_clk) then
-						if dst_ini='1' then
+						if mode=flush then
 							q <= '0';
 							v <= '0';
 						else
@@ -309,7 +309,7 @@ begin
 				process (dst_clk)
 				begin
 					if rising_edge(dst_clk) then
-						if dst_ini='1' then
+						if mode=flush then
 							v <= '0';
 						else
 							v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
@@ -361,7 +361,10 @@ begin
 		variable succ : unsigned(wr_cntr'range);
 	begin
 		if rising_edge(src_clk) then
-			if src_frm='0' then
+			if mode=rollback then
+				wr_cntr  <= wr_ptr;
+				overflow <= '0';
+			elsif mode=flush then
 				if async_mode then
 					wr_cntr <= unsigned(rd_cmp);
 					wr_ptr  <= unsigned(rd_cmp);
@@ -369,9 +372,6 @@ begin
 					wr_cntr <= rd_cntr;
 					wr_ptr  <= rd_cntr;
 				end if;
-			elsif rollback='1' then
-				wr_cntr  <= wr_ptr;
-				overflow <= '0';
 			else
 				succ := wr_cntr;
 				if src_irdy='1' then
@@ -385,7 +385,7 @@ begin
 					end if;
 				end if;
 				wr_cntr <= succ;
-				if commit='1' then
+				if mode=commit then
 					wr_ptr   <= succ;
 					overflow <= '0';
 				end if;

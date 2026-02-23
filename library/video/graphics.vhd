@@ -241,8 +241,9 @@ begin
     		check_sov  => false,
     		check_dov  => true)
     	port map (
+    		mode(0)  => slzr_frm,
+    		mode(1)  => slzr_frm,
     		src_clk  => ctlr_clk,
-    		src_frm  => slzr_frm,
     		src_irdy => vram_trdy,
     		src_data => vram_word,
 
@@ -264,8 +265,9 @@ begin
     		check_sov  => false,
     		check_dov  => true)
     	port map (
+    		mode(0)  => video_frm,
+    		mode(1)  => video_frm,
     		src_clk  => ctlr_clk,
-    		src_frm  => video_frm,
     		src_data => ctlr_di,
 			src_irdy => ctlr_di_dv,
 

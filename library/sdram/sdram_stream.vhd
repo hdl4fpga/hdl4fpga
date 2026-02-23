@@ -162,13 +162,14 @@ begin
 		check_sov  => false,
 		check_dov  => true)
 	port map (
+		mode(0)  => stream_frm,
+		mode(1)  => stream_frm,
+
 		src_clk  => stream_clk,
-		src_frm  => stream_frm,
 		src_irdy => src1_irdy,
 		src_data => stream_data,
 
 		dst_clk  => ctlr_clk,
-		-- dst_frm  => fifo1_frm,
 		dst_irdy => fifo1_irdy,
 		dst_trdy => fifo1_trdy,
 		dst_data => fifo1_data);
@@ -179,7 +180,7 @@ begin
 		lsdfirst  => false)
 	port map (
 		src_clk   => ctlr_clk,
-		src_frm   => fifo1_frm,
+		-- src_frm   => fifo1_frm,
 		src_irdy  => fifo1_irdy,
 		src_trdy  => fifo1_trdy,
 		src_data  => fifo1_data,
@@ -197,8 +198,9 @@ begin
 		check_sov  => false,
 		check_dov  => true)
 	port map (
+		mode(0)  => fifo1_frm,
+		mode(1)  => fifo1_frm,
 		src_clk  => ctlr_clk,
-		src_frm  => fifo1_frm,
 		src_irdy => fifo_irdy,
 		src_trdy => fifo_trdy,
 		src_data => fifo_data,

@@ -334,17 +334,18 @@ begin
 					check_sov  => false,
 					check_dov  => false)
 				port map (
-					src_clk    => sin_clk,
-					src_frm    => ctlr_inirdy,
-					src_irdy   => dmaaddr_irdy,
-					src_trdy   => dmaaddr_trdy,
-					src_data   => src_data,
+					mode(0)  => ctlr_inirdy,
+					mode(1)  => ctlr_inirdy,
 
-					dst_clk    => sin_clk,
-					-- dst_frm    => ctlr_inirdy,
-					dst_irdy   => dmaioaddr_irdy,
-					dst_trdy   => dmaio_next,
-					dst_data   => dst_data);
+					src_clk  => sin_clk,
+					src_irdy => dmaaddr_irdy,
+					src_trdy => dmaaddr_trdy,
+					src_data => src_data,
+
+					dst_clk  => sin_clk,
+					dst_irdy => dmaioaddr_irdy,
+					dst_trdy => dmaio_next,
+					dst_data => dst_data);
 
 
 				process(dst_data)
@@ -374,16 +375,18 @@ begin
 				check_sov  => true,
 				check_dov  => true)
 			port map (
-				src_clk    => sin_clk,
-				src_frm    => ctlr_inirdy,
-				src_irdy   => dmadata_irdy,
-				src_trdy   => dmadata_trdy,
-				src_data   => rgtr_dmadata,
+				mode(0)  => ctlr_inirdy,
+				mode(1)  => ctlr_inirdy,
 
-				dst_clk    => ctlr_clk,
-				dst_irdy   => ctlr_di_rdy,
-				dst_trdy   => ctlr_di_req,
-				dst_data   => ctlr_di);
+				src_clk  => sin_clk,
+				src_irdy => dmadata_irdy,
+				src_trdy => dmadata_trdy,
+				src_data => rgtr_dmadata,
+
+				dst_clk  => ctlr_clk,
+				dst_irdy => ctlr_di_rdy,
+				dst_trdy => ctlr_di_req,
+				dst_data => ctlr_di);
 			ctlr_di_dv <= ctlr_di_req;
 
 			base_addr_e : entity hdl4fpga.sio_rgtr
@@ -444,22 +447,22 @@ begin
 
 			acktx_e : entity hdl4fpga.fifo
 			generic map (
-				max_depth  => 4,
-				latency    => 1,
-				check_sov  => true,
-				check_dov  => true)
+				max_depth => 4,
+				latency   => 1,
+				check_sov => true,
+				check_dov => true)
 			port map (
-				src_clk    => sin_clk,
-				src_frm    => ctlr_inirdy,
-				src_irdy   => dmaio_next,
-				src_trdy   => open, --tp(6),
-				src_data   => src_data,
+				mode(0)   => ctlr_inirdy,
+				mode(1)   => ctlr_inirdy,
+				src_clk   => sin_clk,
+				src_irdy  => dmaio_next,
+				src_trdy  => open, --tp(6),
+				src_data  => src_data,
 
-				dst_clk    => sout_clk,
-				-- dst_frm    => ctlr_inirdy,
-				dst_irdy   => acktx_irdy,
-				dst_trdy   => acktx_trdy,
-				dst_data   => dst_data);
+				dst_clk   => sout_clk,
+				dst_irdy  => acktx_irdy,
+				dst_trdy  => acktx_trdy,
+				dst_data  => dst_data);
 
 			process (dst_data)
 				variable aux : unsigned(dst_data'range);
@@ -573,14 +576,15 @@ begin
 
 				dmadataout_e : entity hdl4fpga.fifo
 				generic map (
-					max_depth  => (dataout_size/(ctlr_di'length/siobyte_size)),
+					max_depth => (dataout_size/(ctlr_di'length/siobyte_size)),
 					-- async_mode => false,
-					latency    => 0,
-					check_sov  => false,
-					check_dov  => true)
+					latency   => 0,
+					check_sov => false,
+					check_dov => true)
 				port map (
+					mode(0)  => ctlr_inirdy,
+					mode(1)  => ctlr_inirdy,
 					src_clk  => ctlr_clk,
-					src_frm  => ctlr_inirdy,
 					src_irdy => dmaso_irdy,
 					src_trdy => dmaso_trdy,
 					src_data => dmaso_data,
