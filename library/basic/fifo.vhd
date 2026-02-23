@@ -94,7 +94,7 @@ entity fifo is
 		check_sov  : boolean := false;
 		check_dov  : boolean := false);
 	port (
-		mode       : in  std_logic_vector(0 to 1);
+		mode       : in  std_logic_vector(0 to 1) := "11";
 		overflow   : out std_logic;
 
 		src_clk    : in  std_logic;
@@ -116,7 +116,7 @@ architecture def of fifo is
 
 	constant rollback : std_logic_vector := "01";
 	constant commit   : std_logic_vector := "10";
-	constant flush    : std_logic_vector := "11";
+	constant flush    : std_logic_vector := "00";
 
 	signal wr_ena    : std_logic;
 	signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
