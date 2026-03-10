@@ -475,9 +475,9 @@ begin
 		rollback <= (not fcs_sb or not fcs_vld);
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
-				latency   => 0,
-				check_sov => true,
-				check_dov => true,
+			latency   => 0,
+			check_sov => true,
+			check_dov => true,
 			max_depth => (2048*8)/rx_data'length)
 		port map (
 			src_clk  => rx_clk,
