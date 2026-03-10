@@ -445,12 +445,12 @@ begin
 
 	fifo_b : block
 		constant dst_frame : string := compact('{' &
-			"   tha:" & natural'image(
+			"tha:" & natural'image(
 				16 +
 				hdo(frames)**".format.mac.hwda" +
 				hdo(frames)**".format.ipv4.da"  +
 				hdo(frames)**".format.udp.sp") & ',' &
-			"    dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
+			" dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
 		signal commit    : std_logic;
 		signal rollback  : std_logic;
