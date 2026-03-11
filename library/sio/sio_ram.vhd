@@ -57,7 +57,7 @@ begin
 		severity failure;
 
 	rd_b : block
-		signal cntr : unsigned(0 to rd_addr'length);
+		signal cntr : unsigned(0 to rd_addr'length) := to_unsigned(0, rd_addr'length+1)-bitdata'length/so_data'length;
 		signal last : std_logic;
 	begin
 		process (so_clk)

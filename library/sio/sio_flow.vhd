@@ -452,14 +452,6 @@ begin
 				hdo(frames)**".format.udp.sp") & ',' &
 			" dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
-		constant so_frame : string := compact('{' &
-			"tha:" & natural'image(
-				16 +
-				hdo(frames)**".format.mac.hwda" +
-				hdo(frames)**".format.ipv4.da"  +
-				hdo(frames)**".format.udp.sp") & ',' &
-			" dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
-
 		signal commit    : std_logic;
 		signal rollback  : std_logic;
 		signal src_irdy  : std_logic;
@@ -496,11 +488,12 @@ begin
 			mode(0)  => commit,
 			mode(1)  => rollback,
 
-			dst_clk  => tx_clk,
+			dst_clk  => so_clk,
 			dst_irdy => dst_irdy,
-			dst_trdy => '1', --dst_trdy,
+			dst_trdy => dst_trdy,
 			dst_data => dst_data);
 
+		dst_trdy <= '0' when dst_frms(1)='1' else so_trdy;
 		dst_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => dst_frame,
@@ -516,7 +509,7 @@ begin
 
 		dp_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => x"0000")
+			bitdata => (0 to 16-1 => '-'))
 		port map (
 			si_clk  => rx_clk,
 			si_frm  => rgtr_frms(1),
@@ -529,7 +522,7 @@ begin
 
 		so_frm  <= dst_irdy;
 		so_irdy <= dst_irdy;
-		so_data <= dst_data when true else dp_data;
+		so_data <= dp_data when dst_frms(1)='1' else dst_data;
 
 	end block;
 
