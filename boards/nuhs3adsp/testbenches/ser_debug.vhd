@@ -212,7 +212,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"21436587"             & -- IP Source IP address
 			"c0a8000e"             & -- IP Destiantion IP Address
 			"482c"                 &
-			"6ae1"                 &
+			"6a1e"                 &
 			"ffff"                 &
 			"ffff"                 &
 			"010042"               &

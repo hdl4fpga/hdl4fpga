@@ -269,7 +269,7 @@ begin
 
 		begin
 
-			process (rgtr_irdy, pyl_irdys, rx_clk)
+			process (rgtr_irdy, rgtr_irdys, pyl_irdys, rx_clk)
 				type states is (s_start, s_bridge);
 				variable state : states;
 			begin
@@ -291,10 +291,10 @@ begin
 				end if;
 				if state=s_bridge then
 					-- commit <= rgtr_irdy;
-					fifo_irdy <= rgtr_irdy;
+					fifo_irdy <= rgtr_irdys(0) or rgtr_irdys(2);
 				else
 					-- commit <= pyl_irdys(0) or pyl_irdys(1);
-					fifo_irdy <= pyl_irdys(0) or pyl_irdys(1);
+					fifo_irdy <= rgtr_irdy;
 				end if;
 			end process;
 
