@@ -265,7 +265,7 @@ begin
 
 		begin
 
-			process (rgtr_irdy, rgtr_irdys, pyl_irdys, rx_clk)
+			process (rgtr_irdys, pyl_irdys, rx_clk)
 				type states is (s_start, s_bridge);
 				variable state : states;
 			begin
@@ -286,15 +286,11 @@ begin
 					end if;
 				end if;
 				if state=s_bridge then
-					-- commit <= rgtr_irdy;
 					fifo_irdy <= rgtr_irdys(0) or rgtr_irdys(2);
 				else
-					-- commit <= pyl_irdys(0) or pyl_irdys(1);
 					fifo_irdy <= pyl_irdys(0) or pyl_irdys(1);
-					-- fifo_irdy <= pyl_irdys(0);
 				end if;
 			end process;
-
 
 			commit   <= not fcs_sb or     (fcs_vld and (dup_equ or '1'));
 			rollback <= not fcs_sb or not (fcs_vld and (dup_equ or '1'));
