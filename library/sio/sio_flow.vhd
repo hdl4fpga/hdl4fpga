@@ -243,10 +243,6 @@ begin
 			signal fifo_frm  : std_logic;
 			signal fifo_irdy : std_logic;
 			signal fifo_trdy : std_logic;
-			signal fifo_data : std_logic_vector(rx_data'range);
-
-			signal commit0   : std_logic;
-			signal rollback0 : std_logic;
 			signal commit    : std_logic;
 			signal rollback  : std_logic;
 
@@ -294,43 +290,11 @@ begin
 					fifo_irdy <= rgtr_irdys(0) or rgtr_irdys(2);
 				else
 					-- commit <= pyl_irdys(0) or pyl_irdys(1);
-					fifo_irdy <= rgtr_irdy;
+					fifo_irdy <= pyl_irdys(0) or pyl_irdys(1);
+					-- fifo_irdy <= pyl_irdys(0);
 				end if;
 			end process;
 
-			-- fifo0_irdy <= 
-			-- 	rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
-			-- 	'1'       when rgtr_irdys(0)='1' else
-			-- 	'1'       when rgtr_irdys(2)='1' else
-			-- 	'0';
-			--
-			-- rollback <= not commit;
-			-- fifo0_i : entity hdl4fpga.fifo
-			-- generic map (
-			-- 	latency   => 0,
-			-- 	check_sov => true,
-			-- 	check_dov => true,
-			-- 	max_depth => (4*8)/rx_data'length)
-			-- port map (
-			-- 	src_clk  => rx_clk,
-			-- 	src_irdy => fifo0_irdy,
-			-- 	src_trdy => open,
-			-- 	src_data => rx_data,
-			--
-			-- 	mode(0)  => commit0,
-			-- 	mode(1)  => rollback0,
-			--
-			-- 	dst_clk  => rx_clk,
-			-- 	dst_irdy => fifo_irdy,
-			-- 	dst_trdy => fifo_trdy,
-			-- 	dst_data => fifo_data);
-
-			-- fifo_irdy <= 
-			-- 	rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
-			-- 	'1'       when rgtr_irdys(0)='1' else
-			-- 	'1'       when rgtr_irdys(2)='1' else
-			-- 	'0';
-			fifo_data <= rx_data;
 
 			commit   <= not fcs_sb or     (fcs_vld and (dup_equ or '1'));
 			rollback <= not fcs_sb or not (fcs_vld and (dup_equ or '1'));
@@ -344,7 +308,7 @@ begin
 				src_clk  => rx_clk,
 				src_irdy => fifo_irdy,
 				src_trdy => fifo_trdy,
-				src_data => fifo_data,
+				src_data => rx_data,
 
 				mode(0)  => commit,
 				mode(1)  => rollback,
