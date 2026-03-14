@@ -269,7 +269,7 @@ begin
 
 		begin
 
-			process (pyl_irdys, rx_clk)
+			process (rgtr_irdy, pyl_irdys, rx_clk)
 				type states is (s_start, s_bridge);
 				variable state : states;
 			begin
@@ -290,38 +290,47 @@ begin
 					end if;
 				end if;
 				if state=s_bridge then
-					commit0 <= '1';
+					-- commit <= rgtr_irdy;
+					fifo_irdy <= rgtr_irdy;
 				else
-					commit0 <= pyl_irdys(0) or pyl_irdys(1);
+					-- commit <= pyl_irdys(0) or pyl_irdys(1);
+					fifo_irdy <= pyl_irdys(0) or pyl_irdys(1);
 				end if;
 			end process;
 
-			fifo0_irdy <= 
-				rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
-				'1'       when rgtr_irdys(0)='1' else
-				'1'       when rgtr_irdys(2)='1' else
-				'0';
+			-- fifo0_irdy <= 
+			-- 	rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
+			-- 	'1'       when rgtr_irdys(0)='1' else
+			-- 	'1'       when rgtr_irdys(2)='1' else
+			-- 	'0';
+			--
+			-- rollback <= not commit;
+			-- fifo0_i : entity hdl4fpga.fifo
+			-- generic map (
+			-- 	latency   => 0,
+			-- 	check_sov => true,
+			-- 	check_dov => true,
+			-- 	max_depth => (4*8)/rx_data'length)
+			-- port map (
+			-- 	src_clk  => rx_clk,
+			-- 	src_irdy => fifo0_irdy,
+			-- 	src_trdy => open,
+			-- 	src_data => rx_data,
+			--
+			-- 	mode(0)  => commit0,
+			-- 	mode(1)  => rollback0,
+			--
+			-- 	dst_clk  => rx_clk,
+			-- 	dst_irdy => fifo_irdy,
+			-- 	dst_trdy => fifo_trdy,
+			-- 	dst_data => fifo_data);
 
-			rollback0 <= not commit0;
-			fifo0_i : entity hdl4fpga.fifo
-			generic map (
-				latency   => 0,
-				check_sov => true,
-				check_dov => true,
-				max_depth => (4*8)/rx_data'length)
-			port map (
-				src_clk  => rx_clk,
-				src_irdy => fifo0_irdy,
-				src_trdy => open,
-				src_data => rx_data,
-
-				mode(0)  => commit0,
-				mode(1)  => rollback0,
-
-				dst_clk  => rx_clk,
-				dst_irdy => fifo_irdy,
-				dst_trdy => fifo_trdy,
-				dst_data => fifo_data);
+			-- fifo_irdy <= 
+			-- 	rgtr_irdy when pyl_frms=(pyl_frms'range => '0') else
+			-- 	'1'       when rgtr_irdys(0)='1' else
+			-- 	'1'       when rgtr_irdys(2)='1' else
+			-- 	'0';
+			fifo_data <= rx_data;
 
 			commit   <= not fcs_sb or     (fcs_vld and (dup_equ or '1'));
 			rollback <= not fcs_sb or not (fcs_vld and (dup_equ or '1'));
