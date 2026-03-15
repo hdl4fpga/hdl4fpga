@@ -239,8 +239,6 @@ begin
 			signal data_frm  : std_logic;
 			signal data_irdy : std_logic;
 
-			signal fifo0_irdy : std_logic;
-			signal fifo_frm  : std_logic;
 			signal fifo_irdy : std_logic;
 			signal fifo_trdy : std_logic;
 			signal commit    : std_logic;
@@ -296,7 +294,7 @@ begin
 			rollback <= not fcs_sb or not (fcs_vld and (dup_equ or '1'));
 			fifo_i : entity hdl4fpga.fifo
 			generic map (
-				latency   => 0,
+				latency   => 1,
 				check_sov => true,
 				check_dov => true,
 				max_depth => (64*8)/rx_data'length)
@@ -444,7 +442,7 @@ begin
 		rollback <= (not fcs_sb or not fcs_vld);
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
-			latency   => 0,
+			latency   => 1,
 			check_sov => true,
 			check_dov => true,
 			max_depth => (2048*8)/rx_data'length)
