@@ -79,14 +79,14 @@ architecture struct of sio_flow is
 	signal acktx_data : std_logic_vector(tx_data'range);
 	signal dup_equ    : std_logic := '0';
 
-	constant rgtr_frame : string := compact('{' &
+	constant rgtr0_frame : string := compact('{' &
 		"addr:" & natural'image(
 			hdo(frames)**".format.mac.hwda" +
 			hdo(frames)**".format.ipv4.da")             & ',' &
 		" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
-	signal rgtr_acts  : std_logic_vector(0 to length(rgtr_frame));
-	signal rgtr_frms  : std_logic_vector(0 to length(rgtr_frame));
-	signal rgtr_irdys : std_logic_vector(0 to length(rgtr_frame));
+	signal rgtr0_acts  : std_logic_vector(0 to length(rgtr0_frame));
+	signal rgtr0_frms  : std_logic_vector(0 to length(rgtr0_frame));
+	signal rgtr0_irdys : std_logic_vector(0 to length(rgtr0_frame));
 
 begin
 
@@ -119,15 +119,15 @@ begin
 
 	rxrgtr_i : entity hdl4fpga.frame_decode
 	generic map (
-		frame => rgtr_frame,
+		frame => rgtr0_frame,
 		size  => rx_data'length)
 	port map (
 		clk   => rx_clk,
 		frm   => pyl_frms(0),
 		irdy  => rgtr_irdy,
-		frms  => rgtr_frms,
-		irdys => rgtr_irdys,
-		act   => rgtr_acts);
+		frms  => rgtr0_frms,
+		irdys => rgtr0_irdys,
+		act   => rgtr0_acts);
 
 	dup_b : block
 
@@ -265,7 +265,7 @@ begin
 
 		begin
 
-			process (rgtr_irdys, pyl_irdys, rx_clk)
+			process (rgtr0_irdys, pyl_irdys, rx_clk)
 				type states is (s_start, s_bridge);
 				variable state : states;
 			begin
@@ -286,7 +286,7 @@ begin
 					end if;
 				end if;
 				if state=s_bridge then
-					fifo_irdy <= rgtr_irdys(0) or rgtr_irdys(2);
+					fifo_irdy <= rgtr0_irdys(0) or rgtr0_irdys(2);
 				else
 					fifo_irdy <= pyl_irdys(0) or pyl_irdys(1);
 				end if;
@@ -340,8 +340,8 @@ begin
 				bitdata => x"0000")
 			port map (
 				si_clk  => rx_clk,
-				si_frm  => rgtr_frms(1),
-				si_irdy => rgtr_irdys(1),
+				si_frm  => rgtr0_frms(1),
+				si_irdy => rgtr0_irdys(1),
 				si_data => rx_data,
 				so_clk  => tx_clk,
 				so_frm  => dst_frms(3),
@@ -436,8 +436,8 @@ begin
 
 		src_irdy <= 
 			rx_irdy when pyl_frms=(pyl_frms'range => '0') else
-			'1'     when rgtr_irdys(0)='1' else
-			'1'     when rgtr_irdys(2)='1' else
+			'1'     when rgtr0_irdys(0)='1' else
+			'1'     when rgtr0_irdys(2)='1' else
 			'0';
 
 		commit   <= (not fcs_sb or     fcs_vld); -- and not dup_equ;
@@ -481,8 +481,8 @@ begin
 			bitdata => (0 to 16-1 => '-'))
 		port map (
 			si_clk  => rx_clk,
-			si_frm  => rgtr_frms(1),
-			si_irdy => rgtr_irdys(1),
+			si_frm  => rgtr0_frms(1),
+			si_irdy => rgtr0_irdys(1),
 			si_data => rx_data,
 			so_clk  => so_clk,
 			so_frm  => dst_frms(1),
