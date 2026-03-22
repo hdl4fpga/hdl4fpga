@@ -212,7 +212,7 @@ begin
 		si_trdy    => udppyltx_trdy,
 		si_data    => udppyltx_data);
 
-	ser_clk <= mii_rxc;
+	ser_clk <= mii_txc;
 	process (ser_clk)
 	begin
 		if rising_edge(ser_clk) then
