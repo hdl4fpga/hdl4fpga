@@ -287,10 +287,12 @@ architecture nuhs3adsp_serdebug of testbench is
 			"ffffffff"             &
 			"ffffffff"             &
 			"9999995a}";
+	signal txc : std_logic;
 begin
 
 	mii_rxc <= mii_refclk after 5 ps;
-	mii_txc <= mii_refclk after 5 ps;
+	txc <= mii_refclk after 5 ps;
+	mii_txc <= transport txc after 30 ns;
 
 	clk <= not clk after 25 ns;
 
@@ -298,7 +300,7 @@ begin
 
 	sw1 <= '1', '1' after 1 us;
 
-	rst <= '1', '0' after 1 us;
+	rst <= '1', '0' after 1 us, '1' after 15 us, '0' after 16 us;
 	tb_b : block
 		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".udp");
 		-- constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".udp");

@@ -132,6 +132,7 @@ begin
 		variable code : unsigned(cga_codes'length-1 downto 0);
 	begin
 		data := unsigned(des_data);
+		code := (others => '-');
 		for i in 0 to des_data'length/digit'length-1 loop
 			code(font_code'range) := unsigned(multiplex(code_digits, reverse(std_logic_vector(data(digit'range))), font_code'length));
 			if (cga_we and not (phy_frm or des_irdy))='1' then
