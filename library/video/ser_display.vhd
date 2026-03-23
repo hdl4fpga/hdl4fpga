@@ -111,7 +111,7 @@ begin
 		if rising_edge(phy_clk) then
 			we := phy_frm or des_irdy;
 		end if;
-		cga_we <= des_irdy or (we and not phy_frm);
+		cga_we <= (des_irdy and phy_frm) or (we and not phy_frm);
 	end process;
 
 	process(phy_frm, phy_clk)
@@ -126,13 +126,12 @@ begin
 		end if;
 	end process;
 
-	process(phy_frm, des_irdy, phy_irdy, cga_we, des_data)
-		-- variable data : unsigned(des_data'reverse_range); Xilinx 14.7 buggy
+	process(phy_frm, des_irdy, cga_we, des_data)
+		-- variable data : unsigned(des_data'reverse_range); -- Xilinx 14.7 buggy
 		variable data : unsigned(0 to des_data'length-1);
 		variable code : unsigned(cga_codes'length-1 downto 0);
 	begin
 		data := unsigned(des_data);
-		code := (code'range => '-');
 		for i in 0 to des_data'length/digit'length-1 loop
 			code(font_code'range) := unsigned(multiplex(code_digits, reverse(std_logic_vector(data(digit'range))), font_code'length));
 			if (cga_we and not (phy_frm or des_irdy))='1' then
