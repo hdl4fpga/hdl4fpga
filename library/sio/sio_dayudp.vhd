@@ -25,29 +25,29 @@ use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 entity sio_dayudp is
 	generic (
 		debug         : boolean := false;
-		default_ipv4a : std_logic_vector(0 to 32-1);
-		my_mac        : std_logic_vector(0 to 48-1));
+		ipv4addr      : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
+		hwaddr        : std_logic_vector := x"00_40_00_01_02_03");
 	port (
-		hdplx         : in  std_logic := '0';
 		sio_addr      : in  std_logic := '0';
-		mii_clk       : in  std_logic;
 
 		dhcpcd_req    : in  std_logic := '0';
 		dhcpcd_rdy    : out std_logic := '0';
 
+		miirx_clk     : in  std_logic;
 		miirx_frm     : in  std_logic;
 		miirx_irdy    : in  std_logic := '1';
 		miirx_trdy    : out std_logic;
 		miirx_data    : in  std_logic_vector;
 
+		miitx_clk     : in  std_logic;
 		miitx_frm     : buffer std_logic;
 		miitx_irdy    : buffer std_logic;
-		miitx_trdy    : in  std_logic;
-		miitx_end     : buffer std_logic;
+		miitx_trdy    : in  std_logic := '1';
 		miitx_data    : out std_logic_vector;
 
 		si_frm        : in  std_logic := '0';
@@ -68,10 +68,12 @@ end;
 
 architecture beh of sio_dayudp is
 
+	signal siudp_clk  : std_logic;
 	signal siudp_frm  : std_logic;
 	signal siudp_irdy : std_logic;
 	signal siudp_trdy : std_logic;
-	signal siudp_end  : std_logic;
+
+	signal soudp_clk  : std_logic;
 	signal soudp_frm  : std_logic;
 	signal soudp_irdy : std_logic;
 	signal soudp_trdy : std_logic;
@@ -80,43 +82,42 @@ architecture beh of sio_dayudp is
 begin
 
 	siudp_frm  <= '0' when sio_addr/='0' else si_frm;
-	siudp_end  <= '0' when sio_addr/='0' else si_end;
 	siudp_irdy <= '0' when sio_addr/='0' else si_irdy;
 	soudp_trdy <= '0' when sio_addr/='0' else so_trdy;
 
 	sio_udp_e : entity hdl4fpga.sio_udp
 	generic map (
-		debug         => debug,
-		default_ipv4a => default_ipv4a,
-		my_mac        => my_mac)
+		ipv4addr   => ipv4addr,
+		hwaddr     => hwaddr)
 	port map (
-		hdplx      => hdplx,
-		mii_clk    => mii_clk,
+
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
+
+		miirx_clk  => miirx_clk,
 		miirx_frm  => miirx_frm,
 		miirx_irdy => miirx_irdy,
 		miirx_trdy => miirx_trdy,
 		miirx_data => miirx_data,
 
+		miitx_clk  => miirx_clk,
 		miitx_frm  => miitx_frm,
 		miitx_irdy => miitx_irdy,
 		miitx_trdy => miitx_trdy,
-		miitx_end  => miitx_end,
 		miitx_data => miitx_data,
 
-		si_frm      => siudp_frm,
-		si_irdy     => siudp_irdy,
-		si_trdy     => siudp_trdy,
-		si_end      => siudp_end,
-		si_data     => si_data,
+		si_clk     => so_clk,
+		si_frm     => siudp_frm,
+		si_irdy    => siudp_irdy,
+		si_trdy    => siudp_trdy,
+		si_data    => si_data,
 
-		so_clk      => so_clk,
-		so_frm      => soudp_frm,
-		so_irdy     => soudp_irdy,
-		so_trdy     => soudp_trdy,
-		so_data     => soudp_data,
-		tp          => tp);
+		so_clk     => so_clk,
+		so_frm     => soudp_frm,
+		so_irdy    => soudp_irdy,
+		so_trdy    => soudp_trdy,
+		so_data    => soudp_data,
+		tp         => tp);
 
 	si_trdy <= so_trdy when sio_addr/='0' else siudp_trdy;
 	so_frm  <= si_frm  when sio_addr/='0' else soudp_frm;

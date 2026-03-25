@@ -30,9 +30,9 @@ use hdl4fpga.videopkg.all;
 
 entity link_mii is
 	generic (
-		default_mac   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
-		default_ipv4a : std_logic_vector(0 to 32-1) := aton("192.168.1.1");
-		n             : natural);
+		hwaddr   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
+		ipv4addr : std_logic_vector(0 to 32-1) := aton("192.168.1.1");
+		n        : natural);
 	port (
 		tp       : out std_logic_vector(1 to 32);
 		si_frm   : in  std_logic;
@@ -47,7 +47,6 @@ entity link_mii is
 		so_data  : out std_logic_vector(0 to 8-1);
 
 		dhcp_btn : in  std_logic;
-		hdplx    : in  std_logic := '0';
 		mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector(0 to n-1);
@@ -67,61 +66,10 @@ architecture graphics of link_mii is
 
 	signal miitx_frm  : std_logic;
 	signal miitx_irdy : std_logic;
-	signal miitx_trdy : std_logic;
 	signal miitx_end  : std_logic;
 	signal miitx_data : std_logic_vector(si_data'range);
 
-	constant sync : boolean := false;
 begin
-
-	sync_g : if sync generate
-		signal wr_addr   : std_logic_vector(0 to 2-1);
-		signal rd_addr   : std_logic_vector(wr_addr'range);
-		signal rxc_rxbus : std_logic_vector(0 to mii_rxd'length);
-		signal txc_rxbus : std_logic_vector(0 to mii_rxd'length);
-		signal sync_frm  : std_logic;
-	begin
-
-		process (mii_txc, mii_rxc)
-			variable wr_cntr : unsigned(0 to 2-1);
-			variable rd_cntr : unsigned(0 to 2-1);
-		begin
-			if rising_edge(mii_rxc) then
-				rxc_rxbus <= mii_rxdv & mii_rxd;
-				wr_addr <= std_logic_vector(wr_cntr);
-				if mii_rxdv='1' then
-					wr_cntr := bin2gray(gray2bin(wr_cntr) + 1);
-				end if;
-			end if;
-			if rising_edge(mii_txc) then
-				miirx_frm  <= txc_rxbus(0);
-				miirx_irdy <= txc_rxbus(0);
-				miirx_data <= txc_rxbus(1 to mii_rxd'length);
-				if sync_frm='1' then
-					rd_addr <= std_logic_vector(rd_cntr);
-					rd_cntr := bin2gray(gray2bin(rd_cntr) + 1);
-				else
-					rd_cntr := wr_cntr;
-				end if;
-				sync_frm <= txc_rxbus(0);
-			end if;
-		end process;
-
-		mem_i : entity hdl4fpga.dpram
-		port map (
-			wr_clk  => mii_rxc,
-			wr_addr => wr_addr,
-			wr_data => rxc_rxbus,
-			rd_addr => rd_addr,
-			rd_data => txc_rxbus);
-
-	end generate;
-
-	nosync_g : if not sync generate 
-		miirx_frm  <= mii_rxdv;
-		miirx_irdy <= mii_rxdv;
-		miirx_data <= mii_rxd;
-	end generate;
 
 	dhcp_p : process(mii_txc)
 		type states is (s_request, s_wait);
@@ -144,51 +92,34 @@ begin
 		end if;
 	end process;
 
-	-- udpdaisy_e : entity hdl4fpga.sio_dayudp
-	-- generic map (
-		-- my_mac        => default_mac,
-		-- default_ipv4a => default_ipv4a)
-	-- port map (
-		-- tp         => tp,
-		-- mii_clk    => mii_txc,
-		-- dhcpcd_req => dhcpcd_req,
-		-- dhcpcd_rdy => dhcpcd_rdy,
-		-- miirx_frm  => miirx_frm,
-		-- miirx_irdy => miirx_irdy,
-		-- miirx_data => miirx_data,
-	-- 
-		-- miitx_frm  => miitx_frm,
-		-- miitx_irdy => miitx_irdy,
-		-- miitx_trdy => miitx_trdy,
-		-- miitx_end  => miitx_end,
-		-- miitx_data => miitx_data,
-	-- 
-		-- si_frm     => si_frm,
-		-- si_irdy    => si_irdy,
-		-- si_trdy    => si_trdy,
-		-- si_end     => si_end,
-		-- si_data    => si_data,
-	-- 
-		-- so_clk     => mii_txc,
-		-- so_frm     => so_frm,
-		-- so_irdy    => so_irdy,
-		-- so_trdy    => so_trdy,
-		-- so_data    => so_data);
+	udpdaisy_e : entity hdl4fpga.sio_dayudp
+	generic map (
+		hwaddr     => hwaddr,
+		ipv4addr   => ipv4addr)
+	port map (
+		tp         => tp,
+		dhcpcd_req => dhcpcd_req,
+		dhcpcd_rdy => dhcpcd_rdy,
+		miirx_clk  => mii_txc,
+		miirx_frm  => miirx_frm,
+		miirx_irdy => miirx_irdy,
+		miirx_data => miirx_data,
 	
-	assert false
-		report "serializer"
-		severity FAILURE;
-	-- desser_e: entity hdl4fpga.desser
-	-- port map (
-	-- 	desser_clk => mii_txc,
-	--
-	-- 	des_frm  => miitx_frm,
-	-- 	des_irdy => miitx_irdy,
-	-- 	des_trdy => miitx_trdy,
-	-- 	des_data => miitx_data,
-	--
-	-- 	ser_irdy => open,
-	-- 	ser_data => mii_txd);
+		miitx_clk  => mii_txc,
+		miitx_frm  => miitx_frm,
+		miitx_irdy => miitx_irdy,
+		miitx_data => miitx_data,
 	
-	mii_txen <= miitx_frm and not miitx_end;
+		si_frm     => si_frm,
+		si_irdy    => si_irdy,
+		si_trdy    => si_trdy,
+		si_end     => si_end,
+		si_data    => si_data,
+	
+		so_clk     => mii_txc,
+		so_frm     => so_frm,
+		so_irdy    => so_irdy,
+		so_trdy    => so_trdy,
+		so_data    => so_data);
+	
 end;
