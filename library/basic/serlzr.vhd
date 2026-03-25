@@ -334,23 +334,31 @@ begin
 		fifo_off_g : if not fifo_mode generate 
 			signal rgtr : std_logic_vector(mcm(src_data'length,dst_data'length)-1 downto 0);
 			signal sel  : unsigned(0 to unsigned_num_bits(rgtr'length/dst_data'length-1)-1) := (others => '0');
+			signal full : bit;
+			signal acc  : unsigned(0 to unsigned_num_bits(rgtr'length-1)-1);
 		begin
+			full <= 
+				'0' when src_frm='0'  else
+				'0' when src_irdy='0' else
+				'0' when acc < rgtr'length-src_data'length else
+				'1';
+
 			process (src_clk, dst_clk)
 				variable shr  : unsigned(rgtr'range);
-				variable acc  : unsigned(0 to unsigned_num_bits(shr'length-1)-1);
-				variable full : bit;
+				-- variable acc  : unsigned(0 to unsigned_num_bits(shr'length-1)-1); -- Xilinx 14.7 systenthis bug
+				-- variable full : bit; -- Xilinx 14.7 systenthis bug It should be wire not a ff
 			begin 
 				if rising_edge(src_clk) then
 					if to_bit(src_frm)='0' then
-						acc  := (others => '0');
-						full := '0';
+						acc  <= (others => '0');
+						-- full <= '0'; -- Xilinx 14.7 systenthis bug It should be wire not a ff
 					elsif src_irdy='1' then
 						if acc >= shr'length-src_data'length then 
-							acc  := (others => '0');
-							full := '1';
+							acc  <= (others => '0');
+							-- full <= '1'; -- Xilinx 14.7 systenthis bug It should be wire not a ff
 						else
-							acc  := acc + src_data'length;
-							full := '0';
+							acc  <= acc + src_data'length;
+							-- full <= '0'; -- Xilinx 14.7 systenthis bug It should be wire not a ff
 						end if;
 						shr := shift_left(shr, src_data'length);
 						-- Xilinx 14.7 synthesys bug
@@ -364,7 +372,7 @@ begin
 							rgtr <= std_logic_vector(shr);
 						end if;
 					else
-						full := '0';
+						-- full <= '0'; -- Xilinx 14.7 systenthis bug It should be wire not a ff
 					end if;
 				end if;
 
