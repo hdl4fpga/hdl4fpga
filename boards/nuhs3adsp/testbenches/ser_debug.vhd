@@ -213,8 +213,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			"6a1e"                 &
 			"ffff"                 &
 			"ffff"                 &
-			"010042"               &
-			"ddddddab,"            &
+			"010042,"              &
 		"dhcp:0x"                  &
 			"0800"                 & -- mac type
 			"4500"                 & -- IP Version, TOS
@@ -329,7 +328,10 @@ begin
 			end if;
 		end process;
 
-		pyl_frm  <= setif(addr < (bitrom'length/mii_rxd'length-1)) when rdy /= req else '0';
+		pyl_frm  <= 
+			'0' when rdy=req else
+			'1' when addr < (bitrom'length/mii_rxd'length-1) else
+			'0';
 		pyl_irdy <= '1' when rdy /= req else '0';
 		rom_e : entity hdl4fpga.rom
 		generic map (
