@@ -143,10 +143,8 @@ architecture nuhs3adsp_serdebug of testbench is
 	end component;
 
 	constant data : string := "{"           &
-		"mac:0x"                   &
-		    "55555555555555d5"     &
-			"00_40_00_01_02_03"    & -- mac source address
-			"00_27_0e_0f_f5_95,"   & -- mac source address
+		"tha:0x"                   &
+			"00_40_00_01_02_03,"   & -- target hardware address
 		"arp:0x"                   &
 			"0806"                 & -- mac type
 			"0000"                 & -- arp_htype
@@ -300,33 +298,58 @@ begin
 
 	sw1 <= '1', '1' after 1 us;
 
-	rst <= '1', '0' after 1 us, '1' after 15 us, '0' after 16 us;
+	rst <= '1', '0' after 1 us;  --'1' after 15 us, '0' after 16 us;
+
 	tb_b : block
-		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".mac") & std_logic_vector'(hdo(data)**".udp");
-		-- constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".udp");
-		signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
+		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".tha") & std_logic_vector'(hdo(data)**".udp");
+		signal addr     : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
+
+       	signal pyl_frm  : std_logic;
+       	signal pyl_irdy : std_logic;
+       	signal pyl_trdy : std_logic;
+       	signal pyl_data : std_logic_vector(mii_rxd'range);
+		signal req : bit;
+		signal rdy : bit;
 	begin
+
 		process (mii_rxc)
 		begin
 			if rising_edge(mii_rxc) then
 				if rst='1' then
-					mii_rxdv <= '0';
+					rdy  <= req;
 					addr <= (others => '0');
 				elsif addr < (bitrom'length/mii_rxd'length-1) then
-					mii_rxdv <= '1';
-					addr <= (addr + 1);
-				else
-					mii_rxdv <= '0';
+					req <= not rdy;
+					if pyl_trdy='1' then
+						addr <= addr + 1;
+					end if;
+				elsif (pyl_irdy and pyl_trdy)='1' then
+					rdy <= req;
 				end if;
 			end if;
 		end process;
-	
-		eth_e: entity hdl4fpga.rom
+
+		pyl_frm  <= setif(addr < (bitrom'length/mii_rxd'length-1)) when rdy /= req else '0';
+		pyl_irdy <= '1' when rdy /= req else '0';
+		rom_e : entity hdl4fpga.rom
 		generic map (
 			bitdata => reverse(bitrom,8))
 		port map (
 			addr => std_logic_vector(addr),
-			data => mii_rxd);
+			data => pyl_data);
+
+		eth_e : entity hdl4fpga.eth_tx
+       	generic map (
+       		sha => x"00_27_0e_0f_f5_95")
+       	port map (
+       		mii_clk  => mii_rxc,
+       		mii_frm  => mii_rxdv,
+       		mii_data => mii_rxd,
+
+       		pyl_frm  => pyl_frm,
+       		pyl_irdy => pyl_irdy,
+       		pyl_trdy => pyl_trdy,
+       		pyl_data => pyl_data);
 
 	end block;
 

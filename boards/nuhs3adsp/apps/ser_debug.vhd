@@ -132,60 +132,6 @@ begin
 		end if;
 	end process;
 
-	-- pyl_b : block
-	-- 	constant bitrom : std_logic_vector := std_logic_vector'(
-	-- 	hdo(string'("{udp:0x"               &
-	-- 		-- "000f"              &
-	-- 			"0f_27_0e_0f_f5_95" & -- mac source address
-	-- 			"00fa"              & -- packet length
-	-- 			"c0a80002"          & -- IP Source IP address
-	-- 			"0043"              &
-	-- 			"0044"              &
-	-- 		"dddddddd"          &
-	-- 		"12345678}"))**".udp");
-	-- 	signal addr : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
-	--
-	-- begin
-	-- 	process (mii_txc)
-	-- 	begin
-	-- 		if rising_edge(mii_txc) then
-	-- 			if (udppyltx_frm or udppyltx_irdy)='1' then
-	-- 				if addr < (bitrom'length/mii_rxd'length-2) then
-	-- 					udppyltx_frm <= '1';
-	-- 				else
-	-- 					udppyltx_frm <= '0';
-	-- 				end if;
-	-- 				if (not udppyltx_frm and udppyltx_irdy and udppyltx_trdy)='1' then
-	-- 					dhcpcd_rdy <= dhcpcd_req;
-	-- 					udppyltx_irdy <= '0';
-	-- 				else
-	-- 					udppyltx_irdy <= '1';
-	-- 				end if;
-	-- 				if (udppyltx_irdy and udppyltx_trdy)='1' then
-	-- 					addr <= addr + 1;
-	-- 				end if;
-	-- 			elsif (dhcpcd_rdy xor dhcpcd_req)='1' then
-	-- 				udppyltx_frm  <= '1';
-	-- 				udppyltx_irdy <= '1';
-	-- 				if udppyltx_trdy='1' then
-	-- 					addr <= addr + 1;
-	-- 				end if;
-	-- 			else
-	-- 				udppyltx_frm <= '0';
-	-- 				addr <= (others => '0');
-	-- 			end if;
-	-- 		end if;
-	-- 	end process;
-	--
-	-- 	rom_i: entity hdl4fpga.rom
-	-- 	generic map (
-	-- 		bitdata => reverse(bitrom,8))
-	-- 	port map (
-	-- 		addr => std_logic_vector(addr),
-	-- 		data => udppyltx_data);
-	--
-	-- end block;
-
 	sioudp_i : entity hdl4fpga.sio_udp
 	port map (
 		tp       => tp,
