@@ -300,6 +300,8 @@ begin
 	rst <= '1', '0' after 1 us;  --'1' after 15 us, '0' after 16 us;
 
 	tb_b : block
+		generic (
+			data : string := data);
 		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".tha") & std_logic_vector'(hdo(data)**".udp");
 		signal addr     : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
 
