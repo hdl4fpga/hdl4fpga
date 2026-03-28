@@ -283,20 +283,19 @@ architecture nuhs3adsp_serdebug of testbench is
 			"ffffffff"             &
 			"ffffffff"             &
 			"ffffffff"             &
-			"9999995a}";
-	signal txc : std_logic;
+		"}";
+
 begin
 
 	mii_rxc <= mii_refclk after 5 ps;
-	txc <= mii_refclk after 5 ps;
-	mii_txc <= transport txc after 30 ns;
+	mii_txc <= mii_refclk after 5 ps;
 
 	clk <= not clk after 25 ns;
 
-	sw1 <= '1', '1' after 1 us;
+	sw1 <= '1', '1' after 4 us;
 
 	process (mii_rxc)
-		signal rst : std_logic := '1';
+		variable rst : std_logic := '1';
 	begin
 		if rising_edge(mii_rxc) then
 			if rst='1' then
@@ -308,8 +307,8 @@ begin
 
 	tb_eth_e : entity hdl4fpga.tb_eth
 	generic map (
-		tha  => hdo(data)**".tha",
-		data => hdo(data)**".udp")
+		tha => hdo(data)**".tha",
+		pyl => hdo(data)**".udp")
 	port map (
 		req  => mii_req,
 		rdy  => mii_rdy,

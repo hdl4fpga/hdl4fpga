@@ -21,6 +21,7 @@
 
 library hdl4fpga;
 use hdl4fpga.base.all;
+use hdl4fpga.hdo.all;
 
 architecture nuhs3adsp_graphics of testbench is
 	constant bank_bits  : natural := 2;
@@ -172,7 +173,7 @@ architecture nuhs3adsp_graphics of testbench is
     		"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
     		"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
     		"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-    		"1702_000003_1603_0000_0000"
+    		"1702_000003_1603_0000_0000"                                       &
 		"}";
 
 	constant req_data  : std_logic_vector :=
@@ -198,9 +199,13 @@ architecture nuhs3adsp_graphics of testbench is
 	signal we_n       : std_logic;
 	signal dm         : std_logic_vector(1 downto 0);
 
+	signal mii_req    : std_logic;
+	signal mii_rdy    : std_logic;
 	signal mii_refclk : std_logic;
+	signal mii_rxc    : std_logic;
 	signal mii_rxdv   : std_logic;
 	signal mii_rxd    : std_logic_vector(0 to 4-1);
+	signal mii_txc    : std_logic;
 	signal mii_txd    : std_logic_vector(0 to 4-1);
 	signal mii_txen   : std_logic;
 
@@ -211,8 +216,11 @@ begin
 	rst <= '0', '1' after 300 ns;
 	clk <= not clk after 25 ns;
 
+	mii_rxc <= mii_refclk after 5 ps;
+	mii_txc <= mii_refclk after 5 ps;
+
 	process (mii_rxc)
-		signal rst : std_logic := '1';
+		variable rst : std_logic := '1';
 	begin
 		if rising_edge(mii_rxc) then
 			if rst='1' then
@@ -224,8 +232,8 @@ begin
 
 	tb_eth_e : entity hdl4fpga.tb_eth
 	generic map (
-		tha  => hdo(data)**".tha",
-		data => hdo(data)**".udp")
+		tha => hdo(data)**".tha",
+		pyl => hdo(data)**".udp")
 	port map (
 		req  => mii_req,
 		rdy  => mii_rdy,

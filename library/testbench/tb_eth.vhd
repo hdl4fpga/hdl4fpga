@@ -33,8 +33,8 @@ entity tb_eth is
 		tha : string;
 		pyl : string);
 	port (
-		req  : in  std_logic;
-		rdy  : buffer std_logic;
+		req  : in  std_logic :='0';
+		rdy  : buffer std_logic :='0';
 		txc  : in  std_logic;
 		txen : buffer std_logic;
 		txd  : out std_logic_vector);

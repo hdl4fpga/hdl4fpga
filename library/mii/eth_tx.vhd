@@ -32,18 +32,18 @@ use hdl4fpga.ipoepkg.all;
 
 entity eth_tx is
 	generic (
-		sha         : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
+		sha      : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03");
 	port (
-		mii_clk     : in  std_logic;
-		mii_frm     : buffer std_logic;
-		mii_irdy    : buffer std_logic;
-		mii_trdy    : in  std_logic := '1';
-		mii_data    : out std_logic_vector;
+		mii_clk  : in  std_logic;
+		mii_frm  : buffer std_logic := '0';
+		mii_irdy : buffer std_logic := '0';
+		mii_trdy : in  std_logic := '1';
+		mii_data : out std_logic_vector;
 
-		pyl_frm     : in  std_logic;
-		pyl_irdy    : in  std_logic;
-		pyl_trdy    : buffer std_logic := '0';
-		pyl_data    : in  std_logic_vector);
+		pyl_frm  : in  std_logic;
+		pyl_irdy : in  std_logic;
+		pyl_trdy : buffer std_logic := '0';
+		pyl_data : in  std_logic_vector);
 
 end;
 
@@ -185,7 +185,7 @@ begin
 		crc  => fcs_crc);
 
 	mii_frm_p : process (prmb_act, mii_clk)
-		variable frm : std_logic;
+		variable frm : std_logic := '0';
 	begin
 		if rising_edge(mii_clk) then
 			if prmb_act='1' then
