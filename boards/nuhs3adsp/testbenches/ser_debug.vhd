@@ -295,17 +295,6 @@ begin
 
 	sw1 <= '1', '1' after 1 us;
 
-	tb_eth_e : entity hdl4fpga.tb_eth
-	generic map (
-		tha  => hdo(data)**".tha",
-		data => hdo(data)**".udp")
-	port map (
-		req  => mii_req,
-		rdy  => mii_rdy,
-		txc  => mii_rxc,
-		txen => mii_txen,
-		txd  => mii_txd);
-
 	process (mii_rxc)
 		signal rst : std_logic := '1';
 	begin
@@ -316,6 +305,17 @@ begin
 			end if;
 		end if;
 	end process;
+
+	tb_eth_e : entity hdl4fpga.tb_eth
+	generic map (
+		tha  => hdo(data)**".tha",
+		data => hdo(data)**".udp")
+	port map (
+		req  => mii_req,
+		rdy  => mii_rdy,
+		txc  => mii_rxc,
+		txen => mii_rxdv,
+		txd  => mii_rxd);
 
 	du_e : nuhs3adsp
 	port map (
@@ -333,9 +333,9 @@ begin
 		rs232_rd   => uart_sin,
 		mii_refclk => mii_refclk,
 		mii_rxc    => mii_rxc,
-		mii_txc    => mii_txc,
 		mii_rxdv   => mii_rxdv,
 		mii_rxd    => mii_rxd,
+		mii_txc    => mii_txc,
 		mii_txen   => mii_txen,
 		mii_txd    => open);
 

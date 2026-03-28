@@ -174,6 +174,7 @@ architecture nuhs3adsp_graphics of testbench is
     		"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
     		"1702_000003_1603_0000_0000"
 		"}";
+
 	constant req_data  : std_logic_vector :=
 		x"010008_1702_000003_1603_8000_0000";
 
@@ -210,18 +211,27 @@ begin
 	rst <= '0', '1' after 300 ns;
 	clk <= not clk after 25 ns;
 
-    ipoetb_e : entity work.ipoe_tb
-	generic map (
-		delay1 => 210 us,
-		snd_data => snd_data,
-		req_data => req_data)
-	port map (
-		mii_clk  => mii_refclk,
-		mii_rxdv => mii_txen,
-		mii_rxd  => mii_txd,
+	process (mii_rxc)
+		signal rst : std_logic := '1';
+	begin
+		if rising_edge(mii_rxc) then
+			if rst='1' then
+				rst := '0';
+				mii_req <= not mii_rdy;
+			end if;
+		end if;
+	end process;
 
-		mii_txen => mii_rxdv,
-		mii_txd  => mii_rxd);
+	tb_eth_e : entity hdl4fpga.tb_eth
+	generic map (
+		tha  => hdo(data)**".tha",
+		data => hdo(data)**".udp")
+	port map (
+		req  => mii_req,
+		rdy  => mii_rdy,
+		txc  => mii_rxc,
+		txen => mii_rxdv,
+		txd  => mii_rxd);
 
 	du_e : nuhs3adsp
 	port map (
