@@ -145,18 +145,35 @@ architecture nuhs3adsp_graphics of testbench is
 			dqs   : inout std_logic_vector(data_bytes - 1 downto 0));
 	end component;
 
-	constant snd_data  : std_logic_vector :=
-		x"01007e" &
-		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-		x"1702_000003_1603_0000_0000";
+	constant data : string := "{"           &
+		"tha:0x"                 &
+			"00_40_00_01_02_03," & -- target hardware address
+		"udp:0x"                 &
+			"0800"               & -- mac type
+			"4500"               & -- IP Version, TOS
+			"0054"               & -- IP Length
+			"0000"               & -- IP Identification
+			"0000"               & -- IP Fragmentation
+			"0511"               & -- IP TTL, protocol
+			"0000"               & -- IP Header Checksum
+			"21436587"           & -- IP Source IP address
+			"c0a8000e"           & -- IP Destiantion IP Address
+			"482c"               & -- UDP source port 
+			"6a1e"               & -- UDP destination port 
+			"ffff"               & -- UDP length
+			"0000"               & -- UDP checksum
+			"010042"             &
+    		"18ff"               &
+    		"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+    		"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+    		"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+    		"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+    		"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+    		"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+    		"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+    		"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+    		"1702_000003_1603_0000_0000"
+		"}";
 	constant req_data  : std_logic_vector :=
 		x"010008_1702_000003_1603_8000_0000";
 

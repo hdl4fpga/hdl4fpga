@@ -134,7 +134,7 @@ begin
 
 	sioudp_i : entity hdl4fpga.sio_udp
 	port map (
-		tp       => tp,
+		tp         => tp,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
 
