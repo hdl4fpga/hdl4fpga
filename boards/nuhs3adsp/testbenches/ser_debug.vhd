@@ -25,9 +25,9 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 architecture nuhs3adsp_serdebug of testbench is
-	signal clk  : std_logic := '0';
-	signal led7 : std_logic;
-	signal sw1  : std_logic;
+	signal clk      : std_logic := '0';
+	signal led7     : std_logic;
+	signal sw1      : std_logic;
 
 	signal mii_req  : std_logic := '0';
 	signal mii_rdy  : std_logic := '0';
@@ -39,11 +39,10 @@ architecture nuhs3adsp_serdebug of testbench is
 	signal mii_txen : std_logic;
 	signal mii_txd  : std_logic_vector(0 to 4-1);
 
-
 	signal uart_clk : std_logic := '0';
 	signal uart_sin : std_logic;
 
-	constant delay : time := 1 ns;
+	constant delay  : time := 1 ns;
 
 	component nuhs3adsp is
 		generic (
@@ -55,7 +54,7 @@ architecture nuhs3adsp_serdebug of testbench is
 			hd_t_data  : inout std_logic := '1';
 			hd_t_clock : in std_logic := 'Z';
 
-			dip : in std_logic_vector(0 to 7) := (others => 'Z');
+			dip   : in  std_logic_vector(0 to 7) := (others => 'Z');
 			led18 : out std_logic := 'Z';
 			led16 : out std_logic := 'Z';
 			led15 : out std_logic := 'Z';
@@ -81,10 +80,10 @@ architecture nuhs3adsp_serdebug of testbench is
 			---------
 			-- ADC --
 
-			adc_clkab : out std_logic := 'Z';
+			adc_clkab  : out std_logic := 'Z';
 			adc_clkout : in std_logic := 'Z';
-			adc_da : in std_logic_vector(14-1 downto 0) := (others => 'Z');
-			adc_db : in std_logic_vector(14-1 downto 0) := (others => 'Z');
+			adc_da     : in std_logic_vector(14-1 downto 0) := (others => 'Z');
+			adc_db     : in std_logic_vector(14-1 downto 0) := (others => 'Z');
 			adc_daac_enable : in std_logic := 'Z';
 
 			-----------------------
@@ -102,44 +101,45 @@ architecture nuhs3adsp_serdebug of testbench is
 			------------------------------
 			-- MII ethernet Transceiver --
 
-			mii_rstn  : out std_logic := 'Z';
+			mii_rstn   : out std_logic := 'Z';
 			mii_refclk : out std_logic := 'Z';
 			mii_intrp  : in std_logic := 'Z';
 
-			mii_mdc  : out std_logic := 'Z';
-			mii_mdio : inout std_logic := 'Z';
+			mii_mdc    : out std_logic := 'Z';
+			mii_mdio   : inout std_logic := 'Z';
 
-			mii_txc  : in  std_logic := 'Z';
-			mii_txen : buffer std_logic := 'Z';
-			mii_txd  : buffer std_logic_vector(0 to 4-1) := (others => 'Z');
+			mii_txc    : in  std_logic := 'Z';
+			mii_txen   : buffer std_logic := 'Z';
+			mii_txd    : buffer std_logic_vector(0 to 4-1) := (others => 'Z');
 
-			mii_rxc  : in std_logic := 'Z';
-			mii_rxdv : in std_logic := 'Z';
-			mii_rxer : in std_logic := 'Z';
-			mii_rxd  : in std_logic_vector(0 to 4-1) := (others => 'Z');
+			mii_rxc    : in std_logic := 'Z';
+			mii_rxdv   : in std_logic := 'Z';
+			mii_rxer   : in std_logic := 'Z';
+			mii_rxd    : in std_logic_vector(0 to 4-1) := (others => 'Z');
 
-			mii_crs  : in std_logic := '0';
-			mii_col  : in std_logic := '0';
+			mii_crs    : in std_logic := '0';
+			mii_col    : in std_logic := '0';
 
 			-------------
 			-- DDR RAM --
 
-			ddr_ckp : out std_logic := 'Z';
-			ddr_ckn : out std_logic := 'Z';
+			ddr_ckp    : out std_logic := 'Z';
+			ddr_ckn    : out std_logic := 'Z';
 			ddr_lp_ckp : in std_logic := 'Z';
 			ddr_lp_ckn : in std_logic := 'Z';
 			ddr_st_lp_dqs : in std_logic := 'Z';
 			ddr_st_dqs : out std_logic := 'Z';
-			ddr_cke : out std_logic := 'Z';
-			ddr_cs  : out std_logic := 'Z';
-			ddr_ras : out std_logic := 'Z';
-			ddr_cas : out std_logic := 'Z';
-			ddr_we  : out std_logic := 'Z';
-			ddr_ba  : out std_logic_vector(2-1  downto 0) := (2-1  downto 0 => 'Z');
-			ddr_a   : out std_logic_vector(13-1 downto 0) := (13-1 downto 0 => 'Z');
-			ddr_dm  : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
-			ddr_dqs : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
-			ddr_dq  : inout std_logic_vector(16-1 downto 0) := (16-1 downto 0 => 'Z'));
+			ddr_cke    : out std_logic := 'Z';
+			ddr_cs     : out std_logic := 'Z';
+			ddr_ras    : out std_logic := 'Z';
+			ddr_cas    : out std_logic := 'Z';
+			ddr_we     : out std_logic := 'Z';
+			ddr_ba     : out std_logic_vector(2-1  downto 0) := (2-1  downto 0 => 'Z');
+			ddr_a      : out std_logic_vector(13-1 downto 0) := (13-1 downto 0 => 'Z');
+			ddr_dm     : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
+			ddr_dqs    : inout std_logic_vector(0 to 2-1) := (0 to 2-1 => 'Z');
+			ddr_dq     : inout std_logic_vector(16-1 downto 0) := (16-1 downto 0 => 'Z'));
+
 	end component;
 
 	constant data : string := "{"           &
