@@ -79,12 +79,28 @@ architecture beh of sio_dayudp is
 	signal soudp_trdy : std_logic;
 	signal soudp_data : std_logic_vector(so_data'range);
 
+	signal srzrx_frm  : std_logic;
+	signal srzrx_irdy : std_logic;
+	signal srzrx_trdy : std_logic;
+	signal srzrx_data : std_logic_vector(so_data'range);
+
 begin
 
 	siudp_frm  <= '0' when sio_addr/='0' else si_frm;
 	siudp_irdy <= '0' when sio_addr/='0' else si_irdy;
 	soudp_trdy <= '0' when sio_addr/='0' else so_trdy;
 
+	rxserlzr_e : entity hdl4fpga.serlzr
+	port map (
+		src_clk  => miirx_clk,
+		src_frm  => miirx_frm,
+		src_irdy => miirx_irdy,
+		src_data => miirx_data,
+		dst_clk  => miirx_clk,
+		dst_irdy => srzrx_irdy,
+		dst_data => srzrx_data);
+
+	srzrx_frm <= miirx_frm or srzrx_irdy;
 	sio_udp_e : entity hdl4fpga.sio_udp
 	generic map (
 		ipv4addr   => ipv4addr,
@@ -95,10 +111,10 @@ begin
 		dhcpcd_rdy => dhcpcd_rdy,
 
 		miirx_clk  => miirx_clk,
-		miirx_frm  => miirx_frm,
-		miirx_irdy => miirx_irdy,
-		miirx_trdy => miirx_trdy,
-		miirx_data => miirx_data,
+		miirx_frm  => srzrx_frm,
+		miirx_irdy => srzrx_irdy,
+		miirx_trdy => srzrx_trdy,
+		miirx_data => srzrx_data,
 
 		miitx_clk  => miirx_clk,
 		miitx_frm  => miitx_frm,
