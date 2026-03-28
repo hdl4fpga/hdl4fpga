@@ -25,12 +25,12 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 architecture nuhs3adsp_serdebug of testbench is
-	signal rst   : std_logic;
-	signal clk   : std_logic := '0';
-	signal led7  : std_logic;
+	signal clk  : std_logic := '0';
+	signal led7 : std_logic;
 	signal sw1  : std_logic;
 
-	signal arp_req  : std_logic := '0';
+	signal mii_req  : std_logic := '0';
+	signal mii_rdy  : std_logic := '0';
 	signal mii_refclk : std_logic;
 	signal mii_rxdv : std_logic;
 	signal mii_rxd  : std_logic_vector(0 to 4-1);
@@ -293,91 +293,50 @@ begin
 
 	clk <= not clk after 25 ns;
 
-	arp_req <= '0', '1' after 8 us;
-
 	sw1 <= '1', '1' after 1 us;
 
-	rst <= '1', '0' after 1 us;  --'1' after 15 us, '0' after 16 us;
+	tb_eth_e : entity hdl4fpga.tb_eth
+	generic map (
+		tha  => hdo(data)**".tha",
+		data => hdo(data)**".udp")
+	port map (
+		req  => mii_req,
+		rdy  => mii_rdy,
+		txc  => mii_rxc,
+		txen => mii_txen,
+		txd  => mii_txd);
 
-	tb_b : block
-		generic (
-			data : string := data);
-		constant bitrom : std_logic_vector := std_logic_vector'(hdo(data)**".tha") & std_logic_vector'(hdo(data)**".udp");
-		signal addr     : unsigned(0 to unsigned_num_bits(bitrom'length/mii_rxd'length-1)-1);
-
-       	signal pyl_frm  : std_logic;
-       	signal pyl_irdy : std_logic;
-       	signal pyl_trdy : std_logic;
-       	signal pyl_data : std_logic_vector(mii_rxd'range);
-		signal req : bit;
-		signal rdy : bit;
+	process (mii_rxc)
+		signal rst : std_logic := '1';
 	begin
-
-		process (mii_rxc)
-		begin
-			if rising_edge(mii_rxc) then
-				if rst='1' then
-					rdy  <= req;
-					addr <= (others => '0');
-				elsif addr < (bitrom'length/mii_rxd'length-1) then
-					req <= not rdy;
-					if pyl_trdy='1' then
-						addr <= addr + 1;
-					end if;
-				elsif (pyl_irdy and pyl_trdy)='1' then
-					rdy <= req;
-				end if;
+		if rising_edge(mii_rxc) then
+			if rst='1' then
+				rst := '0';
+				mii_req <= not mii_rdy;
 			end if;
-		end process;
-
-		pyl_frm  <= 
-			'0' when rdy=req else
-			'1' when addr < (bitrom'length/mii_rxd'length-1) else
-			'0';
-		pyl_irdy <= '1' when rdy /= req else '0';
-		rom_e : entity hdl4fpga.rom
-		generic map (
-			bitdata => reverse(bitrom,8))
-		port map (
-			addr => std_logic_vector(addr),
-			data => pyl_data);
-
-		eth_e : entity hdl4fpga.eth_tx
-       	generic map (
-       		sha => x"00_27_0e_0f_f5_95")
-       	port map (
-       		mii_clk  => mii_rxc,
-       		mii_frm  => mii_rxdv,
-       		mii_data => mii_rxd,
-
-       		pyl_frm  => pyl_frm,
-       		pyl_irdy => pyl_irdy,
-       		pyl_trdy => pyl_trdy,
-       		pyl_data => pyl_data);
-
-	end block;
-
+		end if;
+	end process;
 
 	du_e : nuhs3adsp
 	port map (
-		clk => clk,
-		sw1  => sw1,
-		led7 => led7,
-		dip => b"0000_0001",
+		clk        => clk,
+		sw1        => sw1,
+		led7       => led7,
+		dip        => b"0000_0001",
 
 		---------
 		-- ADC --
 
-		adc_da => (others => '0'),
-		adc_db => (others => '0'),
+		adc_da     => (others => '0'),
+		adc_db     => (others => '0'),
 
-		rs232_rd => uart_sin,
+		rs232_rd   => uart_sin,
 		mii_refclk => mii_refclk,
-		mii_rxc => mii_rxc,
-		mii_txc => mii_txc,
-		mii_rxdv => mii_rxdv,
-		mii_rxd => mii_rxd,
-		mii_txen => mii_txen,
-		mii_txd => open);
+		mii_rxc    => mii_rxc,
+		mii_txc    => mii_txc,
+		mii_rxdv   => mii_rxdv,
+		mii_rxd    => mii_rxd,
+		mii_txen   => mii_txen,
+		mii_txd    => open);
 
 end;
