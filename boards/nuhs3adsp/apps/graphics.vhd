@@ -60,7 +60,6 @@ architecture graphics of nuhs3adsp is
 	signal si_frm        : std_logic;
 	signal si_irdy       : std_logic := '1';
 	signal si_trdy       : std_logic := '1';
-	signal si_end        : std_logic;
 	signal si_data       : std_logic_vector(0 to 8-1);
 	signal dhcp_btn      : std_logic;
 
@@ -198,7 +197,6 @@ begin
 		si_frm     => si_frm,
 		si_irdy    => si_irdy,
 		si_trdy    => si_trdy,
-		si_end     => si_end,
 		si_data    => si_data,
 	
 		so_frm     => so_frm,
@@ -236,7 +234,6 @@ begin
 		sout_frm     => si_frm,
 		sout_irdy    => si_irdy,
 		sout_trdy    => si_trdy,
-		sout_end     => si_end,
 		sout_data    => si_data,
 
 		video_clk    => video_clk,

@@ -1369,7 +1369,6 @@ $(HDL4FPGA__link_hdlc__def) : ../apps/link_hdlc.vhd \
 $(HDL4FPGA__link_mii) \
 $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 		$(HDL4FPGA__sio_dayudp) \
-		$(HDL4FPGA__videopkg) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
@@ -1667,6 +1666,7 @@ $(HDL4FPGA__sio_dayhdlc__beh) : ../sio/sio_dayhdlc.vhd \
 $(HDL4FPGA__sio_dayudp) \
 $(HDL4FPGA__sio_dayudp__beh) : ../sio/sio_dayudp.vhd \
 		$(HDL4FPGA__sio_udp) \
+		$(HDL4FPGA__serlzr) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \

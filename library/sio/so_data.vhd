@@ -46,36 +46,15 @@ end;
 
 architecture def of so_data is
 
-	signal ser_irdy  : std_logic;
-	signal ser_trdy  : std_logic;
-	signal ser_data  : std_logic_vector(0 to 8-1);
 	signal low_cntr  : unsigned(0 to 8);
 	signal high_cntr : unsigned(0 to setif(si_length'length > 8, si_length'length - 8, 0));
 
 	type states is (st_idle, st_rid, st_len, st_data);
 	signal state : states;
 
-	signal deso_irdy : std_logic;
 	signal deso_trdy : std_logic;
-	signal deso_data : std_logic_vector(ser_data'range);
 
 begin
-
-	assert false
-		report "serilzer"
-		severity FAILURE;
-	-- desser_e : entity hdl4fpga.desser
-	-- port map (
-	-- 	desser_clk => sio_clk,
-	--
-	-- 	des_frm    => si_frm,
-	-- 	des_irdy   => si_irdy,
-	-- 	des_trdy   => si_trdy,
-	-- 	des_data   => si_data,
-	--
-	-- 	ser_irdy   => ser_irdy,
-	-- 	ser_trdy   => ser_trdy,
-	-- 	ser_data   => ser_data);
 
 	process(sio_clk)
 	begin
@@ -117,7 +96,7 @@ begin
 				end if;
 			when st_data =>
 				if si_frm='1' then
-					if (ser_irdy and so_trdy)='1' then
+					if (si_irdy and so_trdy)='1' then
 						so_end <= si_end;
 						if low_cntr(0)='0' then
 							low_cntr <= low_cntr - 1;
@@ -138,35 +117,20 @@ begin
 
 	si_end   <= '0' when state=st_idle else si_frm and high_cntr(0) and low_cntr(0);
 
-	ser_trdy <= so_trdy when state=st_data else '0';
+	si_trdy <= so_trdy when state=st_data else '0';
 
-	deso_irdy  <=
+	so_frm  <= to_stdulogic(to_bit(si_frm));
+	so_irdy  <=
 		'1'      when so_end='1' else
 		'0'      when state=st_idle else
-		ser_irdy when state=st_data else
+		si_irdy when state=st_data else
 		'1';
 
 	with state select
-	deso_data <=
-		so_rid                                               when st_idle | st_rid,
-		std_logic_vector(resize(low_cntr, deso_data'length)) when st_len,
-		ser_data                                             when st_data;
+	so_data <=
+		so_rid   when st_idle | st_rid,
+		std_logic_vector(resize(low_cntr, so_data'length)) when st_len,
+		si_data when st_data;
 
-	so_frm <= to_stdulogic(to_bit(si_frm));
-	assert false
-		report "serilzer"
-		severity FAILURE;
-	-- dessero_e : entity hdl4fpga.desser
-	-- port map (
-	-- 	desser_clk => sio_clk,
-	--
-	-- 	des_frm    => si_frm,
-	-- 	des_irdy   => deso_irdy,
-	-- 	des_trdy   => deso_trdy,
-	-- 	des_data   => deso_data,
-	--
-	-- 	ser_irdy   => so_irdy,
-	-- 	ser_trdy   => so_trdy,
-	-- 	ser_data   => so_data);
 
 end;

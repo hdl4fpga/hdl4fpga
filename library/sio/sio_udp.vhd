@@ -198,7 +198,7 @@ begin
 	tp(1) <= udppyltx_frm or udppyltx_irdy;
 	tp(2) <= udppyltx_irdy;
 	tp(3) <= udppyltx_trdy;
-	tp(4 to 7) <= udppyltx_data;
+	tp(4 to 4+udppyltx_data'length-1) <= udppyltx_data;
 
 	sio_flow_e : entity hdl4fpga.sio_flow
 	port map (
