@@ -29,40 +29,39 @@ use hdl4fpga.ipoepkg.all;
 
 entity sio_dayudp is
 	generic (
-		debug         : boolean := false;
-		ipv4addr      : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
-		hwaddr        : std_logic_vector := x"00_40_00_01_02_03");
+		debug      : boolean := false;
+		ipv4addr   : std_logic_vector(0 to 32-1) := aton("192.168.0.14");
+		hwaddr     : std_logic_vector := x"00_40_00_01_02_03");
 	port (
-		sio_addr      : in  std_logic := '0';
+		sio_addr   : in  std_logic := '0';
 
-		dhcpcd_req    : in  std_logic := '0';
-		dhcpcd_rdy    : out std_logic := '0';
+		dhcpcd_req : in  std_logic := '0';
+		dhcpcd_rdy : out std_logic := '0';
 
-		miirx_clk     : in  std_logic;
-		miirx_frm     : in  std_logic;
-		miirx_irdy    : in  std_logic := '1';
-		miirx_trdy    : out std_logic;
-		miirx_data    : in  std_logic_vector;
+		miirx_clk  : in  std_logic;
+		miirx_frm  : in  std_logic;
+		miirx_irdy : in  std_logic := '1';
+		miirx_trdy : out std_logic;
+		miirx_data : in  std_logic_vector;
 
-		miitx_clk     : in  std_logic;
-		miitx_frm     : buffer std_logic;
-		miitx_irdy    : buffer std_logic;
-		miitx_trdy    : in  std_logic := '1';
-		miitx_data    : out std_logic_vector;
+		miitx_clk  : in  std_logic;
+		miitx_frm  : buffer std_logic;
+		miitx_irdy : buffer std_logic;
+		miitx_trdy : in  std_logic := '1';
+		miitx_data : out std_logic_vector;
 
-		si_frm        : in  std_logic := '0';
-		si_irdy       : in  std_logic := '0';
-		si_trdy       : out std_logic := '0';
-		si_end        : in  std_logic := '0';
-		si_data       : in  std_logic_vector;
+		si_frm     : in  std_logic := '0';
+		si_irdy    : in  std_logic := '0';
+		si_trdy    : out std_logic := '0';
+		si_data    : in  std_logic_vector;
 
-		so_clk        : in  std_logic;
-		so_frm        : out std_logic;
-		so_irdy       : out std_logic;
-		so_trdy       : in  std_logic := '1';
-		so_data       : out std_logic_vector;
+		so_clk     : in  std_logic;
+		so_frm     : out std_logic;
+		so_irdy    : out std_logic;
+		so_trdy    : in  std_logic := '1';
+		so_data    : out std_logic_vector;
 
-		tp            : out std_logic_vector(1 to 32));
+		tp         : out std_logic_vector(1 to 32));
 
 end;
 
@@ -83,6 +82,11 @@ architecture beh of sio_dayudp is
 	signal srzrx_irdy : std_logic;
 	signal srzrx_trdy : std_logic;
 	signal srzrx_data : std_logic_vector(so_data'range);
+
+	signal srztx_frm  : std_logic;
+	signal srztx_irdy : std_logic;
+	signal srztx_trdy : std_logic;
+	signal srztx_data : std_logic_vector(si_data'range);
 
 begin
 
@@ -117,10 +121,10 @@ begin
 		miirx_data => srzrx_data,
 
 		miitx_clk  => miirx_clk,
-		miitx_frm  => miitx_frm,
-		miitx_irdy => miitx_irdy,
-		miitx_trdy => miitx_trdy,
-		miitx_data => miitx_data,
+		miitx_frm  => srztx_frm,
+		miitx_irdy => srztx_irdy,
+		miitx_trdy => srztx_trdy,
+		miitx_data => srztx_data,
 
 		si_clk     => so_clk,
 		si_frm     => siudp_frm,
@@ -134,6 +138,17 @@ begin
 		so_trdy    => soudp_trdy,
 		so_data    => soudp_data,
 		tp         => tp);
+
+	txserlzr_e : entity hdl4fpga.serlzr
+	port map (
+		src_clk  => miirx_clk,
+		src_frm  => srztx_frm,
+		src_irdy => srztx_irdy,
+		src_trdy => srztx_trdy,
+		src_data => srztx_data,
+		dst_clk  => miitx_clk,
+		dst_irdy => miitx_irdy,
+		dst_data => miitx_data);
 
 	si_trdy <= so_trdy when sio_addr/='0' else siudp_trdy;
 	so_frm  <= si_frm  when sio_addr/='0' else soudp_frm;

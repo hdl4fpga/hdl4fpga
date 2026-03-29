@@ -38,7 +38,6 @@ entity link_mii is
 		si_frm   : in  std_logic;
 		si_irdy  : in  std_logic := '1';
 		si_trdy  : out std_logic := '1';
-		si_end   : in  std_logic;
 		si_data  : in  std_logic_vector(0 to 8-1);
 
 		so_frm   : out std_logic;
@@ -113,7 +112,6 @@ begin
 		si_frm     => si_frm,
 		si_irdy    => si_irdy,
 		si_trdy    => si_trdy,
-		si_end     => si_end,
 		si_data    => si_data,
 	
 		so_clk     => mii_txc,
