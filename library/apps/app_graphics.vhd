@@ -232,7 +232,7 @@ begin
 
 		signal meta_data      : std_logic_vector(metaram_data'range);
 		signal meta_avail     : std_logic;
-		signal meta_trdy      : std_logic;
+		signal meta_irdy      : std_logic;
 		signal meta_end       : std_logic;
 
 		signal acktx_irdy     : std_logic;
@@ -253,46 +253,40 @@ begin
 		signal tp_meta        : std_logic_vector(tp'range);
 	begin
 
-		-- siosin_e : entity hdl4fpga.sio_sin
-		-- port map (
-		-- 	sin_clk   => sin_clk,
-		-- 	sin_frm   => sin_frm,
-		-- 	sin_irdy  => sin_irdy,
-		-- 	sin_data  => sin_data,
-		-- 	data_frm  => data_frm,
-		-- 	data_ptr  => data_ptr,
-		-- 	data_irdy => data_irdy,
-		-- 	rgtr_frm  => rgtr_frm,
-		-- 	rgtr_irdy => rgtr_irdy,
-		-- 	rgtr_id   => rgtr_id,
-		-- 	rgtr_len  => rgtr_len,
-		-- 	rgtr_dv   => rgtr_dv,
-		-- 	rgtr_data => rgtr_data);
+		siosin_e : entity hdl4fpga.sio_sin
+		port map (
+			sin_clk   => sin_clk,
+			sin_frm   => sin_frm,
+			sin_irdy  => sin_irdy,
+			sin_data  => sin_data,
+			data_frm  => data_frm,
+			data_ptr  => data_ptr,
+			data_irdy => data_irdy,
+			rgtr_frm  => rgtr_frm,
+			rgtr_irdy => rgtr_irdy,
+			rgtr_id   => rgtr_id,
+			rgtr_len  => rgtr_len,
+			rgtr_dv   => rgtr_dv,
+			rgtr_data => rgtr_data);
 		rgtr_revs <= reverse(rgtr_data,8);
 
 		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
 		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
-		assert false
-			report "txn_buffer"
-			severity FAILURE;
-		-- metafifo_e : entity hdl4fpga.txn_buffer
-		-- generic map (
-		-- 	debug => false,
-		-- 	m => 8)
-		-- port map (
-		-- 	tp => tp_meta,
-		-- 	src_clk  => sin_clk,
-		-- 	src_frm  => rgtr_frm,
-		-- 	src_irdy => metaram_irdy,
-		-- 	src_data => metaram_data,
-		--
-		-- 	avail    => meta_avail,
-		-- 	dst_clk  => sout_clk,
-		-- 	dst_frm  => sout_frm,
-		-- 	dst_irdy => sout_trdy,
-		-- 	dst_trdy => meta_trdy,
-		-- 	dst_end  => meta_end,
-		-- 	dst_data => meta_data);
+		metafifo_e : entity hdl4fpga.fifo
+		generic map (
+			debug => false,
+			m     => 8)
+		port map (
+			tp       => tp_meta,
+			src_clk  => sin_clk,
+			src_frm  => rgtr_frm,
+			src_irdy => metaram_irdy,
+			src_data => metaram_data,
+		
+			dst_clk  => sout_clk,
+			dst_irdy => meta_irdy,
+			dst_trdy => sout_trdy,
+			dst_data => meta_data);
 
 		rx_b : block
 			signal ctlr_di_rdy: std_logic;
