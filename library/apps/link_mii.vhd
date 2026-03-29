@@ -26,7 +26,6 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
-use hdl4fpga.videopkg.all;
 
 entity link_mii is
 	generic (
