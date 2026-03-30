@@ -207,7 +207,6 @@ begin
 		signal rgtr_dv        : std_logic;
 		signal rgtr_data      : std_logic_vector(0 to max(32,ctlr_di'length)-1);
 		signal rgtr_revs      : std_logic_vector(rgtr_data'length-1 downto 0);	-- Xilinx ISE does'nt allow to use reverse_range
-		signal data_frm       : std_logic;
 		signal data_irdy      : std_logic;
 		signal data_ptr       : std_logic_vector(8-1 downto 0);
 
@@ -255,19 +254,12 @@ begin
 
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
-			sin_clk   => sin_clk,
-			sin_frm   => sin_frm,
-			sin_irdy  => sin_irdy,
-			sin_data  => sin_data,
-			data_frm  => data_frm,
-			data_ptr  => data_ptr,
-			data_irdy => data_irdy,
+			clk   => sin_clk,
+			frm   => sin_frm,
+			irdy  => sin_irdy,
+			data  => sin_data,
 			rgtr_frm  => rgtr_frm,
-			rgtr_irdy => rgtr_irdy,
-			rgtr_id   => rgtr_id,
-			rgtr_len  => rgtr_len,
-			rgtr_dv   => rgtr_dv,
-			rgtr_data => rgtr_data);
+			rgtr_irdy => rgtr_irdy);
 		rgtr_revs <= reverse(rgtr_data,8);
 
 		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
