@@ -195,61 +195,60 @@ begin
 		constant siobyte_size : natural := 8;
 		constant dataout_size : natural := 2*1024;
 
-		constant rid_ack      : std_logic_vector := x"01";
-		constant rid_dmaaddr  : std_logic_vector := x"16";
-		constant rid_dmalen   : std_logic_vector := x"17";
-		constant rid_dmadata  : std_logic_vector := x"18";
+		constant rid_ack          : string := "0x01";
+		constant rid_addr         : string := "0x16";
+		constant rid_length       : string := "0x17";
+		constant rid_data         : string := "0x18";
+		constant rid_baddr        : string := "0x19";
 
-		signal rgtr_frm       : std_logic;
-		signal rgtr_irdy      : std_logic;
-		signal rgtr_id        : std_logic_vector(8-1 downto 0);
-		signal rgtr_len       : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv        : std_logic;
-		signal rgtr_data      : std_logic_vector(0 to max(32,ctlr_di'length)-1);
-		signal rgtr_revs      : std_logic_vector(rgtr_data'length-1 downto 0);	-- Xilinx ISE does'nt allow to use reverse_range
-		signal data_irdy      : std_logic;
-		signal data_ptr       : std_logic_vector(8-1 downto 0);
+		signal rgtr_frm           : std_logic;
+		signal rgtr_irdy          : std_logic;
+		signal rgtr_id            : std_logic_vector(8-1 downto 0);
+		signal rgtr_len           : std_logic_vector(8-1 downto 0);
+		signal rgtr_dv            : std_logic;
+		signal rgtr_data          : std_logic_vector(0 to max(32,ctlr_di'length)-1);
+		signal data_irdy          : std_logic;
+		signal data_ptr           : std_logic_vector(8-1 downto 0);
 
-		signal rgtr_dmaack    : std_logic_vector(dmaio_ack'range);
-		signal rgtr_dmaaddr   : std_logic_vector(32-1 downto 0);
-		signal rgtr_dmalen    : std_logic_vector(24-1 downto 0);
-		signal sigrgtr_frm    : std_logic;
+		signal rgtr_dmaack        : std_logic_vector(dmaio_ack'range);
+		signal rgtr_dmaaddr       : std_logic_vector(32-1 downto 0);
+		signal rgtr_dmalen        : std_logic_vector(24-1 downto 0);
+		signal sigrgtr_frm        : std_logic;
 
-		signal metaram_irdy   : std_logic;
-		signal metaram_data   : std_logic_vector(sout_data'range);
+		signal rgtr0_irdy         : std_logic;
+		signal rgtr0_data         : std_logic_vector(sout_data'range);
 
-		signal dmasin_irdy    : std_logic;
-		signal dmadata_irdy   : std_logic;
-		signal dmadata_trdy   : std_logic;
-		signal rgtr_dmadata   : std_logic_vector(ctlr_di'length-1 downto 0);
-		signal datactlr_irdy  : std_logic;
-		signal dmaaddr_irdy   : std_logic;
-		signal dmaaddr_trdy   : std_logic;
-		signal dmaio_trdy     : std_logic;
-		signal dmaio_next     : std_logic;
-		signal dmaioaddr_irdy : std_logic;
+		signal dmasin_irdy        : std_logic;
+		signal dmadata_irdy       : std_logic;
+		signal dmadata_trdy       : std_logic;
+		signal rgtr_dmadata       : std_logic_vector(ctlr_di'length-1 downto 0);
+		signal datactlr_irdy      : std_logic;
+		signal dmaaddr_irdy       : std_logic;
+		signal dmaaddr_trdy       : std_logic;
+		signal dmaio_trdy         : std_logic;
+		signal dmaio_next         : std_logic;
+		signal dmaioaddr_irdy     : std_logic;
 
-		signal meta_data      : std_logic_vector(metaram_data'range);
-		signal meta_avail     : std_logic;
-		signal meta_irdy      : std_logic;
-		signal meta_end       : std_logic;
+		signal meta_data          : std_logic_vector(rgtr0_data'range);
+		signal meta_avail         : std_logic;
+		signal meta_irdy          : std_logic;
+		signal meta_end           : std_logic;
 
-		signal acktx_irdy     : std_logic;
-		signal acktx_trdy     : std_logic;
-		signal acktx_data     : std_logic_vector(rgtr_dmaack'range);
+		signal acktx_irdy         : std_logic;
+		signal acktx_trdy         : std_logic;
+		signal acktx_data         : std_logic_vector(rgtr_dmaack'range);
 
 		signal debug_dmacfgio_req : std_logic;
 		signal debug_dmacfgio_rdy : std_logic;
 		signal debug_dmaio_req    : std_logic;
 		signal debug_dmaio_rdy    : std_logic;
 
-		constant word_bits    : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
-		constant blword_bits  : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
+		constant word_bits        : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
+		constant blword_bits      : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
-		signal status         : std_logic_vector(0 to 8-1);
-		alias  status_rw      : std_logic is status(status'right);
+		signal status             : std_logic_vector(0 to 8-1);
+		alias  status_rw          : std_logic is status(status'right);
 
-		signal tp_meta        : std_logic_vector(tp'range);
 	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
@@ -260,132 +259,99 @@ begin
 			data  => sin_data,
 			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy);
-		rgtr_revs <= reverse(rgtr_data,8);
 
-		metaram_irdy <= rgtr_irdy and setif(rgtr_id=x"00");
-		metaram_data <= std_logic_vector(resize(unsigned(rgtr_data), metaram_data'length));
-		metafifo_e : entity hdl4fpga.fifo
+    	siodecode_e : entity hdl4fpga.sio_decode
+    	generic map (
+    		rids => "["    & 
+				"0x00"     & "," & 
+    			rid_ack    & "," &
+    			rid_addr   & "," &
+    			rid_length & "," &
+    			rid_data   & "," &
+    			rid_baddr  & "]")
+    	port map (
+    		clk        => sin_clk,
+    		frm        => rgtr_frm,
+    		irdy       => rgtr_irdy,
+    		trdy       => rgtr_trdy,
+    		data       => sin_data,
+    		rid_act    => rid_act,
+    		length_act => '0',
+    		pyl_act    => pyl_act,
+    		pyl_frm    => pyl_frms,
+    		pyl_irdy   => pyl_irdys);
+
+		rgtr0_e : entity hdl4fpga.fifo
 		generic map (
 			debug => false,
 			m     => 8)
 		port map (
-			tp       => tp_meta,
 			src_clk  => sin_clk,
-			src_frm  => rgtr_frm,
-			src_irdy => metaram_irdy,
-			src_data => metaram_data,
+			src_frm  => rgtr0_frm,
+			src_irdy => rgtr0_irdy,
+			src_data => sin_data,
 		
 			dst_clk  => sout_clk,
 			dst_irdy => meta_irdy,
 			dst_trdy => sout_trdy,
-			dst_data => meta_data);
+			dst_data => rgtr0_data);
 
-		rx_b : block
-			signal ctlr_di_rdy: std_logic;
-		begin
+		ack_e : entity hdl4fpga.sio_rgtr
+		port map (
+			rgtr_clk  => sin_clk,
+			rgtr_frm  => ,
+			rgtr_irdy => ,
+			rgtr_data => sin_data,
+			data      => rgtr_ack);
 
-			dmaaddr_irdy <= setif(rgtr_id=rid_dmaaddr) and rgtr_dv and rgtr_irdy;
-			rgtr_dmaaddr <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmaaddr'length)),8);
-			fifo_b : block
-				signal src_data : std_logic_vector(0 to rgtr_dmaaddr'length+rgtr_dmalen'length+rgtr_dmaack'length-1);
-				signal dst_data : std_logic_vector(src_data'range);
+		addr_e : entity hdl4fpga.sio_rgtr
+		port map (
+			rgtr_clk  => sin_clk,
+			rgtr_frm  => ,
+			rgtr_irdy => ,
+			rgtr_data => sin_data,
+			data      => rgtr_addr);
 
-			begin
+		length_e : entity hdl4fpga.sio_rgtr
+		generic map (
+			rid       => rid_length)
+		port map (
+			rgtr_clk  => sin_clk,
+			rgtr_frm  => ,
+			rgtr_irdy => ,
+			rgtr_data => sin_data,
+			data      => rgtr_length);
 
-				rgtr_ack_e : entity hdl4fpga.sio_rgtr
-				generic map (
-					rid       => rid_ack)
-				port map (
-					rgtr_clk  => sin_clk,
-					rgtr_dv   => rgtr_dv,
-					rgtr_id   => rgtr_id,
-					rgtr_data => rgtr_revs(rgtr_dmaack'length-1 downto 0),
-					data      => rgtr_dmaack);
+		baddr_e : entity hdl4fpga.sio_rgtr
+		port map (
+			rgtr_clk  => sin_clk,
+			rgtr_frm  => ,
+			rgtr_irdy => ,
+			rgtr_data => sin_data,
+			data      => rgtr_baddr);
 
-				rgtr_dmalen_e : entity hdl4fpga.sio_rgtr
-				generic map (
-					rid       => rid_dmalen)
-				port map (
-					rgtr_clk  => sin_clk,
-					rgtr_dv   => rgtr_dv,
-					rgtr_id   => rgtr_id,
-					rgtr_data => rgtr_revs(rgtr_dmalen'range),
-					data      => rgtr_dmalen);
+		dmadata_e : entity hdl4fpga.fifo
+		generic map (
+			max_depth  => fifodata_depth,
+			async_mode => true,
+			latency    => latencies_tab(profile).dmaio,
+			check_sov  => true,
+			check_dov  => true)
+		port map (
+			mode(0)  => ,
+			mode(1)  => ,
 
-				src_data <= rgtr_dmaaddr & rgtr_dmalen & rgtr_dmaack;
-				dmafifo_e : entity hdl4fpga.fifo
-				generic map (
-					max_depth  => 4,
-					latency    => 0,
-					check_sov  => false,
-					check_dov  => false)
-				port map (
-					mode(0)  => ctlr_inirdy,
-					mode(1)  => ctlr_inirdy,
+			src_clk  => sin_clk,
+			src_irdy => dmadata_irdy,
+			src_trdy => dmadata_trdy,
+			src_data => rgtr_dmadata,
 
-					src_clk  => sin_clk,
-					src_irdy => dmaaddr_irdy,
-					src_trdy => dmaaddr_trdy,
-					src_data => src_data,
+			dst_clk  => ctlr_clk,
+			dst_irdy => ctlr_di_rdy,
+			dst_trdy => ctlr_di_req,
+			dst_data => ctlr_di);
 
-					dst_clk  => sin_clk,
-					dst_irdy => dmaioaddr_irdy,
-					dst_trdy => dmaio_next,
-					dst_data => dst_data);
-
-
-				process(dst_data)
-					variable aux : unsigned(dst_data'range);
-				begin
-					aux := unsigned(dst_data);
-					aux(1 to rgtr_dmaaddr'length-1) := shift_right(aux(1 to rgtr_dmaaddr'length-1), word_bits);
-					dmaio_addr <= std_logic_vector(resize(aux(0 to rgtr_dmaaddr'length-1), dmaio_addr'length));
-					aux := aux sll rgtr_dmaaddr'length;
-					aux(0 to rgtr_dmalen'length-1) := shift_right(aux(0 to rgtr_dmalen'length-1),  word_bits);
-					dmaio_len <= std_logic_vector(resize(aux(0 to rgtr_dmalen'length-1), dmaio_len'length));
-					aux := aux sll rgtr_dmalen'length;
-					dmaio_ack <= std_logic_vector(resize(aux(0 to rgtr_dmaack'length-1), dmaio_ack'length));
-				end process;
-
-			end block;
-			dmaio_we   <= not dmaio_addr(dmaio_addr'left);
-			dmaio_next <= dmaio_trdy;
-
-			dmadata_irdy <= data_irdy and setif(rgtr_id=rid_dmadata) and setif(data_ptr(word_bits-1 downto 0)=(word_bits-1 downto 0 => '0'));
-			rgtr_dmadata <= reverse(std_logic_vector(resize(unsigned(rgtr_data), rgtr_dmadata'length)),8);
-			dmadata_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth  => fifodata_depth,
-				async_mode => true,
-				latency    => latencies_tab(profile).dmaio,
-				check_sov  => true,
-				check_dov  => true)
-			port map (
-				mode(0)  => ctlr_inirdy,
-				mode(1)  => ctlr_inirdy,
-
-				src_clk  => sin_clk,
-				src_irdy => dmadata_irdy,
-				src_trdy => dmadata_trdy,
-				src_data => rgtr_dmadata,
-
-				dst_clk  => ctlr_clk,
-				dst_irdy => ctlr_di_rdy,
-				dst_trdy => ctlr_di_req,
-				dst_data => ctlr_di);
-			ctlr_di_dv <= ctlr_di_req;
-
-			base_addr_e : entity hdl4fpga.sio_rgtr
-			generic map (
-				rid  => x"19")
-			port map (
-				rgtr_clk  => sin_clk,
-				rgtr_dv   => rgtr_dv,
-				rgtr_id   => rgtr_id,
-				rgtr_data => rgtr_data,
-				data      => base_addr);
-
-		end block;
+		ctlr_di_dv <= ctlr_di_req;
 
 		debug_dmacfgio_req <= dmacfgio_req xor  to_stdulogic(to_bit(dmacfgio_rdy));
 		debug_dmacfgio_rdy <= dmacfgio_req xnor to_stdulogic(to_bit(dmacfgio_rdy));
@@ -402,7 +368,6 @@ begin
 
 			dmacfg_req  => dmacfgio_req,
 			dmacfg_rdy  => dmacfgio_rdy,
-
 
 			ctlr_clk    => ctlr_clk,
 			dma_req     => dmaio_req,
@@ -431,21 +396,6 @@ begin
 				std_logic_vector(resize(unsigned(dmaio_len), trans_length'length)) &
 				dmaaddr_trdy & dmaioaddr_irdy & b"00000" & dmaio_addr(dmaio_addr'left);
 
-			acktx_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth => 4,
-				latency   => 1,
-				check_sov => true,
-				check_dov => true)
-			port map (
-				mode(0)   => ctlr_inirdy,
-				mode(1)   => ctlr_inirdy,
-				src_clk   => sin_clk,
-				src_irdy  => dmaio_next,
-				src_trdy  => open, --tp(6),
-				src_data  => src_data,
-
-				dst_clk   => sout_clk,
 				dst_irdy  => acktx_irdy,
 				dst_trdy  => acktx_trdy,
 				dst_data  => dst_data);
@@ -493,7 +443,7 @@ begin
 					sio_dmaio <=
 						reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
 						rid_ack     & x"00" & acktx_data &
-						rid_dmaaddr & x"00" & status, 8);
+						rid_addr & x"00" & status, 8);
 
 						if status_rw='1' then
 							pay_length := hdr_length + data_length;
