@@ -27,41 +27,21 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity sio_rgtr is
-	generic (
-		rid       : std_logic_vector(8-1 downto 0);
-		rgtr      : boolean := true);
 	port (
-		rgtr_clk  : in  std_logic;
-		rgtr_dv   : in  std_logic;
-		rgtr_id   : in  std_logic_vector;
-		rgtr_data : in  std_logic_vector;
+		clk  : in  std_logic;
+		frm  : in  std_logic;
+		irdy : in  std_logic;
+		trdy : out std_logic :='1';
+		data : in  std_logic_vector;
 
-		ena       : buffer std_logic;
-		dv        : out std_logic;
-		data      : out std_logic_vector);
+		value : out std_logic_vector);
 
 end;
 
 architecture def of sio_rgtr is
-
 begin
 
-	assert rgtr_id'length=rid'length
-	report "Length of rgtr_id must be " & natural'image(rid'length) & " long"
-	severity FAILURE;
-
-	ena <=
-	  setif(rgtr_id=reverse(rid), rgtr_dv) when rgtr_id'ascending else
-	  setif(rgtr_id=rid, rgtr_dv);
-
-	dv_p : process (rgtr_clk)
-	begin
-		if rising_edge(rgtr_clk) then
-			dv <= ena;
-		end if;
-	end process;
-
-	process (rgtr_clk, rgtr_data)
+	process (clk)
 
 		function xxx (
 			constant data : std_logic_vector;

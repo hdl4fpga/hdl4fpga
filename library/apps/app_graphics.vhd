@@ -195,80 +195,51 @@ begin
 		constant siobyte_size : natural := 8;
 		constant dataout_size : natural := 2*1024;
 
-		constant rid_ack          : string := "0x01";
-		constant rid_addr         : string := "0x16";
-		constant rid_length       : string := "0x17";
-		constant rid_data         : string := "0x18";
-		constant rid_baddr        : string := "0x19";
+		constant rid_ack    : string := "0x01";
+		constant rid_addr   : string := "0x16";
+		constant rid_length : string := "0x17";
+		constant rid_data   : string := "0x18";
+		constant rid_baddr  : string := "0x19";
+    	constant rgtr_id    : string := "[" & "0x00" & "," & rid_ack & "," & rid_addr & "," & rid_length & "," & rid_data & "," & rid_baddr & "]";
 
-		signal rgtr_frm           : std_logic;
-		signal rgtr_irdy          : std_logic;
-		signal rgtr_id            : std_logic_vector(8-1 downto 0);
-		signal rgtr_len           : std_logic_vector(8-1 downto 0);
-		signal rgtr_dv            : std_logic;
-		signal rgtr_data          : std_logic_vector(0 to max(32,ctlr_di'length)-1);
-		signal data_irdy          : std_logic;
-		signal data_ptr           : std_logic_vector(8-1 downto 0);
+		signal rgtr_frm     : std_logic;
+		signal rgtr_irdy    : std_logic;
 
-		signal rgtr_dmaack        : std_logic_vector(dmaio_ack'range);
-		signal rgtr_dmaaddr       : std_logic_vector(32-1 downto 0);
-		signal rgtr_dmalen        : std_logic_vector(24-1 downto 0);
-		signal sigrgtr_frm        : std_logic;
+		signal rgtr_frms   : std_logic_vector(0 to length(rids));
+		signal rgtr_irdys  : std_logic_vector(0 to length(rids));
+		alias  rgtr0_frm   is rgtr_frms(0);
+		alias  rgtr0_irdy  is rgtr_irdys(0);
+		alias  ack_irdy    is rgtr_frms(1);
+		alias  ack_irdy    is rgtr_irdys(1);
+		alias  addr_irdy   is rgtr_frms(2);
+		alias  addr_irdy   is rgtr_irdys(2);
+		alias  length_frm  is rgtr_frms(3);
+		alias  length_irdy is rgtr_irdys(3);
+		alias  data_frm    is rgtr_frms(4);
+		alias  data_irdy   is rgtr_irdys(4);
+		alias  baddr_frm   is rgtr_frms(4);
+		alias  baddr_irdy  is rgtr_irdys(4);
 
-		signal rgtr0_irdy         : std_logic;
-		signal rgtr0_data         : std_logic_vector(sout_data'range);
+		constant word_bits   : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
+		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
-		signal dmasin_irdy        : std_logic;
-		signal dmadata_irdy       : std_logic;
-		signal dmadata_trdy       : std_logic;
-		signal rgtr_dmadata       : std_logic_vector(ctlr_di'length-1 downto 0);
-		signal datactlr_irdy      : std_logic;
-		signal dmaaddr_irdy       : std_logic;
-		signal dmaaddr_trdy       : std_logic;
-		signal dmaio_trdy         : std_logic;
-		signal dmaio_next         : std_logic;
-		signal dmaioaddr_irdy     : std_logic;
-
-		signal meta_data          : std_logic_vector(rgtr0_data'range);
-		signal meta_avail         : std_logic;
-		signal meta_irdy          : std_logic;
-		signal meta_end           : std_logic;
-
-		signal acktx_irdy         : std_logic;
-		signal acktx_trdy         : std_logic;
-		signal acktx_data         : std_logic_vector(rgtr_dmaack'range);
-
-		signal debug_dmacfgio_req : std_logic;
-		signal debug_dmacfgio_rdy : std_logic;
-		signal debug_dmaio_req    : std_logic;
-		signal debug_dmaio_rdy    : std_logic;
-
-		constant word_bits        : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
-		constant blword_bits      : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
-
-		signal status             : std_logic_vector(0 to 8-1);
-		alias  status_rw          : std_logic is status(status'right);
+		signal status        : std_logic_vector(0 to 8-1);
+		alias  status_rw     : std_logic is status(status'right);
 
 	begin
 
 		siosin_e : entity hdl4fpga.sio_sin
 		port map (
-			clk   => sin_clk,
-			frm   => sin_frm,
-			irdy  => sin_irdy,
-			data  => sin_data,
+			clk       => sin_clk,
+			frm       => sin_frm,
+			irdy      => sin_irdy,
+			data      => sin_data,
 			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy);
 
     	siodecode_e : entity hdl4fpga.sio_decode
     	generic map (
-    		rids => "["    & 
-				"0x00"     & "," & 
-    			rid_ack    & "," &
-    			rid_addr   & "," &
-    			rid_length & "," &
-    			rid_data   & "," &
-    			rid_baddr  & "]")
+    		rids      => rids)
     	port map (
     		clk        => sin_clk,
     		frm        => rgtr_frm,
@@ -277,7 +248,6 @@ begin
     		data       => sin_data,
     		rid_act    => rid_act,
     		length_act => '0',
-    		pyl_act    => pyl_act,
     		pyl_frm    => pyl_frms,
     		pyl_irdy   => pyl_irdys);
 
@@ -292,17 +262,25 @@ begin
 			src_data => sin_data,
 		
 			dst_clk  => sout_clk,
-			dst_irdy => meta_irdy,
+			dst_irdy => ,
 			dst_trdy => sout_trdy,
 			dst_data => rgtr0_data);
 
-		ack_e : entity hdl4fpga.sio_rgtr
+		ack_e : entity hdl4fpga.serlzr
 		port map (
-			rgtr_clk  => sin_clk,
-			rgtr_frm  => ,
-			rgtr_irdy => ,
-			rgtr_data => sin_data,
-			data      => rgtr_ack);
+			src_clk   => sin_clk,
+			src_frm   => ack_frm,
+			src_irdy  => ack_irdy,
+			src__data => sin_data,
+			dst_data  => rgtr_ack);
+
+		addr_e : entity hdl4fpga.serlzr
+		port map (
+			src_clk   => sin_clk,
+			src_frm   => ack_frm,
+			src_irdy  => ack_irdy,
+			src__data => sin_data,
+			dst_data  => rgtr_ack);
 
 		addr_e : entity hdl4fpga.sio_rgtr
 		port map (
@@ -321,14 +299,6 @@ begin
 			rgtr_irdy => ,
 			rgtr_data => sin_data,
 			data      => rgtr_length);
-
-		baddr_e : entity hdl4fpga.sio_rgtr
-		port map (
-			rgtr_clk  => sin_clk,
-			rgtr_frm  => ,
-			rgtr_irdy => ,
-			rgtr_data => sin_data,
-			data      => rgtr_baddr);
 
 		dmadata_e : entity hdl4fpga.fifo
 		generic map (
@@ -351,14 +321,17 @@ begin
 			dst_trdy => ctlr_di_req,
 			dst_data => ctlr_di);
 
+		baddr_e : entity hdl4fpga.sio_rgtr
+		port map (
+			rgtr_clk  => sin_clk,
+			rgtr_frm  => ,
+			rgtr_irdy => ,
+			rgtr_data => sin_data,
+			data      => rgtr_baddr);
+
 		ctlr_di_dv <= ctlr_di_req;
 
-		debug_dmacfgio_req <= dmacfgio_req xor  to_stdulogic(to_bit(dmacfgio_rdy));
-		debug_dmacfgio_rdy <= dmacfgio_req xnor to_stdulogic(to_bit(dmacfgio_rdy));
-		debug_dmaio_req    <= dmaio_req    xor  to_stdulogic(to_bit(dmaio_rdy));
-		debug_dmaio_rdy    <= dmaio_req    xnor to_stdulogic(to_bit(dmaio_rdy));
-
-		dmasin_irdy <= to_stdulogic(to_bit(dmaioaddr_irdy));
+		dmasin_irdy <= dmaioaddr_irdy;
 		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
 		port map (
 			dmacfg_clk  => sin_clk,
@@ -376,9 +349,6 @@ begin
 		tx_b : block
 			signal trans_length  : unsigned(unsigned_num_bits(dataout_size-1)-1 downto 0);
 
-			signal src_data      : std_logic_vector(0 to dmaio_ack'length+trans_length'length+status'length-1);
-			signal dst_data      : std_logic_vector(src_data'range);
-
 			signal sio_dmaio     : std_logic_vector(0 to (2+((2+1)+(2+1)))*8-1);
 			signal siodmaio_irdy : std_logic;
 			signal siodmaio_trdy : std_logic;
@@ -387,7 +357,6 @@ begin
 
 			signal sodata_irdy   : std_logic;
 			signal sodata_trdy   : std_logic;
-			signal sodata_end    : std_logic;
 			signal sodata_data   : std_logic_vector(sout_data'range);
 
 		begin
@@ -398,40 +367,7 @@ begin
 
 				dst_irdy  => acktx_irdy,
 				dst_trdy  => acktx_trdy,
-				dst_data  => dst_data);
-
-			process (dst_data)
-				variable aux : unsigned(dst_data'range);
-			begin
-				aux := unsigned(dst_data);
-				acktx_data   <= std_logic_vector(aux(0 to acktx_data'length-1));
-				aux := aux sll acktx_data'length;
-				trans_length <= aux(0 to trans_length'length-1);
-				aux := aux sll trans_length'length;
-				status <= std_logic_vector(aux(0 to status'length-1));
-			end process;
-
-			process (sout_clk)
-			begin
-				if rising_edge(sout_clk) then
-					if ctlr_inirdy='0' then
-						sout_frm   <= '0';
-						acktx_trdy <= '0';
-					elsif sout_frm='0' then
-						if acktx_irdy='1' then
-							sout_frm <= meta_avail;
-						end if;
-						acktx_trdy <= '0';
-					elsif acktx_trdy='1' then
-						sout_frm   <= '0';
-						acktx_trdy <= '0';
-					elsif (sout_irdy and sout_trdy and sout_end)='1' then
-						acktx_trdy <= '1';
-					else
-						acktx_trdy <= '0';
-					end if;
-				end if;
-			end process;
+				dst_data  => dst_data;
 
 			process (sout_frm, sout_clk)
 				constant pfix_size   : natural := sio_dmaio'length/siobyte_size-2;
