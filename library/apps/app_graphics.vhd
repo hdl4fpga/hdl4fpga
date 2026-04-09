@@ -221,6 +221,10 @@ begin
 		alias  data_irdy   is rgtr_irdys(4);
 		alias  baddr_frm   is rgtr_frms(4);
 		alias  baddr_irdy  is rgtr_irdys(4);
+		signal rgtr0_data  : std_logic_vector(sin_data'range);
+		signal ack_rgtr    : std_logic_vector(0 to 8-1);
+		signal length_rgtr : std_logic_vector(0 to 24-1);
+		signal addr_rgtr   : std_logic_vector(0 to 24-1);
 
 		constant word_bits   : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
 		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
@@ -256,11 +260,15 @@ begin
 
 		rgtr0_e : entity hdl4fpga.fifo
 		generic map (
-			debug => false,
-			m     => 8)
+			max_depth  => 8,
+			latency    => latencies_tab(profile).dmaio,
+			check_sov  => true,
+			check_dov  => true)
 		port map (
+			mode(0)  => '-',
+			mode(1)  => '-',
+
 			src_clk  => sin_clk,
-			src_frm  => rgtr0_frm,
 			src_irdy => rgtr0_irdy,
 			src_data => sin_data,
 		
@@ -274,7 +282,7 @@ begin
 			src_clk   => sin_clk,
 			src_frm   => ack_frm,
 			src_irdy  => ack_irdy,
-			src__data => sin_data,
+			src_data => sin_data,
 			dst_data  => ack_rgtr);
 
 		addr_e : entity hdl4fpga.serlzr
@@ -282,18 +290,16 @@ begin
 			src_clk   => sin_clk,
 			src_frm   => ack_frm,
 			src_irdy  => ack_irdy,
-			src__data => sin_data,
+			src_data => sin_data,
 			dst_data  => addr_rgtr);
 
-		length_e : entity hdl4fpga.sio_rgtr
-		generic map (
-			rid       => rid_length)
+		length_e : entity hdl4fpga.serlzr
 		port map (
-			rgtr_clk  => sin_clk,
-			rgtr_frm  => length_frm,
-			rgtr_irdy => length_irdy,
-			rgtr_data => sin_data,
-			data      => length_rgtr);
+			src_clk  => sin_clk,
+			src_frm  => length_frm,
+			src_irdy => length_irdy,
+			src_data => sin_data,
+			dst_data => length_rgtr);
 
 		data_e : entity hdl4fpga.fifo
 		generic map (
@@ -303,8 +309,8 @@ begin
 			check_sov  => true,
 			check_dov  => true)
 		port map (
-			mode(0)  => ,
-			mode(1)  => ,
+			mode(0)  => '-',
+			mode(1)  => '-',
 
 			src_clk  => sin_clk,
 			src_irdy => dmadata_irdy,
