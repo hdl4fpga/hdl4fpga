@@ -193,7 +193,6 @@ begin
 	sio_b : block
 
 		constant siobyte_size : natural := 8;
-		constant dataout_size : natural := 2*1024;
 
 		constant rid_ack    : string := "0x01";
 		constant rid_addr   : string := "0x16";
@@ -283,19 +282,19 @@ begin
 
     		ack_e : entity hdl4fpga.serlzr
     		port map (
-    			src_clk   => sin_clk,
-    			src_frm   => ack_frm,
-    			src_irdy  => ack_irdy,
+    			src_clk  => sin_clk,
+    			src_frm  => ack_frm,
+    			src_irdy => ack_irdy,
     			src_data => sin_data,
-    			dst_data  => ack_rgtr);
+    			dst_data => ack_rgtr);
 
     		addr_e : entity hdl4fpga.serlzr
     		port map (
-    			src_clk   => sin_clk,
-    			src_frm   => ack_frm,
-    			src_irdy  => ack_irdy,
+    			src_clk  => sin_clk,
+    			src_frm  => ack_frm,
+    			src_irdy => ack_irdy,
     			src_data => sin_data,
-    			dst_data  => addr_rgtr);
+    			dst_data => addr_rgtr);
 
     		length_e : entity hdl4fpga.serlzr
     		port map (
@@ -336,22 +335,23 @@ begin
 
 		ctlr_di_dv <= ctlr_di_req;
 
-		dmasin_irdy <= dmaioaddr_irdy;
-		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
-		port map (
-			dmacfg_clk  => sin_clk,
-			ctlr_inirdy => ctlr_inirdy,
-			dmaio_irdy  => dmasin_irdy,
-			dmaio_trdy  => dmaio_trdy,
-
-			dmacfg_req  => dmacfgio_req,
-			dmacfg_rdy  => dmacfgio_rdy,
-
-			ctlr_clk    => ctlr_clk,
-			dma_req     => dmaio_req,
-			dma_rdy     => dmaio_rdy);
+		-- dmasin_irdy <= dmaioaddr_irdy;
+		-- sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
+		-- port map (
+			-- dmacfg_clk  => sin_clk,
+			-- ctlr_inirdy => ctlr_inirdy,
+			-- dmaio_irdy  => dmasin_irdy,
+			-- dmaio_trdy  => dmaio_trdy,
+-- 
+			-- dmacfg_req  => dmacfgio_req,
+			-- dmacfg_rdy  => dmacfgio_rdy,
+-- 
+			-- ctlr_clk    => ctlr_clk,
+			-- dma_req     => dmaio_req,
+			-- dma_rdy     => dmaio_rdy);
 
 		tx_b : block
+			constant dataout_size : natural := 2*1024;
 			signal trans_length  : unsigned(unsigned_num_bits(dataout_size-1)-1 downto 0);
 
 			signal sio_dmaio     : std_logic_vector(0 to (2+((2+1)+(2+1)))*8-1);
@@ -365,26 +365,22 @@ begin
 			signal sodata_data   : std_logic_vector(sout_data'range);
 
 		begin
-			src_data <=
-				dmaio_ack &
-				std_logic_vector(resize(unsigned(dmaio_len), trans_length'length)) &
-				dmaaddr_trdy & dmaioaddr_irdy & b"00000" & dmaio_addr(dmaio_addr'left);
+			-- src_data <=
+				-- ack_rgtr &
+				-- std_logic_vector(resize(unsigned(length_rgtr), trans_length'length)) &
+				-- b"00000" & dmaio_addr(dmaio_addr'left);
 
-				dst_irdy  => acktx_irdy,
-				dst_trdy  => acktx_trdy,
-				dst_data  => dst_data;
-
-			process (sout_frm, sout_clk)
+			process (sout_clk)
 				constant pfix_size   : natural := sio_dmaio'length/siobyte_size-2;
 				variable pay_length  : unsigned(trans_length'range);
 				variable data_length : unsigned(pay_length'range);
 				variable hdr_length  : unsigned(pay_length'range);
 			begin
 				if rising_edge(sout_clk) then
-					sio_dmaio <=
-						reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
-						rid_ack     & x"00" & acktx_data &
-						rid_addr & x"00" & status, 8);
+					-- sio_dmaio <=
+					-- 	reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
+					-- 	rid_ack  & x"00" & ack_rgtr &
+					-- 	rid_addr & x"00" & status, 8);
 
 						if status_rw='1' then
 							pay_length := hdr_length + data_length;
@@ -404,7 +400,6 @@ begin
 				end if;
 			end process;
 
-			siodmaio_irdy <= '0' when meta_end='0' else sout_trdy;
 			siodma_e : entity hdl4fpga.sio_mux
 			port map (
 				mux_data => sio_dmaio,
@@ -483,19 +478,6 @@ begin
 					end if;
 				end process;
 
-				process (sout_clk)
-				begin
-					if rising_edge(sout_clk) then
-						if acktx_irdy='1' then
-							if status_rw='1' then
-								fifo_req <= not fifo_rdy;
-								if acktx_trdy='1' then
-									fifo_rdy  <= fifo_req;
-								end if;
-							end if;
-						end if;
-					end if;
-				end process;
 				fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
 
 				sodata_trdy <=
@@ -514,27 +496,9 @@ begin
 
 					so_irdy   => sodata_irdy,
 					so_trdy   => sodata_trdy,
-					so_end    => sodata_end,
 					so_data   => sodata_data);
 
-			tp(1 to 8) <= (acktx_irdy, acktx_trdy, meta_end, siodmaio_end, status_rw, fifo_frm, dmaso_irdy, dmaso_trdy);
 			end block;
-
-			sout_irdy <=
-				meta_trdy     when     meta_end='0' else
-				siodmaio_trdy when siodmaio_end='0' else
-				'1'           when    status_rw='0' else
-				sodata_irdy;
-
-			sout_end  <=
-				'0' when     meta_end='0' else
-				'0' when siodmaio_end='0' else
-				'1' when    status_rw='0' else
-				sodata_end;
-			sout_data <=
-				meta_data     when     meta_end='0' else
-				siodmaio_data when siodmaio_end='0' else
-				reverse(sodata_data);
 
 		end block;
 	end block;
