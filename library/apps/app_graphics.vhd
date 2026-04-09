@@ -313,9 +313,8 @@ begin
 			mode(1)  => '-',
 
 			src_clk  => sin_clk,
-			src_irdy => dmadata_irdy,
-			src_trdy => dmadata_trdy,
-			src_data => rgtr_dmadata,
+			src_irdy => data_irdy,
+			src_data => sin_data,
 
 			dst_clk  => ctlr_clk,
 			dst_irdy => ctlr_di_rdy,
