@@ -199,7 +199,7 @@ begin
 		constant rid_length : string := "0x17";
 		constant rid_data   : string := "0x18";
 		constant rid_baddr  : string := "0x19";
-    	constant rids       : string := "[" & "0x00" & "," & rid_ack & "," & rid_addr & "," & rid_length & "," & rid_data & "," & rid_baddr & "]";
+		constant rids       : string := "[" & "0x00" & "," & rid_ack & "," & rid_addr & "," & rid_length & "," & rid_data & "," & rid_baddr & "]";
 
 		signal rid_act      : std_logic;
 		signal rgtr_frm     : std_logic;
@@ -232,105 +232,105 @@ begin
 			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy);
 
-    	siodecode_e : entity hdl4fpga.sio_decode
-    	generic map (
-    		rids      => rids)
-    	port map (
-    		clk        => sin_clk,
-    		frm        => rgtr_frm,
-    		irdy       => rgtr_irdy,
-    		trdy       => rgtr_trdy,
-    		data       => sin_data,
+		siodecode_e : entity hdl4fpga.sio_decode
+		generic map (
+			rids      => rids)
+		port map (
+			clk        => sin_clk,
+			frm        => rgtr_frm,
+			irdy       => rgtr_irdy,
+			trdy       => rgtr_trdy,
+			data       => sin_data,
 			rid_act    => rid_act,
-    		length_act => '0',
-    		pyl_frm    => rgtr_frms,
-    		pyl_irdy   => rgtr_irdys);
+			length_act => '0',
+			pyl_frm    => rgtr_frms,
+			pyl_irdy   => rgtr_irdys);
 
 		rx_b : block
-    		alias  rgtr0_frm   is rgtr_frms(0);
-    		alias  rgtr0_irdy  is rgtr_irdys(0);
-    		alias  ack_frm     is rgtr_frms(1);
-    		alias  ack_irdy    is rgtr_irdys(1);
-    		alias  addr_frm    is rgtr_frms(2);
-    		alias  addr_irdy   is rgtr_irdys(2);
-    		alias  length_frm  is rgtr_frms(3);
-    		alias  length_irdy is rgtr_irdys(3);
-    		alias  data_frm    is rgtr_frms(4);
-    		alias  data_irdy   is rgtr_irdys(4);
-    		alias  baddr_frm   is rgtr_frms(4);
-    		alias  baddr_irdy  is rgtr_irdys(4);
+			alias  rgtr0_frm   is rgtr_frms(0);
+			alias  rgtr0_irdy  is rgtr_irdys(0);
+			alias  ack_frm     is rgtr_frms(1);
+			alias  ack_irdy    is rgtr_irdys(1);
+			alias  addr_frm    is rgtr_frms(2);
+			alias  addr_irdy   is rgtr_irdys(2);
+			alias  length_frm  is rgtr_frms(3);
+			alias  length_irdy is rgtr_irdys(3);
+			alias  data_frm    is rgtr_frms(4);
+			alias  data_irdy   is rgtr_irdys(4);
+			alias  baddr_frm   is rgtr_frms(4);
+			alias  baddr_irdy  is rgtr_irdys(4);
 			signal ctlr_di_rdy : std_logic;
 		begin
-    		rgtr0_e : entity hdl4fpga.fifo
-    		generic map (
-    			max_depth  => 8,
-    			latency    => latencies_tab(profile).dmaio,
-    			check_sov  => true,
-    			check_dov  => true)
-    		port map (
-    			mode(0)  => '-',
-    			mode(1)  => '-',
+			rgtr0_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => 8,
+				latency    => latencies_tab(profile).dmaio,
+				check_sov  => true,
+				check_dov  => true)
+			port map (
+				mode(0)  => '-',
+				mode(1)  => '-',
 
-    			src_clk  => sin_clk,
-    			src_irdy => rgtr0_irdy,
-    			src_data => sin_data,
-    		
-    			dst_clk  => sout_clk,
-    			dst_irdy => open,
-    			dst_trdy => sout_trdy,
-    			dst_data => rgtr0_data);
+				src_clk  => sin_clk,
+				src_irdy => rgtr0_irdy,
+				src_data => sin_data,
+			
+				dst_clk  => sout_clk,
+				dst_irdy => open,
+				dst_trdy => sout_trdy,
+				dst_data => rgtr0_data);
 
-    		ack_e : entity hdl4fpga.serlzr
-    		port map (
-    			src_clk  => sin_clk,
-    			src_frm  => ack_frm,
-    			src_irdy => ack_irdy,
-    			src_data => sin_data,
-    			dst_data => ack_rgtr);
+			ack_e : entity hdl4fpga.serlzr
+			port map (
+				src_clk  => sin_clk,
+				src_frm  => ack_frm,
+				src_irdy => ack_irdy,
+				src_data => sin_data,
+				dst_data => ack_rgtr);
 
-    		addr_e : entity hdl4fpga.serlzr
-    		port map (
-    			src_clk  => sin_clk,
-    			src_frm  => ack_frm,
-    			src_irdy => ack_irdy,
-    			src_data => sin_data,
-    			dst_data => addr_rgtr);
+			addr_e : entity hdl4fpga.serlzr
+			port map (
+				src_clk  => sin_clk,
+				src_frm  => ack_frm,
+				src_irdy => ack_irdy,
+				src_data => sin_data,
+				dst_data => addr_rgtr);
 
-    		length_e : entity hdl4fpga.serlzr
-    		port map (
-    			src_clk  => sin_clk,
-    			src_frm  => length_frm,
-    			src_irdy => length_irdy,
-    			src_data => sin_data,
-    			dst_data => length_rgtr);
+			length_e : entity hdl4fpga.serlzr
+			port map (
+				src_clk  => sin_clk,
+				src_frm  => length_frm,
+				src_irdy => length_irdy,
+				src_data => sin_data,
+				dst_data => length_rgtr);
 
-    		data_e : entity hdl4fpga.fifo
-    		generic map (
-    			max_depth  => fifodata_depth,
-    			async_mode => true,
-    			latency    => latencies_tab(profile).dmaio,
-    			check_sov  => true,
-    			check_dov  => true)
-    		port map (
-    			mode(0)  => '-',
-    			mode(1)  => '-',
+			-- data_e : entity hdl4fpga.fifo
+			-- generic map (
+				-- max_depth  => fifodata_depth,
+				-- async_mode => true,
+				-- latency    => latencies_tab(profile).dmaio,
+				-- check_sov  => true,
+				-- check_dov  => true)
+			-- port map (
+				-- mode(0)  => '-',
+				-- mode(1)  => '-',
+-- 
+				-- src_clk  => sin_clk,
+				-- src_irdy => data_irdy,
+				-- src_data => sin_data,
+-- 
+				-- dst_clk  => ctlr_clk,
+				-- dst_irdy => ctlr_di_rdy,
+				-- dst_trdy => ctlr_di_req,
+				-- dst_data => ctlr_di);
 
-    			src_clk  => sin_clk,
-    			src_irdy => data_irdy,
-    			src_data => sin_data,
-
-    			dst_clk  => ctlr_clk,
-    			dst_irdy => ctlr_di_rdy,
-    			dst_trdy => ctlr_di_req,
-    			dst_data => ctlr_di);
-
-    		baddr_e : entity hdl4fpga.serlzr
-    		port map (
-    			src_clk  => sin_clk,
-    			src_frm  => '-',
-    			src_irdy => '-',
-    			src_data => sin_data,
-    			dst_data => baddr_rgtr);
+			baddr_e : entity hdl4fpga.serlzr
+			port map (
+				src_clk  => sin_clk,
+				src_frm  => '-',
+				src_irdy => '-',
+				src_data => sin_data,
+				dst_data => baddr_rgtr);
 		end block;
 
 		ctlr_di_dv <= ctlr_di_req;
