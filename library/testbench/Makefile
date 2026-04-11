@@ -116,8 +116,6 @@ HDL4FPGA__sio_sin__beh = $(LIB_HDL4FPGA)/sio_sin/beh.dat
 HDL4FPGA__sio_sin = $(LIB_HDL4FPGA)/sio_sin/_primary.dat
 HDL4FPGA__sio_rom__def = $(LIB_HDL4FPGA)/sio_rom/def.dat
 HDL4FPGA__sio_rom = $(LIB_HDL4FPGA)/sio_rom/_primary.dat
-HDL4FPGA__sio_rgtr__def = $(LIB_HDL4FPGA)/sio_rgtr/def.dat
-HDL4FPGA__sio_rgtr = $(LIB_HDL4FPGA)/sio_rgtr/_primary.dat
 HDL4FPGA__sio_ram__def = $(LIB_HDL4FPGA)/sio_ram/def.dat
 HDL4FPGA__sio_ram = $(LIB_HDL4FPGA)/sio_ram/_primary.dat
 HDL4FPGA__sio_muxcmp__def = $(LIB_HDL4FPGA)/sio_muxcmp/def.dat
@@ -449,8 +447,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__sio_sin) \
     $(HDL4FPGA__sio_rom__def) \
     $(HDL4FPGA__sio_rom) \
-    $(HDL4FPGA__sio_rgtr__def) \
-    $(HDL4FPGA__sio_rgtr) \
     $(HDL4FPGA__sio_ram__def) \
     $(HDL4FPGA__sio_ram) \
     $(HDL4FPGA__sio_muxcmp__def) \
@@ -1769,14 +1765,6 @@ $(HDL4FPGA__sio_ram__def) : ../sio/sio_ram.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../sio/sio_ram.vhd
-
-$(HDL4FPGA__sio_rgtr) \
-$(HDL4FPGA__sio_rgtr__def) : ../sio/sio_rgtr.vhd \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../sio/sio_rgtr.vhd
 
 $(HDL4FPGA__sio_rom) \
 $(HDL4FPGA__sio_rom__def) : ../sio/sio_rom.vhd \
