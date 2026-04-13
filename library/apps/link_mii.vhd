@@ -58,15 +58,6 @@ architecture graphics of link_mii is
 	signal dhcpcd_req : std_logic;
 	signal dhcpcd_rdy : std_logic;
 
-	signal miirx_frm  : std_logic;
-	signal miirx_irdy : std_logic;
-	signal miirx_data : std_logic_vector(mii_rxd'range);
-
-	signal miitx_frm  : std_logic;
-	signal miitx_irdy : std_logic;
-	signal miitx_end  : std_logic;
-	signal miitx_data : std_logic_vector(si_data'range);
-
 begin
 
 	dhcp_p : process(mii_txc)
@@ -99,14 +90,14 @@ begin
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
 		miirx_clk  => mii_txc,
-		miirx_frm  => miirx_frm,
-		miirx_irdy => miirx_irdy,
-		miirx_data => miirx_data,
+		miirx_frm  => mii_rxdv,
+		miirx_irdy => mii_rxdv,
+		miirx_data => mii_rxd,
 	
 		miitx_clk  => mii_txc,
-		miitx_frm  => miitx_frm,
-		miitx_irdy => miitx_irdy,
-		miitx_data => miitx_data,
+		miitx_frm  => mii_txen,
+		miitx_irdy => open,
+		miitx_data => mii_txd,
 	
 		si_frm     => si_frm,
 		si_irdy    => si_irdy,
