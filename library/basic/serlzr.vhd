@@ -38,7 +38,7 @@ entity serlzr is
 		src_data  : in  std_logic_vector;
 		dst_clk   : in  std_logic := '1';
 		dst_frm   : in  std_logic := '1';
-		dst_irdy  : buffer std_logic;
+		dst_irdy  : buffer std_logic := '0';
 		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector);
 end;

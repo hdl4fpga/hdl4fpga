@@ -95,6 +95,8 @@ begin
 	soudp_trdy <= '0' when sio_addr/='0' else so_trdy;
 
 	rxserlzr_e : entity hdl4fpga.serlzr
+	generic map (
+		lsdfirst => false)
 	port map (
 		src_clk  => miirx_clk,
 		src_frm  => miirx_frm,
