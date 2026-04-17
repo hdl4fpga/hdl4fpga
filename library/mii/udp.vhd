@@ -175,7 +175,9 @@ begin
 					      (sparx_frm and sparx_irdy)='1' or
 					   (sp_act or dp_act or pyl_act)='1' then
 						wr_ena  <= '1';
-						wr_cntr := wr_cntr + 1;
+						if udprx_irdy='1' then
+							wr_cntr := wr_cntr + 1;
+						end if;
 					else
 						wr_ena  <= '0';
 					end if;
@@ -191,10 +193,14 @@ begin
 					if pylrx_trdy='1' then
 						if pyl_act='1' then
 							rd_addr <= std_logic_vector(rd_cntr);
-							rd_cntr := rd_cntr + 1;
+							if udprx_irdy='1' then
+								rd_cntr := rd_cntr + 1;
+							end if;
 						elsif (pylrx_frm and pylrx_irdy)='1' then
 							rd_addr <= std_logic_vector(rd_cntr);
-							rd_cntr := rd_cntr + 1;
+							if udprx_irdy='1' then
+								rd_cntr := rd_cntr + 1;
+							end if;
 						end if;
 					end if;
 				end if;
