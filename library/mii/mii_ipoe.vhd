@@ -90,7 +90,7 @@ architecture def of mii_ipoe is
 	signal ipv4sharx_irdy : std_logic;
 
 	signal ipv4rx_frm    : std_logic;
-	alias  ipv4rx_irdy is ipv4rx_frm;
+	signal ipv4rx_irdy   : std_logic;
 	signal ipv4rx_data   : std_logic_vector(miirx_data'range);
 
 	signal eth_frms  : std_logic_vector(0 to 2-1);
@@ -294,6 +294,7 @@ begin
 
 	-- tp(1) <= ipv4rx_frm; --miirx_frm;
 	-- tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
+	ipv4rx_irdy <= ipv4rx_frm and miirx_irdy;
 	ipv4_i : entity hdl4fpga.ipv4
 	generic map (
 		hwaddr   => hwaddr,

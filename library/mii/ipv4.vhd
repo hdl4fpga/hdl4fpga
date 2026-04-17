@@ -94,7 +94,7 @@ architecture def of ipv4 is
 	signal icmprx_data    : std_logic_vector(ipv4rx_data'range);
 
 	signal udprx_frm      : std_logic;
-	alias  udprx_irdy     is udprx_frm;
+	signal udprx_irdy     : std_logic;
 	signal udprx_trdy     : std_logic;
 	signal udprx_data     : std_logic_vector(ipv4rx_data'range);
 
@@ -117,10 +117,10 @@ begin
 	rx_b : block
 		signal length_frm : std_logic;
 		signal proto_frm  : std_logic;
-		alias  proto_irdy is proto_frm;
+		alias  proto_irdy is ipv4rx_irdy;
 		signal spa_frm    : std_logic;
 		signal ipv4da_frm : std_logic;
-		alias  ipv4da_irdy is ipv4da_frm;
+		alias  ipv4da_irdy is ipv4rx_irdy;
 		signal pyl_frm    : std_logic;
 		signal discard0   : std_logic;
 		signal discard2   : std_logic;
@@ -653,6 +653,7 @@ begin
 		icmptx_trdy    => icmptx_trdy,
 		icmptx_data    => icmptx_data);
 
+	udprx_irdy <= udprx_frm and ipv4rx_irdy;
 	udp_i: entity hdl4fpga.udp
 	generic map (
 		hwaddr => hwaddr)

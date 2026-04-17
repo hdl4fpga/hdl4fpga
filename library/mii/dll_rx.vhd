@@ -101,9 +101,9 @@ begin
 		pyl_trdy when pyl_frm='1' else
 		'0';
 
-	da_irdy  <=  da_frm;
-	sa_irdy  <=  sa_frm;
-	typ_irdy <= typ_frm;
-	pyl_irdy <= pyl_frm;
+	da_irdy  <=  da_frm and dll_irdy;
+	sa_irdy  <=  sa_frm and dll_irdy;
+	typ_irdy <= typ_frm and dll_irdy;
+	pyl_irdy <= pyl_frm and dll_irdy;
 
 end;
