@@ -106,7 +106,13 @@ begin
 		dst_irdy => srzrx_irdy,
 		dst_data => srzrx_data);
 
-	srzrx_frm <= miirx_frm or srzrx_irdy;
+	process(miirx_clk)
+	begin
+		if rising_edge(miirx_clk) then
+			srzrx_frm <= miirx_frm;
+		end if;
+	end process;
+
 	sio_udp_e : entity hdl4fpga.sio_udp
 	generic map (
 		ipv4addr   => ipv4addr,

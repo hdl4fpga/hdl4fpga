@@ -80,7 +80,7 @@ architecture def of mii_ipoe is
 	signal ethpyl_irdy   : std_logic;
 
 	signal arprx_frm     : std_logic;
-	alias  arprx_irdy is arprx_frm;
+	alias  arprx_irdy is miirx_irdy;
 	signal arprx_data    : std_logic_vector(miirx_data'range);
 
 	signal arptha_frm    : std_logic;
@@ -90,7 +90,7 @@ architecture def of mii_ipoe is
 	signal ipv4sharx_irdy : std_logic;
 
 	signal ipv4rx_frm    : std_logic;
-	signal ipv4rx_irdy   : std_logic;
+	alias  ipv4rx_irdy is miirx_irdy;
 	signal ipv4rx_data   : std_logic_vector(miirx_data'range);
 
 	signal eth_frms  : std_logic_vector(0 to 2-1);
@@ -285,16 +285,18 @@ begin
 					typ_vld := '1';
 				end if;
 			end if;
-			ipv4sharx_frm  <= ethsa_frm;
-			ipv4sharx_irdy <= ethsa_irdy;
-			ipv4rx_frm     <= ethpyl_frm and da_vld and typ_vld;
-			ipv4rx_data    <= miirx_data;
+			if miirx_irdy='1' then
+				ipv4sharx_frm  <= ethsa_frm;
+				ipv4sharx_irdy <= ethsa_irdy;
+				ipv4rx_frm     <= ethpyl_frm and da_vld and typ_vld;
+				ipv4rx_data    <= miirx_data;
+			end if;
 		end if;
 	end process;
 
 	-- tp(1) <= ipv4rx_frm; --miirx_frm;
 	-- tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
-	ipv4rx_irdy <= ipv4rx_frm and miirx_irdy;
+	-- ipv4rx_irdy <= ipv4rx_frm and miirx_irdy;
 	ipv4_i : entity hdl4fpga.ipv4
 	generic map (
 		hwaddr   => hwaddr,
