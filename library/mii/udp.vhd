@@ -143,8 +143,12 @@ begin
 				if rising_edge(miirx_clk) then
 					if ne_addr then
 						if pyl_act='1' then
-							pylrx_frm  <= pyl_act;
-							pylrx_irdy <= pyl_act;
+							pylrx_frm <= pyl_act;
+							if udprx_frm='1' then
+								pylrx_irdy <= pyl_act and udprx_irdy;
+							else
+								pylrx_irdy <= pyl_act;
+							end if;
 						end if;
 					else
 						pylrx_frm  <= '0';
@@ -193,14 +197,12 @@ begin
 					if pylrx_trdy='1' then
 						if pyl_act='1' then
 							rd_addr <= std_logic_vector(rd_cntr);
-							if udprx_irdy='1' then
+							if pylrx_irdy='1' then
 								rd_cntr := rd_cntr + 1;
 							end if;
 						elsif (pylrx_frm and pylrx_irdy)='1' then
 							rd_addr <= std_logic_vector(rd_cntr);
-							if udprx_irdy='1' then
-								rd_cntr := rd_cntr + 1;
-							end if;
+							rd_cntr := rd_cntr + 1;
 						end if;
 					end if;
 				end if;
