@@ -281,6 +281,7 @@ begin
 						end if;
 					end if;
 					udprx_frm  <= ipv4rx_frm and pa_vld and udp_vld;
+					udprx_irdy <= ipv4rx_irdy;
 					udprx_data <= ipv4rx_data;
 				end if;
 			end process;
@@ -653,7 +654,6 @@ begin
 		icmptx_trdy    => icmptx_trdy,
 		icmptx_data    => icmptx_data);
 
-	udprx_irdy <= udprx_frm and ipv4rx_irdy;
 	udp_i: entity hdl4fpga.udp
 	generic map (
 		hwaddr => hwaddr)
