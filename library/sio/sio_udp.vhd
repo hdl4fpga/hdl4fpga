@@ -156,13 +156,13 @@ begin
 		variable shr_data : unsigned(prefix'range);
 	begin
 		if rising_edge(miirx_clk) then
-			if (udppylrx_frm or udppylrx_irdy)='1' then
+			if udppylrx_irdy='1' then
 				shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
 				shr_data := rotate_left(shr_data, udppylrx_data'length);
-			elsif (pylrx_frm or pylrx_irdy)='1' then
+			elsif pylrx_irdy='1' then
 				shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
 				shr_data := rotate_left(shr_data, udppylrx_data'length);
-			else
+			elsif (udppylrx_frm or pylrx_frm)='0' then
 				shr_data := reverse(prefix, 8);
 			end if;
 			shr_frm(0)  := udppylrx_frm;
