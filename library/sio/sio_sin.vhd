@@ -89,18 +89,22 @@ begin
 			if (frm or irdy)='1' then
 				if (irdy and trdy)='1' then
 					if length_act='1' then
-						cntr := resize(reverse(unsigned(data)), cntr'length)-1;
-					elsif cntr(0)='1' then
-						cntr := (others => '0');
+						algn := rotate_left(algn, data'length);
+						algn(data'range) := reverse(unsigned(data));
+						cntr(0) := '0';
 					elsif pyl_act='1' then
 						cntr := cntr - 1;
 					end if;
 				end if;
-			else
-				cntr := (others => '0');
 			end if;
 		end if;
-		rgtr_frm <= frm and (not cntr(0) or not irdy);
+		if cntr/=0 then
+			rgtr_frm <= frm;
+		elsif irdy='0' then
+			rgtr_frm <= frm;
+		else
+			rgtr_frm <= '0';
+		end if;
 	end process;
 	rgtr_irdy <= irdy;
 end;
