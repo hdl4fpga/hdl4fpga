@@ -78,7 +78,7 @@ begin
 	length_act <= length_irdy or length_frm;
 	pyl_act    <= pyl_irdy or pyl_frm;
 
-	process (frm, clk)
+	process (frm, irdy, clk)
 		-- variable cntr : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1); -- Xilinx ISE 14.7 bug
 		-- alias    algn : unsigned(0 to hdo(frame)**".length"-1) is cntr(1 to hdo(frame)**".length"); -- Xilinx ISE 14.7 bug
 		constant length : natural := hdo(frame)**".length"; -- Xilinx ISE 14.7 bug
@@ -89,8 +89,7 @@ begin
 			if (frm or irdy)='1' then
 				if (irdy and trdy)='1' then
 					if length_act='1' then
-						algn := rotate_left(algn, data'length);
-						algn(data'range) := reverse(unsigned(data));
+						cntr := resize(reverse(unsigned(data)), cntr'length)-1;
 					elsif cntr(0)='1' then
 						cntr := (others => '0');
 					elsif pyl_act='1' then
@@ -101,7 +100,7 @@ begin
 				cntr := (others => '0');
 			end if;
 		end if;
-		rgtr_frm <= frm and not cntr(0);
+		rgtr_frm <= frm and (not cntr(0) or not irdy);
 	end process;
 	rgtr_irdy <= irdy;
 end;
