@@ -96,6 +96,8 @@ begin
 						cntr := cntr - 1;
 					end if;
 				end if;
+			else
+				cntr(0) := '1';
 			end if;
 		end if;
 		if cntr/=0 then
