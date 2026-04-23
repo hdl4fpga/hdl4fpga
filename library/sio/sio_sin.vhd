@@ -78,7 +78,7 @@ begin
 	length_act <= length_irdy or length_frm;
 	pyl_act    <= pyl_irdy or pyl_frm;
 
-	process (frm, irdy, clk)
+	process (frm, irdy, length_act, clk)
 		-- variable cntr : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1); -- Xilinx ISE 14.7 bug
 		-- alias    algn : unsigned(0 to hdo(frame)**".length"-1) is cntr(1 to hdo(frame)**".length"); -- Xilinx ISE 14.7 bug
 		constant length : natural := hdo(frame)**".length"; -- Xilinx ISE 14.7 bug
@@ -97,7 +97,6 @@ begin
 					end if;
 				end if;
 			else
-				cntr(0) := '1';
 			end if;
 		end if;
 		if cntr/=0 then

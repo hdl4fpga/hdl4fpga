@@ -202,6 +202,7 @@ begin
 		constant rids       : string := "[" & "0x00" & "," & rid_ack & "," & rid_addr & "," & rid_length & "," & rid_data & "," & rid_baddr & "]";
 
 		signal rid_act      : std_logic;
+		signal pyl_act      : std_logic;
 		signal rgtr_frm     : std_logic;
 		signal rgtr_irdy    : std_logic;
 		signal rgtr_trdy    : std_logic;
@@ -229,6 +230,7 @@ begin
 			irdy      => sin_irdy,
 			data      => sin_data,
 			rid_act   => rid_act,
+			pyl_act   => pyl_act,
 			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy);
 
@@ -243,6 +245,7 @@ begin
 			data       => sin_data,
 			rid_act    => rid_act,
 			length_act => '0',
+			pyl_act    => pyl_act,
 			pyl_frm    => rgtr_frms,
 			pyl_irdy   => rgtr_irdys);
 
@@ -255,7 +258,7 @@ begin
 			alias  addr_irdy   is rgtr_irdys(2);
 			alias  length_frm  is rgtr_frms(3);
 			alias  length_irdy is rgtr_irdys(3);
-			alias  data_frm    is rgtr_frms(4);
+			alias  data_frm    is rgtr_irdys(4);
 			alias  data_irdy   is rgtr_irdys(4);
 			alias  baddr_frm   is rgtr_frms(4);
 			alias  baddr_irdy  is rgtr_irdys(4);
