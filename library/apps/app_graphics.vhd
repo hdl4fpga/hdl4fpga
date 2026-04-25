@@ -252,9 +252,9 @@ begin
 		rx_b : block
 			alias  rgtr0_frm   is rgtr_frms(0);
 			alias  rgtr0_irdy  is rgtr_irdys(0);
-			alias  ack_frm     is rgtr_frms(1);
+			signal ack_frm     : std_logic;
 			alias  ack_irdy    is rgtr_irdys(1);
-			alias  addr_frm    is rgtr_frms(2);
+			signal addr_frm    : std_logic;
 			alias  addr_irdy   is rgtr_irdys(2);
 			alias  length_frm  is rgtr_frms(3);
 			alias  length_irdy is rgtr_irdys(3);
@@ -283,6 +283,7 @@ begin
 				dst_trdy => sout_trdy,
 				dst_data => rgtr0_data);
 
+			ack_frm <= rgtr_frms(1) or rgtr_irdys(1);
 			ack_e : entity hdl4fpga.serlzr
 			port map (
 				src_clk  => sin_clk,
@@ -291,11 +292,12 @@ begin
 				src_data => sin_data,
 				dst_data => ack_rgtr);
 
+			addr_frm <= rgtr_frms(2) or rgtr_irdys(2);
 			addr_e : entity hdl4fpga.serlzr
 			port map (
 				src_clk  => sin_clk,
-				src_frm  => ack_frm,
-				src_irdy => ack_irdy,
+				src_frm  => addr_frm,
+				src_irdy => addr_irdy,
 				src_data => sin_data,
 				dst_data => addr_rgtr);
 

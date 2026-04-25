@@ -144,10 +144,8 @@ begin
 					if ne_addr then
 						if pyl_act='1' then
 							pylrx_frm <= pyl_act;
-							if udprx_frm='1' then
-								pylrx_irdy <= pyl_act and udprx_irdy;
-							else
-								pylrx_irdy <= pyl_act;
+							if (udprx_frm or udprx_irdy)='1' then
+								pylrx_irdy <= udprx_irdy;
 							end if;
 						end if;
 					else
@@ -188,23 +186,17 @@ begin
 				end if;
 
 				if rising_edge(miirx_clk) then
-					if init then
+					if (pylrx_frm or pylrx_irdy)='1' then
+						if (pylrx_trdy and pylrx_irdy)='1' then
+							rd_cntr := rd_cntr + 1;
+						end if;
+					elsif init then
 						if sharx_frm='1' then
 							rd_cntr := (others => '0');
 						end if;
 					end if;
 
-					if pylrx_trdy='1' then
-						if pyl_act='1' then
-							rd_addr <= std_logic_vector(rd_cntr);
-							if pylrx_irdy='1' then
-								rd_cntr := rd_cntr + 1;
-							end if;
-						elsif (pylrx_frm and pylrx_irdy)='1' then
-							rd_addr <= std_logic_vector(rd_cntr);
-							rd_cntr := rd_cntr + 1;
-						end if;
-					end if;
+					rd_addr <= std_logic_vector(rd_cntr);
 				end if;
 
 				if rising_edge(miirx_clk) then
