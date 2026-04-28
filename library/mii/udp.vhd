@@ -96,11 +96,11 @@ architecture def of udp is
 begin
 
 	rx_b : block
-		signal sp_act  : std_logic;
-		signal dp_act  : std_logic;
+		signal sp_frm  : std_logic;
+		signal dp_frm  : std_logic;
 		signal act2    : std_logic;
 		signal act3    : std_logic;
-		signal pyl_act : std_logic;
+		signal pyl_frm : std_logic;
 	begin
 
 		udp_i : entity hdl4fpga.frame_decode
@@ -115,101 +115,43 @@ begin
 			clk    => miirx_clk,
 			frm    => udprx_frm,
 			irdy   => udprx_irdy,
-			frms(0) => sp_act,
-			frms(1) => dp_act,
+			frms(0) => sp_frm,
+			frms(1) => dp_frm,
 			frms(2) => act2,
 			frms(3) => act3,
-			frms(4) => pyl_act);
+			frms(4) => pyl_frm);
 
 		fifo_b : block
-			signal ne_addr : boolean;
-			signal wr_ena  : std_logic;
-			signal wr_addr : std_logic_vector(0 to 5-1);
-			signal rd_addr : std_logic_vector(wr_addr'range);
-			signal wr_data : std_logic_vector(udprx_data'range);
+			signal src_irdy : std_logic;
+			signal commit   : std_logic;
+			signal rollback : std_logic;
 		begin
 
-			data_i : entity hdl4fpga.dpram
-			port map (
-				wr_clk  => miirx_clk,
-				wr_addr => wr_addr,
-				wr_ena  => wr_ena,
-				wr_data => wr_data,
-				rd_addr => rd_addr,
-				rd_data => pylrx_data);
+    		commit   <= udprx_frm;
+    		rollback <= '0';
+			src_irdy <= 
+				sharx_irdy when or sparx_irdy or udprx_irdy;
+    		fifo_i : entity hdl4fpga.fifo
+    		generic map (
+    			latency   => 1,
+    			check_sov => true,
+    			check_dov => true,
+    			max_depth => (2048*8)/udprx_data'length)
+    		port map (
+    			src_clk  => miirx_clk,
+    			src_irdy => src_irdy,
+    			src_trdy => udprx_trdy,
+    			src_data => udprx_data,
 
-			process (miirx_clk)
-			begin
-				if rising_edge(miirx_clk) then
-					if ne_addr then
-						if pyl_act='1' then
-							pylrx_frm <= pyl_act;
-							if (udprx_frm or udprx_irdy)='1' then
-								pylrx_irdy <= udprx_irdy;
-							end if;
-						end if;
-					else
-						pylrx_frm  <= '0';
-						pylrx_irdy <= '0';
-					end if;
-				end if;
-			end process;
+    			mode(0)  => commit,
+    			mode(1)  => rollback,
 
-			process (miirx_clk)
-				variable init    : boolean;
-				variable wr_cntr : unsigned (wr_addr'range);
-				variable rd_cntr : unsigned (rd_addr'range);
-			begin
-				if rising_edge(miirx_clk) then
-					ne_addr <= wr_cntr /= (rd_cntr+1);
-				end if;
+    			dst_clk  => miirx_clk,
+    			dst_irdy => pylrx_irdy,
+    			dst_trdy => pylrx_trdy,
+				dst_data => pylrx_data);
+			pylrx_frm <= pylrx_irdy;
 
-				if rising_edge(miirx_clk) then
-					if init then
-						if sharx_frm='1' then
-							wr_cntr := (others => '0');
-						end if;
-					end if;
-
-					wr_addr <= std_logic_vector(wr_cntr);
-					wr_data <= udprx_data;
-					if    (sharx_frm and sharx_irdy)='1' or
-					      (sparx_frm and sparx_irdy)='1' or
-					   (sp_act or dp_act or pyl_act)='1' then
-						wr_ena  <= '1';
-						if udprx_irdy='1' then
-							wr_cntr := wr_cntr + 1;
-						end if;
-					else
-						wr_ena  <= '0';
-					end if;
-				end if;
-
-				if rising_edge(miirx_clk) then
-					if (pylrx_frm or pylrx_irdy)='1' then
-						if (pylrx_trdy and pylrx_irdy)='1' then
-							rd_cntr := rd_cntr + 1;
-						end if;
-					elsif init then
-						if sharx_frm='1' then
-							rd_cntr := (others => '0');
-						end if;
-					end if;
-
-					rd_addr <= std_logic_vector(rd_cntr);
-				end if;
-
-				if rising_edge(miirx_clk) then
-					if init then
-						if sharx_frm='1' then
-							init := false;
-						end if;
-					elsif sharx_frm='0' then
-						init := true;
-					end if;
-				end if;
-
-			end process;
 		end block;
 
 		dhcpcd_b : block
@@ -220,13 +162,13 @@ begin
 				bitdata => reverse(hdo(frames)**".data.dhcp.offer.sp",8))
 			port map (
 				mii_clk => miirx_clk,
-				frm     => sp_act,
-				irdy    => sp_act,
+				frm     => sp_frm,
+				irdy    => sp_frm,
 				trdy    => open,
 				data    => udprx_data,
 				equ     => dhcpcd_equ);
 
-			sp_p : process (pyl_act, miirx_clk)
+			sp_p : process (pyl_frm, miirx_clk)
 				variable sp_vld : std_logic := '0';
 			begin
 				if rising_edge(miirx_clk) then
@@ -236,7 +178,7 @@ begin
 						sp_vld := '1';
 					end if;
 				end if;
-				dhcpcdrx_frm <= pyl_act and sp_vld;
+				dhcpcdrx_frm <= pyl_frm and sp_vld;
 			end process;
 
 			dhcpcdrx_data <= udprx_data;
