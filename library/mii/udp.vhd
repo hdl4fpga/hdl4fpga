@@ -127,28 +127,32 @@ begin
 			signal rollback : std_logic;
 		begin
 
-    		commit   <= udprx_frm;
-    		rollback <= '0';
+			-- commit   <= udprx_frm;
+			-- rollback <= '0';
 			src_irdy <= 
-				sharx_irdy when or sparx_irdy or udprx_irdy;
-    		fifo_i : entity hdl4fpga.fifo
-    		generic map (
-    			latency   => 1,
-    			check_sov => true,
-    			check_dov => true,
-    			max_depth => (2048*8)/udprx_data'length)
-    		port map (
-    			src_clk  => miirx_clk,
-    			src_irdy => src_irdy,
-    			src_trdy => udprx_trdy,
-    			src_data => udprx_data,
+				(sharx_irdy and sharx_frm) or
+				(sparx_irdy and sparx_frm) or
+				(udprx_irdy and sp_frm)    or
+				(udprx_irdy and dp_frm)    or
+				(udprx_irdy and pyl_frm);
+			fifo_i : entity hdl4fpga.fifo
+			generic map (
+				latency   => 1,
+				check_sov => true,
+				check_dov => true,
+				max_depth => (2048*8)/udprx_data'length)
+			port map (
+				src_clk  => miirx_clk,
+				src_irdy => src_irdy,
+				src_trdy => udprx_trdy,
+				src_data => udprx_data,
 
-    			mode(0)  => commit,
-    			mode(1)  => rollback,
+				mode(0)  => commit,
+				mode(1)  => rollback,
 
-    			dst_clk  => miirx_clk,
-    			dst_irdy => pylrx_irdy,
-    			dst_trdy => pylrx_trdy,
+				dst_clk  => miirx_clk,
+				dst_irdy => pylrx_irdy,
+				dst_trdy => pylrx_trdy,
 				dst_data => pylrx_data);
 			pylrx_frm <= pylrx_irdy;
 
