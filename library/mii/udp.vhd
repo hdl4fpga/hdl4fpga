@@ -123,12 +123,12 @@ begin
 
 		fifo_b : block
 			signal src_irdy : std_logic;
-			signal commit   : std_logic;
-			signal rollback : std_logic;
+			signal commit   : std_logic := '0';
+			signal rollback : std_logic := '1';
 		begin
 
-			-- commit   <= udprx_frm;
-			-- rollback <= '0';
+			commit    <= '1';
+			rollback  <= not udprx_frm;
 			src_irdy <= 
 				(sharx_irdy and sharx_frm) or
 				(sparx_irdy and sparx_frm) or

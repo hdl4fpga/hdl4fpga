@@ -85,7 +85,7 @@ architecture def of ipv4 is
 	signal ipv4lenrx_trdy : std_logic := '1';
 
 	signal sparx_frm      : std_logic;
-	alias  sparx_irdy  is sparx_frm;
+	signal sparx_irdy     : std_Logic;
 	signal sparx_trdy     : std_logic := '1';
 
 	signal icmprx_frm     : std_logic;
@@ -162,6 +162,7 @@ begin
 				tha1rx_irdy   <= sharx_irdy;
 				ipv4lenrx_frm <= length_frm;
 				sparx_frm     <= spa_frm;
+				sparx_irdy    <= ipv4rx_irdy;
 			end if;
 		end process;
 
