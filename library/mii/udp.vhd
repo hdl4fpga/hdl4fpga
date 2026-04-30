@@ -123,8 +123,9 @@ begin
 
 		fifo_b : block
 			signal src_irdy : std_logic;
-			signal commit   : std_logic := '0';
-			signal rollback : std_logic := '1';
+			signal src_data : std_logic_vector(udprx_data'range);
+			signal commit   : std_logic;
+			signal rollback : std_logic;
 		begin
 
 			process (miirx_clk)
@@ -141,7 +142,7 @@ begin
 						elsif udprx_frm='1' then
 							commit   <= '1';
 							rollback <= '0';
-						else
+						elsif pylrx_irdy='0' then
 							commit   <= '0';
 							rollback <= '0';
 						end if;
@@ -155,15 +156,29 @@ begin
 							rollback <= '1';
 						end if;
 					end case;
+					src_irdy <= 
+						(sharx_irdy and sharx_frm) or
+						(sparx_irdy and sparx_frm) or
+						(udprx_irdy and sp_frm)    or
+						(udprx_irdy and dp_frm)    or
+						(udprx_irdy and pyl_frm);
+					src_data <= udprx_data;
 				end if;
 			end process;
 
-			src_irdy <= 
-				(sharx_irdy and sharx_frm) or
-				(sparx_irdy and sparx_frm) or
-				(udprx_irdy and sp_frm)    or
-				(udprx_irdy and dp_frm)    or
-				(udprx_irdy and pyl_frm);
+			process (miirx_clk)
+			begin
+				if rising_edge(miirx_clk) then
+					if (udprx_frm or src_irdy)='1' then
+						pylrx_frm <= '1';
+					elsif pylrx_frm='1' then
+						if (pylrx_irdy and pylrx_trdy)='1' then
+							pylrx_frm <= '0';
+						end if;
+					end if;
+				end if;
+			end process;
+
 			fifo_i : entity hdl4fpga.fifo
 			generic map (
 				latency   => 1,
@@ -174,7 +189,7 @@ begin
 				src_clk  => miirx_clk,
 				src_irdy => src_irdy,
 				src_trdy => udprx_trdy,
-				src_data => udprx_data,
+				src_data => src_data,
 
 				mode(0)  => commit,
 				mode(1)  => rollback,
@@ -183,7 +198,6 @@ begin
 				dst_irdy => pylrx_irdy,
 				dst_trdy => pylrx_trdy,
 				dst_data => pylrx_data);
-			pylrx_frm <= pylrx_irdy;
 
 		end block;
 

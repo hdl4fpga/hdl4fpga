@@ -400,8 +400,10 @@ begin
 	begin
 		if rising_edge(dst_clk) then
 			if feed_ena='1' then
-				if dst_irdy1='1' or not check_dov then
-					rd_cntr <= rd_cntr + 1;
+				if mode/=flush then
+					if dst_irdy1='1' or not check_dov then
+						rd_cntr <= rd_cntr + 1;
+					end if;
 				end if;
 			end if;
 		end if;
