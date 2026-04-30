@@ -127,8 +127,37 @@ begin
 			signal rollback : std_logic := '1';
 		begin
 
-			commit    <= '1';
-			rollback  <= not udprx_frm;
+			process (miirx_clk)
+				type states is (s_flush, s_commit);
+				variable state : states;
+			begin
+				if rising_edge(miirx_clk) then
+					case state is
+					when s_flush =>
+						if sharx_frm='1' then
+    						commit   <= '0';
+    						rollback <= '0';
+							state := s_commit;
+						elsif udprx_frm='1' then
+							commit   <= '1';
+							rollback <= '0';
+						else
+							commit   <= '0';
+							rollback <= '0';
+						end if;
+					when s_commit =>
+						if udprx_frm='1' then
+							commit   <= '1';
+							rollback <= '0';
+							state := s_flush;
+						else
+							commit   <= '1';
+							rollback <= '1';
+						end if;
+					end case;
+				end if;
+			end process;
+
 			src_irdy <= 
 				(sharx_irdy and sharx_frm) or
 				(sparx_irdy and sparx_frm) or
