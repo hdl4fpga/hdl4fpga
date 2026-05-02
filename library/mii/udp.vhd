@@ -60,8 +60,8 @@ entity udp is
 		udprx_trdy : out std_logic := '0';
 		udprx_data : in  std_logic_vector;
 
-		pylrx_frm  : buffer std_logic;
-		pylrx_irdy : buffer std_logic;
+		pylrx_frm  : buffer std_logic := '0';
+		pylrx_irdy : buffer std_logic := '0';
 		pylrx_trdy : in  std_logic := '1';
 		pylrx_data : out std_logic_vector;
 
