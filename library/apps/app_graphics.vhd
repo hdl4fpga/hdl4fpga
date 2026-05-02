@@ -256,7 +256,7 @@ begin
 			alias  ack_irdy    is rgtr_irdys(1);
 			signal addr_frm    : std_logic;
 			alias  addr_irdy   is rgtr_irdys(2);
-			alias  length_frm  is rgtr_frms(3);
+			signal length_frm  : std_logic;
 			alias  length_irdy is rgtr_irdys(3);
 			alias  data_frm    is rgtr_irdys(4);
 			alias  data_irdy   is rgtr_irdys(4);
@@ -301,6 +301,7 @@ begin
 				src_data => sin_data,
 				dst_data => addr_rgtr);
 
+			length_frm <= rgtr_frms(3) or rgtr_irdys(3);
 			length_e : entity hdl4fpga.serlzr
 			port map (
 				src_clk  => sin_clk,
