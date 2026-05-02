@@ -156,8 +156,8 @@ begin
 		variable shr_data : unsigned(prefix'range);
 	begin
 		if rising_edge(miirx_clk) then
-    		if shr_frm(0)='0' then
-    			if udppylrx_frm='1' then
+    		if udppylrx_frm='1' then
+				if shr_frm(0)='0' then
 					if udppylrx_irdy='1' then
 						shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
 						shr_data := rotate_left(shr_data, udppylrx_data'length);
@@ -165,21 +165,24 @@ begin
 						shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
 						shr_data := rotate_left(shr_data, udppylrx_data'length);
 					end if;
-					shr_frm(0)  := udppylrx_frm;
-					shr_irdy(0) := udppylrx_irdy;
-					shr_frm  := rotate_left(shr_frm,  1);
-					shr_irdy := rotate_left(shr_irdy, 1);
-    			else
-					shr_data := reverse(prefix, 8);
-					shr_irdy := (others => '1');
-    			end if;
-    		else
+				else
+					shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
+					shr_data := rotate_left(shr_data, udppylrx_data'length);
+				end if;
 				shr_frm(0)  := udppylrx_frm;
 				shr_irdy(0) := udppylrx_irdy;
 				shr_frm  := rotate_left(shr_frm,  1);
 				shr_irdy := rotate_left(shr_irdy, 1);
+			elsif shr_frm(0)='1' then
 				shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
 				shr_data := rotate_left(shr_data, udppylrx_data'length);
+				shr_frm(0)  := udppylrx_frm;
+				shr_irdy(0) := udppylrx_irdy;
+				shr_frm  := rotate_left(shr_frm,  1);
+				shr_irdy := rotate_left(shr_irdy, 1);
+			else
+				shr_data := reverse(prefix, 8);
+				shr_irdy := (others => '1');
     		end if;
 		end if;
 		pylrx_frm <= udppylrx_frm or shr_frm(0);
