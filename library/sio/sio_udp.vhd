@@ -151,27 +151,47 @@ begin
 
 	process (udppylrx_frm, udppylrx_irdy, miirx_clk)
 		constant prefix   : unsigned := x"00" & to_unsigned(summation(hdo(frames)**".format.pyl")/8-1,8);
-		variable shr_frm  : unsigned(0 to prefix'length/miirx_data'length-1);
+		variable shr_frm  : unsigned(0 to prefix'length/miirx_data'length-1) := (others => '0');
 		variable shr_irdy : unsigned(shr_frm'range);
 		variable shr_data : unsigned(prefix'range);
 	begin
 		if rising_edge(miirx_clk) then
-			if udppylrx_irdy='1' then
+    		if shr_frm(0)='0' then
+    			if udppylrx_frm='1' then
+					if udppylrx_irdy='1' then
+						shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
+						shr_data := rotate_left(shr_data, udppylrx_data'length);
+					elsif shr_irdy(0)='1' then
+						shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
+						shr_data := rotate_left(shr_data, udppylrx_data'length);
+					end if;
+					shr_frm(0)  := udppylrx_frm;
+					shr_irdy(0) := udppylrx_irdy;
+					shr_frm  := rotate_left(shr_frm,  1);
+					shr_irdy := rotate_left(shr_irdy, 1);
+    			else
+					shr_data := reverse(prefix, 8);
+					shr_irdy := (others => '1');
+    			end if;
+    		else
+				shr_frm(0)  := udppylrx_frm;
+				shr_irdy(0) := udppylrx_irdy;
+				shr_frm  := rotate_left(shr_frm,  1);
+				shr_irdy := rotate_left(shr_irdy, 1);
 				shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
 				shr_data := rotate_left(shr_data, udppylrx_data'length);
-			elsif pylrx_irdy='1' then
-				shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
-				shr_data := rotate_left(shr_data, udppylrx_data'length);
-			elsif (udppylrx_frm or pylrx_frm)='0' then
-				shr_data := reverse(prefix, 8);
-			end if;
-			shr_frm(0)  := udppylrx_frm;
-			shr_irdy(0) := udppylrx_irdy;
-			shr_frm     := rotate_left(shr_frm,  1);
-			shr_irdy    := rotate_left(shr_irdy, 1);
+    		end if;
 		end if;
-		pylrx_frm  <= udppylrx_frm  or shr_frm(0);
-		pylrx_irdy <= udppylrx_irdy or shr_irdy(0);
+		pylrx_frm <= udppylrx_frm or shr_frm(0);
+		if shr_frm(0)='0' then
+			if udppylrx_frm='1' then
+				pylrx_irdy <= udppylrx_irdy or shr_irdy(0);
+			else
+				pylrx_irdy <= '0';
+			end if;
+		else
+			pylrx_irdy <= shr_irdy(0);
+		end if;
 		pylrx_data <= std_logic_vector(shr_data(0 to udppylrx_data'length-1));
 	end process;
 
