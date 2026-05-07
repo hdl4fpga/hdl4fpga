@@ -374,9 +374,9 @@ begin
 			signal sodata_data   : std_logic_vector(sout_data'range);
 
 			constant pfix_size   : unsigned := to_unsigned(sio_dmaio'length/siobyte_size-2, trans_length'length);
-			signal pay_length    : unsigned(pfix_size'range);
-			signal data_length   : unsigned(pay_length'range);
-			signal hdr_length    : unsigned(pay_length'range);
+			signal pay_length    : unsigned(trans_length'range);
+			signal data_length   : unsigned(trans_length'range);
+			signal hdr_length    : unsigned(trans_length'range);
 		begin
 			-- src_data <=
 				-- ack_rgtr &
