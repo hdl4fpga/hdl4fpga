@@ -265,15 +265,16 @@ begin
 			alias  baddr_irdy  is rgtr_irdys(4);
 			signal ctlr_di_rdy : std_logic;
 		begin
+			
 			rgtr0_e : entity hdl4fpga.fifo
 			generic map (
-				max_depth  => 8,
+				max_depth  => (8*32)/sin_data'length,
 				latency    => latencies_tab(profile).dmaio,
 				check_sov  => true,
 				check_dov  => true)
 			port map (
-				mode(0)  => '-',
-				mode(1)  => '-',
+				mode(0)  => ctlr_inirdy,
+				mode(1)  => '0',
 
 				src_clk  => sin_clk,
 				src_irdy => rgtr0_irdy,
@@ -372,51 +373,58 @@ begin
 			signal sodata_trdy   : std_logic;
 			signal sodata_data   : std_logic_vector(sout_data'range);
 
+			constant pfix_size   : unsigned := to_unsigned(sio_dmaio'length/siobyte_size-2, trans_length'length);
+			signal pay_length    : unsigned(pfix_size'range);
+			signal data_length   : unsigned(pay_length'range);
+			signal hdr_length    : unsigned(pay_length'range);
 		begin
 			-- src_data <=
 				-- ack_rgtr &
 				-- std_logic_vector(resize(unsigned(length_rgtr), trans_length'length)) &
 				-- b"00000" & dmaio_addr(dmaio_addr'left);
-
-			process (sout_clk)
-				constant pfix_size   : natural := sio_dmaio'length/siobyte_size-2;
-				variable pay_length  : unsigned(trans_length'range);
-				variable data_length : unsigned(pay_length'range);
-				variable hdr_length  : unsigned(pay_length'range);
-			begin
-				if rising_edge(sout_clk) then
 					-- sio_dmaio <=
 					-- 	reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
 					-- 	rid_ack  & x"00" & ack_rgtr &
 					-- 	rid_addr & x"00" & status, 8);
 
-						if status_rw='1' then
-							pay_length := hdr_length + data_length;
-						else
-							pay_length := to_unsigned(pfix_size, pay_length'length);
-						end if;
-
-						hdr_length  := shift_right(unsigned(trans_length), blword_bits-word_bits);
-						hdr_length  := hdr_length srl (unsigned_num_bits(256-1)-blword_bits);
-						hdr_length  := hdr_length + 1;
-						hdr_length  := hdr_length sll 1;
-
-						data_length := shift_right(unsigned(trans_length), blword_bits-word_bits); 
-						data_length := data_length sll blword_bits;
-						data_length := data_length + (pfix_size + 2**blword_bits);
-
+			process (sout_clk)
+				variable value : unsigned(pay_length'range);
+			begin
+				if rising_edge(sout_clk) then
+					value := shift_right(unsigned(trans_length), blword_bits-word_bits);
+					value := value srl (unsigned_num_bits(256-1)-blword_bits);
+					value := value + 1;
+					value := value sll 1;
+					hdr_length <= value;
 				end if;
 			end process;
 
-			siodma_e : entity hdl4fpga.sio_mux
-			port map (
-				mux_data => sio_dmaio,
-				sio_clk  => sout_clk,
-				sio_frm  => sout_frm,
-				sio_irdy => siodmaio_irdy,
-				sio_trdy => siodmaio_trdy,
-				so_end   => siodmaio_end,
-				so_data  => siodmaio_data);
+			process (sout_clk)
+				variable value : unsigned(pay_length'range);
+			begin
+				if rising_edge(sout_clk) then
+					value := shift_right(unsigned(trans_length), blword_bits-word_bits); 
+					value := data_length sll blword_bits;
+					value := data_length + (pfix_size + 2**blword_bits);
+					data_length <= value;
+				end if;
+			end process;
+
+			pay_length <= 
+				hdr_length + data_length when status_rw='1' else
+				pfix_size;
+
+			-- siodma_e : entity hdl4fpga.serlzr
+			-- port map (
+				-- src_clk  => sout_clk,
+				-- src_frm  => sout_frm,
+				-- src_irdy => siodmaio_irdy,
+				-- src_trdy => siodmaio_trdy,
+				-- src_data => sio_data,
+				-- dst_clk  => sout_clk,
+				-- dst_irdy => siodmaio_irdy,
+				-- dst_trdy => siodmaio_trdy,
+				-- dst_data => sio_data);
 
 			sodata_b : block
 				constant dma_lat   : natural := latencies_tab(profile).sodata;
