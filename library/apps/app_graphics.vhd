@@ -211,13 +211,14 @@ begin
 		signal rgtr_irdys  : std_logic_vector(0 to length(rids)-1);
 		signal rgtr0_data  : std_logic_vector(sin_data'range);
 		signal ack_rgtr    : std_logic_vector(0 to 8-1);
-		signal addr_rgtr   : std_logic_vector(0 to 24-1);
+		signal addr_rgtr   : std_logic_vector(0 to 32-1);
 		signal length_rgtr : std_logic_vector(0 to 24-1);
 		signal baddr_rgtr  : std_logic_vector(0 to 24-1);
 
 		constant word_bits   : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
 		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
+		signal dmaio_irdy : std_logic;
 		signal status        : std_logic_vector(0 to 8-1);
 		alias  status_rw     : std_logic is status(status'right);
 
@@ -299,6 +300,8 @@ begin
 				src_frm  => addr_frm,
 				src_irdy => addr_irdy,
 				src_data => sin_data,
+				dst_clk  => sin_clk,
+				dst_irdy => dmaio_irdy,
 				dst_data => addr_rgtr);
 
 			length_frm <= rgtr_frms(3) or rgtr_irdys(3);
@@ -341,20 +344,19 @@ begin
 
 		ctlr_di_dv <= ctlr_di_req;
 
-		-- dmasin_irdy <= dmaioaddr_irdy;
-		-- sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
-		-- port map (
-			-- dmacfg_clk  => sin_clk,
-			-- ctlr_inirdy => ctlr_inirdy,
-			-- dmaio_irdy  => dmasin_irdy,
-			-- dmaio_trdy  => dmaio_trdy,
--- 
-			-- dmacfg_req  => dmacfgio_req,
-			-- dmacfg_rdy  => dmacfgio_rdy,
--- 
-			-- ctlr_clk    => ctlr_clk,
-			-- dma_req     => dmaio_req,
-			-- dma_rdy     => dmaio_rdy);
+		sio_dmahdsk_e : entity hdl4fpga.sio_dmahdsk
+		port map (
+			dmacfg_clk  => sin_clk,
+			ctlr_inirdy => ctlr_inirdy,
+			dmaio_irdy  => dmaio_irdy,
+			dmaio_trdy  => open,
+
+			dmacfg_req  => dmacfgio_req,
+			dmacfg_rdy  => dmacfgio_rdy,
+
+			ctlr_clk    => ctlr_clk,
+			dma_req     => dmaio_req,
+			dma_rdy     => dmaio_rdy);
 
 		tx_b : block
 			constant dataout_size : natural := 2*1024;
@@ -461,14 +463,13 @@ begin
 					check_dov => true)
 				port map (
 					mode(0)  => ctlr_inirdy,
-					mode(1)  => ctlr_inirdy,
+					mode(1)  => '0',
 					src_clk  => ctlr_clk,
 					src_irdy => dmaso_irdy,
 					src_trdy => dmaso_trdy,
 					src_data => dmaso_data,
 
 					dst_clk  => sout_clk,
-					-- dst_frm  => ctlr_inirdy,
 					dst_irdy => fifo_irdy,
 					dst_trdy => fifo_trdy,
 					dst_data => fifo_data);

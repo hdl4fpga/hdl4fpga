@@ -273,7 +273,7 @@ begin
 		generic map (
 			max_depth => 8,
 			sync_read => false, 
-			latency   => 1, -- RCD latency greater than 2
+			latency   => 0, -- RCD latency greater than 2
 			check_sov => false,
 			check_dov => true)
 		port map (
