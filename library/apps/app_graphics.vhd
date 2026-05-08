@@ -363,17 +363,16 @@ begin
 			constant dataout_size : natural := 2*1024;
 			signal trans_length  : unsigned(unsigned_num_bits(dataout_size-1)-1 downto 0);
 
-			signal sio_dmaio     : std_logic_vector(0 to (2+((2+1)+(2+1)))*8-1);
-			signal siodmaio_irdy : std_logic;
-			signal siodmaio_trdy : std_logic;
-			signal siodmaio_end  : std_logic;
+			signal dmaio_irdy : std_logic;
+			signal dmaio_trdy : std_logic;
+			signal dmaio_data : std_logic_vector(0 to (2+((2+1)+(2+1)))*8-1);
 			signal siodmaio_data : std_logic_vector(sout_data'range);
 
 			signal sodata_irdy   : std_logic;
 			signal sodata_trdy   : std_logic;
 			signal sodata_data   : std_logic_vector(sout_data'range);
 
-			constant pfix_size   : unsigned := to_unsigned(sio_dmaio'length/siobyte_size-2, trans_length'length);
+			constant pfix_size   : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
 			signal pay_length    : unsigned(trans_length'range);
 			signal data_length   : unsigned(trans_length'range);
 			signal hdr_length    : unsigned(trans_length'range);
@@ -405,22 +404,22 @@ begin
 				hdr_length + data_length when status_rw='1' else
 				pfix_size;
 
-			sio_dmaio <=
+			dmaio_data <=
 				reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
-				rid_ack  & x"00" & ack_rgtr &
-				rid_addr & x"00" & status, 8);
+				to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
+				to_stdlogicvector(rid_addr) & x"00" & status, 8);
 
-			-- siodma_e : entity hdl4fpga.serlzr
-			-- port map (
-				-- src_clk  => sout_clk,
-				-- src_frm  => sout_frm,
-				-- src_irdy => siodmaio_irdy,
-				-- src_trdy => siodmaio_trdy,
-				-- src_data => sio_data,
-				-- dst_clk  => sout_clk,
-				-- dst_irdy => siodmaio_irdy,
-				-- dst_trdy => siodmaio_trdy,
-				-- dst_data => sio_data);
+			siodma_e : entity hdl4fpga.serlzr
+			port map (
+				src_clk  => sout_clk,
+				src_frm  => sout_frm,
+				src_irdy => dmaio_irdy,
+				src_trdy => dmaio_trdy,
+				src_data => dmaio_data,
+				dst_clk  => sout_clk,
+				dst_irdy => open,
+				dst_trdy => open,
+				dst_data => siodmaio_data);
 
 			sodata_b : block
 				constant dma_lat   : natural := latencies_tab(profile).sodata;
@@ -490,11 +489,6 @@ begin
 				end process;
 
 				fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
-
-				sodata_trdy <=
-					'0' when siodmaio_end='0' else
-					'0' when    status_rw='0' else
-					sout_trdy;
 
 				sodata_e : entity hdl4fpga.so_data
 				port map (
