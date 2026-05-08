@@ -378,15 +378,6 @@ begin
 			signal data_length   : unsigned(trans_length'range);
 			signal hdr_length    : unsigned(trans_length'range);
 		begin
-			-- src_data <=
-				-- ack_rgtr &
-				-- std_logic_vector(resize(unsigned(length_rgtr), trans_length'length)) &
-				-- b"00000" & dmaio_addr(dmaio_addr'left);
-					-- sio_dmaio <=
-					-- 	reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
-					-- 	rid_ack  & x"00" & ack_rgtr &
-					-- 	rid_addr & x"00" & status, 8);
-
 			process (sout_clk)
 				variable value : unsigned(pay_length'range);
 			begin
@@ -413,6 +404,11 @@ begin
 			pay_length <= 
 				hdr_length + data_length when status_rw='1' else
 				pfix_size;
+
+			sio_dmaio <=
+				reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
+				rid_ack  & x"00" & ack_rgtr &
+				rid_addr & x"00" & status, 8);
 
 			-- siodma_e : entity hdl4fpga.serlzr
 			-- port map (
