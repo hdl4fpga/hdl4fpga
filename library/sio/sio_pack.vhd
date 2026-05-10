@@ -36,8 +36,8 @@ entity sio_pack is
 		si_trdy : out std_logic;
 		si_data : in  std_logic_vector;
 
-		so_frm  : buffer std_logic;
-		so_irdy : buffer std_logic;
+		so_frm  : out std_logic;
+		so_irdy : out std_logic;
 		so_trdy : in  std_logic;
 		so_data : out std_logic_vector);
 end;
