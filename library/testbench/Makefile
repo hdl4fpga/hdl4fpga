@@ -1759,12 +1759,12 @@ $(HDL4FPGA__sio_muxcmp__def) : ../sio/sio_muxcmp.vhd \
 	$(VCOM) -93 -work hdl4fpga ../sio/sio_muxcmp.vhd
 
 $(HDL4FPGA__sio_pack) \
-$(HDL4FPGA__sio_pack__def) : ../sio/sio_data.vhd \
+$(HDL4FPGA__sio_pack__def) : ../sio/sio_pack.vhd \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../sio/sio_data.vhd
+	$(VCOM) -93 -work hdl4fpga ../sio/sio_pack.vhd
 
 $(HDL4FPGA__sio_ram) \
 $(HDL4FPGA__sio_ram__def) : ../sio/sio_ram.vhd \
