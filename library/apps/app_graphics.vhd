@@ -490,14 +490,15 @@ begin
 
 				fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
 
-				sodata_e : entity hdl4fpga.so_data
+				sodata_e : entity hdl4fpga.sio_pack
 				port map (
-					sio_clk   => sout_clk,
-					si_frm    => fifo_frm,
-					si_irdy   => fifo_irdy,
-					si_trdy   => fifo_trdy,
-					si_data   => fifo_data,
-					si_length => fifo_length,
+					sio_clk => sout_clk,
+					si_frm  => fifo_frm,
+					si_rid  => x"18",
+					si_len  => fifo_length,
+					si_irdy => fifo_irdy,
+					si_trdy => fifo_trdy,
+					si_data => fifo_data,
 
 					so_irdy   => sodata_irdy,
 					so_trdy   => sodata_trdy,

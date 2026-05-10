@@ -28,19 +28,18 @@ use hdl4fpga.base.all;
 
 entity sio_pack is
 	port (
-		sio_clk   : in  std_logic;
-		si_frm    : in  std_logic;
-		si_rid    : in  std_logic_vector(8-1 downto 0);
-		si_length : in  std_logic_vector(8-1 downto 0);
-		si_irdy   : in  std_logic;
-		si_trdy   : out std_logic;
-		si_data   : in  std_logic_vector;
+		sio_clk : in  std_logic;
+		si_frm  : in  std_logic;
+		si_rid  : in  std_logic_vector(8-1 downto 0);
+		si_len  : in  std_logic_vector(8-1 downto 0);
+		si_irdy : in  std_logic;
+		si_trdy : out std_logic;
+		si_data : in  std_logic_vector;
 
-		so_frm    : buffer std_logic;
-		so_irdy   : buffer std_logic;
-		so_trdy   : in  std_logic;
-		so_data   : out std_logic_vector);
-
+		so_frm  : buffer std_logic;
+		so_irdy : buffer std_logic;
+		so_trdy : in  std_logic;
+		so_data : out std_logic_vector);
 end;
 
 architecture def of sio_pack is
@@ -53,7 +52,7 @@ begin
 		if rising_edge(sio_clk) then
     		if si_frm='1' then
 				if shr_frm(shr_frm'right)='0' then
-					shr_data := unsigned(reverse(si_length & si_rid, 8));
+					shr_data := unsigned(reverse(si_len & si_rid, 8));
 				end if;
 				if shr_frm(0)='0' then
 					if si_irdy='1' then
