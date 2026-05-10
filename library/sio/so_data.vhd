@@ -30,107 +30,72 @@ entity so_data is
 	port (
 		sio_clk   : in  std_logic;
 		si_frm    : in  std_logic;
+		si_length : in  std_logic_vector(8-1 downto 0);
 		si_irdy   : in  std_logic;
 		si_trdy   : out std_logic;
-		si_length : in  std_logic_vector;
-		si_end    : buffer std_logic;
 		si_data   : in  std_logic_vector;
 
-		so_rid    : in  std_logic_vector(0 to 8-1) := x"18";
 		so_frm    : buffer std_logic;
 		so_irdy   : buffer std_logic;
 		so_trdy   : in  std_logic;
-		so_end    : buffer std_logic;
 		so_data   : out std_logic_vector);
+
+	constant rid : unsigned(0 to 8-1) := x"18";
 end;
 
 architecture def of so_data is
-
-	signal low_cntr  : unsigned(0 to 8);
-	signal high_cntr : unsigned(0 to setif(si_length'length > 8, si_length'length - 8, 0));
-
-	type states is (st_idle, st_rid, st_len, st_data);
-	signal state : states;
-
-	signal deso_trdy : std_logic;
-
 begin
 
-	process(sio_clk)
+	process (si_frm, si_irdy, sio_clk)
+		variable shr_frm  : unsigned(0 to 16/si_data'length-1) := (others => '0');
+		variable shr_irdy : unsigned(shr_frm'range);
+		variable shr_data : unsigned(0 to 8-1);
 	begin
 		if rising_edge(sio_clk) then
-			case state is
-			when st_idle =>
-				so_end    <= si_end;
-				low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
-				high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
-				if si_frm='1' then
-					state <= st_rid;
-				else
-					state <= st_idle;
-				end if;
-			when st_rid  =>
-				if si_frm='1' then
-					if so_trdy='1' then
-						so_end <= si_end;
-						state  <= st_len;
+    		if si_frm='1' then
+				if shr_frm(0)='0' then
+					if si_irdy='1' then
+						shr_data(0 to si_data'length-1) := unsigned(si_data);
+						shr_data := rotate_left(shr_data, si_data'length);
+					elsif shr_irdy(0)='1' then
+						shr_data(0 to si_data'length-1) := unsigned(si_data);
+						shr_data := rotate_left(shr_data, si_data'length);
 					end if;
 				else
-					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
-					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
-					state     <= st_idle;
+					shr_data(0 to si_data'length-1) := unsigned(si_data);
+					shr_data := rotate_left(shr_data, si_data'length);
 				end if;
-			when st_len =>
-				if si_frm='1' then
-					if so_trdy='1' then
-						so_end    <= si_end;
-						high_cntr <= high_cntr - 1;
-						low_cntr  <= low_cntr  - 1;
-						state     <= st_data;
-					end if;
-				else
-					so_end    <= si_end;
-					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
-					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
-					state     <= st_idle;
+				if shr_frm(shr_frm'length/2-1 to shr_frm'length/2)="01" then
+					shr_data := unsigned(reverse(si_length, 8));
 				end if;
-			when st_data =>
-				if si_frm='1' then
-					if (si_irdy and so_trdy)='1' then
-						so_end <= si_end;
-						if low_cntr(0)='0' then
-							low_cntr <= low_cntr - 1;
-							state  <= st_data;
-						elsif high_cntr(0)='0' then
-							low_cntr <= '0' & (1 to 8 => '1');
-							state  <= st_rid;
-						end if;
-					end if;
-				else
-					low_cntr  <= '0' & resize(unsigned(si_length) srl 0, low_cntr'length-1);
-					high_cntr <= '0' & resize(unsigned(si_length) srl 8, high_cntr'length-1);
-					state     <= st_idle;
-				end if;
-			end case;
+				shr_frm(0)  := si_frm;
+				shr_irdy(0) := si_irdy;
+				shr_frm  := rotate_left(shr_frm,  1);
+				shr_irdy := rotate_left(shr_irdy, 1);
+			elsif shr_frm(0)='1' then
+				shr_data(0 to si_data'length-1) := unsigned(si_data);
+				shr_data := rotate_left(shr_data, si_data'length);
+				shr_frm(0)  := si_frm;
+				shr_irdy(0) := si_irdy;
+				shr_frm  := rotate_left(shr_frm,  1);
+				shr_irdy := rotate_left(shr_irdy, 1);
+			else
+				shr_data := reverse(rid, 8);
+				shr_irdy := (others => '1');
+    		end if;
 		end if;
+
+		so_frm <= si_frm or shr_frm(0);
+		if shr_frm(0)='0' then
+			if si_frm='1' then
+				so_irdy <= si_irdy or shr_irdy(0);
+			else
+				so_irdy <= '0';
+			end if;
+		else
+			so_irdy <= shr_irdy(0);
+		end if;
+		so_data <= std_logic_vector(shr_data(0 to si_data'length-1));
 	end process;
-
-	si_end   <= '0' when state=st_idle else si_frm and high_cntr(0) and low_cntr(0);
-
-	si_trdy <= so_trdy when state=st_data else '0';
-
-	so_frm  <= to_stdulogic(to_bit(si_frm));
-	so_irdy  <=
-		'1'      when so_end='1' else
-		'0'      when state=st_idle else
-		si_irdy when state=st_data else
-		'1';
-
-	with state select
-	so_data <=
-		so_rid   when st_idle | st_rid,
-		std_logic_vector(resize(low_cntr, so_data'length)) when st_len,
-		si_data when st_data;
-
 
 end;
