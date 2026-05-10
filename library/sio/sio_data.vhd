@@ -26,10 +26,11 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity so_data is
+entity sio_pack is
 	port (
 		sio_clk   : in  std_logic;
 		si_frm    : in  std_logic;
+		si_rid    : in  std_logic_vector(8-1 downto 0);
 		si_length : in  std_logic_vector(8-1 downto 0);
 		si_irdy   : in  std_logic;
 		si_trdy   : out std_logic;
@@ -40,10 +41,9 @@ entity so_data is
 		so_trdy   : in  std_logic;
 		so_data   : out std_logic_vector);
 
-	constant rid : unsigned(0 to 8-1) := x"18";
 end;
 
-architecture def of so_data is
+architecture def of sio_pack is
 begin
 	process (si_frm, si_irdy, sio_clk)
 		variable shr_frm  : unsigned(0 to 16/si_data'length-1);
@@ -52,6 +52,9 @@ begin
 	begin
 		if rising_edge(sio_clk) then
     		if si_frm='1' then
+				if shr_frm(shr_frm'right)='0' then
+					shr_data := unsigned(reverse(si_length & si_rid, 8));
+				end if;
 				if shr_frm(0)='0' then
 					if si_irdy='1' then
 						shr_data(0 to si_data'length-1) := unsigned(si_data);
@@ -64,9 +67,6 @@ begin
 					shr_data(0 to si_data'length-1) := unsigned(si_data);
 					shr_data := rotate_left(shr_data, si_data'length);
 				end if;
-				if shr_frm(shr_frm'length/2-1 to shr_frm'length/2)="01" then
-					shr_data := unsigned(reverse(si_length, 8));
-				end if;
 				shr_irdy(0) := si_irdy;
 				shr_irdy := rotate_left(shr_irdy, 1);
 			elsif shr_frm(0)='1' then
@@ -75,7 +75,6 @@ begin
 				shr_irdy(0) := si_irdy;
 				shr_irdy := rotate_left(shr_irdy, 1);
 			else
-				shr_data := reverse(rid, 8);
 				shr_irdy := (others => '1');
     		end if;
 			shr_frm(0) := si_frm;
