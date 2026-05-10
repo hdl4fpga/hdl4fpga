@@ -45,9 +45,8 @@ end;
 
 architecture def of so_data is
 begin
-
 	process (si_frm, si_irdy, sio_clk)
-		variable shr_frm  : unsigned(0 to 16/si_data'length-1) := (others => '0');
+		variable shr_frm  : unsigned(0 to 16/si_data'length-1);
 		variable shr_irdy : unsigned(shr_frm'range);
 		variable shr_data : unsigned(0 to 8-1);
 	begin
@@ -68,21 +67,19 @@ begin
 				if shr_frm(shr_frm'length/2-1 to shr_frm'length/2)="01" then
 					shr_data := unsigned(reverse(si_length, 8));
 				end if;
-				shr_frm(0)  := si_frm;
 				shr_irdy(0) := si_irdy;
-				shr_frm  := rotate_left(shr_frm,  1);
 				shr_irdy := rotate_left(shr_irdy, 1);
 			elsif shr_frm(0)='1' then
 				shr_data(0 to si_data'length-1) := unsigned(si_data);
 				shr_data := rotate_left(shr_data, si_data'length);
-				shr_frm(0)  := si_frm;
 				shr_irdy(0) := si_irdy;
-				shr_frm  := rotate_left(shr_frm,  1);
 				shr_irdy := rotate_left(shr_irdy, 1);
 			else
 				shr_data := reverse(rid, 8);
 				shr_irdy := (others => '1');
     		end if;
+			shr_frm(0) := si_frm;
+			shr_frm := rotate_left(shr_frm,  1);
 		end if;
 
 		so_frm <= si_frm or shr_frm(0);
