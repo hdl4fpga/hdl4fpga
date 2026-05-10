@@ -728,7 +728,7 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(HDL4FPGA__dvi) \
 		$(HDL4FPGA__graphics) \
 		$(HDL4FPGA__video_sync) \
-		$(HDL4FPGA__so_data) \
+		$(HDL4FPGA__sio_pack) \
 		$(HDL4FPGA__latency) \
 		$(HDL4FPGA__sio_dmahdsk) \
 		$(HDL4FPGA__serlzr) \
