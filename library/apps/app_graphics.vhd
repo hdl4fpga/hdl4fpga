@@ -424,14 +424,15 @@ begin
 			sodata_b : block
 				constant dma_lat   : natural := latencies_tab(profile).sodata;
 
-				signal fifo_req    : bit;
-				signal fifo_rdy    : bit;
+				signal pack_req    : std_logic := '0';
+				signal pack_rdy    : std_logic := '0';
 
-				signal fifo_frm    : std_logic;
-				signal fifo_irdy   : std_logic;
-				signal fifo_trdy   : std_logic;
-				signal fifo_data   : std_logic_vector(ctlr_do'reverse_range);
-				signal fifo_length : std_logic_vector(trans_length'range);
+				signal pack_frm    : std_logic;
+				signal pack_irdy   : std_logic;
+				signal pack_trdy   : std_logic;
+				signal pack_data   : std_logic_vector(ctlr_do'reverse_range);
+				signal pack_length : std_logic_vector(8-1 downto 0);
+				signal data_length : std_logic_vector(trans_length'range);
 
 				signal dmaso_irdy  : std_logic;
 				signal dmaso_trdy  : std_logic;
@@ -473,47 +474,47 @@ begin
 					src_data => dmaso_data,
 
 					dst_clk  => sout_clk,
-					dst_irdy => fifo_irdy,
-					dst_trdy => fifo_trdy,
-					dst_data => fifo_data);
+					dst_irdy => pack_irdy,
+					dst_trdy => pack_trdy,
+					dst_data => pack_data);
 
+				pack_frm <= pack_req xor pack_rdy;
 				process (sout_clk)
-					variable byte_length : unsigned(fifo_length'range);
+					variable value : unsigned(data_length'length downto 0);
+					variable xxx   : unsigned(sout_data'length downto sout_data'length-1);
 				begin
 					if rising_edge(sout_clk) then
-						byte_length := (others => '1');
-						byte_length := byte_length srl (byte_length'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
-						byte_length := byte_length or  (trans_length sll word_bits);
-						fifo_length <= std_logic_vector(byte_length);
-					end if;
-				end process;
-
-				fifo_frm <= to_stdulogic(fifo_req xor fifo_rdy);
-
-				process (sout_clk)
-				begin
-					if rising_edge(sout_clk) then
-						if fifo_length(fifo_length'left)='0' then
-							if (fifo_frm or fifo_irdy)='1' then
-								fifo_length <= fifo_length - 1;
+						if pack_irdy='1' then
+							if pack_trdy='1' then
+								value := value - 1;
 							end if;
+						elsif value(0)='1' then
+							value := (others => '1');
+							value := value srl (value'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
+							value := value or  (trans_length sll word_bits);
 						end if;
+						if (value(xxx'range) xor xxx)="11" then
+							pack_frm <= '0';
+						else
+							pack_frm <= value(value'left);
+						end if;
+						xxx := value(xxx'range);
 					end if;
 				end process;
 
-				-- sodata_e : entity hdl4fpga.sio_pack
-				-- port map (
-					-- sio_clk => sout_clk,
-					-- si_frm  => fifo_frm,
-					-- si_rid  => x"18",
-					-- si_len  => (8-1 downto 0),
-					-- si_irdy => fifo_irdy,
-					-- si_trdy => fifo_trdy,
-					-- si_data => fifo_data,
--- 
-					-- so_irdy   => sodata_irdy,
-					-- so_trdy   => sodata_trdy,
-					-- so_data   => sodata_data);
+				sopack_e : entity hdl4fpga.sio_pack
+				port map (
+					sio_clk => sout_clk,
+					si_frm  => pack_frm,
+					si_rid  => x"18",
+					si_len  => pack_length,
+					si_irdy => pack_irdy,
+					si_trdy => pack_trdy,
+					si_data => pack_data,
+
+					so_irdy   => sodata_irdy,
+					so_trdy   => sodata_trdy,
+					so_data   => sodata_data);
 
 			end block;
 
