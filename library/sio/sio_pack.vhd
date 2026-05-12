@@ -47,50 +47,24 @@ begin
 	process (si_frm, si_irdy, sio_clk)
 		variable shr_frm  : unsigned(0 to 16/si_data'length-1);
 		variable shr_irdy : unsigned(shr_frm'range);
-		variable shr_data : unsigned(0 to 8-1);
+		variable shr_data : unsigned(0 to 16-1);
 	begin
 		if rising_edge(sio_clk) then
-    		if si_frm='1' then
-				if shr_frm(shr_frm'right)='0' then
-					shr_data := unsigned(reverse(si_len & si_rid, 8));
-				end if;
-				if shr_frm(0)='0' then
-					if si_irdy='1' then
-						shr_data(0 to si_data'length-1) := unsigned(si_data);
-						shr_data := rotate_left(shr_data, si_data'length);
-					elsif shr_irdy(0)='1' then
-						shr_data(0 to si_data'length-1) := unsigned(si_data);
-						shr_data := rotate_left(shr_data, si_data'length);
-					end if;
-				else
-					shr_data(0 to si_data'length-1) := unsigned(si_data);
-					shr_data := rotate_left(shr_data, si_data'length);
-				end if;
-				shr_irdy(0) := si_irdy;
-				shr_irdy := rotate_left(shr_irdy, 1);
-			elsif shr_frm(0)='1' then
-				shr_data(0 to si_data'length-1) := unsigned(si_data);
-				shr_data := rotate_left(shr_data, si_data'length);
-				shr_irdy(0) := si_irdy;
-				shr_irdy := rotate_left(shr_irdy, 1);
-			else
+    		if (si_frm and not shr_frm(shr_frm'right))='1' then
+				shr_frm  := (others => '1');
 				shr_irdy := (others => '1');
+				shr_data := unsigned(reverse(si_rid & si_len, 8));
     		end if;
+			so_frm  <= shr_frm(0);
+			so_irdy <= shr_irdy(0);
+			so_data <= std_logic_vector(shr_data(0 to si_data'length-1));
 			shr_frm(0) := si_frm;
 			shr_frm := rotate_left(shr_frm,  1);
+			shr_irdy(0) := si_irdy;
+			shr_irdy := rotate_left(shr_irdy, 1);
+			shr_data(0 to si_data'length-1) := unsigned(si_data);
+			shr_data := rotate_left(shr_data, si_data'length);
 		end if;
-
-		so_frm <= si_frm or shr_frm(0);
-		if shr_frm(0)='0' then
-			if si_frm='1' then
-				so_irdy <= si_irdy or shr_irdy(0);
-			else
-				so_irdy <= '0';
-			end if;
-		else
-			so_irdy <= shr_irdy(0);
-		end if;
-		so_data <= std_logic_vector(shr_data(0 to si_data'length-1));
 	end process;
 
 end;

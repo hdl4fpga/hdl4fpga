@@ -427,10 +427,14 @@ begin
 				signal pack_req    : std_logic := '0';
 				signal pack_rdy    : std_logic := '0';
 
+				signal serlzr_frm  : std_logic;
+				signal serlzr_irdy : std_logic;
+				signal serlzr_trdy : std_logic;
+				signal serlzr_data : std_logic_vector(ctlr_do'range);
 				signal pack_frm    : std_logic;
 				signal pack_irdy   : std_logic;
 				signal pack_trdy   : std_logic;
-				signal pack_data   : std_logic_vector(ctlr_do'reverse_range);
+				signal pack_data   : std_logic_vector(sout_data'range);
 				signal pack_length : std_logic_vector(8-1 downto 0);
 				signal data_length : std_logic_vector(trans_length'range);
 
@@ -458,7 +462,7 @@ begin
 					di  => dma_do,
 					do  => dmaso_data);
 
-				dmadataout_e : entity hdl4fpga.fifo
+				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (dataout_size/(ctlr_di'length/siobyte_size)),
 					-- async_mode => false,
@@ -474,11 +478,40 @@ begin
 					src_data => dmaso_data,
 
 					dst_clk  => sout_clk,
+					dst_irdy => serlzr_irdy,
+					dst_trdy => serlzr_trdy,
+					dst_data => serlzr_data);
+
+				serlzr_e : entity hdl4fpga.serlzr
+				port map (
+					src_clk  => sout_clk,
+					src_frm  => serlzr_frm,
+					src_irdy => serlzr_irdy,
+					src_trdy => serlzr_trdy,
+					src_data => serlzr_data,
+					dst_clk  => sout_clk,
 					dst_irdy => pack_irdy,
 					dst_trdy => pack_trdy,
 					dst_data => pack_data);
 
-				pack_frm <= pack_req xor pack_rdy;
+				process (ctlr_clk)
+				begin
+					if rising_edge(ctlr_clk) then
+   						if (pack_req xor pack_rdy)='0' then
+   							if (dmaio_rdy xor dmaio_req)='1' then
+								pack_req <= not pack_rdy;
+   							end if;
+   						end if;
+					end if;
+				end process;
+
+				process (sout_clk)
+				begin
+					if rising_edge(sout_clk) then
+						pack_frm <= pack_req xor pack_rdy;
+					end if;
+				end process;
+
 				process (sout_clk)
 					variable value : unsigned(data_length'length downto 0);
 					variable xxx   : unsigned(sout_data'length downto sout_data'length-1);
@@ -486,6 +519,7 @@ begin
 					if rising_edge(sout_clk) then
 						if pack_irdy='1' then
 							if pack_trdy='1' then
+								xxx   := value(xxx'range);
 								value := value - 1;
 							end if;
 						elsif value(0)='1' then
@@ -494,11 +528,10 @@ begin
 							value := value or  (trans_length sll word_bits);
 						end if;
 						if (value(xxx'range) xor xxx)="11" then
-							pack_frm <= '0';
+							-- pack_frm <= '0';
 						else
-							pack_frm <= value(value'left);
+							-- pack_frm <= value(value'left);
 						end if;
-						xxx := value(xxx'range);
 					end if;
 				end process;
 
@@ -507,14 +540,14 @@ begin
 					sio_clk => sout_clk,
 					si_frm  => pack_frm,
 					si_rid  => x"18",
-					si_len  => pack_length,
+					si_len  => x"ff", --pack_length,
 					si_irdy => pack_irdy,
 					si_trdy => pack_trdy,
-					si_data => pack_data,
+					si_data => x"aa", --pack_data,
 
-					so_irdy   => sodata_irdy,
-					so_trdy   => sodata_trdy,
-					so_data   => sodata_data);
+					so_irdy => sodata_irdy,
+					so_trdy => '1', --sodata_trdy,
+					so_data => sodata_data);
 
 			end block;
 
