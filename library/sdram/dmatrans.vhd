@@ -278,7 +278,7 @@ begin
 			check_dov => true)
 		port map (
 			mode(0)   => col_frm,
-			mode(1)   => col_frm,
+			mode(1)   => '0',
 			src_clk   => dmatrans_clk,
 			src_irdy  => ena,
 			src_trdy  => open,

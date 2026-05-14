@@ -164,7 +164,7 @@ architecture nuhs3adsp_graphics of testbench is
 			"ffff"               & -- UDP length
 			"0000"               & -- UDP checksum
 			"010042"             &
-    		"1702_000003_1603_0000_0000" &
+    		"1702_000001_1603_0000_0000" &
 		"}";
     		-- "18ff"               &
     		-- "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
@@ -176,9 +176,6 @@ architecture nuhs3adsp_graphics of testbench is
     		-- "c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
     		-- "e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
     		-- "1702_000003_1603_0000_0000"                                       &
-
-	constant req_data  : std_logic_vector :=
-		x"010008_1702_000003_1603_8000_0000";
 
 	constant baudrate : natural := 1e6;
 

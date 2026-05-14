@@ -212,7 +212,7 @@ begin
 		signal rgtr0_data  : std_logic_vector(sin_data'range);
 		signal ack_rgtr    : std_logic_vector(0 to 8-1);
 		signal addr_rgtr   : std_logic_vector(0 to 32-1);
-		signal length_rgtr : std_logic_vector(0 to 24-1);
+		signal length_rgtr : std_logic_vector(24-1 downto 0);
 		signal baddr_rgtr  : std_logic_vector(0 to 24-1);
 
 		constant word_bits   : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
@@ -314,6 +314,7 @@ begin
 				src_data => sin_data,
 				dst_data => length_rgtr);
 
+			dmaio_len <= length_rgtr(dmaio_len'range);
 			-- data_e : entity hdl4fpga.fifo
 			-- generic map (
 				-- max_depth  => fifodata_depth,
@@ -459,7 +460,7 @@ begin
 					d => (0 to dmaso_data'length-1 => dma_lat))
 				port map (
 					clk => ctlr_clk,
-					di  => dma_do,
+					di  => x"01234567", --dma_do,
 					do  => dmaso_data);
 
 				fifo_e : entity hdl4fpga.fifo
@@ -482,18 +483,6 @@ begin
 					dst_trdy => serlzr_trdy,
 					dst_data => serlzr_data);
 
-				serlzr_e : entity hdl4fpga.serlzr
-				port map (
-					src_clk  => sout_clk,
-					src_frm  => serlzr_frm,
-					src_irdy => serlzr_irdy,
-					src_trdy => serlzr_trdy,
-					src_data => serlzr_data,
-					dst_clk  => sout_clk,
-					dst_irdy => pack_irdy,
-					dst_trdy => pack_trdy,
-					dst_data => pack_data);
-
 				process (ctlr_clk)
 				begin
 					if rising_edge(ctlr_clk) then
@@ -508,9 +497,24 @@ begin
 				process (sout_clk)
 				begin
 					if rising_edge(sout_clk) then
-						pack_frm <= pack_req xor pack_rdy;
+   						if (dmaio_rdy xor dmaio_req)='0' then
+							pack_frm <= pack_req xor pack_rdy;
+						end if;
 					end if;
 				end process;
+
+				serlzr_frm <= pack_frm;
+				serlzr_e : entity hdl4fpga.serlzr
+				port map (
+					src_clk  => sout_clk,
+					src_frm  => serlzr_frm,
+					src_irdy => serlzr_irdy,
+					src_trdy => serlzr_trdy,
+					src_data => serlzr_data,
+					dst_clk  => sout_clk,
+					dst_irdy => pack_irdy,
+					dst_trdy => '1', --pack_trdy,
+					dst_data => pack_data);
 
 				process (sout_clk)
 					variable value : unsigned(data_length'length downto 0);
