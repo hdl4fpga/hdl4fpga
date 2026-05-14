@@ -162,7 +162,7 @@ begin
 		severity note;
 
 	srcgtdst_g : if src_data'length > dst_data'length generate
-		signal fifo_trdy : std_logic;
+		signal fifo_trdy : std_logic := '0';
 		signal fifo_data : std_logic_vector(src_data'range);
 	begin
 		fifooff_g : if not fifo_mode generate
