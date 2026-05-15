@@ -142,8 +142,8 @@ architecture mix of app_graphics is
 
 	signal dmacfgio_req   : std_logic;
 	signal dmacfgio_rdy   : std_logic;
-	signal dmaio_req      : std_logic;
-	signal dmaio_rdy      : std_logic;
+	signal dmaio_req      : std_logic := '0';
+	signal dmaio_rdy      : std_logic := '0';
 	signal dmaio_ack      : std_logic_vector(0 to 8-1);
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(32-1 downto 0);
@@ -314,7 +314,7 @@ begin
 				src_data => sin_data,
 				dst_data => length_rgtr);
 
-			dmaio_len <= length_rgtr(dmaio_len'range);
+			dmaio_len <= std_logic_vector(resize(shift_right(unsigned(length_rgtr), blword_bits), dmaio_len'length));
 			-- data_e : entity hdl4fpga.fifo
 			-- generic map (
 				-- max_depth  => fifodata_depth,
@@ -494,16 +494,6 @@ begin
 					end if;
 				end process;
 
-				process (sout_clk)
-				begin
-					if rising_edge(sout_clk) then
-   						if (dmaio_rdy xor dmaio_req)='0' then
-							pack_frm <= pack_req xor pack_rdy;
-						end if;
-					end if;
-				end process;
-
-				serlzr_frm <= pack_frm;
 				serlzr_e : entity hdl4fpga.serlzr
 				port map (
 					src_clk  => sout_clk,
@@ -513,28 +503,40 @@ begin
 					src_data => serlzr_data,
 					dst_clk  => sout_clk,
 					dst_irdy => pack_irdy,
-					dst_trdy => '1', --pack_trdy,
+					dst_trdy => pack_trdy,
 					dst_data => pack_data);
 
-				process (sout_clk)
-					variable value : unsigned(data_length'length downto 0);
-					variable xxx   : unsigned(sout_data'length downto sout_data'length-1);
+				process (sin_clk, sout_clk)
+					variable value : unsigned(trans_length'length downto 0) := (others => '1');
+					variable cy    : unsigned(sout_data'length downto sout_data'length-1);
 				begin
 					if rising_edge(sout_clk) then
-						if pack_irdy='1' then
-							if pack_trdy='1' then
-								xxx   := value(xxx'range);
-								value := value - 1;
+   						if (dmaio_rdy xor dmaio_req)='0' then
+							if (pack_rdy xor pack_req)='1' then
+								serlzr_frm <= '1';
+								pack_frm   <= '1';
+								if pack_irdy='1' then
+									if pack_trdy='1' then
+										cy := value(cy'range);
+										value := value - 1;
+									end if;
+								elsif value(value'left)='1' then
+									pack_rdy <= pack_req;
+									pack_frm <= '0';
+								end if;
+								pack_length <= std_logic_vector(value(8-1 downto 0));
+								if (value(cy'range) xor cy)="11" then
+									-- pack_frm <= '0';
+								else
+									-- pack_frm <= value(value'left);
+								end if;
+							else
+								serlzr_frm <= '0';
+								pack_frm   <= '0';
+								value := (others => '1');
+								value := value srl (value'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
+								value := value or resize(unsigned(length_rgtr), value'length);
 							end if;
-						elsif value(0)='1' then
-							value := (others => '1');
-							value := value srl (value'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
-							value := value or  (trans_length sll word_bits);
-						end if;
-						if (value(xxx'range) xor xxx)="11" then
-							-- pack_frm <= '0';
-						else
-							-- pack_frm <= value(value'left);
 						end if;
 					end if;
 				end process;
@@ -544,10 +546,10 @@ begin
 					sio_clk => sout_clk,
 					si_frm  => pack_frm,
 					si_rid  => x"18",
-					si_len  => x"ff", --pack_length,
+					si_len  => pack_length,
 					si_irdy => pack_irdy,
 					si_trdy => pack_trdy,
-					si_data => x"aa", --pack_data,
+					si_data => pack_data,
 
 					so_irdy => sodata_irdy,
 					so_trdy => '1', --sodata_trdy,

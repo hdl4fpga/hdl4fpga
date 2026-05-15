@@ -66,5 +66,6 @@ begin
 			shr_data := rotate_left(shr_data, si_data'length);
 		end if;
 	end process;
+	si_trdy <= so_trdy;
 
 end;
