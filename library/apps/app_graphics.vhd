@@ -378,26 +378,20 @@ begin
 			signal data_length   : unsigned(trans_length'range);
 			signal hdr_length    : unsigned(trans_length'range);
 		begin
-			process (sout_clk)
-				variable value : unsigned(pay_length'range);
-			begin
-				if rising_edge(sout_clk) then
-					value := shift_right(unsigned(trans_length), blword_bits-word_bits);
-					value := value srl (unsigned_num_bits(256-1)-blword_bits);
-					value := value + 1;
-					value := value sll 1;
-					hdr_length <= value;
-				end if;
-			end process;
+			trans_length <= unsigned(length_rgtr(trans_length'range));
 
 			process (sout_clk)
 				variable value : unsigned(pay_length'range);
 			begin
 				if rising_edge(sout_clk) then
-					value := shift_right(unsigned(trans_length), blword_bits-word_bits); 
-					value := data_length sll blword_bits;
-					value := data_length + (pfix_size + 2**blword_bits);
+					value := (others => '1');
+					value := value srl (value'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
+					value := value or resize(unsigned(length_rgtr), value'length);
 					data_length <= value;
+					value := value srl unsigned_num_bits(256-1);
+					value := value + 1;
+					value := value sll 1;
+					hdr_length <= value;
 				end if;
 			end process;
 
@@ -437,7 +431,6 @@ begin
 				signal pack_trdy   : std_logic;
 				signal pack_data   : std_logic_vector(sout_data'range);
 				signal pack_length : std_logic_vector(8-1 downto 0);
-				signal data_length : std_logic_vector(trans_length'range);
 
 				signal dmaso_irdy  : std_logic;
 				signal dmaso_trdy  : std_logic;
@@ -507,7 +500,7 @@ begin
 					dst_data => pack_data);
 
 				process (sin_clk, sout_clk)
-					variable value : unsigned(trans_length'length downto 0) := (others => '1');
+					variable value : unsigned(data_length'length downto 0) := (others => '1');
 					variable cy    : unsigned(sout_data'length downto sout_data'length-1);
 				begin
 					if rising_edge(sout_clk) then
@@ -533,9 +526,10 @@ begin
 							else
 								serlzr_frm <= '0';
 								pack_frm   <= '0';
-								value := (others => '1');
-								value := value srl (value'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
-								value := value or resize(unsigned(length_rgtr), value'length);
+								-- value := (others => '1');
+								-- value := value srl (value'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
+								-- value := value or resize(unsigned(length_rgtr), value'length);
+								value := resize(hdr_length + data_length, value'length);
 							end if;
 						end if;
 					end if;
