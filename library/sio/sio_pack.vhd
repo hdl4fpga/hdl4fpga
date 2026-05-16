@@ -44,28 +44,30 @@ end;
 
 architecture def of sio_pack is
 begin
-	process (si_frm, si_irdy, sio_clk)
+	process (si_frm, si_irdy, so_trdy, sio_clk)
 		variable shr_frm  : unsigned(0 to 16/si_data'length-1);
 		variable shr_irdy : unsigned(shr_frm'range);
 		variable shr_data : unsigned(0 to 16-1);
 	begin
 		if rising_edge(sio_clk) then
-    		if (si_frm and not shr_frm(shr_frm'right))='1' then
-				shr_frm  := (others => '1');
-				shr_irdy := (others => '1');
-				shr_data := unsigned(reverse(si_rid & si_len, 8));
-    		end if;
-			so_frm  <= shr_frm(0);
-			so_irdy <= shr_irdy(0);
-			so_data <= std_logic_vector(shr_data(0 to si_data'length-1));
-			shr_frm(0) := si_frm;
-			shr_frm := rotate_left(shr_frm,  1);
-			shr_irdy(0) := si_irdy;
-			shr_irdy := rotate_left(shr_irdy, 1);
-			shr_data(0 to si_data'length-1) := unsigned(si_data);
-			shr_data := rotate_left(shr_data, si_data'length);
+			if so_trdy='1' then
+				if (si_frm and not shr_frm(shr_frm'right))='1' then
+					shr_frm  := (others => '1');
+					shr_irdy := (others => '1');
+					shr_data := unsigned(reverse(si_rid & si_len, 8));
+				end if;
+				so_frm  <= shr_frm(0);
+				so_irdy <= shr_irdy(0);
+				so_data <= std_logic_vector(shr_data(0 to si_data'length-1));
+				shr_frm(0) := si_frm;
+				shr_frm := rotate_left(shr_frm,  1);
+				shr_irdy(0) := si_irdy;
+				shr_irdy := rotate_left(shr_irdy, 1);
+				shr_data(0 to si_data'length-1) := unsigned(si_data);
+				shr_data := rotate_left(shr_data, si_data'length);
+			end if;
 		end if;
+		si_trdy <= so_trdy and ;
 	end process;
-	si_trdy <= so_trdy;
 
 end;

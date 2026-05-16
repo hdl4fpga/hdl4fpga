@@ -378,8 +378,8 @@ begin
 			signal data_length   : unsigned(trans_length'range);
 			signal hdr_length    : unsigned(trans_length'range);
 		begin
-			trans_length <= unsigned(length_rgtr(trans_length'range));
 
+			trans_length <= unsigned(length_rgtr(trans_length'range));
 			process (sout_clk)
 				variable value : unsigned(pay_length'range);
 			begin
@@ -507,7 +507,6 @@ begin
    						if (dmaio_rdy xor dmaio_req)='0' then
 							if (pack_rdy xor pack_req)='1' then
 								serlzr_frm <= '1';
-								pack_frm   <= '1';
 								if pack_irdy='1' then
 									if pack_trdy='1' then
 										cy := value(cy'range);
@@ -517,6 +516,7 @@ begin
 									pack_rdy <= pack_req;
 									pack_frm <= '0';
 								end if;
+								pack_frm <= not value(value'left);
 								pack_length <= std_logic_vector(value(8-1 downto 0));
 								if (value(cy'range) xor cy)="11" then
 									-- pack_frm <= '0';
@@ -526,10 +526,7 @@ begin
 							else
 								serlzr_frm <= '0';
 								pack_frm   <= '0';
-								-- value := (others => '1');
-								-- value := value srl (value'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
-								-- value := value or resize(unsigned(length_rgtr), value'length);
-								value := resize(hdr_length + data_length, value'length);
+								value := resize(data_length, value'length);
 							end if;
 						end if;
 					end if;
