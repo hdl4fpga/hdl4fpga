@@ -436,6 +436,7 @@ begin
 				signal dmaso_trdy  : std_logic;
 				signal dmaso_data  : std_logic_vector(ctlr_do'range);
 
+				signal commit : std_logic;
 			begin
 
 				dmao_dv_e : entity hdl4fpga.latency
@@ -456,6 +457,7 @@ begin
 					di  => x"01234567", --dma_do,
 					do  => dmaso_data);
 
+				commit <= ctlr_inirdy and (dmaio_req xor dmaio_rdy);
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (dataout_size/(ctlr_di'length/siobyte_size)),
@@ -465,7 +467,7 @@ begin
 					check_dov => true)
 				port map (
 					mode(0)  => ctlr_inirdy,
-					mode(1)  => '0',
+					mode(1)  => commit,
 					src_clk  => ctlr_clk,
 					src_irdy => dmaso_irdy,
 					src_trdy => dmaso_trdy,
@@ -506,7 +508,6 @@ begin
 					if rising_edge(sout_clk) then
    						if (dmaio_rdy xor dmaio_req)='0' then
 							if (pack_rdy xor pack_req)='1' then
-								serlzr_frm <= '1';
 								if pack_irdy='1' then
 									if pack_trdy='1' then
 										cy := value(cy'range);
@@ -516,17 +517,18 @@ begin
 									pack_rdy <= pack_req;
 									pack_frm <= '0';
 								end if;
-								pack_frm <= not value(value'left);
+								serlzr_frm  <= not value(value'left);
 								pack_length <= std_logic_vector(value(8-1 downto 0));
 								if (value(cy'range) xor cy)="11" then
-									-- pack_frm <= '0';
+									pack_frm <= '0';
 								else
-									-- pack_frm <= value(value'left);
+									pack_frm <= not value(value'left);
 								end if;
 							else
 								serlzr_frm <= '0';
 								pack_frm   <= '0';
-								value := resize(data_length, value'length);
+								value := resize(data_length, value'length)-1;
+								cy := value(cy'range);
 							end if;
 						end if;
 					end if;
