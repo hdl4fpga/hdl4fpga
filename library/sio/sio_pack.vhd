@@ -44,7 +44,7 @@ end;
 
 architecture def of sio_pack is
 begin
-	process (si_frm, si_irdy, so_trdy, sio_clk)
+	process (si_frm, so_trdy, sio_clk)
 		variable shr_frm  : unsigned(0 to 16/si_data'length-1);
 		variable shr_irdy : unsigned(shr_frm'range);
 		variable shr_data : unsigned(0 to 16-1);
@@ -75,6 +75,7 @@ begin
 			shr_data(0 to si_data'length-1) := unsigned(si_data);
 			shr_data := rotate_left(shr_data, si_data'length);
 		end if;
+
 		if si_frm='1' then
 			si_trdy <= so_trdy;
 		elsif shr_frm=(shr_frm'range => '0') then
