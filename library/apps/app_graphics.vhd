@@ -518,7 +518,7 @@ begin
 									pack_frm <= '0';
 								end if;
 								serlzr_frm  <= not value(value'left);
-								pack_length <= std_logic_vector(value(8-1 downto 0));
+								pack_length <= std_logic_vector(value(8-1 downto 0)+1);
 								if (value(cy'range) xor cy)="11" then
 									pack_frm <= '0';
 								else

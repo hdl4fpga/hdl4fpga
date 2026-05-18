@@ -48,19 +48,14 @@ begin
 		variable shr_frm  : unsigned(0 to 16/si_data'length-1);
 		variable shr_irdy : unsigned(shr_frm'range);
 		variable shr_data : unsigned(0 to 16-1);
-		variable eof_req  : std_logic := '0';
-		variable eof_rdy  : std_logic := '0';
 	begin
 		if rising_edge(sio_clk) then
 			if si_frm='1' then 
-				if (eof_req xor eof_rdy)='0' then
+				if shr_frm=(shr_frm'range => '0') then
 					shr_frm  := (others => '1');
 					shr_irdy := (others => '1');
 					shr_data := unsigned(reverse(si_rid & si_len, 8));
-					eof_req  := not eof_rdy;
 				end if;
-			elsif (shr_frm(0) or shr_irdy(0))='0' then
-				eof_rdy := eof_req;
 			end if;
 
 			so_frm  <= shr_frm(0);
@@ -69,23 +64,27 @@ begin
 			shr_frm(0) := si_frm;
 			shr_frm := rotate_left(shr_frm, 1);
 
-			if (eof_rdy xor eof_req)='1' then
+			if si_frm='1' then
 				shr_irdy(0) := si_irdy;
-			else
+			elsif shr_frm=(shr_frm'range => '0') then
 				shr_irdy(0) := '0';
+			else
+				shr_irdy(0) := si_irdy;
 			end if;
 			shr_irdy := rotate_left(shr_irdy, 1);
 			shr_data(0 to si_data'length-1) := unsigned(si_data);
 			shr_data := rotate_left(shr_data, si_data'length);
 		end if;
-		if (eof_req xor eof_rdy)='1' then
-			if si_frm='1' then
-				si_trdy <= so_trdy;
-			else
+		if si_frm='1' then
+			si_trdy <= so_trdy;
+		elsif shr_frm=(shr_frm'range => '0') then
+			if shr_irdy=(shr_irdy'range => '0') then
 				si_trdy <= '0';
+			else
+				si_trdy <= so_trdy;
 			end if;
 		else
-			si_trdy <= so_trdy;
+			si_trdy <= '0';
 		end if;
 	end process;
 
