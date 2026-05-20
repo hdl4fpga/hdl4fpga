@@ -461,7 +461,6 @@ begin
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (dataout_size/(ctlr_di'length/siobyte_size)),
-					-- async_mode => false,
 					latency   => 0,
 					check_sov => false,
 					check_dov => true)
@@ -481,6 +480,31 @@ begin
 				process (ctlr_clk)
 				begin
 					if rising_edge(ctlr_clk) then
+   						if (pack_req xor pack_rdy)='0' then
+   							if (dmaio_rdy xor dmaio_req)='1' then
+								pack_req <= not pack_rdy;
+   							end if;
+   						end if;
+					end if;
+				end process;
+
+				process (sio_clk)
+					type states is (s_rgtr0, s_rgtr1, s_data);
+					variable state : states;
+				begin
+					if rising_edge(sio_clk) then
+						case state is
+						when s_rgtr0 =>
+							rgtr0_req <= not regtr0_rdy;
+							state := s_rgtr1;
+						when s_rgtr1 =>
+							if (rgtr0_rdy xor regtr0_req)='0' then
+								rgtr1_req <= not regtr1_rdy;
+								state := s_data;
+							end if;
+						when s_data =>
+						end case;
+
    						if (pack_req xor pack_rdy)='0' then
    							if (dmaio_rdy xor dmaio_req)='1' then
 								pack_req <= not pack_rdy;

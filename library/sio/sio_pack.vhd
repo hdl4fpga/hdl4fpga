@@ -51,7 +51,7 @@ begin
 	begin
 		if rising_edge(sio_clk) then
 			if si_frm='1' then 
-				if shr_frm=(shr_frm'range => '0') then
+				if shr_irdy=(shr_irdy'range => '0') then
 					shr_frm  := (others => '1');
 					shr_irdy := (others => '1');
 					shr_data := unsigned(reverse(si_rid & si_len, 8));
@@ -61,19 +61,21 @@ begin
 			so_frm  <= shr_frm(0);
 			so_irdy <= shr_irdy(0);
 			so_data <= std_logic_vector(shr_data(0 to si_data'length-1));
-			shr_frm(0) := si_frm;
-			shr_frm := rotate_left(shr_frm, 1);
+			if so_trdy='1' then
+				shr_frm(0) := si_frm;
+				shr_frm := rotate_left(shr_frm, 1);
 
-			if si_frm='1' then
-				shr_irdy(0) := si_irdy;
-			elsif shr_frm=(shr_frm'range => '0') then
-				shr_irdy(0) := '0';
-			else
-				shr_irdy(0) := si_irdy;
+				if si_frm='1' then
+					shr_irdy(0) := si_irdy;
+				elsif shr_frm=(shr_frm'range => '0') then
+					shr_irdy(0) := '0';
+				else
+					shr_irdy(0) := si_irdy;
+				end if;
+				shr_irdy := rotate_left(shr_irdy, 1);
+				shr_data(0 to si_data'length-1) := unsigned(si_data);
+				shr_data := rotate_left(shr_data, si_data'length);
 			end if;
-			shr_irdy := rotate_left(shr_irdy, 1);
-			shr_data(0 to si_data'length-1) := unsigned(si_data);
-			shr_data := rotate_left(shr_data, si_data'length);
 		end if;
 
 		if si_frm='1' then

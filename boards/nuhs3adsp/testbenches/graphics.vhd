@@ -164,7 +164,7 @@ architecture nuhs3adsp_graphics of testbench is
 			"ffff"               & -- UDP length
 			"0000"               & -- UDP checksum
 			"010042"             &
-    		"1702_000103_1603_0000_0000" &
+    		"1702_000103_1603_0000_0000_ffff" &
 		"}";
     		-- "18ff"               &
     		-- "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
