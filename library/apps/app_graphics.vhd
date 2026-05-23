@@ -50,7 +50,6 @@ entity app_graphics is
 		sout_frm      : buffer std_logic;
 		sout_irdy     : buffer std_logic;
 		sout_trdy     : in  std_logic := '1';
-		sout_end      : buffer std_logic;
 		sout_data     : out std_logic_vector;
 
 		video_clk     : in  std_logic := '0';
@@ -194,31 +193,32 @@ begin
 
 		constant siobyte_size : natural := 8;
 
-		constant rid_ack    : string := "0x01";
-		constant rid_addr   : string := "0x16";
-		constant rid_length : string := "0x17";
-		constant rid_data   : string := "0x18";
-		constant rid_baddr  : string := "0x19";
-		constant rids       : string := "[" & "0x00" & "," & rid_ack & "," & rid_addr & "," & rid_length & "," & rid_data & "," & rid_baddr & "]";
+		constant rid_ack     : string := "0x01";
+		constant rid_addr    : string := "0x16";
+		constant rid_length  : string := "0x17";
+		constant rid_data    : string := "0x18";
+		constant rid_baddr   : string := "0x19";
+		constant rids        : string := "[" & "0x00" & "," & rid_ack & "," & rid_addr & "," & rid_length & "," & rid_data & "," & rid_baddr & "]";
 
-		signal rid_act      : std_logic;
-		signal pyl_act      : std_logic;
-		signal rgtr_frm     : std_logic;
-		signal rgtr_irdy    : std_logic;
-		signal rgtr_trdy    : std_logic;
+		signal rid_act       : std_logic;
+		signal length_act    : std_logic;
+		signal pyl_act       : std_logic;
+		signal rgtr_frm      : std_logic;
+		signal rgtr_irdy     : std_logic;
+		signal rgtr_trdy     : std_logic;
 
-		signal rgtr_frms   : std_logic_vector(0 to length(rids)-1);
-		signal rgtr_irdys  : std_logic_vector(0 to length(rids)-1);
-		signal rgtr0_data  : std_logic_vector(sin_data'range);
-		signal ack_rgtr    : std_logic_vector(0 to 8-1);
-		signal addr_rgtr   : std_logic_vector(0 to 32-1);
-		signal length_rgtr : std_logic_vector(24-1 downto 0);
-		signal baddr_rgtr  : std_logic_vector(0 to 24-1);
+		signal rgtr_frms     : std_logic_vector(0 to length(rids)-1);
+		signal rgtr_irdys    : std_logic_vector(0 to length(rids)-1);
+		signal rgtr0_data    : std_logic_vector(sout_data'range);
+		signal ack_rgtr      : std_logic_vector(0 to 8-1);
+		signal addr_rgtr     : std_logic_vector(0 to 32-1);
+		signal length_rgtr   : std_logic_vector(24-1 downto 0);
+		signal baddr_rgtr    : std_logic_vector(0 to 24-1);
 
 		constant word_bits   : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
 		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
-		signal dmaio_irdy : std_logic;
+		signal dmaio_irdy    : std_logic;
 		signal status        : std_logic_vector(0 to 8-1);
 		alias  status_rw     : std_logic is status(status'right);
 
@@ -231,13 +231,14 @@ begin
 			irdy      => sin_irdy,
 			data      => sin_data,
 			rid_act   => rid_act,
+			length_act => length_act,
 			pyl_act   => pyl_act,
 			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy);
 
 		siodecode_e : entity hdl4fpga.sio_decode
 		generic map (
-			rids      => rids)
+			rids       => rids)
 		port map (
 			clk        => sin_clk,
 			frm        => rgtr_frm,
@@ -245,7 +246,6 @@ begin
 			trdy       => rgtr_trdy,
 			data       => sin_data,
 			rid_act    => rid_act,
-			length_act => '0',
 			pyl_act    => pyl_act,
 			pyl_frm    => rgtr_frms,
 			pyl_irdy   => rgtr_irdys);
@@ -266,24 +266,33 @@ begin
 			signal ctlr_di_rdy : std_logic;
 		begin
 			
-			rgtr0_e : entity hdl4fpga.fifo
-			generic map (
-				max_depth  => (8*32)/sin_data'length,
-				latency    => latencies_tab(profile).dmaio,
-				check_sov  => true,
-				check_dov  => true)
-			port map (
-				mode(0)  => ctlr_inirdy,
-				mode(1)  => '0',
+			rgtr0_b : block
+				signal mode : std_logic_vector(0 to 2-1);
+				signal src_irdy : std_logic;
+			begin
+				mode(0) <= ctlr_inirdy and (rgtr_frm or not rgtr_irdy or (not rgtr0_frm and rgtr0_irdy)) and (rgtr_frm or rgtr_irdy);
+				mode(1) <= ctlr_inirdy and ((rgtr0_frm or not rgtr0_irdy) or not (rgtr_frm or rgtr_irdy));
+				src_irdy <= rid_act or length_act or rgtr0_irdy;
+    			fifo_e : entity hdl4fpga.fifo
+    			generic map (
+    				max_depth => (8*32)/sin_data'length,
+    				latency   => latencies_tab(profile).dmaio,
+    				check_sov => true,
+    				check_dov => true)
+    			port map (
+    				mode(0)  => ctlr_inirdy,
+    				mode(1)  => '0',
 
-				src_clk  => sin_clk,
-				src_irdy => rgtr0_irdy,
-				src_data => sin_data,
-			
-				dst_clk  => sout_clk,
-				dst_irdy => open,
-				dst_trdy => sout_trdy,
-				dst_data => rgtr0_data);
+    				src_clk  => sin_clk,
+    				src_irdy => rgtr0_irdy,
+    				src_data => sin_data,
+    			
+    				dst_clk  => sout_clk,
+    				dst_irdy => open,
+    				dst_trdy => sout_trdy,
+    				dst_data => rgtr0_data);
+
+			end block;
 
 			ack_frm <= rgtr_frms(1) or rgtr_irdys(1);
 			ack_e : entity hdl4fpga.serlzr
@@ -370,7 +379,7 @@ begin
 			signal siodmaio_data : std_logic_vector(sout_data'range);
 
 			signal sodata_irdy   : std_logic;
-			signal sodata_trdy   : std_logic;
+			alias  sodata_trdy   is sout_trdy;
 			signal sodata_data   : std_logic_vector(sout_data'range);
 
 			constant pfix_size   : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
@@ -418,6 +427,15 @@ begin
 
 			sodata_b : block
 				constant dma_lat   : natural := latencies_tab(profile).sodata;
+
+				signal sout_req    : std_logic := '0';
+				signal sout_rdy    : std_logic := '0';
+
+				signal rgtr0_req   : std_logic := '0';
+				signal rgtr0_rdy   : std_logic := '0';
+
+				signal rgtr1_req   : std_logic := '0';
+				signal rgtr1_rdy   : std_logic := '0';
 
 				signal pack_req    : std_logic := '0';
 				signal pack_rdy    : std_logic := '0';
@@ -480,36 +498,38 @@ begin
 				process (ctlr_clk)
 				begin
 					if rising_edge(ctlr_clk) then
-   						if (pack_req xor pack_rdy)='0' then
+   						if (sout_req xor sout_rdy)='0' then
    							if (dmaio_rdy xor dmaio_req)='1' then
-								pack_req <= not pack_rdy;
+								sout_req <= not sout_rdy;
    							end if;
    						end if;
 					end if;
 				end process;
 
-				process (sio_clk)
+				process (sout_clk)
 					type states is (s_rgtr0, s_rgtr1, s_data);
 					variable state : states;
 				begin
-					if rising_edge(sio_clk) then
-						case state is
-						when s_rgtr0 =>
-							rgtr0_req <= not regtr0_rdy;
-							state := s_rgtr1;
-						when s_rgtr1 =>
-							if (rgtr0_rdy xor regtr0_req)='0' then
-								rgtr1_req <= not regtr1_rdy;
-								state := s_data;
-							end if;
-						when s_data =>
-						end case;
-
-   						if (pack_req xor pack_rdy)='0' then
-   							if (dmaio_rdy xor dmaio_req)='1' then
-								pack_req <= not pack_rdy;
-   							end if;
-   						end if;
+					if rising_edge(sout_clk) then
+						if (sout_rdy xor sout_req)='0' then
+							case state is
+							when s_rgtr0 =>
+								rgtr0_req <= not rgtr0_rdy;
+								state := s_rgtr1;
+							when s_rgtr1 =>
+								if (rgtr0_rdy xor rgtr0_req)='0' then
+									rgtr1_req <= not rgtr1_rdy;
+									state := s_data;
+								end if;
+							when s_data =>
+								if (rgtr1_rdy xor rgtr1_req)='0' then
+									rgtr1_req <= not rgtr1_rdy;
+									state := s_rgtr0;
+								end if;
+							end case;
+						else
+							state := s_rgtr0;
+						end if;
 					end if;
 				end process;
 
@@ -572,6 +592,15 @@ begin
 					so_trdy => '1', --sodata_trdy,
 					so_data => sodata_data);
 
+				-- sout_irdy <= 
+					-- rgtr0_irdy when (rgtr0_rdy xor rgtr0_req)='1' else
+					-- rgtr1_irdy when (rgtr1_rdy xor rgtr1_req)='1' else
+					-- so_irdy;
+-- 
+				-- sout_data <= 
+					-- rgtr0_data when (rgtr0_rdy xor rgtr0_req)='1' else
+					-- rgtr1_data when (rgtr1_rdy xor rgtr1_req)='1' else
+					-- so_data;
 			end block;
 
 		end block;

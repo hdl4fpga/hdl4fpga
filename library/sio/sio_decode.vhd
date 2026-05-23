@@ -38,7 +38,6 @@ entity sio_decode is
 		data       : in  std_logic_vector;
 		
 		rid_act    : in  std_logic;
-		length_act : in  std_logic := '0';
 		pyl_act    : in  std_logic := '1';
 
 		pyl_frm    : out std_logic_vector(0 to length(rids)-1);
@@ -50,7 +49,7 @@ end;
 architecture beh of sio_decode is
 	constant length : natural := length(rids);
 begin
-	process (frm, irdy, rid_act, length_act, pyl_act, clk)
+	process (frm, irdy, rid_act, pyl_act, clk)
 		variable rid : unsigned(8-1 downto 0);
 	begin
 		if rising_edge(clk) then
@@ -63,8 +62,8 @@ begin
 		pyl_irdy <= (others => '0');
 		for i in 0 to length-1 loop
 			if hdo(rids)**("["&natural'image(i)&"]")=std_logic_vector(rid) then
-				pyl_frm(i)  <= frm  and not rid_act and (pyl_act or length_act);
-				pyl_irdy(i) <= irdy and not rid_act and (pyl_act or length_act);
+				pyl_frm(i)  <= frm  and pyl_act;
+				pyl_irdy(i) <= irdy and pyl_act;
 			end if;
 		end loop;
 	end process;

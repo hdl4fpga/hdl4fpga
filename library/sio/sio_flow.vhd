@@ -112,7 +112,6 @@ begin
 		trdy       => rgtr_trdy,
 		data       => rx_data,
 		rid_act    => rid_act,
-		length_act => '0',
 		pyl_act    => pyl_act,
 		pyl_frm    => pyl_frms,
 		pyl_irdy   => pyl_irdys);
