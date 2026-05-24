@@ -267,11 +267,11 @@ begin
 		begin
 			
 			rgtr0_b : block
-				signal mode : std_logic_vector(0 to 2-1);
+				signal mode     : std_logic_vector(0 to 2-1);
 				signal src_irdy : std_logic;
 			begin
-				mode(0) <= ctlr_inirdy and (rgtr_frm or not rgtr_irdy or (not rgtr0_frm and rgtr0_irdy)) and (rgtr_frm or rgtr_irdy);
-				mode(1) <= ctlr_inirdy and ((rgtr0_frm or not rgtr0_irdy) or not (rgtr_frm or rgtr_irdy));
+				mode(0)  <= ctlr_inirdy and (rgtr_frm or (rgtr_irdy and not rgtr0_frm and rgtr0_irdy));
+				mode(1)  <= ctlr_inirdy and (not rgtr_frm or rgtr_irdy or rgtr0_frm or not rgtr0_irdy);
 				src_irdy <= rid_act or length_act or rgtr0_irdy;
     			fifo_e : entity hdl4fpga.fifo
     			generic map (
@@ -280,18 +280,16 @@ begin
     				check_sov => true,
     				check_dov => true)
     			port map (
-    				mode(0)  => ctlr_inirdy,
-    				mode(1)  => '0',
+    				mode     => mode,
 
     				src_clk  => sin_clk,
-    				src_irdy => rgtr0_irdy,
+    				src_irdy => src_irdy,
     				src_data => sin_data,
     			
     				dst_clk  => sout_clk,
     				dst_irdy => open,
     				dst_trdy => sout_trdy,
     				dst_data => rgtr0_data);
-
 			end block;
 
 			ack_frm <= rgtr_frms(1) or rgtr_irdys(1);
