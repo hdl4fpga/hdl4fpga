@@ -218,6 +218,10 @@ begin
 		constant word_bits   : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
 		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
+		signal rgtr0_req     : std_logic := '0';
+		signal rgtr0_rdy     : std_logic := '0';
+		signal soutrgtr0_irdy : std_logic;
+
 		signal dmaio_irdy    : std_logic;
 		signal status        : std_logic_vector(0 to 8-1);
 		alias  status_rw     : std_logic is status(status'right);
@@ -269,9 +273,11 @@ begin
 			rgtr0_b : block
 				signal mode     : std_logic_vector(0 to 2-1);
 				signal src_irdy : std_logic;
+				signal dst_trdy : std_logic;
 			begin
-				mode(0)  <= ctlr_inirdy and (rgtr_frm or (rgtr_irdy and not rgtr0_frm and rgtr0_irdy));
-				mode(1)  <= ctlr_inirdy and (not rgtr_frm or rgtr_irdy or rgtr0_frm or not rgtr0_irdy);
+				-- mode(0)  <= ctlr_inirdy and (rgtr_frm or (rgtr_irdy and not rgtr0_frm and rgtr0_irdy));
+				mode(0)  <= (ctlr_inirdy and     (not rgtr0_frm and rgtr0_irdy)) or (ctlr_inirdy and rgtr_frm);
+				mode(1)  <= (ctlr_inirdy and not (not rgtr0_frm and rgtr0_irdy));
 				src_irdy <= rid_act or length_act or rgtr0_irdy;
     			fifo_e : entity hdl4fpga.fifo
     			generic map (
@@ -287,9 +293,12 @@ begin
     				src_data => sin_data,
     			
     				dst_clk  => sout_clk,
-    				dst_irdy => open,
-    				dst_trdy => sout_trdy,
+    				dst_irdy => soutrgtr0_irdy,
+    				dst_trdy => dst_trdy,
     				dst_data => rgtr0_data);
+				dst_trdy <= 
+					'1' when (rgtr0_rdy xor rgtr0_req)='1' else
+					'0';
 			end block;
 
 			ack_frm <= rgtr_frms(1) or rgtr_irdys(1);
@@ -429,9 +438,6 @@ begin
 				signal sout_req    : std_logic := '0';
 				signal sout_rdy    : std_logic := '0';
 
-				signal rgtr0_req   : std_logic := '0';
-				signal rgtr0_rdy   : std_logic := '0';
-
 				signal rgtr1_req   : std_logic := '0';
 				signal rgtr1_rdy   : std_logic := '0';
 
@@ -509,15 +515,15 @@ begin
 					variable state : states;
 				begin
 					if rising_edge(sout_clk) then
-						if (sout_rdy xor sout_req)='0' then
+						if (sout_rdy xor sout_req)='1' then
 							case state is
 							when s_rgtr0 =>
 								rgtr0_req <= not rgtr0_rdy;
 								state := s_rgtr1;
 							when s_rgtr1 =>
 								if (rgtr0_rdy xor rgtr0_req)='0' then
-									rgtr1_req <= not rgtr1_rdy;
-									state := s_data;
+									-- rgtr1_req <= not rgtr1_rdy;
+									-- state := s_data;
 								end if;
 							when s_data =>
 								if (rgtr1_rdy xor rgtr1_req)='0' then
@@ -590,15 +596,17 @@ begin
 					so_trdy => '1', --sodata_trdy,
 					so_data => sodata_data);
 
-				-- sout_irdy <= 
-					-- rgtr0_irdy when (rgtr0_rdy xor rgtr0_req)='1' else
+				sout_irdy <= 
+					soutrgtr0_irdy when (rgtr0_rdy xor rgtr0_req)='1' else
 					-- rgtr1_irdy when (rgtr1_rdy xor rgtr1_req)='1' else
 					-- so_irdy;
+					'0';
 -- 
-				-- sout_data <= 
-					-- rgtr0_data when (rgtr0_rdy xor rgtr0_req)='1' else
+				sout_data <= 
+					rgtr0_data when (rgtr0_rdy xor rgtr0_req)='1' else
 					-- rgtr1_data when (rgtr1_rdy xor rgtr1_req)='1' else
 					-- so_data;
+					(sout_data'range => '-');
 			end block;
 
 		end block;
