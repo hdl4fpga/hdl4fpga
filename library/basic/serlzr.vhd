@@ -34,7 +34,7 @@ entity serlzr is
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';
 		src_irdy  : in  std_logic := '1';
-		src_trdy  : out std_logic := '1';
+		src_trdy  : buffer std_logic := '0';
 		src_data  : in  std_logic_vector;
 		dst_clk   : in  std_logic := '1';
 		dst_frm   : in  std_logic := '1';
@@ -180,7 +180,7 @@ begin
 				out_data => fifo_data);
 		end generate;
 
-		none0_g : if true or src_data'length mod dst_data'length /= 0 generate 
+		none0_g : if src_data'length mod dst_data'length /= 0 generate 
 			src_trdy <= fifo_trdy;
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
@@ -231,13 +231,13 @@ begin
 			dst_data <= reverse(shfd(dst_data'length-1 downto 0)) when lsdfirst else shfd(dst_data'length-1 downto 0);
 		end generate;
 
-		mod0_g : if false and src_data'length mod dst_data'length = 0 generate 
+		mod0_g : if src_data'length mod dst_data'length = 0 generate 
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
-				variable acc : unsigned(shf'range) := (others => '0');
+				variable acc : unsigned(shf'range);
 			begin
 				if rising_edge(dst_clk) then
-					if dst_frm='0' then
+					if (src_frm or src_irdy)='0' then
 						acc := (others => '0');
 						dst_irdy  <= '0';
 						fifo_trdy <= '0';
@@ -245,6 +245,11 @@ begin
 						if dst_trdy='1' then
 							shr := shift_right(shr, dst_data'length);
 							acc := acc - dst_data'length;
+							if acc < dst_data'length then
+								src_trdy <= '1';
+							else
+								src_trdy <= '0';
+							end if;
 						end if;
 						fifo_trdy <= '0';
 						dst_irdy  <= '1';
@@ -259,7 +264,11 @@ begin
 							end if;
 							acc := acc + (src_data'length - dst_data'length);
 							fifo_trdy <= '1';
-							dst_irdy  <= '1';
+							if src_trdy='1' then
+								dst_irdy  <= src_frm;
+							else
+								dst_irdy  <= '1';
+							end if;
 						else
 							dst_irdy  <= '0';
 						end if;
