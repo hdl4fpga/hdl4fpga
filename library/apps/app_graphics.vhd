@@ -395,8 +395,9 @@ begin
 			signal dmaio_irdy : std_logic;
 			signal dmaio_trdy : std_logic;
 			signal dmaio_data : std_logic_vector(0 to (2+((2+1)+(2+1)))*8-1);
-			signal siodmaio_data : std_logic_vector(sout_data'range);
 
+			signal soutrgtr1_irdy : std_logic;
+			signal soutrgtr1_data : std_logic_vector(sout_data'range);
 			signal sodata_irdy   : std_logic;
 			alias  sodata_trdy   is sout_trdy;
 			signal sodata_data   : std_logic_vector(sout_data'range);
@@ -433,6 +434,8 @@ begin
 				to_stdlogicvector(rid_addr) & x"00" & status, 8);
 
 			rgtr1_b : block
+				signal dst_irdy : std_logic;
+				signal dst_trdy : std_logic;
 			begin
 				dmaio_frm <= rgtr1_rdy xor rgtr1_reg;
 				siodma_e : entity hdl4fpga.serlzr
@@ -443,9 +446,12 @@ begin
 					src_trdy => dmaio_trdy,
 					src_data => dmaio_data,
 					dst_clk  => sout_clk,
-					dst_irdy => open,
-					dst_trdy => open,
-					dst_data => siodmaio_data);
+					dst_irdy => soutrgtr1_irdy,
+					dst_trdy => dst_trdy,
+					dst_data => soutrgtr1_data);
+				dst_trdy <=
+					sout_trdy when (rgtr1_rdy xor rgtr1_reg) else
+					'0';
 			end block;
 
 			sodata_b : block
