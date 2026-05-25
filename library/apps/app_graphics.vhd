@@ -209,7 +209,7 @@ begin
 
 		signal rgtr_frms     : std_logic_vector(0 to length(rids)-1);
 		signal rgtr_irdys    : std_logic_vector(0 to length(rids)-1);
-		signal rgtr0_data    : std_logic_vector(sout_data'range);
+		signal soutrgtr0_data    : std_logic_vector(sout_data'range);
 		signal ack_rgtr      : std_logic_vector(0 to 8-1);
 		signal addr_rgtr     : std_logic_vector(0 to 32-1);
 		signal length_rgtr   : std_logic_vector(24-1 downto 0);
@@ -306,7 +306,7 @@ begin
     				dst_clk  => sout_clk,
     				dst_irdy => soutrgtr0_irdy,
     				dst_trdy => dst_trdy,
-    				dst_data => rgtr0_data);
+    				dst_data => soutrgtr0_data);
 
 				dst_trdy <= 
 					'1' when (rgtr0_rdy xor rgtr0_req)='1' else
@@ -626,8 +626,8 @@ begin
 					'0';
 -- 
 				sout_data <= 
-					rgtr0_data when (rgtr0_rdy xor rgtr0_req)='1' else
-					-- rgtr1_data when (rgtr1_rdy xor rgtr1_req)='1' else
+					soutrgtr0_data when (rgtr0_rdy xor rgtr0_req)='1' else
+					soutrgtr1_data when (rgtr1_rdy xor rgtr1_req)='1' else
 					-- so_data;
 					(sout_data'range => '-');
 			end block;
