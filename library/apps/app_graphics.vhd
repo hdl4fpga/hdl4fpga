@@ -621,7 +621,7 @@ begin
 
 				sout_irdy <= 
 					soutrgtr0_irdy when (rgtr0_rdy xor rgtr0_req)='1' else
-					-- rgtr1_irdy when (rgtr1_rdy xor rgtr1_req)='1' else
+					soutrgtr1_irdy when (rgtr1_rdy xor rgtr1_req)='1' else
 					-- so_irdy;
 					'0';
 -- 
