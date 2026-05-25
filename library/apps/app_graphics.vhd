@@ -393,7 +393,6 @@ begin
 			signal trans_length  : unsigned(unsigned_num_bits(dataout_size-1)-1 downto 0);
 
 			signal dmaio_irdy : std_logic;
-			signal dmaio_trdy : std_logic;
 			signal dmaio_data : std_logic_vector(0 to (2+((2+1)+(2+1)))*8-1);
 
 			signal rgtr1_req   : std_logic := '0';
@@ -431,30 +430,40 @@ begin
 				hdr_length + data_length when status_rw='1' else
 				pfix_size;
 
-			dmaio_data <=
-				reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
-				to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
-				to_stdlogicvector(rid_addr) & x"00" & status, 8);
+			dmaio_data <= x"0001020304050607";
+				-- reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
+				-- to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
+				-- to_stdlogicvector(rid_addr) & x"00" & status, 8);
 
 			rgtr1_b : block
-				signal dmaio_frm : std_logic;
+				signal src_irdy : std_logic;
+				signal src_trdy : std_logic;
 				signal dst_irdy : std_logic;
 				signal dst_trdy : std_logic;
 			begin
-				dmaio_frm <= rgtr1_rdy xor rgtr1_req;
+				src_irdy <= rgtr1_rdy xor rgtr1_req;
+				process (sout_clk)
+				begin
+					if rising_edge(sout_clk) then
+						if src_trdy='1' then
+							rgtr1_rdy <= rgtr1_req;
+						end if;
+					end if;
+				end process;
+
 				siodma_e : entity hdl4fpga.serlzr
 				port map (
 					src_clk  => sout_clk,
-					src_frm  => dmaio_frm,
-					src_irdy => dmaio_irdy,
-					src_trdy => dmaio_trdy,
+					src_frm  =>  '0',
+					src_irdy => src_irdy,
+					src_trdy => src_trdy,
 					src_data => dmaio_data,
 					dst_clk  => sout_clk,
 					dst_irdy => soutrgtr1_irdy,
 					dst_trdy => dst_trdy,
 					dst_data => soutrgtr1_data);
 				dst_trdy <=
-					sout_trdy when (rgtr1_rdy xor rgtr1_req)='1' else
+					'1' when (rgtr1_rdy xor rgtr1_req)='1' else
 					'0';
 			end block;
 
@@ -550,8 +559,8 @@ begin
 								end if;
 							when s_data =>
 								if (rgtr1_rdy xor rgtr1_req)='0' then
-									rgtr1_req <= not rgtr1_rdy;
-									state := s_rgtr0;
+									-- rgtr1_req <= not rgtr1_rdy;
+									-- state := s_rgtr0;
 								end if;
 							end case;
 						else
