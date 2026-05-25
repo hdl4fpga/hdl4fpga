@@ -275,7 +275,18 @@ begin
 				signal src_irdy : std_logic;
 				signal dst_trdy : std_logic;
 			begin
-				-- mode(0)  <= ctlr_inirdy and (rgtr_frm or (rgtr_irdy and not rgtr0_frm and rgtr0_irdy));
+
+				process (sout_clk)
+				begin
+					if rising_edge(sout_clk) then
+						if (rgtr0_rdy xor rgtr0_req)='1' then
+							if soutrgtr0_irdy='0' then
+								rgtr0_rdy <= rgtr0_req;
+							end if;
+						end if;
+					end if;
+				end process;
+
 				mode(0)  <= (ctlr_inirdy and     (not rgtr0_frm and rgtr0_irdy)) or (ctlr_inirdy and rgtr_frm);
 				mode(1)  <= (ctlr_inirdy and not (not rgtr0_frm and rgtr0_irdy));
 				src_irdy <= rid_act or length_act or rgtr0_irdy;
@@ -296,6 +307,7 @@ begin
     				dst_irdy => soutrgtr0_irdy,
     				dst_trdy => dst_trdy,
     				dst_data => rgtr0_data);
+
 				dst_trdy <= 
 					'1' when (rgtr0_rdy xor rgtr0_req)='1' else
 					'0';
@@ -420,17 +432,21 @@ begin
 				to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
 				to_stdlogicvector(rid_addr) & x"00" & status, 8);
 
-			siodma_e : entity hdl4fpga.serlzr
-			port map (
-				src_clk  => sout_clk,
-				src_frm  => sout_frm,
-				src_irdy => dmaio_irdy,
-				src_trdy => dmaio_trdy,
-				src_data => dmaio_data,
-				dst_clk  => sout_clk,
-				dst_irdy => open,
-				dst_trdy => open,
-				dst_data => siodmaio_data);
+			rgtr1_b : block
+			begin
+				dmaio_frm <= rgtr1_rdy xor rgtr1_reg;
+				siodma_e : entity hdl4fpga.serlzr
+				port map (
+					src_clk  => sout_clk,
+					src_frm  => dmaio_frm,
+					src_irdy => dmaio_irdy,
+					src_trdy => dmaio_trdy,
+					src_data => dmaio_data,
+					dst_clk  => sout_clk,
+					dst_irdy => open,
+					dst_trdy => open,
+					dst_data => siodmaio_data);
+			end block;
 
 			sodata_b : block
 				constant dma_lat   : natural := latencies_tab(profile).sodata;
@@ -522,8 +538,8 @@ begin
 								state := s_rgtr1;
 							when s_rgtr1 =>
 								if (rgtr0_rdy xor rgtr0_req)='0' then
-									-- rgtr1_req <= not rgtr1_rdy;
-									-- state := s_data;
+									rgtr1_req <= not rgtr1_rdy;
+									state := s_data;
 								end if;
 							when s_data =>
 								if (rgtr1_rdy xor rgtr1_req)='0' then
