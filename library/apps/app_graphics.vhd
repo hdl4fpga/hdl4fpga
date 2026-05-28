@@ -401,7 +401,7 @@ begin
 			signal soutrgtr1_irdy : std_logic;
 			signal soutrgtr1_data : std_logic_vector(sout_data'range);
 			signal sodata_irdy   : std_logic;
-			alias  sodata_trdy   is sout_trdy;
+			signal sodata_trdy   : std_logic;
 			signal sodata_data   : std_logic_vector(sout_data'range);
 
 			constant pfix_size   : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
@@ -430,17 +430,17 @@ begin
 				hdr_length + data_length when status_rw='1' else
 				pfix_size;
 
-			dmaio_data <= x"0001020304050607";
-				-- reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
-				-- to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
-				-- to_stdlogicvector(rid_addr) & x"00" & status, 8);
-
 			rgtr1_b : block
 				signal src_irdy : std_logic;
 				signal src_trdy : std_logic;
 				signal dst_irdy : std_logic;
 				signal dst_trdy : std_logic;
 			begin
+				dmaio_data <=
+					reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
+					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
+					to_stdlogicvector(rid_addr) & x"00" & status, 8);
+
 				src_irdy <= rgtr1_rdy xor rgtr1_req;
 				process (sout_clk)
 				begin
@@ -559,8 +559,8 @@ begin
 								end if;
 							when s_data =>
 								if (rgtr1_rdy xor rgtr1_req)='0' then
-									-- rgtr1_req <= not rgtr1_rdy;
-									-- state := s_rgtr0;
+									pack_req <= not pack_rdy;
+									state := s_rgtr0;
 								end if;
 							end case;
 						else
@@ -625,20 +625,25 @@ begin
 					si_data => pack_data,
 
 					so_irdy => sodata_irdy,
-					so_trdy => '1', --sodata_trdy,
+					so_trdy => sodata_trdy,
 					so_data => sodata_data);
+
+				sodata_trdy <=
+					sout_trdy when (pack_rdy  xor  pack_req)='1' else
+					'0';
 
 				sout_irdy <= 
 					soutrgtr0_irdy when (rgtr0_rdy xor rgtr0_req)='1' else
 					soutrgtr1_irdy when (rgtr1_rdy xor rgtr1_req)='1' else
-					-- so_irdy;
+					sodata_irdy    when (pack_rdy  xor  pack_req)='1' else
 					'0';
 -- 
 				sout_data <= 
 					soutrgtr0_data when (rgtr0_rdy xor rgtr0_req)='1' else
 					soutrgtr1_data when (rgtr1_rdy xor rgtr1_req)='1' else
-					-- so_data;
+					sodata_data    when (pack_rdy  xor  pack_req)='1' else
 					(sout_data'range => '-');
+
 			end block;
 
 		end block;
