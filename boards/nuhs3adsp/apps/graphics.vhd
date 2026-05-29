@@ -233,7 +233,7 @@ begin
 		sout_clk     => sio_clk,
 		sout_frm     => si_frm,
 		sout_irdy    => si_irdy,
-		sout_trdy    => si_trdy,
+		sout_trdy    => '1', --si_trdy,
 		sout_data    => si_data,
 
 		video_clk    => video_clk,

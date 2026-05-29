@@ -46,7 +46,7 @@ architecture def of sio_pack is
 begin
 	process (si_frm, so_trdy, sio_clk)
 		variable shr_frm  : unsigned(0 to 16/si_data'length-1);
-		variable shr_irdy : unsigned(shr_frm'range);
+		variable shr_irdy : unsigned(shr_frm'range) := (others => '0');
 		variable shr_data : unsigned(0 to 16-1);
 	begin
 		if rising_edge(sio_clk) then

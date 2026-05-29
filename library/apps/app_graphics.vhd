@@ -309,7 +309,7 @@ begin
     				dst_data => soutrgtr0_data);
 
 				dst_trdy <= 
-					'1' when (rgtr0_rdy xor rgtr0_req)='1' else
+					sout_trdy when (rgtr0_rdy xor rgtr0_req)='1' else
 					'0';
 			end block;
 
@@ -463,7 +463,7 @@ begin
 					dst_trdy => dst_trdy,
 					dst_data => soutrgtr1_data);
 				dst_trdy <=
-					'1' when (rgtr1_rdy xor rgtr1_req)='1' else
+					sout_trdy when (rgtr1_rdy xor rgtr1_req)='1' else
 					'0';
 			end block;
 
@@ -560,7 +560,7 @@ begin
 							when s_data =>
 								if (rgtr1_rdy xor rgtr1_req)='0' then
 									pack_req <= not pack_rdy;
-									state := s_rgtr0;
+									-- state := s_rgtr0;
 								end if;
 							end case;
 						else
