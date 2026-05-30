@@ -34,7 +34,7 @@ entity serlzr is
 		src_clk   : in  std_logic;
 		src_frm   : in  std_logic := '1';
 		src_irdy  : in  std_logic := '1';
-		src_trdy  : buffer std_logic := '0';
+		src_trdy  : out std_logic := '0';
 		src_data  : in  std_logic_vector;
 		dst_clk   : in  std_logic := '1';
 		dst_frm   : in  std_logic := '1';
@@ -232,29 +232,25 @@ begin
 		end generate;
 
 		mod0_g : if src_data'length mod dst_data'length = 0 generate 
+			src_trdy <= fifo_trdy;
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
 				variable acc : unsigned(shf'range);
 			begin
 				if rising_edge(dst_clk) then
+					if acc >= dst_data'length then 
+						fifo_trdy <= '0';
+						dst_irdy  <= '1';
+					end if;
 					if (src_frm or src_irdy)='0' then
 						acc := (others => '0');
 						dst_irdy  <= '0';
 						fifo_trdy <= '0';
-					elsif acc >= dst_data'length then 
-						if dst_trdy='1' then
+					elsif dst_trdy='1' then
+						if acc >= dst_data'length then 
 							shr := shift_right(shr, dst_data'length);
 							acc := acc - dst_data'length;
-							if acc < dst_data'length then
-								src_trdy <= '1';
-							else
-								src_trdy <= '0';
-							end if;
-						end if;
-						fifo_trdy <= '0';
-						dst_irdy  <= '1';
-	   				elsif dst_trdy='1' then
-						if src_irdy='1' then
+						elsif src_irdy='1' then
 							-- Xilinx 14.7 synthesys bug
 							-- shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
 							if not lsdfirst then
@@ -264,7 +260,7 @@ begin
 							end if;
 							acc := acc + (src_data'length - dst_data'length);
 							fifo_trdy <= '1';
-							if src_trdy='1' then
+							if fifo_trdy='1' then
 								dst_irdy  <= src_frm;
 							else
 								dst_irdy  <= '1';
@@ -272,6 +268,11 @@ begin
 						else
 							dst_irdy  <= '0';
 						end if;
+					end if;
+					if acc < dst_data'length then
+						fifo_trdy <= dst_trdy;
+					else
+						fifo_trdy <= '0';
 					end if;
 					rgtr <= std_logic_vector(shr);
 				end if;

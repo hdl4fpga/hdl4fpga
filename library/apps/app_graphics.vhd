@@ -593,13 +593,13 @@ begin
 										cy := value(cy'range);
 										value := value - 1;
 									end if;
-								elsif value(value'left)='1' then
-									pack_rdy <= pack_req;
-									pack_frm <= '0';
 								end if;
 								serlzr_frm  <= not value(value'left);
 								pack_length <= std_logic_vector(value(8-1 downto 0)+1);
-								if (value(cy'range) xor cy)="11" then
+								if value(value'left)='1' then
+									pack_frm <= '0';
+									pack_rdy <= pack_req;
+								elsif (value(cy'range) xor cy)="11" then
 									pack_frm <= '0';
 								else
 									pack_frm <= not value(value'left);
