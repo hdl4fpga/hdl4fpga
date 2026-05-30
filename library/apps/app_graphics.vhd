@@ -220,6 +220,13 @@ begin
 
 		signal rgtr0_req     : std_logic := '0';
 		signal rgtr0_rdy     : std_logic := '0';
+		signal rgtr1_req   : std_logic := '0';
+		signal rgtr1_rdy   : std_logic := '0';
+		signal pack_req    : std_logic := '0';
+		signal pack_rdy    : std_logic := '0';
+				signal sout_req    : std_logic := '0';
+				signal sout_rdy    : std_logic := '0';
+
 		signal soutrgtr0_irdy : std_logic;
 
 		signal dmaio_irdy    : std_logic;
@@ -282,7 +289,9 @@ begin
 						if (rgtr0_rdy xor rgtr0_req)='1' then
 							if soutrgtr0_irdy='0' then
 								rgtr0_rdy <= rgtr0_req;
+								rgtr1_req <= not rgtr1_rdy;
 							end if;
+						elsif (sout_rdy xor sout_req)='1' then
 						end if;
 					end if;
 				end process;
@@ -395,9 +404,6 @@ begin
 			signal dmaio_irdy : std_logic;
 			signal dmaio_data : std_logic_vector(0 to (2+((2+1)+(2+1)))*8-1);
 
-			signal rgtr1_req   : std_logic := '0';
-			signal rgtr1_rdy   : std_logic := '0';
-
 			signal soutrgtr1_irdy : std_logic;
 			signal soutrgtr1_data : std_logic_vector(sout_data'range);
 			signal sodata_irdy   : std_logic;
@@ -408,6 +414,7 @@ begin
 			signal pay_length    : unsigned(trans_length'range);
 			signal data_length   : unsigned(trans_length'range);
 			signal hdr_length    : unsigned(trans_length'range);
+
 		begin
 
 			trans_length <= unsigned(length_rgtr(trans_length'range));
@@ -447,6 +454,7 @@ begin
 					if rising_edge(sout_clk) then
 						if src_trdy='1' then
 							rgtr1_rdy <= rgtr1_req;
+							pack_req  <= not pack_rdy;
 						end if;
 					end if;
 				end process;
@@ -470,11 +478,6 @@ begin
 			sodata_b : block
 				constant dma_lat   : natural := latencies_tab(profile).sodata;
 
-				signal sout_req    : std_logic := '0';
-				signal sout_rdy    : std_logic := '0';
-
-				signal pack_req    : std_logic := '0';
-				signal pack_rdy    : std_logic := '0';
 
 				signal serlzr_frm  : std_logic;
 				signal serlzr_irdy : std_logic;
@@ -537,35 +540,9 @@ begin
    						if (sout_req xor sout_rdy)='0' then
    							if (dmaio_rdy xor dmaio_req)='1' then
 								sout_req <= not sout_rdy;
+								rgtr0_req <= not rgtr0_rdy;
    							end if;
    						end if;
-					end if;
-				end process;
-
-				process (sout_clk)
-					type states is (s_rgtr0, s_rgtr1, s_data);
-					variable state : states;
-				begin
-					if rising_edge(sout_clk) then
-						if (sout_rdy xor sout_req)='1' then
-							case state is
-							when s_rgtr0 =>
-								rgtr0_req <= not rgtr0_rdy;
-								state := s_rgtr1;
-							when s_rgtr1 =>
-								if (rgtr0_rdy xor rgtr0_req)='0' then
-									rgtr1_req <= not rgtr1_rdy;
-									state := s_data;
-								end if;
-							when s_data =>
-								if (rgtr1_rdy xor rgtr1_req)='0' then
-									pack_req <= not pack_rdy;
-									-- state := s_rgtr0;
-								end if;
-							end case;
-						else
-							state := s_rgtr0;
-						end if;
 					end if;
 				end process;
 
@@ -599,6 +576,7 @@ begin
 								if value(value'left)='1' then
 									pack_frm <= '0';
 									pack_rdy <= pack_req;
+									sout_rdy <= sout_req;
 								elsif (value(cy'range) xor cy)="11" then
 									pack_frm <= '0';
 								else
