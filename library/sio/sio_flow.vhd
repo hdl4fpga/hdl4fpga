@@ -388,8 +388,8 @@ begin
 		signal gntd : std_logic_vector(0 to 2-1);
 	begin
 
-		tx_frms(0)  <= '0'; --si_frm;
-		tx_irdys(0) <= '0'; --si_irdy;
+		tx_frms(0)  <= si_frm;
+		tx_irdys(0) <= si_irdy;
 		si_trdy     <= tx_trdys(0);
 
 		arbiter_i : entity hdl4fpga.mii_arbiter

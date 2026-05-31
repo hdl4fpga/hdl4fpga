@@ -225,15 +225,15 @@ begin
 		fifo_size    => mem_size)
 	port map (
 		tp_sel       => "0000",
-		sin_clk      => sio_clk,
+		sin_clk      => mii_rxc,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
 		sin_trdy     => so_trdy,
 		sin_data     => so_data,
-		sout_clk     => sio_clk,
+		sout_clk     => mii_txc,
 		sout_frm     => si_frm,
 		sout_irdy    => si_irdy,
-		sout_trdy    => '1', --si_trdy,
+		sout_trdy    => si_trdy,
 		sout_data    => si_data,
 
 		video_clk    => video_clk,
