@@ -149,7 +149,7 @@ begin
 
 	txserlzr_e : entity hdl4fpga.serlzr
 	port map (
-		src_clk  => miirx_clk,
+		src_clk  => miitx_clk,
 		src_frm  => srztx_frm,
 		src_irdy => srztx_irdy,
 		src_trdy => srztx_trdy,

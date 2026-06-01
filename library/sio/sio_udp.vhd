@@ -88,6 +88,7 @@ architecture struct of sio_udp is
 
 	signal ipoetx_frm    : std_logic;
 	signal ipoetx_irdy   : std_logic;
+	signal ipoetx_trdy   : std_logic;
 	signal ipoetx_data   : std_logic_vector(miitx_data'range);
 
 begin
@@ -120,8 +121,10 @@ begin
 		miitx_clk     => miitx_clk,
 		miitx_frm     => ipoetx_frm,
 		miitx_irdy    => ipoetx_irdy,
+		miitx_trdy    => ipoetx_trdy,
 		miitx_data    => ipoetx_data);
 
+	ipoetx_trdy <= miitx_trdy;
 	ipoefrm_i : entity hdl4fpga.latency
 	generic map (
 		n => 1,
