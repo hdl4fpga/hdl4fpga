@@ -77,10 +77,12 @@ architecture def of eth_tx is
     signal tha_act     : std_logic;
     signal typ_act     : std_logic;
     signal act5        : std_logic;
+    signal trdys       : std_logic_vector(0 to 5);
 
 begin
 
 	decode_frm <= pyl_frm or pyl_irdy;
+	trdys <= (others => mii_trdy);
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => "{"                                                 &
@@ -101,10 +103,11 @@ begin
 		frms(2) => sha_act,
 		frms(3) => typ_act,
 		frms(4) => pad_act,
-		frms(5) => act5);
+		frms(5) => act5,
+		trdys   => trdys);
 
 	rom_frm  <= pyl_frm;
-	rom_irdy <= prmb_act or sha_act;
+	rom_irdy <= (prmb_act or sha_act) and mii_trdy;
 	rom_i : entity hdl4fpga.sio_rom
 	generic map (
 		bitdata => reverse(
@@ -162,7 +165,7 @@ begin
 			elsif (not pyl_frm and pyl_irdy)='1' then
 				pyl_trdy <= '0';
 			else
-				pyl_trdy <= pyl_frm;
+				pyl_trdy <= mii_trdy;
 			end if;
 		elsif pyl_frm='1' then
 			pyl_trdy <= '1';

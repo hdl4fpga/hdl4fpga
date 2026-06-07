@@ -148,6 +148,8 @@ begin
 		tp         => tp);
 
 	txserlzr_e : entity hdl4fpga.serlzr
+	generic map (
+		lsdfirst => false)
 	port map (
 		src_clk  => miitx_clk,
 		src_frm  => srztx_frm,
