@@ -45,7 +45,7 @@ entity sio_dayudp is
 		miirx_data : in  std_logic_vector;
 
 		miitx_clk  : in  std_logic;
-		miitx_frm  : buffer std_logic;
+		miitx_frm  : out std_logic;
 		miitx_irdy : buffer std_logic;
 		miitx_trdy : in  std_logic := '1';
 		miitx_data : out std_logic_vector;
@@ -159,6 +159,7 @@ begin
 		dst_clk  => miitx_clk,
 		dst_irdy => miitx_irdy,
 		dst_data => miitx_data);
+	miitx_frm <= miitx_irdy;
 
 	si_trdy <= so_trdy when sio_addr/='0' else siudp_trdy;
 	so_frm  <= si_frm  when sio_addr/='0' else soudp_frm;
