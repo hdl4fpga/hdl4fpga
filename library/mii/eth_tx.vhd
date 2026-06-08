@@ -151,12 +151,14 @@ begin
 		variable shr : unsigned(0 to fcs_crc'length/mii_data'length);
 	begin
 		if rising_edge(mii_clk) then
-			if (pad_act or pyl_frm or pyl_irdy or crc_trdy)='1' then
-				shr(0) := pyl_frm or (pad_act and not decode_last);
-				shr := rotate_left(shr, 1);
+			if mii_trdy='1' then
+				if (pad_act or pyl_frm or pyl_irdy or crc_trdy)='1' then
+					shr(0) := pyl_frm or (pad_act and not decode_last);
+					shr := rotate_left(shr, 1);
+				end if;
+				crc_irdy <= shr(0);
+				crc_frm <= not pyl_frm and pyl_irdy and (not pad_act or decode_last);
 			end if;
-			crc_irdy <= shr(0);
-			crc_frm <= not pyl_frm and pyl_irdy and (not pad_act or decode_last);
 		end if;
 
 		if decode_fin='0' then
@@ -165,12 +167,15 @@ begin
 			elsif (not pyl_frm and pyl_irdy)='1' then
 				pyl_trdy <= '0';
 			else
+				-- pyl_trdy <= '1';
 				pyl_trdy <= mii_trdy;
 			end if;
 		elsif pyl_frm='1' then
-			pyl_trdy <= '1';
+			-- pyl_trdy <= '1';
+			pyl_trdy <= mii_trdy;
 		elsif (pyl_irdy and not shr(1))='1' then
-			pyl_trdy <= '1';
+			-- pyl_trdy <= '1';
+			pyl_trdy <= mii_trdy;
 		else
 			pyl_trdy <= '0';
 		end if;
