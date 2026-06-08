@@ -486,13 +486,16 @@ begin
 				si_data => si_data,
 				so_data => adjlen_data);
 
-			lentx_frm <= 
-				ipv4lentx_act when icmp_gntd='1' else
-				adjlen_act;
+			-- lentx_frm <= 
+				-- ipv4lentx_act when icmp_gntd='1' else
+				-- adjlen_act;
+
+			lentx_frm  <= ipv4lentx_act;
 			lentx_irdy <= lentx_frm and decode_irdy;
-			so_data <=
-				ipv4pyltx_data when icmp_gntd='1' else
-				adjlen_data;
+
+			-- so_data <=
+				-- ipv4pyltx_data when icmp_gntd='1' else
+				-- adjlen_data;
 
 			length_i : entity hdl4fpga.sio_ram
 			generic map (
@@ -502,12 +505,18 @@ begin
 				si_frm  => lentx_frm,
 				si_irdy => lentx_irdy,
 				si_trdy => open,
-				si_data => so_data,
+				-- si_data => so_data,
+				si_data => ipv4pyltx_data,
 				so_clk  => miitx_clk,
 				so_frm  => length_act,
 				so_irdy => decode_irdy,
 				so_trdy => open,
-				so_data => length_data);
+				-- so_data => length_data);
+				so_data => so_data);
+
+			length_data <= 
+				so_data when icmp_gntd='1' else
+				adjlen_data;
 
 			sa_i : entity hdl4fpga.sio_ram
 			generic map (

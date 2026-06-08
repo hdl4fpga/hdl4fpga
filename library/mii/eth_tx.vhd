@@ -147,7 +147,7 @@ begin
 		pyl_data when pyl_irdy='1' else
 		(pyl_data'range => '-');
 
-	process (prmb_act, sha_act, decode_fin, pyl_frm, pyl_irdy, mii_clk)
+	process (prmb_act, sha_act, decode_fin, pyl_frm, pyl_irdy, mii_trdy, mii_clk)
 		variable shr : unsigned(0 to fcs_crc'length/mii_data'length);
 	begin
 		if rising_edge(mii_clk) then
@@ -176,16 +176,21 @@ begin
 		end if;
 	end process;
 
-	fcs_g <= x"04c11db7" when crc_frm='0' else x"00000000";
-	fcs_e : entity hdl4fpga.crc
-	port map (
-		g    => fcs_g,
-		clk  => mii_clk,
-		frm  => fcs_frm,
-		irdy => fcs_irdy,
-		trdy => fcs_trdy,
-		data => fcs_data,
-		crc  => fcs_crc);
+	fcs_b : block
+		signal irdy : std_logic;
+	begin
+		fcs_g <= x"04c11db7" when crc_frm='0' else x"00000000";
+		irdy <= fcs_irdy and mii_trdy;
+		fcs_e : entity hdl4fpga.crc
+		port map (
+			g    => fcs_g,
+			clk  => mii_clk,
+			frm  => fcs_frm,
+			irdy => irdy,
+			trdy => fcs_trdy,
+			data => fcs_data,
+			crc  => fcs_crc);
+	end block;
 
 	mii_frm_p : process (prmb_act, mii_clk)
 		variable frm : std_logic := '0';
