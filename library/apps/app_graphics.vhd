@@ -443,7 +443,7 @@ begin
 				signal dst_irdy : std_logic;
 				signal dst_trdy : std_logic;
 			begin
-				dmaio_data <=
+				dmaio_data <= (others => '1');
 					reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
 					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
 					to_stdlogicvector(rid_addr) & x"00" & status, 8);
@@ -459,10 +459,10 @@ begin
 					end if;
 				end process;
 
-				siodma_e : entity hdl4fpga.serlzr
+				serlzr_e : entity hdl4fpga.serlzr
 				port map (
 					src_clk  => sout_clk,
-					src_frm  =>  '0',
+					src_frm  => '0',
 					src_irdy => src_irdy,
 					src_trdy => src_trdy,
 					src_data => dmaio_data,

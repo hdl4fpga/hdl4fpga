@@ -235,7 +235,7 @@ begin
 			src_trdy <= fifo_trdy;
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
-				variable acc : unsigned(shf'range);
+				variable acc : unsigned(0 to shf'length);
 			begin
 				if rising_edge(dst_clk) then
 					if acc >= dst_data'length then 
@@ -246,19 +246,22 @@ begin
 						acc := (others => '0');
 						dst_irdy  <= '0';
 						fifo_trdy <= '0';
-					elsif dst_trdy='1' then
-						if acc >= dst_data'length then 
+					elsif acc >= dst_data'length then 
+						if dst_trdy='1' then
 							shr := shift_right(shr, dst_data'length);
 							acc := acc - dst_data'length;
-						elsif src_irdy='1' then
-							-- Xilinx 14.7 synthesys bug
-							-- shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
-							if not lsdfirst then
-								shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
-							else
-								shr(src_data'length-1 downto 0) := unsigned(fifo_data);
-							end if;
-							acc := acc + (src_data'length - dst_data'length);
+						end if;
+					elsif src_irdy='1' then
+						-- Xilinx 14.7 synthesys bug
+						-- shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
+						if not lsdfirst then
+							shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
+						else
+							shr(src_data'length-1 downto 0) := unsigned(fifo_data);
+						end if;
+						acc := acc + src_data'length;
+						if dst_trdy='1' then
+							acc := acc - dst_data'length;
 							fifo_trdy <= '1';
 							if fifo_trdy='1' then
 								dst_irdy  <= src_frm;
