@@ -246,36 +246,38 @@ begin
 						acc := (others => '0');
 						dst_irdy  <= '0';
 						fifo_trdy <= '0';
-					elsif acc >= dst_data'length then 
-						if dst_trdy='1' then
-							shr := shift_right(shr, dst_data'length);
-							acc := acc - dst_data'length;
-						end if;
-					elsif src_irdy='1' then
-						-- Xilinx 14.7 synthesys bug
-						-- shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
-						if not lsdfirst then
-							shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
-						else
-							shr(src_data'length-1 downto 0) := unsigned(fifo_data);
-						end if;
-						acc := acc + src_data'length;
-						if dst_trdy='1' then
-							acc := acc - dst_data'length;
-							fifo_trdy <= '1';
-							if fifo_trdy='1' then
-								dst_irdy  <= src_frm;
-							else
-								dst_irdy  <= '1';
-							end if;
-						else
-							dst_irdy  <= '0';
-						end if;
-					end if;
-					if acc < dst_data'length then
-						fifo_trdy <= dst_trdy;
 					else
-						fifo_trdy <= '0';
+						if acc >= dst_data'length then 
+							if dst_trdy='1' then
+								shr := shift_right(shr, dst_data'length);
+								acc := acc - dst_data'length;
+							end if;
+						elsif src_irdy='1' then
+							-- Xilinx 14.7 synthesys bug
+							-- shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
+							if not lsdfirst then
+								shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
+							else
+								shr(src_data'length-1 downto 0) := unsigned(fifo_data);
+							end if;
+							if dst_trdy='1' then
+								acc := acc + (src_data'length- dst_data'length);
+								fifo_trdy <= '1';
+								if fifo_trdy='1' then
+									dst_irdy  <= src_frm;
+								else
+									dst_irdy  <= '1';
+								end if;
+							else
+								acc := acc + src_data'length;
+								dst_irdy  <= '0';
+							end if;
+						end if;
+						if acc < dst_data'length then
+							fifo_trdy <= dst_trdy;
+						else
+							fifo_trdy <= '0';
+						end if;
 					end if;
 					rgtr <= std_logic_vector(shr);
 				end if;

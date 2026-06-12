@@ -230,7 +230,7 @@ begin
 		signal soutrgtr0_irdy : std_logic;
 
 		signal dmaio_irdy    : std_logic;
-		signal status        : std_logic_vector(0 to 8-1);
+		signal status        : std_logic_vector(0 to 8-1) := x"ff";
 		alias  status_rw     : std_logic is status(status'right);
 
 	begin
@@ -298,7 +298,7 @@ begin
 
 				mode(0)  <= (ctlr_inirdy and     (not rgtr0_frm and rgtr0_irdy)) or (ctlr_inirdy and rgtr_frm);
 				mode(1)  <= (ctlr_inirdy and not (not rgtr0_frm and rgtr0_irdy));
-				src_irdy <= rid_act or length_act or rgtr0_irdy;
+				src_irdy <= rgtr0_irdy;
     			fifo_e : entity hdl4fpga.fifo
     			generic map (
     				max_depth => (8*32)/sin_data'length,
@@ -443,7 +443,7 @@ begin
 				signal dst_irdy : std_logic;
 				signal dst_trdy : std_logic;
 			begin
-				dmaio_data <= (others => '1');
+				dmaio_data <= 
 					reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
 					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
 					to_stdlogicvector(rid_addr) & x"00" & status, 8);

@@ -37,50 +37,53 @@ entity mii_buffer is -- skid buffer
 		src_trdy : out std_logic;
 		src_data : in  std_logic_vector;
 		dst_frm  : out std_logic := '0';
-		dst_irdy : out std_logic := '0';
+		dst_irdy : buffer std_logic := '0';
 		dst_trdy : in  std_logic;
 		dst_data : out std_logic_vector);
 end;
 
 architecture def of mii_buffer is
+	signal in_irdy   : std_logic;
+	signal in_trdy   : std_logic;
+	signal fifo_frm  : std_logic;
+	signal fifo_irdy : std_logic;
+	signal fifo_trdy : std_logic;
+	signal fifo_data : std_logic_vector(dst_data'range);
 begin
 
-	process (src_frm, dst_trdy, clk)
-		variable frm_shr  : unsigned(0 to latency-1) := (others => '0');
-		variable irdy_shr : unsigned(0 to latency-1) := (others => '0');
-		variable data_shr : unsigned(0 to latency*src_data'length-1);
+	fifo_i : entity hdl4fpga.fifo
+	generic map (
+		latency   => 0,
+		check_sov => true,
+		check_dov => true,
+		max_depth => (32*8)/src_data'length)
+	port map (
+		src_clk  => clk,
+		src_irdy => src_irdy,
+		src_trdy => src_trdy,
+		src_data => src_data,
+
+		mode(0)  => '1',
+		mode(1)  => '0',
+
+		dst_clk  => clk,
+		dst_irdy => fifo_irdy,
+		dst_trdy => fifo_trdy,
+		dst_data => fifo_data);
+
+	fifo_frm  <= fifo_irdy;
+	fifo_trdy <= not dst_irdy or dst_trdy;
+	process (fifo_irdy, clk)
+		variable frm  : std_logic;
 	begin
 		if rising_edge(clk) then
-			if (not frm_shr(0) and irdy_shr(0) and dst_trdy)='1' then
-				irdy_shr := (others =>'0');
-			elsif flush and (src_frm or src_irdy)='0' then
-				frm_shr  := (others =>'0');
-				irdy_shr := (others =>'0');
-			elsif (not irdy_shr(0) or dst_trdy)='1' then
-				frm_shr(0) := src_frm;
-				frm_shr := rotate_left(frm_shr, 1);
-				irdy_shr(0) := src_irdy;
-				irdy_shr := rotate_left(irdy_shr, 1);
-				data_shr(0 to src_data'length-1) := unsigned(src_data);
-				data_shr := rotate_left(data_shr, src_data'length);
+			if fifo_trdy='1' then
+				dst_data <= fifo_data;
+				dst_irdy <= fifo_irdy;
 			end if;
-			dst_frm  <= frm_shr(0);
-			dst_irdy <= irdy_shr(0);
-			dst_data <= std_logic_vector(data_shr(0 to dst_data'length-1));
+			frm := fifo_frm;
 		end if;
-		if src_frm='1' then
-			if irdy_shr(0)='0' then
-				src_trdy <= '1';
-			else
-				src_trdy <= dst_trdy;
-			end if;
-		elsif frm_shr(0)='1' then
-			src_trdy <= '0';
-		elsif irdy_shr(0)='1' then
-			src_trdy <= dst_trdy;
-		else
-			src_trdy <= '0';
-		end if;
+		dst_frm <= frm and fifo_irdy;
 	end process;
 
 end;

@@ -137,6 +137,7 @@ begin
 		pyl_irdy when   tha_act='1' else
 		'1'      when   sha_act='1' else
 		pyl_irdy when   typ_act='1' else
+		pyl_irdy when   crc_frm='0' else
 		crc_irdy;
 
 	fcs_data <= 
@@ -167,14 +168,11 @@ begin
 			elsif (not pyl_frm and pyl_irdy)='1' then
 				pyl_trdy <= '0';
 			else
-				-- pyl_trdy <= '1';
 				pyl_trdy <= mii_trdy;
 			end if;
 		elsif pyl_frm='1' then
-			-- pyl_trdy <= '1';
 			pyl_trdy <= mii_trdy;
 		elsif (pyl_irdy and not shr(1))='1' then
-			-- pyl_trdy <= '1';
 			pyl_trdy <= mii_trdy;
 		else
 			pyl_trdy <= '0';
