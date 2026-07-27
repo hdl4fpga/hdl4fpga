@@ -36,20 +36,39 @@ entity mii_buffer is -- skid buffer
 		src_irdy : in  std_logic;
 		src_trdy : out std_logic;
 		src_data : in  std_logic_vector;
-		dst_frm  : out std_logic := '0';
+		dst_frm  : buffer std_logic := '0';
 		dst_irdy : buffer std_logic := '0';
 		dst_trdy : in  std_logic;
 		dst_data : out std_logic_vector);
 end;
 
 architecture def of mii_buffer is
-	signal in_irdy   : std_logic;
-	signal in_trdy   : std_logic;
+	signal rollback  : std_logic;
 	signal fifo_frm  : std_logic;
 	signal fifo_irdy : std_logic;
 	signal fifo_trdy : std_logic;
 	signal fifo_data : std_logic_vector(dst_data'range);
 begin
+
+	process (clk)
+		type states is (s1, s2);
+		variable state : states;
+	begin
+		if rising_edge(clk) then
+			case state is
+			when s1 =>
+				if (dst_frm or dst_irdy)='0' then
+					rollback <= '0';
+					state := s2;
+				end if;
+			when s2 =>
+				if (src_frm or src_irdy)='0' then
+					rollback <= '1';
+					state := s1;
+				end if;
+			end case;
+		end if;
+	end process;
 
 	fifo_i : entity hdl4fpga.fifo
 	generic map (
@@ -64,7 +83,7 @@ begin
 		src_data => src_data,
 
 		mode(0)  => '1',
-		mode(1)  => '0',
+		mode(1)  => rollback,
 
 		dst_clk  => clk,
 		dst_irdy => fifo_irdy,

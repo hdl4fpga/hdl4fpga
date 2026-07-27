@@ -308,7 +308,7 @@ begin
 			clk  => miitx_clk,
 			frm  => udppyltx_frm,
 			irdy => decode_irdy,
-			act  => udp_act);
+			acts => udp_act);
 
 		adjlen_irdy <= length_act or adjlen_act or lentx_act;
 		si_data <= 

@@ -126,7 +126,7 @@ begin
 		irdy  => rgtr_irdy,
 		frms  => rgtr0_frms,
 		irdys => rgtr0_irdys,
-		act   => rgtr0_acts);
+		acts  => rgtr0_acts);
 
 	dup_b : block
 
@@ -321,7 +321,7 @@ begin
 				irdy  => dst_irdy,
 				frms  => dst_frms,
 				trdys => dst_trdys,
-				act   => dst_acts);
+				acts  => dst_acts);
 
 			length_i : entity hdl4fpga.sio_mux
 			port map (
@@ -470,7 +470,7 @@ begin
 			irdy  => dst_irdy,
 			frms  => dst_frms,
 			trdys => dst_trdys,
-			act   => dst_acts);
+			acts  => dst_acts);
 		dst_trdys <= (others => so_trdy);
 
 		dp_i : entity hdl4fpga.sio_ram
