@@ -34,7 +34,8 @@ entity mdio is
 		din  : in  std_logic_vector(0 to 16-1);
 		dout : out std_logic_vector(0 to 16-1);
 		mdc  : out std_logic   := '0';
-		mdio : inout std_logic := 'Z');
+		mdi  : in std_logic  := 'Z';
+		mdt  : out std_logic := 'Z');
 end;
 
 architecture mix of mdio is
@@ -102,19 +103,20 @@ begin
 				case state is
 				when s_trna|s_data =>
 					if op(0)='1' then
-						mdio <= 'Z';
-					else 
-						mdio <= shr(0);
+						mdt <= '1';
+					else
+						mdt <= not shr(0);
 					end if;
 				when others =>
-					mdio <= shr(0);
+					mdt <= not shr(0);
 				end case;
+
 				cntr   := cntr - 1;
-				shr(0) := mdio;
+				shr(0) := mdi;
 				shr    := rotate_left(shr, 1);
 			else
 				cntr  := 32-1;
-				mdio  <= '0';
+				mdt   <= '0';
 				state := s_prem;
 			end if;
 			dout <= std_logic_vector(shr(dout'range));

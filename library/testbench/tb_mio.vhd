@@ -25,6 +25,8 @@ architecture tb_mio of testbench is
 	signal clk : std_logic := '0';
 	signal req : std_logic := '0';
 	signal rdy : std_logic := '0';
+	signal mdio : std_logic := 'H';
+	signal mdt : std_logic := 'H';
 begin
 	clk <= not clk after 5 ns;
 	process (clk)
@@ -36,6 +38,7 @@ begin
 		end if;
 	end process;
 
+	mdio <= 'H' when mdt='0' else '0';
 	du_e : entity hdl4fpga.mdio
 	port map (
 		clk  => clk,
@@ -43,5 +46,7 @@ begin
 		rdy  => rdy,
 		dev  => b"00001",
 		rid  => b"00000",
-		din  => x"1200");
+		din  => x"1200",
+		mdt  => mdt,
+		mdi  => mdio);
 end;
