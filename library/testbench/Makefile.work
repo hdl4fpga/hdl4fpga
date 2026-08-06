@@ -31,6 +31,7 @@ HDL4FPGA__sio_udp = $(LIB_HDL4FPGA)/sio_udp/_primary.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
 VERILOG__vl_types = $(LIB_VERILOG)/vl_types/_primary.dat
+HDL4FPGA__mdio = $(LIB_HDL4FPGA)/mdio/_primary.dat
 HDL4FPGA__hdo = $(LIB_HDL4FPGA)/hdo/_primary.dat
 STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
@@ -40,6 +41,7 @@ HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
 HDL4FPGA__tb_eth = $(LIB_HDL4FPGA)/tb_eth/_primary.dat
 WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
+WORK__testbench__tb_mio = $(LIB_WORK)/testbench/tb_mio.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__nuhs3adsp_graphics_structure_md = $(LIB_WORK)/nuhs3adsp_graphics_structure_md/_primary.dat
 WORK__nuhs3adsp_graphics_md = $(LIB_WORK)/nuhs3adsp_graphics_md/_primary.dat
@@ -53,6 +55,7 @@ SCCOM = sccom
 
 whole_library :     $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench__nuhs3adsp_graphics) \
+    $(WORK__testbench__tb_mio) \
     $(WORK__testbench) \
     $(WORK__nuhs3adsp_graphics_structure_md) \
     $(WORK__nuhs3adsp_graphics_md) \
@@ -83,7 +86,7 @@ $(WORK__nuhs3adsp__graphics) : ../../boards/nuhs3adsp/apps/graphics.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
-	$(VCOM) -93  ../../boards/nuhs3adsp/apps/graphics.vhd
+	$(VCOM) -93 ../../boards/nuhs3adsp/apps/graphics.vhd
 
 $(WORK__nuhs3adsp__ser_debug) : ../../boards/nuhs3adsp/apps/ser_debug.vhd \
 		$(HDL4FPGA__ser_debug) \
@@ -114,6 +117,14 @@ $(WORK__testbench) : testbench.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
 
+$(WORK__testbench__tb_mio) : tb_mio.vhd \
+		$(HDL4FPGA__mdio) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(WORK__testbench)
+	$(VCOM) -93  tb_mio.vhd
+
 $(WORK__nuhs3adsp_graphics_md) \
 $(WORK__nuhs3adsp_graphics_structure_md) \
 $(WORK__testbench__nuhs3adsp_graphics) : ../../boards/nuhs3adsp/testbenches/graphics.vhd \
@@ -128,7 +139,7 @@ $(WORK__testbench__nuhs3adsp_graphics) : ../../boards/nuhs3adsp/testbenches/grap
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(HDL4FPGA__base)
-	$(VCOM) -93  ../../boards/nuhs3adsp/testbenches/graphics.vhd
+	$(VCOM) -93 ../../boards/nuhs3adsp/testbenches/graphics.vhd
 
 $(WORK__testbench__nuhs3adsp_serdebug) : ../../boards/nuhs3adsp/testbenches/ser_debug.vhd \
 		$(HDL4FPGA__tb_eth) \
