@@ -26,12 +26,12 @@ use ieee.numeric_std.all;
 entity mdio is
 	port (
 		clk  : in  std_logic;
-		req  : in  std_logic;
+		req  : in  std_logic := '0';
 		rdy  : buffer std_logic := '0';
-		rd   : in  std_logic :='1';
-		dev  : in  std_logic_vector(0 to  5-1):= b"00001";
-		rid  : in  std_logic_vector(0 to 16-1) := x"8001";
-		din  : in  std_logic_vector(0 to 16-1) := x"5555";
+		wr   : in  std_logic :='1';
+		dev  : in  std_logic_vector(0 to  5-1);
+		rid  : in  std_logic_vector(0 to  5-1);
+		din  : in  std_logic_vector(0 to 16-1);
 		dout : out std_logic_vector(0 to 16-1);
 		mdc  : out std_logic   := '0';
 		mdio : inout std_logic := 'Z');
@@ -41,12 +41,12 @@ architecture mix of mdio is
 	constant start_bits : std_logic_vector := "01";
 	constant trna_bits  : std_logic_vector := "10";
 	signal op : std_logic_vector(0 to 2-1);
-	shared variable shr : unsigned(0 to din'length-1);
 begin
-	op <= rd & not rd;
+	op <= not wr & wr;
 	process(clk)
 		type states is (s_prem, s_start, s_op, s_dev, s_rid, s_trna, s_data);
 		variable state : states;
+		variable shr   : unsigned(0 to din'length-1);
 		variable cntr  : integer range -1 to 31;
 	begin
 		if rising_edge(clk) then
@@ -92,33 +92,32 @@ begin
 					end if;
 				when s_data =>
 					if cntr < 0 then
-						rdy   <= req;
-						cntr  := 32-1;
-						dout  <= std_logic_vector(shr(dout'range));
-						shr   := (others => '0');
-						state := s_prem;
+						rdy    <= req;
+						cntr   := 32-1;
+						shr(0) := '0';
+						state  := s_prem;
 					end if;
 				end case;
+
+				case state is
+				when s_trna|s_data =>
+					if op(0)='1' then
+						mdio <= 'Z';
+					else 
+						mdio <= shr(0);
+					end if;
+				when others =>
+					mdio <= shr(0);
+				end case;
 				cntr   := cntr - 1;
+				shr(0) := mdio;
+				shr    := rotate_left(shr, 1);
 			else
-				cntr   := 32-1;
-				shr(0) := '0';
+				cntr  := 32-1;
+				mdio  <= '0';
 				state := s_prem;
 			end if;
-
-			case state is
-			when s_trna|s_data =>
-				if op(0)='1' then
-					mdio <= 'Z';
-				else 
-					mdio <= shr(0);
-				end if;
-			when others =>
-				mdio <= shr(0);
-			end case;
-
-			shr(0) := mdio;
-			shr := rotate_left(shr, 1);
+			dout <= std_logic_vector(shr(dout'range));
 		end if;
 	end process;
 	mdc <= clk;

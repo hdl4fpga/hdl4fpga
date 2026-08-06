@@ -38,7 +38,10 @@ begin
 
 	du_e : entity hdl4fpga.mdio
 	port map (
-		clk => clk,
-		req => req,
-		rdy => rdy);
+		clk  => clk,
+		req  => req,
+		rdy  => rdy,
+		dev  => b"00001",
+		rid  => b"00000",
+		din  => x"1200");
 end;
