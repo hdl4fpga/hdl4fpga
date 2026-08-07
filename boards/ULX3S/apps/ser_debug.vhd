@@ -185,44 +185,44 @@ begin
 		begin
 
 			--tp(1 to 3) <= tp_phy (1 to 3);
-    		usbphy_e : entity hdl4fpga.usbphy
-    	   	generic map (
+			usbphy_e : entity hdl4fpga.usbphy
+		   	generic map (
 				-- monitor => true,
-    			oversampling => usb_oversampling)
-    		port map (
-    			tp    => tp,
-    			dp    => usb_fpga_dp,
-    			dn    => usb_fpga_dn,
-    			clk   => videoio_clk,
-    			cken  => cken);
-
-    		process (videoio_clk)
-    		begin
-    			if rising_edge(videoio_clk) then
-    				if up='1' then
-    					fltr_on <= '0';
-    				elsif down='1' then
-    					fltr_on <= '1';
-    				end if;
-    			end if;
-    		end process;
-
-    		usbfltrsof_e : entity hdl4fpga.usbfltr_sof
-    		port map (
-    			usb_clk  => videoio_clk,
-    			usb_cken => cken,
-    			phy_en   => tp(1),
-    			phy_bs   => tp(2),
-    			phy_d    => tp(3),
-    			fltr_on  => fltr_on,
-    			fltr_en  => fltr_en,
-    			fltr_bs  => fltr_bs,
-    			fltr_d   => fltr_d);
-
-    			ser_clk     <= videoio_clk;
-    			ser_frm     <= fltr_en; 
-    			ser_irdy    <= not fltr_bs;
-    			ser_data(0) <= fltr_d;
+				oversampling => usb_oversampling)
+			port map (
+				tp    => tp,
+				dp    => usb_fpga_dp,
+				dn    => usb_fpga_dn,
+				clk   => videoio_clk,
+				cken  => cken);
+	
+			process (videoio_clk)
+			begin
+				if rising_edge(videoio_clk) then
+					if up='1' then
+						fltr_on <= '0';
+					elsif down='1' then
+						fltr_on <= '1';
+					end if;
+				end if;
+			end process;
+	
+			usbfltrsof_e : entity hdl4fpga.usbfltr_sof
+			port map (
+				usb_clk  => videoio_clk,
+				usb_cken => cken,
+				phy_en   => tp(1),
+				phy_bs   => tp(2),
+				phy_d    => tp(3),
+				fltr_on  => fltr_on,
+				fltr_en  => fltr_en,
+				fltr_bs  => fltr_bs,
+				fltr_d   => fltr_d);
+	
+				ser_clk     <= videoio_clk;
+				ser_frm     <= fltr_en; 
+				ser_irdy    <= not fltr_bs;
+				ser_data(0) <= fltr_d;
 		end generate;
 
 		-- led(4) <= tp(4);
@@ -231,47 +231,40 @@ begin
 	end generate;
 
 	ipoe_g : if io_link="io_ipoe" generate
-		signal mii_clk : std_logic;
-		signal tp : std_logic_vector(1 to 32);
+		alias mii_clk is rmii_nintclk;
+		alias md_btn  is fire2;
+
+		signal md_clk : std_logic;
+		signal md_req : std_logic;
+		signal md_rdy : std_logic;
+		signal md_t   : std_logic;
+		signal tp       : std_logic_vector(1 to 32);
+
 	begin
 
-		rmii_nintclk <= 'Z';
-		rmii_crsdv   <= 'Z';
-		rmii_rx0     <= 'Z';
-		rmii_rx1     <= 'Z';
-
-		process (rmii_nintclk)
-			variable cntr : unsigned (0 to 4-1);
+		process (sys_clk)
 		begin
-			if rising_edge(rmii_nintclk) then
-				if cntr < (10/2-1) then
-					cntr := cntr + 1 ;
-				else
-					mii_clk <= not mii_clk;
-					cntr := (others => '0');
-				end if;
+			if rising_edge(sys_clk) then
+				led <= tp(1 to 8);
 			end if;
 		end process;
 
-		rmii_e : entity hdl4fpga.link_mii
+		mii_e : entity hdl4fpga.link_mii
 		generic map (
-			default_mac   => x"00_40_00_01_02_03",
-			default_ipv4a => aton("192.168.0.14"),
-			n             => 2)
+			hwaddr     => x"00_40_00_01_02_03",
+			ipv4addr   => aton("192.168.0.14"),
+			n          => 2)
 		port map (
-			tp         => tp,
 			si_frm     => si_frm,
 			si_irdy    => si_irdy,
 			si_trdy    => si_trdy,
-			si_end     => si_end,
 			si_data    => si_data,
-	
+		
 			so_frm     => so_frm,
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
 			dhcp_btn   => fire1,
-			hdplx      => hdplx,
 			mii_txc    => mii_clk,
 			mii_txen   => rmii_tx_en,
 			mii_txd(0) => rmii_tx0,
@@ -281,6 +274,60 @@ begin
 			mii_rxdv   => rmii_crsdv,
 			mii_rxd(0) => rmii_rx0,
 			mii_rxd(1) => rmii_rx1);
+
+		rmii_nintclk <= 'Z';
+		rmii_crsdv   <= 'Z';
+		rmii_rx0     <= 'Z';
+		rmii_rx1     <= 'Z';
+
+		mdclk_p : process(mii_clk)
+			variable cntr : integer range -1 to 50/5-2; -- 50MHz/2.5MHz/2
+		begin
+			if rising_edge(mii_clk) then
+				if cntr < 0 then
+					cntr := 10-2;
+					md_clk <= not md_clk;
+				else
+					cntr := cntr-1 ;
+				end if;
+			end if;
+		end process;
+
+		req_p : process(md_clk)
+			type states is (s_rdy, s_req);
+			variable state : states;
+		begin
+			if rising_edge(md_clk) then
+				case state is
+				when s_rdy =>
+					if md_btn='1' then
+						md_req <= not md_rdy;
+						state := s_req;
+					end if;
+				when s_req =>
+					if to_bit(md_req xor md_rdy)='0' then
+						if md_btn='0' then
+							state := s_rdy;
+						end if;
+					end if;
+				end case;
+			end if;
+		end process;
+
+		mdio_e : entity hdl4fpga.mdio
+		port map (
+			clk => md_clk,
+			req => md_req,
+			rdy => md_rdy,
+			wr  => '1',
+			dev => b"00001",
+			rid => b"00000",
+			din => x"1200",
+			mdt => md_t);
+
+		rmii_mdc  <= md_clk; 
+		rmii_mdio <= '0' when md_t='0' else 'Z';
+		wifi_en   <= '0';
 
 		ser_clk  <= mii_clk;
 		ser_frm  <= rmii_crsdv; --tp(1);
