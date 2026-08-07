@@ -104,8 +104,6 @@ HDL4FPGA__tmds_encoder__def = $(LIB_HDL4FPGA)/tmds_encoder/def.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
 HDL4FPGA__timer = $(LIB_HDL4FPGA)/timer/_primary.dat
-HDL4FPGA__tb_eth__beh = $(LIB_HDL4FPGA)/tb_eth/beh.dat
-HDL4FPGA__tb_eth = $(LIB_HDL4FPGA)/tb_eth/_primary.dat
 HDL4FPGA__sync_fifo__def = $(LIB_HDL4FPGA)/sync_fifo/def.dat
 HDL4FPGA__sync_fifo = $(LIB_HDL4FPGA)/sync_fifo/_primary.dat
 HDL4FPGA__sio_udp__struct = $(LIB_HDL4FPGA)/sio_udp/struct.dat
@@ -437,8 +435,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
     $(HDL4FPGA__timer) \
-    $(HDL4FPGA__tb_eth__beh) \
-    $(HDL4FPGA__tb_eth) \
     $(HDL4FPGA__sync_fifo__def) \
     $(HDL4FPGA__sync_fifo) \
     $(HDL4FPGA__sio_udp__struct) \
@@ -1829,18 +1825,6 @@ $(HDL4FPGA__sync_fifo__def) : ../basic/fifo.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../basic/fifo.vhd
-
-$(HDL4FPGA__tb_eth) \
-$(HDL4FPGA__tb_eth__beh) : tb_eth.vhd \
-		$(HDL4FPGA__eth_tx) \
-		$(HDL4FPGA__rom) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__base) \
-		$(HDL4FPGA__hdo) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga tb_eth.vhd
 
 $(HDL4FPGA__timer) \
 $(HDL4FPGA__timer__def) : ../basic/timer.vhd \
