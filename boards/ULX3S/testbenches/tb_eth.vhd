@@ -22,7 +22,7 @@
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture ulx3s_ethtb of testbench is
+architecture ulx3s_tbeth of testbench is
 
 	signal gp          : std_logic_vector(28-1 downto 0);
 	signal gn          : std_logic_vector(28-1 downto 0);
@@ -207,7 +207,7 @@ architecture ulx3s_ethtb of testbench is
 --		x"1702000000"
 		, 8);
 
-	for all: ulx3s use entity work.ulx3s(eth_tb);
+	for all: ulx3s use entity work.ulx3s(tb_eth);
 
 	signal mii_req : std_logic;
 		signal right : std_logic;

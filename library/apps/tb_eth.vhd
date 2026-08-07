@@ -27,7 +27,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
-entity eth_tb is
+entity tb_eth is
 	generic (
 		ipaddress : std_logic_vector := aton("192.168.0.14");
 		debug : boolean := false);
@@ -45,7 +45,7 @@ entity eth_tb is
 		mii_txd   : out std_logic_vector);
 end;
 
-architecture def of eth_tb is
+architecture def of tb_eth is
 
 
 	constant arppkt : std_logic_vector :=

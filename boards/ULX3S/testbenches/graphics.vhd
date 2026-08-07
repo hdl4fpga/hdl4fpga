@@ -204,7 +204,7 @@ begin
 	fire1    <= '0';
 	fire2    <= '0';
 
-	hdlctb_e : entity work.hdlc_tb
+	hdlctb_e : entity work.tb_hdlc
 	generic map (
 		debug     => debug,
 		baudrate  =>    3e6,
@@ -220,7 +220,7 @@ begin
 	usb_fpga_dp <= 'H';
 	usb_fpga_dn <= 'L';
 
-	usbtb_e : entity work.usb_tb
+	usbtb_e : entity work.tb_usb
 	generic map (
 		debug   => debug,
 		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
@@ -235,7 +235,7 @@ begin
 
 	mii_rxd <= (gp(10), gn(9));
 	(gn(11), gp(11)) <= mii_txd;
-    ipoetb_e : entity work.ipoe_tb
+    ipoetb_e : entity work.tb_ipoe
 	generic map (
 		delay1   => 10 us,
 		snd_data => snd_data,
