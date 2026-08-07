@@ -25,7 +25,7 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture mul_ser_tb of testbench is
+architecture tb_mulser of testbench is
 	constant bin_digits : natural := 3;
 	constant bcd_length : natural := 4;
 	constant bcd_digits : natural := 1;

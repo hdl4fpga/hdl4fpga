@@ -27,7 +27,7 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture format_tb of testbench is
+architecture tb_format of testbench is
 	constant bcd_length : natural := 4;
 	constant bcd_width  : natural := 8;
 	constant bcd_digits : natural := 1;

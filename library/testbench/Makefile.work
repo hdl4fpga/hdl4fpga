@@ -5,18 +5,14 @@ LIB_UNISIM = /opt/Xilinx/14.7/ISE_DS/ISE/vhdl/mti_se/10.1b/lin64/unisim
 LIB_MICRON = micron
 LIB_VERILOG = /opt/modeltech/linux_x86_64/../verilog
 LIB_STD = /opt/modeltech/linux_x86_64/../std
+LIB_ECP5U = /opt/diamond/3.12/ispfpga/vhdl/data/ecp5u/mti/ecp5u
 LIB_IEEE = /opt/modeltech/linux_x86_64/../ieee
 LIB_HDL4FPGA = hdl4fpga
 LIB_WORK = work
 
 # Define path to each design unit
-HDL4FPGA__sdrampkg = $(LIB_HDL4FPGA)/sdrampkg/_primary.dat
-IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 HDL4FPGA__xc3s_sdramdcm = $(LIB_HDL4FPGA)/xc3s_sdramdcm/_primary.dat
-HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
-HDL4FPGA__app_graphics = $(LIB_HDL4FPGA)/app_graphics/_primary.dat
 HDL4FPGA__xc_sdrphy = $(LIB_HDL4FPGA)/xc_sdrphy/_primary.dat
-HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
 HDL4FPGA__cgafonts = $(LIB_HDL4FPGA)/cgafonts/_primary.dat
 HDL4FPGA__cp850x8x8x0to127 = $(LIB_HDL4FPGA)/cp850x8x8x0to127/_primary.dat
 HDL4FPGA__cp850x8x8x128to255 = $(LIB_HDL4FPGA)/cp850x8x8x128to255/_primary.dat
@@ -31,14 +27,31 @@ HDL4FPGA__sio_udp = $(LIB_HDL4FPGA)/sio_udp/_primary.dat
 HDL4FPGA__ser_debug = $(LIB_HDL4FPGA)/ser_debug/_primary.dat
 MICRON__ddr_model = $(LIB_MICRON)/ddr_model/_primary.dat
 VERILOG__vl_types = $(LIB_VERILOG)/vl_types/_primary.dat
-HDL4FPGA__mdio = $(LIB_HDL4FPGA)/mdio/_primary.dat
-HDL4FPGA__hdo = $(LIB_HDL4FPGA)/hdo/_primary.dat
-STD__textio = $(LIB_STD)/textio/_primary.dat
+HDL4FPGA__tb_eth = $(LIB_HDL4FPGA)/tb_eth/_primary.dat
 IEEE__std_logic_1164 = $(LIB_IEEE)/std_logic_1164/_primary.dat
+STD__textio = $(LIB_STD)/textio/_primary.dat
 IEEE__numeric_std = $(LIB_IEEE)/numeric_std/_primary.dat
 HDL4FPGA__base = $(LIB_HDL4FPGA)/base/_primary.dat
+HDL4FPGA__hdo = $(LIB_HDL4FPGA)/hdo/_primary.dat
+HDL4FPGA__sdrampkg = $(LIB_HDL4FPGA)/sdrampkg/_primary.dat
+IEEE__math_real = $(LIB_IEEE)/math_real/_primary.dat
 HDL4FPGA__ipoepkg = $(LIB_HDL4FPGA)/ipoepkg/_primary.dat
-HDL4FPGA__tb_eth = $(LIB_HDL4FPGA)/tb_eth/_primary.dat
+HDL4FPGA__ecp5_profiles = $(LIB_HDL4FPGA)/ecp5_profiles/_primary.dat
+ECP5U__components = $(LIB_ECP5U)/components/_primary.dat
+IEEE__std_logic_arith = $(LIB_IEEE)/std_logic_arith/_primary.dat
+HDL4FPGA__videopkg = $(LIB_HDL4FPGA)/videopkg/_primary.dat
+HDL4FPGA__ecp5_videodcm = $(LIB_HDL4FPGA)/ecp5_videodcm/_primary.dat
+HDL4FPGA__ecp5_sdramdcm = $(LIB_HDL4FPGA)/ecp5_sdramdcm/_primary.dat
+HDL4FPGA__link_hdlc = $(LIB_HDL4FPGA)/link_hdlc/_primary.dat
+HDL4FPGA__sio_dayusb = $(LIB_HDL4FPGA)/sio_dayusb/_primary.dat
+HDL4FPGA__link_mii = $(LIB_HDL4FPGA)/link_mii/_primary.dat
+HDL4FPGA__mdio = $(LIB_HDL4FPGA)/mdio/_primary.dat
+HDL4FPGA__app_graphics = $(LIB_HDL4FPGA)/app_graphics/_primary.dat
+HDL4FPGA__latency = $(LIB_HDL4FPGA)/latency/_primary.dat
+HDL4FPGA__ecp5_sdrphy = $(LIB_HDL4FPGA)/ecp5_sdrphy/_primary.dat
+HDL4FPGA__ecp5_ogbx = $(LIB_HDL4FPGA)/ecp5_ogbx/_primary.dat
+WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
+WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
 WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__tb_mio = $(LIB_WORK)/testbench/tb_mio.dat
@@ -53,7 +66,9 @@ VLOG = vlog
 VOPT = vopt
 SCCOM = sccom
 
-whole_library :     $(WORK__testbench__nuhs3adsp_serdebug) \
+whole_library :     $(WORK__ulx3s__graphics) \
+    $(WORK__ulx3s) \
+    $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__tb_mio) \
     $(WORK__testbench) \
@@ -151,4 +166,35 @@ $(WORK__testbench__nuhs3adsp_serdebug) : ../../boards/nuhs3adsp/testbenches/ser_
 		$(STD__textio) \
 		$(HDL4FPGA__hdo)
 	$(VCOM) -93 ../../boards/nuhs3adsp/testbenches/ser_debug.vhd
+
+$(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93  ../../boards/ULX3S/common/ulx3s.vhd
+
+$(WORK__ulx3s__graphics) : ../../boards/ULX3S/apps/graphics.vhd \
+		$(HDL4FPGA__ecp5_ogbx) \
+		$(HDL4FPGA__ecp5_sdrphy) \
+		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__app_graphics) \
+		$(HDL4FPGA__mdio) \
+		$(HDL4FPGA__link_mii) \
+		$(HDL4FPGA__sio_dayusb) \
+		$(HDL4FPGA__link_hdlc) \
+		$(HDL4FPGA__ecp5_sdramdcm) \
+		$(HDL4FPGA__ecp5_videodcm) \
+		$(HDL4FPGA__videopkg) \
+		$(WORK__ulx3s) \
+		$(IEEE__std_logic_arith) \
+		$(ECP5U__components) \
+		$(HDL4FPGA__ecp5_profiles) \
+		$(HDL4FPGA__ipoepkg) \
+		$(IEEE__math_real) \
+		$(HDL4FPGA__sdrampkg) \
+		$(HDL4FPGA__hdo) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93  ../../boards/ULX3S/apps/graphics.vhd
 

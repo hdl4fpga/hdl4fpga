@@ -19,21 +19,19 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-use std.textio.all;
-
-library ieee;
-use ieee.std_logic_1164.all;
-
+use work.hdo.all;
 library hdl4fpga;
+use hdl4fpga.base.all;
 
-architecture bcd_adder_tb of testbench is
-	signal s : std_logic_vector(0 to 2*4-1);
+architecture tb_hdo of testbench is
+
+	constant settings : string := "[1, length:16, 5]";
 begin
 
-	du_e : entity hdl4fpga.bcd_adder
-	port map (
-		a => x"92",
-		b => x"98",
-		s => s);
+	process
+	begin
+		report natural'image(length(settings));
+		wait;
+	end process;
 
 end;

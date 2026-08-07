@@ -25,7 +25,7 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-architecture dbdbbl_tb of testbench is
+architecture tb_dbdbbl of testbench is
 	signal bcd : std_logic_vector(5*4-1 downto 0);
 begin
 	du_e : entity hdl4fpga.dbdbbl_sllfix

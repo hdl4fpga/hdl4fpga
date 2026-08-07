@@ -27,7 +27,7 @@ use hdl4fpga.base.all;
 use hdl4fpga.hdo.all;
 use hdl4fpga.scopeiopkg.all;
 
-architecture btof_tb of testbench is
+architecture tb_btof of testbench is
 	signal clk      : std_logic := '0';
 	signal btof_req : std_logic;
 	signal btof_rdy : std_logic;

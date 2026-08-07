@@ -25,7 +25,7 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity hdlc_tb is
+entity tb_hdlc is
 	generic (
 		debug     : boolean;
 		baudrate  : natural;
@@ -51,7 +51,7 @@ entity hdlc_tb is
 		uart_sout : out std_logic);
 end;
 
-architecture def of hdlc_tb is
+architecture def of tb_hdlc is
 
 	signal uart_trdy     : std_logic;
 	signal uart_irdy     : std_logic;

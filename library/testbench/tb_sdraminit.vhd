@@ -19,19 +19,39 @@
 -- SOFTWARE.                                                                      --
 --                                                                                --
 
-use work.hdo.all;
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 
-architecture hdo_tb of testbench is
-
-	constant settings : string := "[1, length:16, 5]";
+architecture tb_sdraminit of testbench is
+	constant ctlr_tcp : real := 1.0/100.0e6;
+	signal sdram_init_a : std_logic_vector(14-1 downto 0);
+	signal sdram_init_b : std_logic_vector(3-1 downto 0);
+	signal sdram_init_clk : std_logic := '0';
+	signal sdram_init_req : std_logic := '0';
+	signal sdram_init_rdy : std_logic := '0';
 begin
 
-	process
-	begin
-		report natural'image(length(settings));
-		wait;
-	end process;
+	sdram_init_clk <= not sdram_init_clk after (natural(ctlr_tcp*1.0e9)/2) * 1 ns;
+	dut : entity work.sdram_init
+	generic map (
+		debug => false,
+		ctlr_tcp => ctlr_tcp,
+		sdramtmng_data => "{tWR : 25.0e-9, tRCD  : 15.0e-9, tRP : 15.00e-9, tMRD : 15.0e-9,  tRFC :  66.0e-9,  tREFI : 7.8125e-6}",
+		gear => 4,
+		generation => "sdr",
+		generation_data => 
+			"sdr : {" &
+			"    al   : { '000' : 0 }," &
+			"    bl   : { '000' : 0, '001' : 1, '010' : 2, '011' : 4 }," &
+			"    cl   : { '001' : 1, '010' : 2, '011' : 3 }," &
+			"    tmng : { tPreRST : 100.0e-6, cDLL : 200, tCAS : 15.0e-9}}")
+	port map (
+		sdram_init_clk => sdram_init_clk,
+		init_rst => sdram_init_req,
+		init_cfg => sdram_init_rdy,
+		sdram_init_cl  => "1111",
+		sdram_init_a => sdram_init_a,
+		sdram_init_b => sdram_init_b);
 
 end;

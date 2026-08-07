@@ -29,7 +29,7 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.usbpkg.all;
 
-architecture hdo_tb of testbench is
+architecture tb_hdo of testbench is
 	constant descriptor : string := "{"     &
 		"device:{"                                  &
 			"bLength             :0x12,"            &

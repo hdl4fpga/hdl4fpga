@@ -25,7 +25,7 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity usb_tb is
+entity tb_usb is
 	generic (
 		debug   : boolean;
 		payload_segments : natural_vector;
@@ -49,7 +49,7 @@ entity usb_tb is
 		usb_dn   : inout std_logic);
 end;
 
-architecture def of usb_tb is
+architecture def of tb_usb is
 
 	signal hdlctx_frm    : std_logic;
 	signal hdlctx_end    : std_logic;

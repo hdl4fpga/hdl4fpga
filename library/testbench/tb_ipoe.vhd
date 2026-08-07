@@ -26,7 +26,7 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
-entity ipoe_tb is
+entity tb_ipoe is
 	generic (
 		ipaddress : std_logic_vector := aton("192.168.0.14");
 		delay1 : time := 3 us;
@@ -54,7 +54,7 @@ entity ipoe_tb is
 		mii_txd  : out std_logic_vector);
 end;
 
-architecture def of ipoe_tb is
+architecture def of tb_ipoe is
 	signal rx_null  : std_logic_vector(mii_rxd'range);
 	signal req      : std_logic := '0';
 	signal mii_req  : std_logic := '0';
