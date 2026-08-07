@@ -211,6 +211,7 @@ begin
 
 	ipoe_g : if io_link="io_ipoe" generate
 		alias mii_clk is rmii_nintclk;
+		alias md_btn  is fire2;
 
 		signal md_clk : std_logic;
 		signal md_req : std_logic;
@@ -268,6 +269,27 @@ begin
 				else
 					cntr := cntr-1 ;
 				end if;
+			end if;
+		end process;
+
+		req_p : process(md_clk)
+			type states is (s_rdy, s_req);
+			variable state : states;
+		begin
+			if rising_edge(md_clk) then
+				case state is
+				when s_rdy =>
+					if md_btn='1' then
+						md_req <= not md_rdy;
+						state := s_req;
+					end if;
+				when s_req =>
+					if to_bit(md_req xor md_rdy)='0' then
+						if md_btn='0' then
+							state := s_rdy;
+						end if;
+					end if;
+				end case;
 			end if;
 		end process;
 

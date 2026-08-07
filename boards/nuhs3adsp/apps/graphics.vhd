@@ -190,27 +190,27 @@ begin
 	dhcp_btn <= not sw1;
 	mii_e : entity hdl4fpga.link_mii
 	generic map (
-		hwaddr     => x"00_40_00_01_02_03",
-		ipv4addr   => aton("192.168.0.14"),
-		n          => mii_rxd'length)
+		hwaddr   => x"00_40_00_01_02_03",
+		ipv4addr => aton("192.168.0.14"),
+		n        => mii_rxd'length)
 	port map (
-		si_frm     => si_frm,
-		si_irdy    => si_irdy,
-		si_trdy    => si_trdy,
-		si_data    => si_data,
+		si_frm   => si_frm,
+		si_irdy  => si_irdy,
+		si_trdy  => si_trdy,
+		si_data  => si_data,
 	
-		so_frm     => so_frm,
-		so_irdy    => so_irdy,
-		so_trdy    => so_trdy,
-		so_data    => so_data,
-		dhcp_btn   => dhcp_btn,
-		mii_txc    => mii_txc,
-		mii_txen   => mii_txen,
-		mii_txd    => mii_txd,
+		so_frm   => so_frm,
+		so_irdy  => so_irdy,
+		so_trdy  => so_trdy,
+		so_data  => so_data,
+		dhcp_btn => dhcp_btn,
+		mii_txc  => mii_txc,
+		mii_txen => mii_txen,
+		mii_txd  => mii_txd,
 
-		mii_rxc    => mii_rxc,
-		mii_rxdv   => mii_rxdv,
-		mii_rxd    => mii_rxd);   
+		mii_rxc  => mii_rxc,
+		mii_rxdv => mii_rxdv,
+		mii_rxd  => mii_rxd);   
 
 	graphics_e : entity hdl4fpga.app_graphics
 	generic map (
