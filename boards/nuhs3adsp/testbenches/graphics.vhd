@@ -228,7 +228,7 @@ begin
 		end if;
 	end process;
 
-	tb_eth_e : entity hdl4fpga.tb_eth
+	tb_eth_e : entity work.tb_eth
 	generic map (
 		tha => hdo(data)**".tha",
 		pyl => hdo(data)**".udp")

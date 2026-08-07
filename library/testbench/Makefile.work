@@ -63,10 +63,10 @@ WORK__ulx3s_graphics_structure_md = $(LIB_WORK)/ulx3s_graphics_structure_md/_pri
 WORK__ulx3s_graphics_md = $(LIB_WORK)/ulx3s_graphics_md/_primary.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
-WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
 WORK__testbench__tb_mio = $(LIB_WORK)/testbench/tb_mio.dat
+WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
+WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
 WORK__tb_usb__def = $(LIB_WORK)/tb_usb/def.dat
 WORK__tb_usb = $(LIB_WORK)/tb_usb/_primary.dat
@@ -88,10 +88,10 @@ whole_library :     $(WORK__ulx3s_graphics_structure_md) \
     $(WORK__ulx3s_graphics_md) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__nuhs3adsp_serdebug) \
-    $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__ulx3s_graphics) \
     $(WORK__testbench__tb_mio) \
+    $(WORK__testbench__nuhs3adsp_graphics) \
+    $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench) \
     $(WORK__tb_usb__def) \
     $(WORK__tb_usb) \
@@ -197,34 +197,8 @@ $(WORK__testbench) : testbench.vhd \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -2002 testbench.vhd
 
-$(WORK__testbench__tb_mio) : tb_mio.vhd \
-		$(HDL4FPGA__mdio) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(WORK__testbench)
-	$(VCOM) -93 tb_mio.vhd
-
-$(WORK__nuhs3adsp_graphics_md) \
-$(WORK__nuhs3adsp_graphics_structure_md) \
-$(WORK__testbench__nuhs3adsp_graphics) : ../../boards/nuhs3adsp/testbenches/graphics.vhd \
-		$(HDL4FPGA__tb_eth) \
-		$(HDL4FPGA__tb_eth) \
-		$(VERILOG__vl_types) \
-		$(MICRON__ddr_model) \
-		$(WORK__nuhs3adsp) \
-		$(HDL4FPGA__ipoepkg) \
-		$(HDL4FPGA__tb_eth) \
-		$(WORK__testbench) \
-		$(HDL4FPGA__hdo) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164) \
-		$(HDL4FPGA__base)
-	$(VCOM) -93 ../../boards/nuhs3adsp/testbenches/graphics.vhd
-
 $(WORK__testbench__nuhs3adsp_serdebug) : ../../boards/nuhs3adsp/testbenches/ser_debug.vhd \
-		$(HDL4FPGA__tb_eth) \
+		$(WORK__tb_eth) \
 		$(WORK__testbench) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
@@ -233,6 +207,30 @@ $(WORK__testbench__nuhs3adsp_serdebug) : ../../boards/nuhs3adsp/testbenches/ser_
 		$(STD__textio) \
 		$(HDL4FPGA__hdo)
 	$(VCOM) -93 ../../boards/nuhs3adsp/testbenches/ser_debug.vhd
+
+$(WORK__nuhs3adsp_graphics_md) \
+$(WORK__nuhs3adsp_graphics_structure_md) \
+$(WORK__testbench__nuhs3adsp_graphics) : ../../boards/nuhs3adsp/testbenches/graphics.vhd \
+		$(VERILOG__vl_types) \
+		$(MICRON__ddr_model) \
+		$(WORK__nuhs3adsp) \
+		$(HDL4FPGA__ipoepkg) \
+		$(WORK__tb_eth) \
+		$(WORK__testbench) \
+		$(HDL4FPGA__hdo) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(HDL4FPGA__base)
+	$(VCOM) -93 ../../boards/nuhs3adsp/testbenches/graphics.vhd
+
+$(WORK__testbench__tb_mio) : tb_mio.vhd \
+		$(HDL4FPGA__mdio) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164) \
+		$(WORK__testbench)
+	$(VCOM) -93 tb_mio.vhd
 
 $(WORK__ulx3s) : ../../boards/ULX3S/common/ulx3s.vhd \
 		$(STD__textio) \
