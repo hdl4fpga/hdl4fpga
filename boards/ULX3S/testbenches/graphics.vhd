@@ -22,6 +22,7 @@
 library hdl4fpga;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
+use hdl4fpga.hdo.all;
 
 architecture ulx3s_graphics of testbench is
 	constant debug      : boolean := true;
@@ -141,6 +142,26 @@ architecture ulx3s_graphics of testbench is
 	end component;
 
 	constant usb_freq     : real := 12.0e6;
+	constant data : string := "{"           &
+		"tha:0x"                 &
+			"00_40_00_01_02_03," & -- target hardware address
+		"udp:0x"                 &
+			"0800"               & -- mac type
+			"4500"               & -- IP Version, TOS
+			"0054"               & -- IP Length
+			"0000"               & -- IP Identification
+			"0000"               & -- IP Fragmentation
+			"0511"               & -- IP TTL, protocol
+			"0000"               & -- IP Header Checksum
+			"21436587"           & -- IP Source IP address
+			"c0a8000e"           & -- IP Destiantion IP Address
+			"482c"               & -- UDP source port 
+			"6a1e"               & -- UDP destination port 
+			"ffff"               & -- UDP length
+			"0000"               & -- UDP checksum
+			"010042"             &
+    		"1702_000103_1603_0000_0000_ffff" &
+		"}";
 	constant snd_data  : std_logic_vector :=
 		x"01007e" &
 		x"18ff"   &
@@ -188,10 +209,10 @@ architecture ulx3s_graphics of testbench is
 	signal usb_clk     : std_logic := '0';
 
 
-	alias   mii_txen   : std_logic is gp(12);
-	signal 	mii_txd    : std_logic_vector(0 to 2-1);
-	alias   mii_rxdv   : std_logic is gn(10);
-	signal 	mii_rxd    : std_logic_vector(0 to 2-1);
+	signal mii_req    : std_logic;
+	signal mii_rdy    : std_logic;
+	alias  mii_txen   : std_logic is gp(12);
+	signal mii_txd    : std_logic_vector(0 to 2-1);
 
 begin
 
@@ -233,20 +254,18 @@ begin
 		usb_dp  => usb_fpga_dp,
 		usb_dn  => usb_fpga_dn);
 
-	mii_rxd <= (gp(10), gn(9));
+	mii_txd <= (gp(10), gn(9));
 	(gn(11), gp(11)) <= mii_txd;
-    ipoetb_e : entity work.tb_ipoe
+	tb_eth_e : entity work.tb_eth
 	generic map (
-		delay1   => 10 us,
-		snd_data => snd_data,
-		req_data => req_data)
+		tha => hdo(data)**".tha",
+		pyl => hdo(data)**".udp")
 	port map (
-		mii_clk   => mii_refclk,
-		mii_rxdv  => mii_rxdv,
-		mii_rxd   => mii_rxd,
-
-		mii_txen  => mii_txen,
-		mii_txd   => mii_txd); 
+		req  => mii_req,
+		rdy  => mii_rdy,
+		txc  => mii_refclk,
+		txen => mii_txen,
+		txd  => mii_txd);
 
 	du_e : ulx3s
 	generic map (

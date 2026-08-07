@@ -41,14 +41,13 @@ entity tb_eth is
 end;
 
 architecture beh of tb_eth is
-
 	constant bitrom : std_logic_vector := to_stdlogicvector(tha) & to_stdlogicvector(pyl);
 	signal addr     : unsigned(0 to unsigned_num_bits(bitrom'length/txd'length-1)-1);
 
-   	signal pyl_frm  : std_logic;
-  	signal pyl_irdy : std_logic;
- 	signal pyl_trdy : std_logic;
- 	signal pyl_data : std_logic_vector(txd'range);
+	signal pyl_frm  : std_logic;
+	signal pyl_irdy : std_logic;
+	signal pyl_trdy : std_logic;
+	signal pyl_data : std_logic_vector(txd'range);
 
 begin
 
