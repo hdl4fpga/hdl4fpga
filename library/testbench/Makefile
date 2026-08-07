@@ -192,8 +192,6 @@ HDL4FPGA__mii_arbiter__mix = $(LIB_HDL4FPGA)/mii_arbiter/mix.dat
 HDL4FPGA__mii_arbiter = $(LIB_HDL4FPGA)/mii_arbiter/_primary.dat
 HDL4FPGA__mii_adjlen__def = $(LIB_HDL4FPGA)/mii_adjlen/def.dat
 HDL4FPGA__mii_adjlen = $(LIB_HDL4FPGA)/mii_adjlen/_primary.dat
-HDL4FPGA__mdio_wr__mix = $(LIB_HDL4FPGA)/mdio_wr/mix.dat
-HDL4FPGA__mdio_wr = $(LIB_HDL4FPGA)/mdio_wr/_primary.dat
 HDL4FPGA__mdio__mix = $(LIB_HDL4FPGA)/mdio/mix.dat
 HDL4FPGA__mdio = $(LIB_HDL4FPGA)/mdio/_primary.dat
 HDL4FPGA__link_mii__graphics = $(LIB_HDL4FPGA)/link_mii/graphics.dat
@@ -527,8 +525,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__mii_arbiter) \
     $(HDL4FPGA__mii_adjlen__def) \
     $(HDL4FPGA__mii_adjlen) \
-    $(HDL4FPGA__mdio_wr__mix) \
-    $(HDL4FPGA__mdio_wr) \
     $(HDL4FPGA__mdio__mix) \
     $(HDL4FPGA__mdio) \
     $(HDL4FPGA__link_mii__graphics) \
@@ -1383,9 +1379,7 @@ $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 	$(VCOM) -93 -work hdl4fpga ../apps/link_mii.vhd
 
 $(HDL4FPGA__mdio) \
-$(HDL4FPGA__mdio__mix) \
-$(HDL4FPGA__mdio_wr) \
-$(HDL4FPGA__mdio_wr__mix) : ../mii/mdio.vhd \
+$(HDL4FPGA__mdio__mix) : ../mii/mdio.vhd \
 		$(IEEE__numeric_std) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)

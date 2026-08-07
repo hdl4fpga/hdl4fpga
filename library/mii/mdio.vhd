@@ -26,6 +26,7 @@ use ieee.numeric_std.all;
 entity mdio is
 	port (
 		clk  : in  std_logic;
+		cke  : in  std_logic := '1';
 		req  : in  std_logic := '0';
 		rdy  : buffer std_logic := '0';
 		wr   : in  std_logic :='1';
@@ -33,7 +34,6 @@ entity mdio is
 		rid  : in  std_logic_vector(0 to  5-1);
 		din  : in  std_logic_vector(0 to 16-1);
 		dout : out std_logic_vector(0 to 16-1);
-		mdc  : out std_logic   := '0';
 		mdi  : in std_logic  := 'Z';
 		mdt  : out std_logic := 'Z');
 end;
@@ -51,76 +51,77 @@ begin
 		variable cntr  : integer range -1 to 31;
 	begin
 		if rising_edge(clk) then
-			if (rdy xor req)='1' then
-				case state is
-				when s_prem =>
-					if cntr < 0 then
-						cntr  := start_bits'length-1;
-						shr(0 to 2-1) := unsigned(start_bits);
-						state := s_start;
-					else
-						shr(0) := '1';
-					end if;
-				when s_start =>
-					if cntr < 0 then
-						cntr  := op'length-1;
-						shr(op'range) := unsigned(op);
-						state := s_op;
-					end if;
-				when s_op =>
-					if cntr < 0 then
-						cntr  := dev'length-1;
-						shr(dev'range) := unsigned(dev);
-						state := s_dev;
-					end if;
-				when s_dev =>
-					if cntr < 0 then
-						cntr  := rid'length-1;
-						shr(rid'range) := unsigned(rid);
-						state := s_rid;
-					end if;
-				when s_rid =>
-					if cntr < 0 then
-						cntr := trna_bits'length-1;
-						shr(trna_bits'range) := unsigned(trna_bits);
-						state := s_trna;
-					end if;
-				when s_trna =>
-					if cntr < 0 then
-						cntr  := din'length-1;
-						shr(din'range) := unsigned(din);
-						state := s_data;
-					end if;
-				when s_data =>
-					if cntr < 0 then
-						rdy    <= req;
-						cntr   := 32-1;
-						shr(0) := '0';
-						state  := s_prem;
-					end if;
-				end case;
+			if cke='1' then
+				if (rdy xor req)='1' then
+					case state is
+					when s_prem =>
+						if cntr < 0 then
+							cntr  := start_bits'length-1;
+							shr(0 to 2-1) := unsigned(start_bits);
+							state := s_start;
+						else
+							shr(0) := '1';
+						end if;
+					when s_start =>
+						if cntr < 0 then
+							cntr  := op'length-1;
+							shr(op'range) := unsigned(op);
+							state := s_op;
+						end if;
+					when s_op =>
+						if cntr < 0 then
+							cntr  := dev'length-1;
+							shr(dev'range) := unsigned(dev);
+							state := s_dev;
+						end if;
+					when s_dev =>
+						if cntr < 0 then
+							cntr  := rid'length-1;
+							shr(rid'range) := unsigned(rid);
+							state := s_rid;
+						end if;
+					when s_rid =>
+						if cntr < 0 then
+							cntr := trna_bits'length-1;
+							shr(trna_bits'range) := unsigned(trna_bits);
+							state := s_trna;
+						end if;
+					when s_trna =>
+						if cntr < 0 then
+							cntr  := din'length-1;
+							shr(din'range) := unsigned(din);
+							state := s_data;
+						end if;
+					when s_data =>
+						if cntr < 0 then
+							rdy    <= req;
+							cntr   := 32-1;
+							shr(0) := '0';
+							state  := s_prem;
+						end if;
+					end case;
 
-				case state is
-				when s_trna|s_data =>
-					if op(0)='1' then
-						mdt <= '1';
-					else
+					case state is
+					when s_trna|s_data =>
+						if op(0)='1' then
+							mdt <= '1';
+						else
+							mdt <= not shr(0);
+						end if;
+					when others =>
 						mdt <= not shr(0);
-					end if;
-				when others =>
-					mdt <= not shr(0);
-				end case;
+					end case;
 
-				cntr   := cntr - 1;
-				shr(0) := mdi;
-				shr    := rotate_left(shr, 1);
-			else
-				cntr  := 32-1;
-				mdt   <= '0';
-				state := s_prem;
+					cntr   := cntr - 1;
+					shr(0) := mdi;
+					shr    := rotate_left(shr, 1);
+				else
+					cntr  := 32-1;
+					mdt   <= '0';
+					state := s_prem;
+				end if;
+				dout <= std_logic_vector(shr(dout'range));
 			end if;
-			dout <= std_logic_vector(shr(dout'range));
 		end if;
 	end process;
-	mdc <= clk;
 end;

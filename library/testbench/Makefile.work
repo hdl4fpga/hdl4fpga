@@ -123,7 +123,7 @@ $(WORK__testbench__tb_mio) : tb_mio.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164) \
 		$(WORK__testbench)
-	$(VCOM) -93  tb_mio.vhd
+	$(VCOM) -93 tb_mio.vhd
 
 $(WORK__nuhs3adsp_graphics_md) \
 $(WORK__nuhs3adsp_graphics_structure_md) \

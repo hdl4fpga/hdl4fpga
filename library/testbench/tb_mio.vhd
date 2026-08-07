@@ -22,18 +22,32 @@
 library hdl4fpga;
 
 architecture tb_mio of testbench is
-	signal clk : std_logic := '0';
-	signal req : std_logic := '0';
-	signal rdy : std_logic := '0';
-	signal mdio : std_logic := 'H';
-	signal mdt : std_logic := 'H';
+	signal mii_clk : std_logic := '0';
+	signal md_req  : std_logic := '0';
+	signal md_rdy  : std_logic := '0';
+	signal md_clk  : std_logic := '0';
+	signal mdio    : std_logic := 'H';
+	signal mdt     : std_logic := 'H';
 begin
-	clk <= not clk after 5 ns;
-	process (clk)
+	mii_clk <= not mii_clk after 10 ns;
+	process(mii_clk)
+		variable cntr : integer range -1 to 10-2;
 	begin
-		if rising_edge(clk) then
-			if (req xor rdy)='0' then
-				req <= not rdy;
+		if rising_edge(mii_clk) then
+			if cntr < 0 then
+				cntr := 10-2;
+				md_clk <= not md_clk;
+			else
+				cntr := cntr-1 ;
+			end if;
+		end if;
+	end process;
+
+	process (md_clk)
+	begin
+		if rising_edge(md_clk) then
+			if (md_req xor md_rdy)='0' then
+				md_req <= not md_rdy;
 			end if;
 		end if;
 	end process;
@@ -41,9 +55,9 @@ begin
 	mdio <= 'H' when mdt='0' else '0';
 	du_e : entity hdl4fpga.mdio
 	port map (
-		clk  => clk,
-		req  => req,
-		rdy  => rdy,
+		clk  => md_clk,
+		req  => md_req,
+		rdy  => md_rdy,
 		dev  => b"00001",
 		rid  => b"00000",
 		din  => x"1200",
