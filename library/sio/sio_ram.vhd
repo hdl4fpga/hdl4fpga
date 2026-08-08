@@ -50,6 +50,7 @@ architecture def of sio_ram is
 	signal wr_addr : std_logic_vector(rd_addr'range);
 	signal wr_ena  : std_logic;
 
+	constant initdata : std_logic_vector := std_logic_vector(resize(unsigned(bitdata), so_data'length*2**rd_addr'length)); -- Latticesemi segment fault
 begin
 
 	assert so_data'length=si_data'length
@@ -115,7 +116,7 @@ begin
 
 	mem_i : entity hdl4fpga.dpram
 	generic map (
-		bitdata  => std_logic_vector(resize(unsigned(bitdata), so_data'length*2**rd_addr'length)))
+		bitdata  => initdata)
 	port map (
 		rd_addr => rd_addr,
 		rd_data => so_data,

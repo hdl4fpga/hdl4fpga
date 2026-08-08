@@ -100,6 +100,8 @@ architecture def of dvi is
 	alias sblue  is spixel(1*gear-1 downto 0*gear);
 
 	constant dvi_clk : std_logic_vector(10-1 downto 0) := b"0000011111";
+	signal src_trdy : std_logic; -- Lattice Semi complains buffer initialization
+	signal dst_irdy : std_logic; -- Lattice Semi complains buffer initialization
 begin
 
 	dvisubpxl_e : entity hdl4fpga.dvi_subpxl
@@ -119,11 +121,16 @@ begin
 	port map (
 		src_clk  => clk,
 		src_frm  => '1',
+		src_trdy => src_trdy,
 		src_data => dvi_clk,
 		dst_clk  => cclk,
+		dst_irdy => dst_irdy,
 		dst_data => chnc);
 
 	chn0to2_g : for i in 0 to 3-1 generate
+		signal src_trdy : std_logic; -- Lattice Semi complains buffer initialization
+		signal dst_irdy : std_logic; -- Lattice Semi complains buffer initialization
+	begin
 		serlzr_e : entity hdl4fpga.serlzr
 		generic map (
 			lsdfirst  => true,
@@ -131,8 +138,10 @@ begin
 		port map (
 			src_clk  => clk,
 			src_frm  => '1',
+			src_trdy => src_trdy,
 			src_data => cpixel(10*(i+1)-1 downto 10*i),
 			dst_clk  => cclk,
+			dst_irdy => dst_irdy,
 			dst_data => spixel(gear*(i+1)-1 downto gear*i));
 	end generate;
 

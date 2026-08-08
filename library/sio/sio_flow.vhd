@@ -79,14 +79,16 @@ architecture struct of sio_flow is
 	signal acktx_data : std_logic_vector(tx_data'range);
 	signal dup_equ    : std_logic := '0';
 
+	constant xxx1: natural := hdo(frames)**".format.mac.hwda" + hdo(frames)**".format.ipv4.da";
+	constant xxx : string := natural'image(xxx1);
 	constant rgtr0_frame : string := compact('{' &
-		"addr:" & natural'image(
-			hdo(frames)**".format.mac.hwda" +
-			hdo(frames)**".format.ipv4.da")             & ',' &
+		"addr:" & xxx             & ',' &
 		" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
 	signal rgtr0_acts  : std_logic_vector(0 to length(rgtr0_frame));
 	signal rgtr0_frms  : std_logic_vector(0 to length(rgtr0_frame));
 	signal rgtr0_irdys : std_logic_vector(0 to length(rgtr0_frame));
+	signal sin_trdy    : std_logic;
+	signal framedecode_trdy    : std_logic;
 
 begin
 
@@ -95,6 +97,7 @@ begin
 		clk       => rx_clk,
 		frm       => rx_frm,
 		irdy      => rx_irdy,
+		trdy      => sin_trdy, -- lattice semi complains : Port trdy cannot be connected to a constant
 		data      => rx_data,
 		rid_act   => rid_act,
 		pyl_act   => pyl_act,
@@ -124,6 +127,7 @@ begin
 		clk   => rx_clk,
 		frm   => pyl_frms(0),
 		irdy  => rgtr_irdy,
+		trdy  => framedecode_trdy, -- lattice semi complains : Port trdy cannot be connected to a constant
 		frms  => rgtr0_frms,
 		irdys => rgtr0_irdys,
 		acts  => rgtr0_acts);
@@ -243,12 +247,14 @@ begin
 			signal commit    : std_logic;
 			signal rollback  : std_logic;
 
+			constant xxx1: natural :=  -- lattice semi complains
+				hdo(frames)**".format.ipv4.da" +  -- lattice semi complains
+				hdo(frames)**".format.udp.sp";  -- lattice semi complains
+			constant xxx : string := natural'image(xxx1);  -- lattice semi complains
 			constant dst_frame : string := compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
 				"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
-				"  dasp:" & natural'image(
-					hdo(frames)**".format.ipv4.da" +
-					hdo(frames)**".format.udp.sp") & ',' &
+				"  dasp:" & xxx &  -- lattice semi complains
 				"    dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
@@ -260,6 +266,7 @@ begin
 			signal dst_frms  : std_logic_vector(0 to length(dst_frame));
 			signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
 
+			signal framedecode_trdy : std_logic;
 		begin
 
 			process (rgtr0_irdys, pyl_irdys, rx_clk)
@@ -319,6 +326,7 @@ begin
 				clk   => tx_clk,
 				frm   => dst_irdy,
 				irdy  => dst_irdy,
+				trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 				frms  => dst_frms,
 				trdys => dst_trdys,
 				acts  => dst_acts);
@@ -410,12 +418,15 @@ begin
 	end block;
 
 	fifo_b : block
+		constant xxx1: natural := 
+			16 +
+			hdo(frames)**".format.mac.hwda" +
+			hdo(frames)**".format.ipv4.da"  +
+			hdo(frames)**".format.udp.sp";
+		constant xxx : string := natural'image(xxx1);
 		constant dst_frame : string := compact('{' &
-			"tha:" & natural'image(
-				16 +
-				hdo(frames)**".format.mac.hwda" +
-				hdo(frames)**".format.ipv4.da"  +
-				hdo(frames)**".format.udp.sp") & ',' &
+			--"tha:" & natural'image( -- Lattice Semi error
+			"tha:" & xxx & ',' &
 			" dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
 		signal commit    : std_logic;
@@ -429,6 +440,7 @@ begin
 		signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
 		signal dp_data   : std_logic_vector(so_data'range);
 
+		signal framedecode_trdy : std_logic;
 	begin
 
 		src_irdy <= 
@@ -468,6 +480,7 @@ begin
 			clk   => so_clk,
 			frm   => dst_irdy,
 			irdy  => dst_irdy,
+			trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 			frms  => dst_frms,
 			trdys => dst_trdys,
 			acts  => dst_acts);

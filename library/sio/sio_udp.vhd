@@ -86,6 +86,7 @@ architecture struct of sio_udp is
 	signal pylfcs_sb     : std_logic;
 	signal pylfcs_vld    : std_logic;
 
+	signal tp_ipoe : std_logic_vector(1 to 32);
 begin
 
 	miiipoe_i : entity hdl4fpga.mii_ipoe
@@ -93,6 +94,7 @@ begin
 		hwaddr        => hwaddr,
 		ipv4addr      => ipv4addr)
 	port map (
+		tp => tp_ipoe,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
 

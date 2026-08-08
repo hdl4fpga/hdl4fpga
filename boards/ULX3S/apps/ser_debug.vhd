@@ -40,7 +40,7 @@ architecture ser_debug of ulx3s is
 	constant monitor : boolean := true;
 
 	constant settings : string := "{"                                                             &
-		"io_link: io_usb,"                                                                                &
+		"io_link: io_ipoe,"                                                                                &
 		"video:{"                                                                                         &
 			"dcm:"          & string'(hdl4fpga.ecp5_profiles.video_dcm(".'25mhz'.'40mhz'", 36.0e6)) & ',' &
 			"videoio_freq:" & "36.0e6,"                                                                   &
@@ -176,7 +176,7 @@ begin
 				cken => cken,
 				init_req => init_req,
 				init_rdy => init_rdy);
-			led <= tp(9 to 16);
+			led <= (others => '1'); --tp(9 to 16);
 		end generate;
 			
 		monitor_g : if monitor generate 
@@ -281,11 +281,12 @@ begin
 		rmii_rx1     <= 'Z';
 
 		mdclk_p : process(mii_clk)
-			variable cntr : integer range -1 to 50/5-2; -- 50MHz/2.5MHz/2
+			constant max : natural := 50/4-2; -- 50MHz/(2MHz*2);
+			variable cntr : integer range -1 to max;
 		begin
 			if rising_edge(mii_clk) then
 				if cntr < 0 then
-					cntr := 10-2;
+					cntr := max;
 					md_clk <= not md_clk;
 				else
 					cntr := cntr-1 ;
@@ -366,6 +367,7 @@ begin
 				-- led(1) <= not q;
 			end if;
 		end process;
+			led <= (others => '1'); --tp(9 to 16);
 
 	end generate;
 
