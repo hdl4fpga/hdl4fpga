@@ -97,6 +97,8 @@ architecture def of ipv4 is
 	signal udprx_irdy     : std_logic;
 	signal udprx_trdy     : std_logic;
 	signal udprx_data     : std_logic_vector(ipv4rx_data'range);
+	signal udptharx_trdy  : std_logic := '1';
+	signal udpsparx_trdy  : std_logic := '1';
 
 	signal ipv4pyltx_frms  : std_logic_vector(0 to 2-1);
 	signal ipv4pyltx_irdys : std_logic_vector(0 to 2-1);
@@ -134,6 +136,7 @@ begin
 			hdo(frames)**".format.ipv4.flgsfrg" +
 			hdo(frames)**".format.ipv4.ttl";
 		constant discard1_value  : string := natural'image(discard1_length); -- latticesemi : Expecting constant string
+		signal framedecode_trdy : std_logic;
 	begin
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -150,6 +153,7 @@ begin
 			clk    => miirx_clk,
 			frm    => ipv4rx_frm,
 			irdy   => ipv4rx_irdy,
+			trdy   => framedecode_trdy,
 			frms(0) => discard0,
 			frms(1) => length_frm,
 			frms(2) => discard2,
@@ -364,6 +368,7 @@ begin
 		signal rom_irdy    : std_logic;
 		signal rom_data    : std_logic_vector(ipv4rx_data'range);
 
+		signal framedecode_trdy : std_logic;
 	begin
 
 		arbiter_i : entity hdl4fpga.mii_arbiter
@@ -400,6 +405,7 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
+			trdy   => framedecode_trdy,
 			fin    => decode_fin,
 			frms(0) => tha_act,
 			frms(1) => verihltos_act,
@@ -461,6 +467,8 @@ begin
 			signal adjlen_data : std_logic_vector(ipv4rx_data'range);
 			signal si_data     : std_logic_vector(ipv4rx_data'range);
 			signal so_data     : std_logic_vector(ipv4rx_data'range);
+			signal framedecode_trdy : std_logic;
+			signal adjlen_trdy : std_logic;
 		begin
 			decode_irdy <= (ipv4pyltx_irdy and buffer_trdy) when tha_act='0' else '0';
 			chksum_i : entity hdl4fpga.frame_decode
@@ -475,6 +483,7 @@ begin
 				clk    => miitx_clk,
 				frm    => ipv4pyltx_frm,
 				irdy   => decode_irdy,
+				trdy   => framedecode_trdy,
 				frms(0) => ipv4lentx_act,
 				frms(1) => adjlen_act,
 				frms(2) => ipv4tpatx_act,
@@ -498,6 +507,7 @@ begin
 				clk     => miitx_clk,
 				frm     => ipv4pyltx_frm,
 				irdy    => adjlen_irdy,
+				trdy    => adjlen_trdy,
 				si_data => si_data,
 				so_data => adjlen_data);
 
@@ -673,7 +683,7 @@ begin
 
 		icmprx_frm     => icmprx_frm,
 		icmprx_irdy    => icmprx_irdy,
-		icmprx_trdy    => open,
+		icmprx_trdy    => icmprx_trdy,
 		icmprx_data    => icmprx_data,
 
 		miitx_clk      => miitx_clk,
@@ -704,11 +714,11 @@ begin
 
 		sharx_frm  => tha1rx_frm,
 		sharx_irdy => tha1rx_irdy,
-		-- sharx_trdy => tha1rx_trdy,
+		sharx_trdy => udptharx_trdy,
                                  
 		sparx_frm  => sparx_frm ,
 		sparx_irdy => sparx_irdy,
-		-- sparx_trdy => sparx_trdy,
+		sparx_trdy => udpsparx_trdy,
 
 		udprx_frm  => udprx_frm,
 		udprx_irdy => udprx_irdy,

@@ -235,7 +235,9 @@ begin
 	end block;
 
 	tx_b : block
-		constant udphdr_length : std_logic_vector := std_logic_vector(to_unsigned(summation(hdo(frames)**".format.udp")/8, hdo(frames)**".format.udp.length"));
+		constant udphdr_size   : natural := hdo(frames)**".format.udp.length"; -- latticesemi : Unable to evaluate expression type
+		constant udphdr_length : natural := summation(hdo(frames)**".format.udp")/8; -- latticesemi : Unable to evaluate expression type
+		constant udphdr_value : std_logic_vector := std_logic_vector(to_unsigned(udphdr_length, udphdr_size));
 		alias  udppyltx_frm  is udptx_frms(0);
 		alias  udppyltx_irdy is udptx_irdys(0);
 		alias  udppyltx_trdy is udptx_trdys(0);
@@ -317,7 +319,7 @@ begin
 
 		miiadjlen_i : entity hdl4fpga.mii_adjlen
 		generic map (
-			diff => udphdr_length)
+			diff => udphdr_value)
 		port map (
 			clk     => miitx_clk,
 			frm     => pyltx_frm,
