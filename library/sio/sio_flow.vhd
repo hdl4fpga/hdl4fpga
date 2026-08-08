@@ -79,10 +79,10 @@ architecture struct of sio_flow is
 	signal acktx_data : std_logic_vector(tx_data'range);
 	signal dup_equ    : std_logic := '0';
 
-	constant xxx1: natural := hdo(frames)**".format.mac.hwda" + hdo(frames)**".format.ipv4.da";
-	constant xxx : string := natural'image(xxx1);
+	constant addr_length: natural := hdo(frames)**".format.mac.hwda" + hdo(frames)**".format.ipv4.da"; -- latticesemi Expecting constant string
+	constant addr_value : string := natural'image(addr_length);
 	constant rgtr0_frame : string := compact('{' &
-		"addr:" & xxx             & ',' &
+		"addr:" & addr_value             & ',' &
 		" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
 	signal rgtr0_acts  : std_logic_vector(0 to length(rgtr0_frame));
 	signal rgtr0_frms  : std_logic_vector(0 to length(rgtr0_frame));
@@ -247,14 +247,14 @@ begin
 			signal commit    : std_logic;
 			signal rollback  : std_logic;
 
-			constant xxx1: natural :=  -- lattice semi complains
+			constant dasp_length : natural :=  -- lattice semi complains
 				hdo(frames)**".format.ipv4.da" +  -- lattice semi complains
 				hdo(frames)**".format.udp.sp";  -- lattice semi complains
-			constant xxx : string := natural'image(xxx1);  -- lattice semi complains
+			constant dasp_value : string := natural'image(dasp_length);  -- lattice semi complains
 			constant dst_frame : string := compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
 				"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
-				"  dasp:" & xxx &  -- lattice semi complains
+				"  dasp:" & dasp_value &  -- lattice semi complains
 				"    dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;
@@ -418,15 +418,15 @@ begin
 	end block;
 
 	fifo_b : block
-		constant xxx1: natural := 
+		constant tha_length: natural := 
 			16 +
 			hdo(frames)**".format.mac.hwda" +
 			hdo(frames)**".format.ipv4.da"  +
 			hdo(frames)**".format.udp.sp";
-		constant xxx : string := natural'image(xxx1);
+		constant tha_value : string := natural'image(tha_length);
 		constant dst_frame : string := compact('{' &
 			--"tha:" & natural'image( -- Lattice Semi error
-			"tha:" & xxx & ',' &
+			"tha:" & tha_value & ',' &
 			" dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
 		signal commit    : std_logic;

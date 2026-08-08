@@ -55,6 +55,7 @@ architecture beh of sio_sin is
 	signal rid_irdy    : std_logic;
 	signal length_irdy : std_logic;
 	signal pyl_irdy    : std_logic;
+	signal frame_decode_trdy : std_logic;
 
 begin
 
@@ -66,6 +67,7 @@ begin
 		clk      => clk,
 		frm      => rgtr_frm,
 		irdy     => rgtr_irdy,
+		trdy     => frame_decode_trdy,
 		last     => rgtr_last,
 		frms(0)  => rid_frm,
 		frms(1)  => length_frm,

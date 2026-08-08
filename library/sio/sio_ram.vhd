@@ -114,16 +114,20 @@ begin
 		si_trdy <= (si_frm or last) and si_irdy;
 	end block;
 
-	mem_i : entity hdl4fpga.dpram
-	generic map (
-		bitdata  => initdata)
-	port map (
-		rd_addr => rd_addr,
-		rd_data => so_data,
+	ram_b : block
+		constant initdata : std_logic_vector := std_logic_vector(resize(unsigned(bitdata), so_data'length*2**rd_addr'length)); -- Latticesemi segment fault
+	begin
+		mem_i : entity hdl4fpga.dpram
+		generic map (
+			bitdata  => initdata)
+		port map (
+			rd_addr => rd_addr,
+			rd_data => so_data,
 
-		wr_clk  => si_clk,
-		wr_ena  => wr_ena,
-		wr_addr => wr_addr,
-		wr_data => si_data);
+			wr_clk  => si_clk,
+			wr_ena  => wr_ena,
+			wr_addr => wr_addr,
+			wr_data => si_data);
+	end block;
 
 end;
