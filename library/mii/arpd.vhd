@@ -177,7 +177,7 @@ begin
 			hdo(frames)**".format.arp.plen"  +
 			hdo(frames)**".format.arp.oper"  +
 			hdo(frames)**".format.arp.sha";
-		constant rom_value : natural := natural'image(rom_length);
+		constant rom_value : string := natural'image(rom_length);
 	begin
 
 		spa_e : entity hdl4fpga.sio_ram
