@@ -254,7 +254,7 @@ begin
 			constant dst_frame : string := compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
 				"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
-				"  dasp:" & dasp_value &  -- lattice semi complains
+				"  dasp:" & dasp_value  & ',' &  -- lattice semi complains
 				"    dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 			signal dst_irdy  : std_logic;
 			signal dst_trdy  : std_logic;

@@ -344,9 +344,6 @@ begin
 			di(1) => rmii_rx1,
 			do    => ser_data);
 
-		wifi_en   <= '0';
-		rmii_mdio <= '0';
-		rmii_mdc  <= '0';
 
 		process (rmii_crsdv)
 			variable q : std_logic;
@@ -367,8 +364,9 @@ begin
 				-- led(1) <= not q;
 			end if;
 		end process;
-			led <= (others => '1'); --tp(9 to 16);
+		led <= (others => '1'); --tp(9 to 16);
 
+		wifi_en   <= '0';
 	end generate;
 
 	video_g : if monitor generate
