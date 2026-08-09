@@ -217,6 +217,12 @@ begin
 		signal buffer_irdy : std_logic;
 
 		-- signal eq_addr : boolean;
+		constant lead_length := -- Latticesemi : Expecting constant string
+			hdo(frames)**".format.arp.tha"   +
+			hdo(frames)**".format.arp.tpa"   +
+			hdo(frames)**".format.icmp.type" +
+			hdo(frames)**".format.icmp.code";
+		constant lead_value : string : natural'image(lead_value);
 	begin
 
 		process (miitx_clk)
@@ -262,12 +268,8 @@ begin
 
 		icmptx_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                                        &
-				"lead:" & natural'image(
-					hdo(frames)**".format.arp.tha"   +
-					hdo(frames)**".format.arp.tpa"   +
-					hdo(frames)**".format.icmp.type" +
-					hdo(frames)**".format.icmp.code")                   & ',' &
+			frame => compact('{'     &
+				"lead:" & lead_value & ',' &
 				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}'),
 			size  => icmptx_data'length)
 		port map (
