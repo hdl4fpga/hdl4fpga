@@ -217,12 +217,13 @@ begin
 		signal buffer_irdy : std_logic;
 
 		-- signal eq_addr : boolean;
-		constant lead_length := -- Latticesemi : Expecting constant string
+		constant lead_length : natural := -- Latticesemi : Expecting constant string
 			hdo(frames)**".format.arp.tha"   +
 			hdo(frames)**".format.arp.tpa"   +
 			hdo(frames)**".format.icmp.type" +
 			hdo(frames)**".format.icmp.code";
-		constant lead_value : string : natural'image(lead_value);
+		constant lead_value : string := natural'image(lead_length);
+		signal framedecode_trdy : std_logic;
 	begin
 
 		process (miitx_clk)
@@ -276,6 +277,7 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
+			trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 			fin    => decode_fin ,
 			frms(0) => lead_frm,
 			frms(1) => chksum_frm,
