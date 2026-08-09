@@ -1,0 +1,1 @@
+../../../library/latticesemi/scripts/delete_entity.sh

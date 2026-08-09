@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# remove_entity.sh
+# delete_entity.sh
 #
 # Removes a specific VHDL entity from a VHDL file in place.
 #
 # Usage:
-#   ./remove_entity.sh <file.vho> <entity_name>
+#   ./delete_entity.sh <file.vho> <entity_name>
 #
 # Example:
-#   ./remove_entity.sh top_impl.vho top
+#   ./delete_entity.sh top_impl.vho top
 
 set -e
 
