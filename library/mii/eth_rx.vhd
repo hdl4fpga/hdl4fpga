@@ -50,7 +50,8 @@ entity eth_rx is
 end;
 
 architecture def of eth_rx is
-	signal dll_frm : std_logic;
+	signal dll_frm  : std_logic;
+	signal dll_trdy : std_logic;
 begin
 
 	prmb_i : entity hdl4fpga.mii_prmb
@@ -66,6 +67,7 @@ begin
 		mii_clk  => mii_clk,
 		dll_frm  => dll_frm,
 		dll_irdy => mii_irdy,
+		dll_trdy => dll_trdy,
 		dll_data => mii_data,
 
 		da_frm   => da_frm,

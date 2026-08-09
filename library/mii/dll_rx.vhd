@@ -58,6 +58,7 @@ end;
 
 architecture def of dll_rx is
 	signal irdy : std_logic;
+	signal framedecode_trdy : std_logic;
 begin
 
 	irdy <= dll_irdy and dll_trdy;
@@ -69,6 +70,7 @@ begin
 		clk    => mii_clk,
 		frm    => dll_frm,
 		irdy   => irdy,
+		trdy   => framedecode_trdy,
 		frms(0) => da_frm,
 		frms(1) => sa_frm,
 		frms(2) => typ_frm,

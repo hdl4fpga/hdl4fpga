@@ -178,6 +178,7 @@ begin
 			hdo(frames)**".format.arp.oper"  +
 			hdo(frames)**".format.arp.sha";
 		constant rom_value : string := natural'image(rom_length);
+		signal framedecode_trdy : std_logic;
 	begin
 
 		spa_e : entity hdl4fpga.sio_ram
@@ -224,6 +225,7 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
+			trdy   => framedecode_trdy,
 			last   => decode_last,
 			frms(0) => rom_frm,
 			frms(1) => spa_frm,
