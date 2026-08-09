@@ -75,6 +75,7 @@ begin
 		signal rom_frm  : std_logic;
 		alias  rom_irdy is icmprx_irdy;
 		signal rom_data : std_logic_vector(icmprx_data'range);
+		signal framedecode_trdy : std_logic;
 	begin
 		icmprx_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -87,6 +88,7 @@ begin
 			clk    => miirx_clk,
 			frm    => icmprx_frm,
 			irdy   => icmprx_irdy,
+			trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 			frms(0) => type_frm,
 			frms(1) => code_frm,
 			frms(2) => chksum_frm,

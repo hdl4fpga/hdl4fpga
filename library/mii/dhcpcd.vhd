@@ -65,25 +65,30 @@ begin
 	offer_b : block
 		signal discard0 : std_logic;
 		signal discard2 : std_logic;
+		constant discard0_length : natural :=  -- Lattice Semi error
+			hdo(frames)**".format.dhcp.op"      +
+			hdo(frames)**".format.dhcp.htype"   +
+			hdo(frames)**".format.dhcp.hlen "   +
+			hdo(frames)**".format.dhcp.hops "   +
+			hdo(frames)**".format.dhcp.xid"     +
+			hdo(frames)**".format.dhcp.secs"    +
+			hdo(frames)**".format.dhcp.flags"   +
+			hdo(frames)**".format.dhcp.ciaddr";
+		constant discard0_value : string := natural'image(discard0_length);  -- Lattice Semi error
+
+		signal framedecode_trdy : std_logic;
 	begin
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                        &
-				"discard0:" & natural'image(
-					hdo(frames)**".format.dhcp.op"      +
-					hdo(frames)**".format.dhcp.htype"   +
-					hdo(frames)**".format.dhcp.hlen "   +
-					hdo(frames)**".format.dhcp.hops "   +
-					hdo(frames)**".format.dhcp.xid"     +
-					hdo(frames)**".format.dhcp.secs"    +
-					hdo(frames)**".format.dhcp.flags"   +
-					hdo(frames)**".format.dhcp.ciaddr")  & ',' &
-				" yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}'),
+			frame => compact('{'                                          &
+				"discard0:" & discard0_value                              & ',' &
+				"  yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}'),
 			size  => dhcpcdtx_data'length)
 		port map (
 			clk    => miirx_clk,
 			frm    => dhcpcdrx_frm,
 			irdy   => dhcpcdrx_irdy,
+			trdy   => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 			frms(0) => discard0,
 			frms(1) => yiaddr_act,
 			frms(2) => discard2);
@@ -138,6 +143,40 @@ begin
 		signal discard1    : std_logic;
 		signal discard3    : std_logic;
 		signal discard5    : std_logic;
+		constant rom0_length : natural :=
+			hdo(frames)**".format.mac.hwda"   +
+			hdo(frames)**".format.udp.length" +
+			hdo(frames)**".format.ipv4.da"    +
+			hdo(frames)**".format.udp.sp"     +
+			hdo(frames)**".format.udp.dp"     +
+			hdo(frames)**".format.udp.length" +
+			hdo(frames)**".format.udp.chksum" +
+			hdo(frames)**".format.dhcp.op"    +
+			hdo(frames)**".format.dhcp.htype" +
+			hdo(frames)**".format.dhcp.hlen " +
+			hdo(frames)**".format.dhcp.hops " +
+			hdo(frames)**".format.dhcp.xid";
+		constant rom0_value : string := natural'image(rom0_length);
+		constant discard0_length : natural := 
+			hdo(frames)**".format.dhcp.secs"    +
+			hdo(frames)**".format.dhcp.flags"   +
+			hdo(frames)**".format.dhcp.ciaddr"  +
+			hdo(frames)**".format.dhcp.yiaddr"  +
+			hdo(frames)**".format.dhcp.siaddr"  +
+			hdo(frames)**".format.dhcp.giaddr";
+		constant discard0_value : string := natural'image(discard0_length);
+		constant discard1_length : natural := 
+			hdo(frames)**".format.dhcp.chaddr10" +
+			hdo(frames)**".format.dhcp.shname"   +
+			hdo(frames)**".format.dhcp.fbname";
+		constant discard1_value : string := natural'image(discard1_length);
+		constant rom2_length : natural :=
+			hdo(frames)**".format.dhcp.cookie"     +
+			hdo(frames)**".format.dhcp.vendordata" +
+			hdo(frames)**".format.dhcp.iprequest"  +
+			hdo(frames)**".format.dhcp.endmark";
+		constant rom2_value : string := natural'image(rom2_length);
+		signal framedecode_trdy : std_logic;
 	begin
 
 		process (miitx_clk)
@@ -164,42 +203,18 @@ begin
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                      &
-				"    rom0:" & natural'image(
-					hdo(frames)**".format.mac.hwda"   +
-					hdo(frames)**".format.udp.length" +
-					hdo(frames)**".format.ipv4.da"    +
-					hdo(frames)**".format.udp.sp"     +
-					hdo(frames)**".format.udp.dp"     +
-					hdo(frames)**".format.udp.length" +
-					hdo(frames)**".format.udp.chksum" +
-					hdo(frames)**".format.dhcp.op"    +
-					hdo(frames)**".format.dhcp.htype" +
-					hdo(frames)**".format.dhcp.hlen " +
-					hdo(frames)**".format.dhcp.hops " +
-					hdo(frames)**".format.dhcp.xid")  & ',' &
-				"discard0:" & natural'image(
-					hdo(frames)**".format.dhcp.secs"    +
-					hdo(frames)**".format.dhcp.flags"   +
-					hdo(frames)**".format.dhcp.ciaddr"  +
-					hdo(frames)**".format.dhcp.yiaddr"  +
-					hdo(frames)**".format.dhcp.siaddr"  +
-					hdo(frames)**".format.dhcp.giaddr") & ',' &
-					"    rom1:" & string'(hdo(frames)**".format.dhcp.chaddr6") & ',' & 
-				"discard1:" & natural'image(
-					hdo(frames)**".format.dhcp.chaddr10" +
-					hdo(frames)**".format.dhcp.shname"   +
-					hdo(frames)**".format.dhcp.fbname")  & ',' & 
-				"    rom2:" & natural'image(
-					hdo(frames)**".format.dhcp.cookie"     +
-					hdo(frames)**".format.dhcp.vendordata" +
-					hdo(frames)**".format.dhcp.iprequest"  +
-					hdo(frames)**".format.dhcp.endmark") & '}'),
+			frame => compact('{'             &
+				"    rom0:" & rom0_value     & ',' &
+				"discard0:" & discard0_value & ',' &
+				"    rom1:" & string'(hdo(frames)**".format.dhcp.chaddr6") & ',' & 
+				"discard1:" & discard1_value & ',' & 
+				"    rom2:" & rom2_value     & '}'),
 			size  => dhcpcdtx_data'length)
 		port map (
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
+			trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 			last   => decode_last,
 			frms(0) => rom0_act,
 			frms(1) => discard1,

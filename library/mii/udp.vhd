@@ -101,6 +101,7 @@ begin
 		signal act2    : std_logic;
 		signal act3    : std_logic;
 		signal pyl_frm : std_logic;
+		signal framedecode_trdy : std_logic;
 	begin
 
 		udp_i : entity hdl4fpga.frame_decode
@@ -115,6 +116,7 @@ begin
 			clk    => miirx_clk,
 			frm    => udprx_frm,
 			irdy   => udprx_irdy,
+			trdy   => framedecode_trdy,
 			frms(0) => sp_frm,
 			frms(1) => dp_frm,
 			frms(2) => act2,
@@ -245,14 +247,16 @@ begin
 
 		signal gntd  : std_logic_vector(0 to 2-1);
 
+		constant ports_length : natural :=  -- Lattice Semi error
+			hdo(frames)**".format.udp.sp" + -- Lattice Semi error
+			hdo(frames)**".format.udp.dp"; -- Lattice Semi error
+		constant ports_value : string := natural'image(ports_length); -- Lattice Semi error
 		constant udp_frame : string := compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
 				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 				"adjlen:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
-				" ports:" & natural'image(
-					hdo(frames)**".format.udp.sp" +
-					hdo(frames)**".format.udp.dp")                      & ',' &
+				" ports:" & ports_value                                 & ',' & -- Lattice Semi error
 				"udplen:" & string'(hdo(frames)**".format.udp.length")  & ',' &
 				"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}');
 		signal udp_act : std_logic_vector(0 to 7);
@@ -267,9 +271,11 @@ begin
 		alias pyl_act    is udp_act(7);
 
 		signal adjlen_irdy : std_logic;
+		signal adjlen_trdy : std_logic;
 		signal si_data     : std_logic_vector(udptx_data'range);
 		signal adjlen_data : std_logic_vector(udptx_data'range);
 		signal decode_irdy : std_logic;
+		signal framedecode_trdy : std_logic;
 
 	begin
 
@@ -310,6 +316,7 @@ begin
 			clk  => miitx_clk,
 			frm  => udppyltx_frm,
 			irdy => decode_irdy,
+			trdy   => framedecode_trdy,
 			acts => udp_act);
 
 		adjlen_irdy <= length_act or adjlen_act or lentx_act;
@@ -324,6 +331,7 @@ begin
 			clk     => miitx_clk,
 			frm     => pyltx_frm,
 			irdy    => adjlen_irdy,
+			trdy    => adjlen_trdy,
 			si_data => si_data,
 			so_data => adjlen_data);
 

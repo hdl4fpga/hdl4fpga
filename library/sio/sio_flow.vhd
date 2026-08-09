@@ -425,8 +425,7 @@ begin
 			hdo(frames)**".format.udp.sp";
 		constant tha_value : string := natural'image(tha_length);
 		constant dst_frame : string := compact('{' &
-			--"tha:" & natural'image( -- Lattice Semi error
-			"tha:" & tha_value & ',' &
+			"tha:" & tha_value & ',' & --"tha:" & natural'image( -- Lattice Semi error
 			" dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
 		signal commit    : std_logic;
