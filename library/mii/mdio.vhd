@@ -96,7 +96,7 @@ begin
 						if cntr < 0 then
 							rdy    <= req;
 							cntr   := 32-1;
-							shr(0) := '0';
+							shr(0) := '1';
 							state  := s_prem;
 						end if;
 					end case;
@@ -106,10 +106,10 @@ begin
 						if op(0)='1' then
 							mdt <= '1';
 						else
-							mdt <= not shr(0);
+							mdt <= shr(0);
 						end if;
 					when others =>
-						mdt <= not shr(0);
+						mdt <= shr(0);
 					end case;
 
 					cntr   := cntr - 1;
@@ -117,7 +117,7 @@ begin
 					shr    := rotate_left(shr, 1);
 				else
 					cntr  := 32-1;
-					mdt   <= '0';
+					mdt   <= '1';
 					state := s_prem;
 				end if;
 				dout <= std_logic_vector(shr(dout'range));

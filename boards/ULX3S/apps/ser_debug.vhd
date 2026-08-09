@@ -235,45 +235,38 @@ begin
 		alias md_btn  is fire2;
 
 		signal md_clk : std_logic;
-		signal md_req : std_logic;
-		signal md_rdy : std_logic;
+		signal md_req : std_logic := '0';
+		signal md_rdy : std_logic := '0';
 		signal md_t   : std_logic;
-		signal tp       : std_logic_vector(1 to 32);
+		signal tp     : std_logic_vector(1 to 32);
 
 	begin
 
-		process (sys_clk)
-		begin
-			if rising_edge(sys_clk) then
-				led <= tp(1 to 8);
-			end if;
-		end process;
-
-		mii_e : entity hdl4fpga.link_mii
-		generic map (
-			hwaddr     => x"00_40_00_01_02_03",
-			ipv4addr   => aton("192.168.0.14"),
-			n          => 2)
-		port map (
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_data    => si_data,
-		
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data,
-			dhcp_btn   => fire1,
-			mii_txc    => mii_clk,
-			mii_txen   => rmii_tx_en,
-			mii_txd(0) => rmii_tx0,
-			mii_txd(1) => rmii_tx1,
-
-			mii_rxc    => mii_clk,
-			mii_rxdv   => rmii_crsdv,
-			mii_rxd(0) => rmii_rx0,
-			mii_rxd(1) => rmii_rx1);
+--		mii_e : entity hdl4fpga.link_mii
+--		generic map (
+--			hwaddr     => x"00_40_00_01_02_03",
+--			ipv4addr   => aton("192.168.0.14"),
+--			n          => 2)
+--		port map (
+--			si_frm     => si_frm,
+--			si_irdy    => si_irdy,
+--			si_trdy    => si_trdy,
+--			si_data    => si_data,
+--		
+--			so_frm     => so_frm,
+--			so_irdy    => so_irdy,
+--			so_trdy    => so_trdy,
+--			so_data    => so_data,
+--			dhcp_btn   => fire1,
+--			mii_txc    => mii_clk,
+--			mii_txen   => rmii_tx_en,
+--			mii_txd(0) => rmii_tx0,
+--			mii_txd(1) => rmii_tx1,
+--
+--			mii_rxc    => mii_clk,
+--			mii_rxdv   => rmii_crsdv,
+--			mii_rxd(0) => rmii_rx0,
+--			mii_rxd(1) => rmii_rx1);
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
@@ -281,7 +274,7 @@ begin
 		rmii_rx1     <= 'Z';
 
 		mdclk_p : process(mii_clk)
-			constant max : natural := 50/4-2; -- 50MHz/(2MHz*2);
+			constant max : natural := (50+2*2-1)/(2*2)-2; -- 50MHz/(2MHz*2);
 			variable cntr : integer range -1 to max;
 		begin
 			if rising_edge(mii_clk) then
@@ -306,7 +299,7 @@ begin
 						state := s_req;
 					end if;
 				when s_req =>
-					if to_bit(md_req xor md_rdy)='0' then
+					if (md_req xor md_rdy)='0' then
 						if md_btn='0' then
 							state := s_rdy;
 						end if;
@@ -326,9 +319,8 @@ begin
 			din => x"1200",
 			mdt => md_t);
 
-		rmii_mdc  <= md_clk; 
+		rmii_mdc  <= not md_clk; 
 		rmii_mdio <= '0' when md_t='0' else 'Z';
-		wifi_en   <= '0';
 
 		ser_clk  <= mii_clk;
 		ser_frm  <= rmii_crsdv; --tp(1);
@@ -345,26 +337,18 @@ begin
 			do    => ser_data);
 
 
-		process (rmii_crsdv)
+		led(6) <= md_rdy;
+		led(7) <= md_req;
+		process (md_clk)
 			variable q : std_logic;
 		begin
-			if rising_edge(rmii_crsdv) then
+			if rising_edge(md_clk) then
 				q := not q;
-				-- led(6) <= q;
-				-- led(7) <= not q;
+				led(0) <= q;
+				led(1) <= not q;
 			end if;
 		end process;
-
-		process (rmii_nintclk)
-			variable q : std_logic;
-		begin
-			if rising_edge(rmii_nintclk) then
-				q := not q;
-				-- led(0) <= q;
-				-- led(1) <= not q;
-			end if;
-		end process;
-		led <= (others => '1'); --tp(9 to 16);
+--		led <= (others => '1'); --tp(9 to 16);
 
 		wifi_en   <= '0';
 	end generate;

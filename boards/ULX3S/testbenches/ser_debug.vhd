@@ -116,7 +116,7 @@ architecture ulx3s_serdebug of testbench is
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 	end component;
 
-	for all: ulx3s use entity work.ulx3s(ser_debug);
+--	for all: ulx3s use entity work.ulx3s(ser_debug);
 
 	constant snd_data  : std_logic_vector :=
 		x"01007e" &
@@ -143,8 +143,10 @@ architecture ulx3s_serdebug of testbench is
 	signal rst   : std_logic;
 	signal xtal  : std_logic := '0';
 	signal fire1 : std_logic;
+	signal fire2 : std_logic;
 
-	alias  mii_refclk : std_logic is gn(12);
+	signal mii_refclk : std_logic := '0';
+	alias mdio is gn(13);
 	alias  mii_txen   : std_logic is gp(12);
 	signal mii_txd    : std_logic_vector(0 to 2-1);
 	alias  mii_rxdv   : std_logic is gn(10);
@@ -156,28 +158,38 @@ begin
 	xtal <= not xtal after 20 ns;
 
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
+	gn(12) <= mii_refclk;
 	mii_rxd <= (gp(10), gn(9));
 	(gn(11), gp(11)) <= mii_txd;
-    ipoetb_e : entity work.ipoe_tb
-	generic map (
-		delay1 => 10 us,
-		snd_data => snd_data,
-		req_data => req_data)
-	port map (
-		mii_clk   => mii_refclk,
-		mii_rxdv  => mii_rxdv,
-		mii_rxd   => mii_rxd,
 
-		mii_txen  => mii_txen,
-		mii_txd   => mii_txd); 
-
+	mdio <= 'H';
 	fire1 <= '0', '1' after 1 us;
+	fire2 <= '0', '1' after 1 us;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,
 		fire1 => fire1,
+		fire2 => fire2,
 		gp         => gp,
 		gn         => gn,
 		ftdi_txd  => ftdi_txd);
 
+end;
+
+configuration ulx3s_serdebug_structure_md of testbench is
+	for ulx3s_serdebug
+		for all : ulx3s
+			use entity work.ulx3s(structure);
+		end for;
+	end for;
+end;
+
+library micron;
+
+configuration ulx3s_serdebug_md of testbench is
+	for ulx3s_serdebug
+		for all : ulx3s
+			use entity work.ulx3s(graphics);
+		end for;
+	end for;
 end;

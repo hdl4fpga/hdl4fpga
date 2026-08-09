@@ -26,16 +26,18 @@ architecture tb_mio of testbench is
 	signal md_req  : std_logic := '0';
 	signal md_rdy  : std_logic := '0';
 	signal md_clk  : std_logic := '0';
+	signal mdc     : std_logic := '0';
 	signal mdio    : std_logic := 'H';
 	signal mdt     : std_logic := 'H';
 begin
 	mii_clk <= not mii_clk after 10 ns;
 	process(mii_clk)
-		variable cntr : integer range -1 to 10-2;
+		constant max : natural := (50+2*2-1)/(2*2)-2; -- 50MHz/(2MHz*2);
+		variable cntr : integer range -1 to max;
 	begin
 		if rising_edge(mii_clk) then
 			if cntr < 0 then
-				cntr := 10-2;
+				cntr := max;
 				md_clk <= not md_clk;
 			else
 				cntr := cntr-1 ;
@@ -52,7 +54,9 @@ begin
 		end if;
 	end process;
 
-	mdio <= 'H' when mdt='0' else '0';
+	mdio <= 'H';
+	mdio <= 'Z' when mdt='1' else '0';
+	mdc  <= not md_clk;
 	du_e : entity hdl4fpga.mdio
 	port map (
 		clk  => md_clk,
