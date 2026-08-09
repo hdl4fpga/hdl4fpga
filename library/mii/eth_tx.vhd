@@ -74,11 +74,12 @@ architecture def of eth_tx is
 	alias  crc_trdy    is crc_irdy;
 	alias  crc_data    is fcs_crc(mii_data'range);
 
-    signal tha_act     : std_logic;
-    signal typ_act     : std_logic;
-    signal act5        : std_logic;
-    signal trdys       : std_logic_vector(0 to 5);
+	signal tha_act     : std_logic;
+	signal typ_act     : std_logic;
+	signal act5        : std_logic;
+	signal trdys       : std_logic_vector(0 to 5);
 
+	signal framedecode_trdy : std_logic;
 begin
 
 	decode_frm <= pyl_frm or pyl_irdy;
@@ -96,6 +97,7 @@ begin
 		clk    => mii_clk,
 		frm    => decode_frm,
 		irdy   => pyl_irdy,
+		trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 		fin    => decode_fin,
 		last   => decode_last,
 		frms(0) => prmb_act,

@@ -66,26 +66,30 @@ begin
 		signal tpa_data : std_logic_vector(arprx_data'range);
 		signal pyl_frm  : std_logic;
 		signal discard  : std_logic;
+		constant discard_length : natural :=
+			hdo(frames)**".format.arp.htype" +
+			hdo(frames)**".format.arp.ptype" +
+			hdo(frames)**".format.arp.hlen"  +
+			hdo(frames)**".format.arp.plen"  +
+			hdo(frames)**".format.arp.oper"  +
+			hdo(frames)**".format.arp.sha"   +
+			hdo(frames)**".format.arp.spa"   +
+			hdo(frames)**".format.arp.tha";
+		constant discard_value : string := natural'image(discard_length);
+		signal framedecode_trdy : std_logic;
 	begin
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => compact('{' &
-				"discard:" & natural'image(
-					hdo(frames)**".format.arp.htype" +
-					hdo(frames)**".format.arp.ptype" +
-					hdo(frames)**".format.arp.hlen"  +
-					hdo(frames)**".format.arp.plen"  +
-					hdo(frames)**".format.arp.oper"  +
-					hdo(frames)**".format.arp.sha"   +
-					hdo(frames)**".format.arp.spa"   +
-					hdo(frames)**".format.arp.tha")  & ',' &
+				"discard:" & discard_value & ',' &
 				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}'),
 			size  => arprx_data'length)
 		port map (
 			clk    => miirx_clk,
 			frm    => arprx_frm,
 			irdy   => arprx_irdy,
+			trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 			frms(0) => discard,
 			frms(1) => tpa_frm,
 			frms(2) => pyl_frm);
@@ -164,6 +168,16 @@ begin
 		signal pa_trdy  : std_logic;
 		signal pa_data  : std_logic_vector(arptx_data'range);
 
+		constant rom_length : natural := 
+			hdo(frames)**".format.mac.hwda"  +
+			hdo(frames)**".format.mac.type"  +
+			hdo(frames)**".format.arp.htype" +
+			hdo(frames)**".format.arp.ptype" +
+			hdo(frames)**".format.arp.hlen"  +
+			hdo(frames)**".format.arp.plen"  +
+			hdo(frames)**".format.arp.oper"  +
+			hdo(frames)**".format.arp.sha";
+		constant rom_value : natural := natural'image(rom_length);
 	begin
 
 		spa_e : entity hdl4fpga.sio_ram
@@ -200,16 +214,8 @@ begin
 
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                                      &
-				"    rom:" & natural'image(
-					hdo(frames)**".format.mac.hwda"  +
-					hdo(frames)**".format.mac.type"  +
-					hdo(frames)**".format.arp.htype" +
-					hdo(frames)**".format.arp.ptype" +
-					hdo(frames)**".format.arp.hlen"  +
-					hdo(frames)**".format.arp.plen"  +
-					hdo(frames)**".format.arp.oper"  +
-					hdo(frames)**".format.arp.sha")                  & ',' &
+			frame => compact('{'                                     &
+				"    rom:" & rom_value                               & ',' &
 				"    spa:" & string'(hdo(frames)**".format.arp.spa") & ',' &
 				"    tha:" & string'(hdo(frames)**".format.arp.tha") & ',' &
 				"    tpa:" & string'(hdo(frames)**".format.arp.tpa") & '}'),
