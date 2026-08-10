@@ -53,7 +53,7 @@ architecture ser_debug of ulx3s is
 
 	constant io_link      : string := hdo(settings)**".io_link";
 
-	alias sys_rst is right;
+	alias sys_rst is fire1;
 	alias sys_clk is clk_25mhz;
 
 	signal videoio_clk     : std_logic;
@@ -153,7 +153,7 @@ begin
 				if rising_edge(videoio_clk) then
 					if left='1' then
 						init_req <= init_rdy;
-					elsif fire1='1' then
+					elsif fire2='1' then
 						if ena='1' then
 							init_req <= not init_rdy;
 						end if;
@@ -231,8 +231,8 @@ begin
 	end generate;
 
 	ipoe_g : if io_link="io_ipoe" generate
-		alias mii_clk is rmii_nintclk;
-		alias md_btn  is fire2;
+		signal mii_clk : std_logic;
+		alias md_btn  is fire1;
 
 		signal md_clk : std_logic;
 		signal md_req : std_logic := '0';
@@ -242,31 +242,32 @@ begin
 
 	begin
 
---		mii_e : entity hdl4fpga.link_mii
---		generic map (
---			hwaddr     => x"00_40_00_01_02_03",
---			ipv4addr   => aton("192.168.0.14"),
---			n          => 2)
---		port map (
---			si_frm     => si_frm,
---			si_irdy    => si_irdy,
---			si_trdy    => si_trdy,
---			si_data    => si_data,
---		
---			so_frm     => so_frm,
---			so_irdy    => so_irdy,
---			so_trdy    => so_trdy,
---			so_data    => so_data,
---			dhcp_btn   => fire1,
---			mii_txc    => mii_clk,
---			mii_txen   => rmii_tx_en,
---			mii_txd(0) => rmii_tx0,
---			mii_txd(1) => rmii_tx1,
---
---			mii_rxc    => mii_clk,
---			mii_rxdv   => rmii_crsdv,
---			mii_rxd(0) => rmii_rx0,
---			mii_rxd(1) => rmii_rx1);
+		mii_clk <= not rmii_nintclk;
+		mii_e : entity hdl4fpga.link_mii
+		generic map (
+			hwaddr     => x"00_40_00_01_02_03",
+			ipv4addr   => aton("192.168.0.14"),
+			n          => 2)
+		port map (
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_data    => si_data,
+		
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data,
+			dhcp_btn   => md_btn,
+			mii_txc    => mii_clk,
+			mii_txen   => rmii_tx_en,
+			mii_txd(0) => rmii_tx0,
+			mii_txd(1) => rmii_tx1,
+
+			mii_rxc    => mii_clk,
+			mii_rxdv   => rmii_crsdv,
+			mii_rxd(0) => rmii_rx0,
+			mii_rxd(1) => rmii_rx1);
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
@@ -322,23 +323,21 @@ begin
 		rmii_mdc  <= not md_clk; 
 		rmii_mdio <= '0' when md_t='0' else 'Z';
 
-		ser_clk  <= mii_clk;
-		ser_frm  <= rmii_crsdv; --tp(1);
-		ser_irdy <= '1';
+		ser_clk <= mii_clk;
+		process(mii_clk)
+		begin
+			if rising_edge(mii_clk) then
+				ser_frm  <= rmii_crsdv;
+				ser_irdy <= '1';
+				if rmii_crsdv='1'  then
+					ser_data <= rmii_rx0 & rmii_rx1;
+					ser_data <= std_logic_vector(reverse(unsigned(reverse(ser_data))+1));
+				else
+					ser_data <= (others => '0');
+				end if;
+			end if;
+		end process;
 
-		datalat_e : entity hdl4fpga.latency
-		generic map (
-			n => 2,
-			d => (0 to 2-1 => 4))
-		port map (
-			clk => mii_clk,
-			di(0) => rmii_rx0,
-			di(1) => rmii_rx1,
-			do    => ser_data);
-
-
-		led(6) <= md_rdy;
-		led(7) <= md_req;
 		process (md_clk)
 			variable q : std_logic;
 		begin
@@ -348,7 +347,6 @@ begin
 				led(1) <= not q;
 			end if;
 		end process;
---		led <= (others => '1'); --tp(9 to 16);
 
 		wifi_en   <= '0';
 	end generate;

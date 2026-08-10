@@ -47,6 +47,7 @@ begin
    	generic map (
 		bitdata => bitdata)
 	port map (
+		si_clk  => mii_clk,
 		si_data => si_data,
 		so_clk  => mii_clk,
 		so_frm  => frm,
