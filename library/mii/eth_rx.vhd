@@ -33,6 +33,9 @@ entity eth_rx is
 		mii_irdy : in  std_logic;
 		mii_trdy : buffer std_logic;
 		mii_data : in  std_logic_vector;
+		prmb_frm : buffer std_logic;
+		dll_frm  : buffer std_logic;
+		dll_data : buffer std_logic_vector;
 
 		da_frm   : out std_logic := '0';
 		da_irdy  : out std_logic := '0';
@@ -50,7 +53,7 @@ entity eth_rx is
 end;
 
 architecture def of eth_rx is
-	signal dll_frm  : std_logic;
+	signal dll_irdy : std_logic;
 	signal dll_trdy : std_logic;
 begin
 
@@ -60,15 +63,42 @@ begin
 		mii_frm  => mii_frm,
 		mii_irdy => mii_irdy,
 		mii_data => mii_data,
-		dll_frm  => dll_frm);
+		prmb_frm => prmb_frm);
+
+	serlzr_g : if dll_data'length/=mii_data'length generate
+		serlzr_e : entity hdl4fpga.serlzr
+		generic map (
+			lsdfirst => false)
+		port map (
+			src_clk  => mii_clk,
+			src_frm  => prmb_frm,
+			src_irdy => mii_irdy,
+			src_data => mii_data,
+			dst_clk  => mii_clk,
+			dst_irdy => dll_irdy,
+			dst_data => dll_data);
+
+			process(mii_clk)
+			begin
+				if rising_edge(mii_clk) then
+					dll_frm <= prmb_frm;
+				end if;
+			end process;
+	end generate;
+
+	direct_g : if dll_data'length=mii_data'length generate
+		dll_frm  <= prmb_frm;
+		dll_irdy <= mii_irdy;
+		dll_data <= mii_data;
+	end generate;
 
 	dllrx_i : entity hdl4fpga.dll_rx
 	port map (
 		mii_clk  => mii_clk,
 		dll_frm  => dll_frm,
-		dll_irdy => mii_irdy,
+		dll_irdy => dll_irdy,
 		dll_trdy => dll_trdy,
-		dll_data => mii_data,
+		dll_data => dll_data,
 
 		da_frm   => da_frm,
 		da_irdy  => da_irdy,

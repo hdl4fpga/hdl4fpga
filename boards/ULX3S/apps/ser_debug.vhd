@@ -249,6 +249,7 @@ begin
 			ipv4addr   => aton("192.168.0.14"),
 			n          => 2)
 		port map (
+			tp         => tp,
 			si_frm     => si_frm,
 			si_irdy    => si_irdy,
 			si_trdy    => si_trdy,
@@ -324,16 +325,27 @@ begin
 		rmii_mdio <= '0' when md_t='0' else 'Z';
 
 		ser_clk <= mii_clk;
-		process(mii_clk)
+		process(mii_clk, ser_frm)
+			variable cntr  : unsigned(8-1 downto 0);
+			variable cntr0 : integer range -1 to (cntr'length/2)-2;
 		begin
 			if rising_edge(mii_clk) then
 				ser_frm  <= rmii_crsdv;
 				ser_irdy <= '1';
-				if rmii_crsdv='1'  then
+				if (rmii_crsdv and rmii_rxer)='1'  then
 					ser_data <= rmii_rx0 & rmii_rx1;
-					ser_data <= std_logic_vector(reverse(unsigned(reverse(ser_data))+1));
+--					ser_data <= std_logic_vector(reverse(cntr(2-1 downto 0)));
+					if cntr0 < 0 then
+						cntr := cntr ror 2;
+						cntr0 := (cntr'length/2)-2;
+						cntr  := cntr + 1;
+					else
+						cntr0 := cntr0 -1;
+						cntr := cntr ror 2;
+					end if;
 				else
-					ser_data <= (others => '0');
+					cntr0 :=  (cntr'length/2)-2;
+					cntr  := (others => '0');
 				end if;
 			end if;
 		end process;

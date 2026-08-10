@@ -124,6 +124,7 @@ entity ulx3s is
 	alias rmii_rx1     : std_logic is gp(11);
 
 	alias rmii_crsdv   : std_logic is gp(12);
+	alias rmii_rxer    : std_logic is gp(12);
 
 	alias rmii_nintclk : std_logic is gn(12);
 	alias rmii_mdio    : std_logic is gn(13);

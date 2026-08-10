@@ -33,7 +33,7 @@ entity mii_prmb is
 		mii_irdy : in  std_logic;
 		mii_trdy : out std_logic := '1';
         mii_data : in std_logic_vector;
-		dll_frm  : buffer std_logic);
+		prmb_frm : buffer std_logic);
 end;
 
 architecture def of mii_prmb is
@@ -67,6 +67,6 @@ begin
 				end if;
 			end if;
 		end if;
-		dll_frm <= mii_frm and vld;
+		prmb_frm <= mii_frm and vld;
 	end process;
 end;

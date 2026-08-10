@@ -146,32 +146,39 @@ architecture ulx3s_serdebug of testbench is
 	signal fire2 : std_logic;
 
 	signal mii_refclk : std_logic := '0';
-	alias mdio is gn(13);
-	alias  mii_txen   : std_logic is gp(12);
-	signal mii_txd    : std_logic_vector(0 to 2-1);
-	alias  mii_rxdv   : std_logic is gn(10);
-	signal mii_rxd    : std_logic_vector(0 to 2-1);
+	alias  rmii_clk   is gn(12);
+	alias  rmii_txen  is gp(12);
+	signal rmii_txd   : std_logic_vector(0 to 2-1);
+	alias  rmii_rxdv  is gp(12);
+	signal rmii_rxd   : std_logic_vector(0 to 2-1);
+
+	alias rmii_tx_en  is gn(10);
+	alias rmii_tx0    is gp(10);
+	alias rmii_tx1    is gn(9);
+
+	alias rmii_mdc    is gp(13);
+	alias rmii_mdio   is gn(13);
 
 begin
 
-	rst <= '1', '0' after 100 us; --, '1' after 30 us, '0' after 31 us;
+	rst <= '1', '0' after 0.25 us; --, '1' after 30 us, '0' after 31 us;
 	xtal <= not xtal after 20 ns;
 
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
-	gn(12) <= mii_refclk;
-	mii_rxd <= (gp(10), gn(9));
-	(gn(11), gp(11)) <= mii_txd;
+	rmii_clk <= mii_refclk;
+	rmii_rxdv <= '0', '1' after 0.5 us;
+	rmii_rxd <= (gp(10), gn(9));
+	(gn(11), gp(11)) <= rmii_txd;
+	rmii_mdio <= 'H';
 
-	mdio <= 'H';
 	fire1 <= '0', '1' after 1 us;
-	fire2 <= '0', '1' after 1 us;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,
 		fire1 => fire1,
 		fire2 => fire2,
-		gp         => gp,
-		gn         => gn,
+		gp    => gp,
+		gn    => gn,
 		ftdi_txd  => ftdi_txd);
 
 end;
