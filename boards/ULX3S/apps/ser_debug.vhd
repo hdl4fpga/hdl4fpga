@@ -249,7 +249,7 @@ begin
 		begin
 			if rising_edge(rmii_clk) then
 				rmii_rxdv <= shr_dv(0);
-				rmii_rxd  <= rxd;
+				rmii_rxd  <= shr_rxd(0 to 2-1);
 				shr_rxd(0 to 2-1) := rmii_rx0 & rmii_rx1;
 				shr_rxd   := rotate_left(shr_rxd, 2);
 				shr_dv(0) := rmii_crsdv;
