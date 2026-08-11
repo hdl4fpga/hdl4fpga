@@ -231,7 +231,8 @@ begin
 	end generate;
 
 	ipoe_g : if io_link="io_ipoe" generate
-		signal mii_clk : std_logic;
+		signal rmii_clk  : std_logic;
+		signal rmii_rxdv : std_logic;
 		alias md_btn  is fire1;
 
 		signal md_clk : std_logic;
@@ -242,7 +243,20 @@ begin
 
 	begin
 
-		mii_clk <= not rmii_nintclk;
+		process(rmii_crsdv, rmii_clk)
+			variable dv  : std_logic;
+			variable nbb : unsigned(0 to 2*2-1);
+		begin
+			if rising_edge(rmii_clk) then
+				rmii_rxdv <= rmii_crsdv or dv;
+				rmii_rxd  <= std_logic_vector(nbb(rmii_rxd'range));
+				nbb(rmii_rxd'range) := rmii_rx0 & rmii_rx1;
+				nbb := rotate_left(nbb, 2);
+				dv  := rmii_crsdv;
+			end if;
+		end process;
+
+		rmii_clk <= not rmii_nintclk;
 		mii_e : entity hdl4fpga.link_mii
 		generic map (
 			hwaddr     => x"00_40_00_01_02_03",
@@ -260,13 +274,13 @@ begin
 			so_trdy    => so_trdy,
 			so_data    => so_data,
 			dhcp_btn   => md_btn,
-			mii_txc    => mii_clk,
+			mii_txc    => rmii_clk,
 			mii_txen   => rmii_tx_en,
 			mii_txd(0) => rmii_tx0,
 			mii_txd(1) => rmii_tx1,
 
-			mii_rxc    => mii_clk,
-			mii_rxdv   => rmii_crsdv,
+			mii_rxc    => rmii_clk,
+			mii_rxdv   => rmii_dv,
 			mii_rxd(0) => rmii_rx0,
 			mii_rxd(1) => rmii_rx1);
 
@@ -275,11 +289,11 @@ begin
 		rmii_rx0     <= 'Z';
 		rmii_rx1     <= 'Z';
 
-		mdclk_p : process(mii_clk)
+		mdclk_p : process(rmii_clk)
 			constant max : natural := (50+2*2-1)/(2*2)-2; -- 50MHz/(2MHz*2);
 			variable cntr : integer range -1 to max;
 		begin
-			if rising_edge(mii_clk) then
+			if rising_edge(rmii_clk) then
 				if cntr < 0 then
 					cntr := max;
 					md_clk <= not md_clk;
@@ -324,29 +338,13 @@ begin
 		rmii_mdc  <= not md_clk; 
 		rmii_mdio <= '0' when md_t='0' else 'Z';
 
-		ser_clk <= mii_clk;
-		process(mii_clk, ser_frm)
-			variable cntr  : unsigned(8-1 downto 0);
-			variable cntr0 : integer range -1 to (cntr'length/2)-2;
+		ser_clk <= rmii_clk;
+		process(rmii_clk)
 		begin
-			if rising_edge(mii_clk) then
+			if rising_edge(rmii_clk) then
 				ser_frm  <= tp(1);
 				ser_irdy <= '1';
-				if tp(1)='1'  then
-					ser_data <= rmii_rx0 & rmii_rx1;
---					ser_data <= std_logic_vector(reverse(cntr(2-1 downto 0)));
-					if cntr0 < 0 then
-						cntr := cntr ror 2;
-						cntr0 := (cntr'length/2)-2;
-						cntr  := cntr + 1;
-					else
-						cntr0 := cntr0 -1;
-						cntr := cntr ror 2;
-					end if;
-				else
-					cntr0 :=  (cntr'length/2)-2;
-					cntr  := (others => '0');
-				end if;
+				ser_data <= rmii_rx0 & rmii_rx1;
 			end if;
 		end process;
 
