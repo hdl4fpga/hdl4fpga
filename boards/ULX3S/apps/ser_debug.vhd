@@ -244,15 +244,16 @@ begin
 	begin
 
 		process(rmii_crsdv, rmii_clk)
-			variable dv  : std_logic;
-			variable nbb : unsigned(0 to 2*2-1);
+			variable shr_dv  : std_logic_vector(0 to 2-1);
+			variable shr_rxd : std_logic_vector(0 to 2*2-1);
 		begin
 			if rising_edge(rmii_clk) then
-				rmii_rxdv <= rmii_crsdv or dv;
-				rmii_rxd  <= std_logic_vector(nbb(rmii_rxd'range));
-				nbb(rmii_rxd'range) := rmii_rx0 & rmii_rx1;
-				nbb := rotate_left(nbb, 2);
-				dv  := rmii_crsdv;
+				rmii_rxdv <= shr_dv(0);
+				rmii_rxd  <= rxd;
+				shr_rxd(0 to 2-1) := rmii_rx0 & rmii_rx1;
+				shr_rxd   := rotate_left(shr_rxd, 2);
+				shr_dv(0) := rmii_crsdv;
+				shr_dv    := rotate_left(shr_dv, 1);
 			end if;
 		end process;
 
