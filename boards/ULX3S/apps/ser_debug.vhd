@@ -330,9 +330,9 @@ begin
 			variable cntr0 : integer range -1 to (cntr'length/2)-2;
 		begin
 			if rising_edge(mii_clk) then
-				ser_frm  <= rmii_crsdv;
+				ser_frm  <= tp(1);
 				ser_irdy <= '1';
-				if (rmii_crsdv and rmii_rxer)='1'  then
+				if tp(1)='1'  then
 					ser_data <= rmii_rx0 & rmii_rx1;
 --					ser_data <= std_logic_vector(reverse(cntr(2-1 downto 0)));
 					if cntr0 < 0 then

@@ -89,6 +89,7 @@ architecture struct of sio_udp is
 	signal tp_ipoe : std_logic_vector(1 to 32);
 begin
 
+	tp <= tp_ipoe;
 	miiipoe_i : entity hdl4fpga.mii_ipoe
 	generic map (
 		hwaddr        => hwaddr,
@@ -190,10 +191,10 @@ begin
 		end if;
 	end process;
 
-	tp(1) <= udppyltx_frm or udppyltx_irdy;
-	tp(2) <= udppyltx_irdy;
-	tp(3) <= udppyltx_trdy;
-	tp(4 to 4+udppyltx_data'length-1) <= udppyltx_data;
+--	tp(1) <= udppyltx_frm or udppyltx_irdy;
+--	tp(2) <= udppyltx_irdy;
+--	tp(3) <= udppyltx_trdy;
+--	tp(4 to 4+udppyltx_data'length-1) <= udppyltx_data;
 
 	sio_flow_e : entity hdl4fpga.sio_flow
 	port map (
