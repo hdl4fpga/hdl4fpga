@@ -43,6 +43,8 @@ entity sio_dayudp is
 		miirx_irdy : in  std_logic := '1';
 		miirx_trdy : out std_logic;
 		miirx_data : in  std_logic_vector;
+		fcs_sb     : buffer std_logic;
+		fcs_vld    : buffer std_logic;
 
 		miitx_clk  : in  std_logic;
 		miitx_frm  : out std_logic;
@@ -103,6 +105,8 @@ begin
 		miirx_irdy => miirx_irdy,
 		miirx_trdy => miirx_trdy,
 		miirx_data => miirx_data,
+		fcs_sb     => fcs_sb,
+		fcs_vld    => fcs_vld,
 
 		miitx_clk  => miirx_clk,
 		miitx_frm  => srztx_frm,

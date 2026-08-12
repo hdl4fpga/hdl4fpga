@@ -48,6 +48,8 @@ entity link_mii is
 		mii_rxc  : in  std_logic;
 		mii_rxdv : in  std_logic;
 		mii_rxd  : in  std_logic_vector(0 to n-1);
+		fcs_sb   : buffer std_logic;
+		fcs_vld  : buffer std_logic;
 
 		mii_txc  : in  std_logic;
 		mii_txen : out std_logic;
@@ -93,6 +95,9 @@ begin
 		miirx_frm  => mii_rxdv,
 		miirx_irdy => mii_rxdv,
 		miirx_data => mii_rxd,
+		fcs_sb     => fcs_sb,
+		fcs_vld    => fcs_vld,
+
 	
 		miitx_clk  => mii_txc,
 		miitx_frm  => mii_txen,

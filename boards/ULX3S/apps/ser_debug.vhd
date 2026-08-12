@@ -233,6 +233,7 @@ begin
 	ipoe_g : if io_link="io_ipoe" generate
 		signal rmii_clk  : std_logic;
 		signal rmii_rxdv : std_logic;
+		signal rmii_rxd  : std_logic_vector(0 to 2-1);
 		alias md_btn  is fire1;
 
 		signal md_clk : std_logic;
@@ -241,16 +242,24 @@ begin
 		signal md_t   : std_logic;
 		signal tp     : std_logic_vector(1 to 32);
 
+		signal fcs_sb : std_logic;
+		signal fcs_vld : std_logic;
 	begin
 
 		process(rmii_crsdv, rmii_clk)
-			variable shr_dv  : std_logic_vector(0 to 2-1);
-			variable shr_rxd : std_logic_vector(0 to 2*2-1);
+			variable shr_dv  : unsigned(0 to 2-1);
+			variable shr_rxd : unsigned(0 to 2*2-1);
 		begin
 			if rising_edge(rmii_clk) then
-				rmii_rxdv <= shr_dv(0);
-				rmii_rxd  <= shr_rxd(0 to 2-1);
-				shr_rxd(0 to 2-1) := rmii_rx0 & rmii_rx1;
+				case std_logic_vector'(shr_dv(0), shr_dv(1), rmii_crsdv) is
+				when "000"|"001"|"011" =>
+					rmii_rxdv <= '0';
+				when others =>
+					rmii_rxdv <=  '1';
+				end case;
+				rmii_rxd <= std_logic_vector(shr_rxd(0 to 2-1));
+
+				shr_rxd(0 to 2-1) := unsigned'(rmii_rx0 & rmii_rx1);
 				shr_rxd   := rotate_left(shr_rxd, 2);
 				shr_dv(0) := rmii_crsdv;
 				shr_dv    := rotate_left(shr_dv, 1);
@@ -280,10 +289,11 @@ begin
 			mii_txd(0) => rmii_tx0,
 			mii_txd(1) => rmii_tx1,
 
+			fcs_sb     => fcs_sb,
+			fcs_vld    => fcs_vld,
 			mii_rxc    => rmii_clk,
-			mii_rxdv   => rmii_dv,
-			mii_rxd(0) => rmii_rx0,
-			mii_rxd(1) => rmii_rx1);
+			mii_rxdv   => rmii_rxdv,
+			mii_rxd    => rmii_rxd);
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
@@ -345,7 +355,10 @@ begin
 			if rising_edge(rmii_clk) then
 				ser_frm  <= tp(1);
 				ser_irdy <= '1';
-				ser_data <= rmii_rx0 & rmii_rx1;
+				ser_data <= rmii_rxd;
+				if fcs_sb='1' then
+					led(7) <= fcs_vld;
+				end if;
 			end if;
 		end process;
 
