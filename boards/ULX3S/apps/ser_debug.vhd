@@ -235,6 +235,7 @@ begin
 		signal rmii_rxdv : std_logic;
 		signal rmii_rxd  : std_logic_vector(0 to 2-1);
 		alias md_btn  is fire1;
+		alias dhcpc_btn is fire2;
 
 		signal md_clk : std_logic;
 		signal md_req : std_logic := '0';
@@ -283,7 +284,7 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
-			dhcp_btn   => md_btn,
+			dhcp_btn   => dhcpc_btn,
 			mii_txc    => rmii_clk,
 			mii_txen   => rmii_tx_en,
 			mii_txd(0) => rmii_tx0,
@@ -353,9 +354,9 @@ begin
 		process(rmii_clk)
 		begin
 			if rising_edge(rmii_clk) then
-				ser_frm  <= tp(1);
+				ser_frm  <= rmii_tx_en; --tp(1);
 				ser_irdy <= '1';
-				ser_data <= rmii_rxd;
+				ser_data <= rmii_tx0 & rmii_tx1; --tp(2 to 2+1);
 				if fcs_sb='1' then
 					led(7) <= fcs_vld;
 				end if;

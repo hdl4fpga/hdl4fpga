@@ -66,6 +66,7 @@ entity mii_ipoe is
 end;
 
 architecture def of mii_ipoe is
+	signal prmb_frm      : std_logic;
 	signal dll_data      : std_logic_vector(miitx_data'range);
 	signal ethda_frm     : std_logic;
 	signal ethda_irdy    : std_logic;
@@ -120,14 +121,13 @@ architecture def of mii_ipoe is
 
 begin
 
-	-- tp(1) <= ipv4rx_frm; --miirx_frm;
 	ethrx_e : entity hdl4fpga.eth_rx
 	port map (
 		mii_clk  => miirx_clk,
 		mii_frm  => miirx_frm,
 		mii_irdy => miirx_irdy,
 		mii_data => miirx_data,
-		prmb_frm => tp(1),
+		prmb_frm => prmb_frm,
 		dll_data => dll_data,
 
 		da_frm   => ethda_frm,
@@ -194,6 +194,8 @@ begin
 			arprx_data <= dll_data;
 		end if;
 	end process;
+	tp(1) <= arprx_frm; --miirx_frm;
+	tp(2 to arprx_data'length+1) <= arprx_data;
 
 	arpd_i : entity hdl4fpga.arpd
 	generic map (
