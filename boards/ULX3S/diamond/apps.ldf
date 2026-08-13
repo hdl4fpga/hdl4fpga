@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="apps" device="LFE5U-12F-8BG381C" default_implementation="ser_debug">
+<BaliProject version="3.2" title="apps" device="LAE5U-12F-6BG381E" default_implementation="ser_debug">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -709,7 +709,7 @@
         </Source>
     </Implementation>
     <Implementation title="ser_debug" dir="ser_debug" description="ser_debug" synthesis="synplify" default_strategy="Strategy1">
-        <Options def_top="hdl4fpga.link_mii" lib="hdl4fpga" top="ulx3s"/>
+        <Options def_top="hdl4fpga.adder_seq" lib="hdl4fpga" top="ulx3s"/>
         <Source name="../common/ulx3s.vhd" type="VHDL" type_short="VHDL">
             <Options lib="work" top_module="ulx3s"/>
         </Source>

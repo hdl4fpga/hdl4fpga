@@ -172,6 +172,7 @@ begin
 	rmii_mdio <= 'H';
 
 	fire1 <= '0', '1' after 1 us;
+	fire2 <= '0', '1' after 1 us;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,

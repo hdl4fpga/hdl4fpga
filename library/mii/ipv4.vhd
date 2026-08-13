@@ -144,10 +144,10 @@ begin
 				"discard0:" & discard0_value                              & ',' &
 				"  length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 				"discard1:" & discard1_value                              & ',' &
-				"   proto:" & string'(hdo(frames)**".format.ipv4.proto")   & ',' &
-				"  chksum:" & string'(hdo(frames)**".format.ipv4.chksum")  & ',' &
-				"      sa:" & string'(hdo(frames)**".format.ipv4.sa")      & ',' &
-				"      da:" & string'(hdo(frames)**".format.ipv4.da")      & '}'),
+				"   proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
+				"  chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
+				"      sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
+				"      da:" & string'(hdo(frames)**".format.ipv4.da")     & '}'),
 			size  => ipv4rx_data'length)
 		port map (
 			clk    => miirx_clk,
