@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="apps" device="LAE5U-12F-6BG381E" default_implementation="ser_debug">
+<BaliProject version="3.2" title="apps" device="LAE5U-12F-7BG381E" default_implementation="ser_debug">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
