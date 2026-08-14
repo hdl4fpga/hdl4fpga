@@ -73,10 +73,20 @@ architecture struct of sio_udp is
 	signal udppylrx_trdy : std_logic := '1';
 	signal udppylrx_data : std_logic_vector(miitx_data'range);
 
+	signal srzrx_frm     : std_logic;
+	signal srzrx_irdy    : std_logic;
+	signal srzrx_trdy    : std_logic;
+	signal srzrx_data    : std_logic_vector(si_data'range);
+
 	signal pylrx_frm     : std_logic;
 	signal pylrx_irdy    : std_logic;
 	signal pylrx_trdy    : std_logic;
 	signal pylrx_data    : std_logic_vector(miitx_data'range);
+
+	signal srztx_frm     : std_logic;
+	signal srztx_irdy    : std_logic;
+	signal srztx_trdy    : std_logic;
+	signal srztx_data    : std_logic_vector(si_data'range);
 
 	signal udppyltx_frm  : std_logic;
 	signal udppyltx_irdy : std_logic;
@@ -86,16 +96,13 @@ architecture struct of sio_udp is
 	signal pylfcs_sb     : std_logic;
 	signal pylfcs_vld    : std_logic;
 
-	signal tp_ipoe : std_logic_vector(1 to 32);
 begin
 
-	tp <= tp_ipoe;
 	miiipoe_i : entity hdl4fpga.mii_ipoe
 	generic map (
 		hwaddr        => hwaddr,
 		ipv4addr      => ipv4addr)
 	port map (
-		tp => tp_ipoe,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
 
@@ -122,54 +129,35 @@ begin
 		miitx_trdy    => miitx_trdy,
 		miitx_data    => miitx_data);
 
-	process (udppylrx_frm, udppylrx_irdy, miirx_clk)
-		constant prefix   : unsigned := x"00" & to_unsigned(summation(hdo(frames)**".format.pyl")/8-1,8);
-		variable shr_frm  : unsigned(0 to prefix'length/miitx_data'length-1) := (others => '0');
-		variable shr_irdy : unsigned(shr_frm'range);
-		variable shr_data : unsigned(prefix'range);
-	begin
-		if rising_edge(miirx_clk) then
-    		if udppylrx_frm='1' then
-				if shr_frm(0)='0' then
-					if udppylrx_irdy='1' then
-						shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
-						shr_data := rotate_left(shr_data, udppylrx_data'length);
-					elsif shr_irdy(0)='1' then
-						shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
-						shr_data := rotate_left(shr_data, udppylrx_data'length);
-					end if;
-				else
-					shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
-					shr_data := rotate_left(shr_data, udppylrx_data'length);
-				end if;
-				shr_frm(0)  := udppylrx_frm;
-				shr_irdy(0) := udppylrx_irdy;
-				shr_frm  := rotate_left(shr_frm,  1);
-				shr_irdy := rotate_left(shr_irdy, 1);
-			elsif shr_frm(0)='1' then
-				shr_data(0 to udppylrx_data'length-1) := unsigned(udppylrx_data);
-				shr_data := rotate_left(shr_data, udppylrx_data'length);
-				shr_frm(0)  := udppylrx_frm;
-				shr_irdy(0) := udppylrx_irdy;
-				shr_frm  := rotate_left(shr_frm,  1);
-				shr_irdy := rotate_left(shr_irdy, 1);
-			else
-				shr_data := reverse(prefix, 8);
-				shr_irdy := (others => '1');
-    		end if;
-		end if;
-		pylrx_frm <= udppylrx_frm or shr_frm(0);
-		if shr_frm(0)='0' then
-			if udppylrx_frm='1' then
-				pylrx_irdy <= udppylrx_irdy or shr_irdy(0);
-			else
-				pylrx_irdy <= '0';
-			end if;
-		else
-			pylrx_irdy <= shr_irdy(0);
-		end if;
-		pylrx_data <= std_logic_vector(shr_data(0 to udppylrx_data'length-1));
-	end process;
+	rxserlzr_e : entity hdl4fpga.serlzr
+	generic map (
+		lsdfirst => false)
+	port map (
+		src_clk  => miirx_clk,
+		src_frm  => udppylrx_frm,
+		src_irdy => udppylrx_irdy,
+		src_trdy => udppylrx_trdy,
+		src_data => udppylrx_data,
+		dst_clk  => so_clk,
+		dst_frm  => srzrx_frm,
+		dst_irdy => srzrx_irdy,
+		dst_trdy => srzrx_trdy,
+		dst_data => srzrx_data);
+
+	rxpack_e : entity hdl4fpga.sio_pack
+	port map (
+		sio_clk => so_clk,
+		si_frm  => srztx_frm,
+		si_rid  => x"00",
+		si_len  => std_logic_vector(to_unsigned(summation(hdo(frames)**".format.pyl")/8-1,8)),
+		si_irdy => srztx_irdy,
+		si_trdy => srztx_trdy,
+		si_data => srztx_data,
+
+		so_frm  => pylrx_frm,
+		so_irdy => pylrx_irdy,
+		so_trdy => pylrx_irdy,
+		so_data => pylrx_data);
 
 	process (miirx_clk)
 		variable vld : std_logic;
@@ -179,7 +167,6 @@ begin
 			if pylrx_frm='1' then
 				if fcs_sb='1' then
 					vld := fcs_vld;
-					-- vld := '1';
 					sb  := '1';
 				end if;
 			else
@@ -190,11 +177,6 @@ begin
 			end if;
 		end if;
 	end process;
-
---	tp(1) <= udppyltx_frm or udppyltx_irdy;
---	tp(2) <= udppyltx_irdy;
---	tp(3) <= udppyltx_trdy;
---	tp(4 to 4+udppyltx_data'length-1) <= udppyltx_data;
 
 	sio_flow_e : entity hdl4fpga.sio_flow
 	port map (
@@ -219,8 +201,24 @@ begin
 		si_data => si_data,
 
 		tx_clk  => miitx_clk,
-		tx_frm  => udppyltx_frm,
-		tx_irdy => udppyltx_irdy,
-		tx_trdy => udppyltx_trdy,
-		tx_data => udppyltx_data);
+		tx_frm  => srztx_frm,
+		tx_irdy => srztx_irdy,
+		tx_trdy => srztx_trdy,
+		tx_data => srztx_data);
+
+	txserlzr_e : entity hdl4fpga.serlzr
+	generic map (
+		lsdfirst => false)
+	port map (
+		src_clk  => si_clk,
+		src_frm  => srztx_frm,
+		src_irdy => srztx_irdy,
+		src_trdy => srztx_trdy,
+		src_data => srztx_data,
+		dst_clk  => miitx_clk,
+		dst_frm  => udppyltx_frm,
+		dst_irdy => udppyltx_irdy,
+		dst_trdy => udppyltx_trdy,
+		dst_data => udppyltx_data);
+
 end;

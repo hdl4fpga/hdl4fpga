@@ -66,8 +66,7 @@ entity mii_ipoe is
 end;
 
 architecture def of mii_ipoe is
-	signal prmb_frm      : std_logic;
-	signal dll_data      : std_logic_vector(miitx_data'range);
+	signal dll_frm       : std_logic;
 	signal ethda_frm     : std_logic;
 	signal ethda_irdy    : std_logic;
 	signal ethsa_frm     : std_logic;
@@ -83,7 +82,7 @@ architecture def of mii_ipoe is
 
 	signal arprx_frm     : std_logic;
 	alias  arprx_irdy is miirx_irdy;
-	signal arprx_data    : std_logic_vector(dll_data'range);
+	signal arprx_data    : std_logic_vector(miirx_data'range);
 
 	signal arptha_frm    : std_logic;
 	signal arptpa_frm    : std_logic;
@@ -93,7 +92,7 @@ architecture def of mii_ipoe is
 
 	signal ipv4rx_frm    : std_logic;
 	signal ipv4rx_irdy : std_logic;
-	signal ipv4rx_data   : std_logic_vector(dll_data'range);
+	signal ipv4rx_data   : std_logic_vector(miirx_data'range);
 
 	signal eth_frms  : std_logic_vector(0 to 2-1);
 	signal eth_irdys : std_logic_vector(0 to 2-1);
@@ -112,12 +111,12 @@ architecture def of mii_ipoe is
 	signal upspa_frm  : std_logic;
 	signal upspa_irdy : std_logic;
 	signal upspa_trdy : std_logic;
-	signal upspa_data : std_logic_vector(dll_data'range);
+	signal upspa_data : std_logic_vector(miirx_data'range);
 
 	signal arp_req : std_logic;
 	signal arp_rdy : std_logic;
 
-	constant bcst_data : std_logic_vector := (dll_data'range => '1');
+	constant bcst_data : std_logic_vector := (miirx_data'range => '1');
 
 begin
 
@@ -127,8 +126,7 @@ begin
 		mii_frm  => miirx_frm,
 		mii_irdy => miirx_irdy,
 		mii_data => miirx_data,
-		prmb_frm => prmb_frm,
-		dll_data => dll_data,
+		dll_frm  => dll_frm,
 
 		da_frm   => ethda_frm,
 		da_irdy  => ethda_irdy,
@@ -148,7 +146,7 @@ begin
 		mr_irdy => ethda_irdy,
 		mr_trdy => open,
 		mr_data => bcst_data,
-		sl_data => dll_data,
+		sl_data => miirx_data,
 		equ     => bcstda_equ);
 
 	ethda_cmp_i : entity hdl4fpga.mii_cmp
@@ -158,7 +156,7 @@ begin
 		mii_clk => miirx_clk,
 		frm     => ethda_frm,
 		irdy    => ethda_irdy,
-		data    => dll_data,
+		data    => miirx_data,
 		equ     => ethda_equ);
 
 	arptyp_cmp_i : entity hdl4fpga.mii_cmp
@@ -168,7 +166,7 @@ begin
 		mii_clk => miirx_clk,
 		frm     => ethtyp_frm,
 		irdy    => ethtyp_irdy,
-		data    => dll_data,
+		data    => miirx_data,
 		equ     => arptyp_equ);
 
 	process (miirx_clk)
@@ -191,7 +189,7 @@ begin
 				end if;
 			end if;
 			arprx_frm  <= ethpyl_frm and da_vld and typ_vld;
-			arprx_data <= dll_data;
+			arprx_data <= miirx_data;
 		end if;
 	end process;
 	tp(1) <= arprx_frm; --miirx_frm;
@@ -269,7 +267,7 @@ begin
 		mii_clk => miirx_clk,
 		frm     => ethtyp_frm,
 		irdy    => ethtyp_irdy,
-		data    => dll_data,
+		data    => miirx_data,
 		equ     => ipv4typ_equ);
 
 	process (miirx_clk)
@@ -295,12 +293,12 @@ begin
 			ipv4sharx_irdy <= ethsa_irdy;
 			ipv4rx_frm     <= ethpyl_frm and da_vld and typ_vld;
 			ipv4rx_irdy    <= miirx_irdy;
-			ipv4rx_data    <= dll_data;
+			ipv4rx_data    <= miirx_data;
 		end if;
 	end process;
 
 	-- tp(1) <= ipv4rx_frm; --miirx_frm;
-	-- tp(2 to 2+dll_data'length-1) <= ipv4rx_data;
+	-- tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
 	-- ipv4rx_irdy <= ipv4rx_frm and miirx_irdy;
 	ipv4_i : entity hdl4fpga.ipv4
 	generic map (

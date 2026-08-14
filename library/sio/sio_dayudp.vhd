@@ -80,11 +80,6 @@ architecture beh of sio_dayudp is
 	signal soudp_trdy : std_logic;
 	signal soudp_data : std_logic_vector(so_data'range);
 
-	signal srztx_frm  : std_logic;
-	signal srztx_irdy : std_logic;
-	signal srztx_trdy : std_logic;
-	signal srztx_data : std_logic_vector(si_data'range);
-
 begin
 
 	siudp_frm  <= '0' when sio_addr/='0' else si_frm;
@@ -108,11 +103,11 @@ begin
 		fcs_sb     => fcs_sb,
 		fcs_vld    => fcs_vld,
 
-		miitx_clk  => miirx_clk,
-		miitx_frm  => srztx_frm,
-		miitx_irdy => srztx_irdy,
-		miitx_trdy => srztx_trdy,
-		miitx_data => srztx_data,
+		miitx_clk  => miitx_clk,
+		miitx_frm  => miitx_frm,
+		miitx_irdy => miitx_irdy,
+		miitx_trdy => miitx_trdy,
+		miitx_data => miitx_data,
 
 		si_clk     => so_clk,
 		si_frm     => siudp_frm,
@@ -126,20 +121,6 @@ begin
 		so_trdy    => soudp_trdy,
 		so_data    => soudp_data,
 		tp         => tp);
-
-	txserlzr_e : entity hdl4fpga.serlzr
-	generic map (
-		lsdfirst => false)
-	port map (
-		src_clk  => miitx_clk,
-		src_frm  => srztx_frm,
-		src_irdy => srztx_irdy,
-		src_trdy => srztx_trdy,
-		src_data => srztx_data,
-		dst_clk  => miitx_clk,
-		dst_irdy => miitx_irdy,
-		dst_data => miitx_data);
-	miitx_frm <= miitx_irdy;
 
 	si_trdy <= so_trdy when sio_addr/='0' else siudp_trdy;
 	so_frm  <= si_frm  when sio_addr/='0' else soudp_frm;

@@ -112,8 +112,8 @@ begin
 
 		signal tp   : std_logic_vector(1 to 32);
 	begin
-		usb_fpga_dp    <= 'Z';-- when up='0' else '0';
-		usb_fpga_dn    <= 'Z';-- when up='0' else '0';
+		usb_fpga_dp    <= 'Z'; -- when up='0' else '0';
+		usb_fpga_dn    <= 'Z'; -- when up='0' else '0';
 		usb_fpga_bd_dp <= 'Z';
 		usb_fpga_bd_dn <= 'Z';
 
