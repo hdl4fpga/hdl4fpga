@@ -76,12 +76,12 @@ architecture struct of sio_udp is
 	signal srzrx_frm     : std_logic;
 	signal srzrx_irdy    : std_logic;
 	signal srzrx_trdy    : std_logic;
-	signal srzrx_data    : std_logic_vector(si_data'range);
+	signal srzrx_data    : std_logic_vector(so_data'range);
 
 	signal pylrx_frm     : std_logic;
 	signal pylrx_irdy    : std_logic;
 	signal pylrx_trdy    : std_logic;
-	signal pylrx_data    : std_logic_vector(miitx_data'range);
+	signal pylrx_data    : std_logic_vector(so_data'range);
 
 	signal srztx_frm     : std_logic;
 	signal srztx_irdy    : std_logic;
@@ -152,7 +152,7 @@ begin
 		si_len  => std_logic_vector(to_unsigned(summation(hdo(frames)**".format.pyl")/8-1,8)),
 		si_irdy => srztx_irdy,
 		si_trdy => srztx_trdy,
-		si_data => srztx_data,
+		si_data => srzrx_data,
 
 		so_frm  => pylrx_frm,
 		so_irdy => pylrx_irdy,
