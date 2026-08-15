@@ -103,6 +103,7 @@ begin
 		hwaddr        => hwaddr,
 		ipv4addr      => ipv4addr)
 	port map (
+		tp => tp,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
 
@@ -150,8 +151,8 @@ begin
 		si_frm  => srztx_frm,
 		si_rid  => x"00",
 		si_len  => std_logic_vector(to_unsigned(summation(hdo(frames)**".format.pyl")/8-1,8)),
-		si_irdy => srztx_irdy,
-		si_trdy => srztx_trdy,
+		si_irdy => srzrx_irdy,
+		si_trdy => srzrx_trdy,
 		si_data => srzrx_data,
 
 		so_frm  => pylrx_frm,
