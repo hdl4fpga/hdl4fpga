@@ -91,7 +91,7 @@ architecture def of mii_ipoe is
 	signal ipv4sharx_irdy : std_logic;
 
 	signal ipv4rx_frm    : std_logic;
-	signal ipv4rx_irdy : std_logic;
+	signal ipv4rx_irdy   : std_logic;
 	signal ipv4rx_data   : std_logic_vector(miirx_data'range);
 
 	signal eth_frms  : std_logic_vector(0 to 2-1);
@@ -139,6 +139,8 @@ begin
 		fcs_sb   => fcs_sb,
 		fcs_vld  => fcs_vld);
 
+	tp(1) <= ethda_frm;
+	tp(2 to miirx_data'length+1) <= miirx_data;
 	bcstcmp_i : entity hdl4fpga.sio_cmp
 	port map (
 		clk     => miirx_clk,
@@ -192,8 +194,8 @@ begin
 			arprx_data <= miirx_data;
 		end if;
 	end process;
-	tp(1) <= arprx_frm; --miirx_frm;
-	tp(2 to arprx_data'length+1) <= arprx_data;
+--	tp(1) <= arprx_frm;
+--	tp(2 to arprx_data'length+1) <= arprx_data;
 
 	arpd_i : entity hdl4fpga.arpd
 	generic map (
@@ -297,9 +299,6 @@ begin
 		end if;
 	end process;
 
-	-- tp(1) <= ipv4rx_frm; --miirx_frm;
-	-- tp(2 to 2+miirx_data'length-1) <= ipv4rx_data;
-	-- ipv4rx_irdy <= ipv4rx_frm and miirx_irdy;
 	ipv4_i : entity hdl4fpga.ipv4
 	generic map (
 		hwaddr   => hwaddr,

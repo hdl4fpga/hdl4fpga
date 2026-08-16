@@ -353,9 +353,9 @@ begin
 		process(rmii_clk)
 		begin
 			if rising_edge(rmii_clk) then
-				ser_frm  <= rmii_tx_en; --tp(1);
+				ser_frm  <= tp(1);
 				ser_irdy <= '1';
-				ser_data <= rmii_tx0 & rmii_tx1; --tp(2 to 2+1);
+				ser_data <= tp(2 to 2+1);
 				if fcs_sb='1' then
 					led(7) <= fcs_vld;
 				end if;
