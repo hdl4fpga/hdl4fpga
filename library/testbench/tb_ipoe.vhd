@@ -60,5 +60,4 @@ begin
 		mii_frm  => rxdv,
 		mii_irdy => rxdv,
 		mii_data => rxd);
-
 end;

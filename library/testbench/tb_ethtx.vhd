@@ -21,16 +21,14 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
-use hdl4fpga.ipoepkg.all;
 
 entity tb_ethtx is
 	generic (
-		sha  : string := "0x00_27_0e_0f_f5_95";
+		sha  : string;
 		data : string);
 	port (
 		req  : in  std_logic :='0';
@@ -46,7 +44,7 @@ architecture beh of tb_ethtx is
 		constant data : string)
 		return std_logic_vector is
 		constant bcast  : string := "0xff_ff_ff_ff_ff_ff";
-		constant spa    : string := hdo(data)**".sda";
+		constant spa    : string := hdo(data)**".spa";
 		constant ethtyp : string := "0x0806";
 		constant htype  : string := "0x0001";
 		constant ptype  : string := "0x0800";
@@ -54,10 +52,15 @@ architecture beh of tb_ethtx is
 		constant psize  : string := "0x04";
 		constant requst : string := "0x0001";
 		constant tmac   : string := "0x00_00_00_00_00_00";
-		constant tpa    : string := hdo(data)**".tda";
+		constant tpa    : string := hdo(data)**".tpa";
 	begin
-		return reverse(to_stdlogicvector(bcast & sha & ethtyp & htype & htype & ptype & hsize & psize & requst & sha & spa & tmac & tpa), 8);
+		return reverse(reverse(
+			to_stdlogicvector(bcast & sha & ethtyp & htype & htype & ptype & hsize & psize & requst & sha) & 
+			to_stdlogicvector(spa)  & 
+			to_stdlogicvector(tmac) & 
+			to_stdlogicvector(tpa)), 8);
 	end;
+
 	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)),8);
 
 	signal pyl_frm  : std_logic;
@@ -89,16 +92,16 @@ begin
 	end process;
 
 	eth_e : entity hdl4fpga.eth_tx
-   	generic map (
-   		sha => to_stdlogicvector(sha))
-   	port map (
-   		mii_clk  => txc,
-   		mii_frm  => txen,
-   		mii_data => txd,
-
-   		pyl_frm  => pyl_frm,
-   		pyl_irdy => pyl_irdy,
-   		pyl_trdy => pyl_trdy,
-   		pyl_data => pyl_data);
+	generic map (
+		sha => to_stdlogicvector(sha))
+	port map (
+		mii_clk  => txc,
+		mii_frm  => txen,
+		mii_data => txd,
+	
+		pyl_frm  => pyl_frm,
+		pyl_irdy => pyl_irdy,
+		pyl_trdy => pyl_trdy,
+		pyl_data => pyl_data);
 
 end;

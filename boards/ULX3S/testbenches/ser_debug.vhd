@@ -116,8 +116,6 @@ architecture ulx3s_serdebug of testbench is
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 	end component;
 
---	for all: ulx3s use entity work.ulx3s(ser_debug);
-
 	constant snd_data  : std_logic_vector :=
 		x"01007e" &
 		x"18ff"   &
@@ -140,12 +138,14 @@ architecture ulx3s_serdebug of testbench is
 	signal gp          : std_logic_vector(28-1 downto 0);
 	signal gn          : std_logic_vector(28-1 downto 0);
 
-	signal rst   : std_logic;
-	signal xtal  : std_logic := '0';
+	signal clk_25mhz : std_logic := '0';
 	signal fire1 : std_logic;
 	signal fire2 : std_logic;
 
 	signal mii_refclk : std_logic := '0';
+	signal rmii_req : std_logic;
+	signal rmii_rdy : std_logic;
+
 	alias  rmii_clk   is gn(12);
 	alias  rmii_txen  is gp(12);
 	signal rmii_txd   : std_logic_vector(0 to 2-1);
@@ -161,29 +161,38 @@ architecture ulx3s_serdebug of testbench is
 
 begin
 
-	rst  <= '1', '0' after  0.25 us;
-	xtal <= not xtal after 20    ns;
-
+	clk_25mhz  <= not clk_25mhz  after 20 ns;
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
 	rmii_clk   <= mii_refclk;
 
-	rmii_rxdv <= '0', '1' after 0.5 us;
-	(gn(11), gp(11)) <= rmii_rxd;
+	rmii_txd <= (gp(10), gn(9));
+	tbipoe_e : entity work.tb_ipoe
+	generic map(
+		sha  => "0x00_27_0e_0f_f5_95",
+		data => "{spa:192.168.0.2,tpa:192.168.0.14}")
+	port map (
+		req  => rmii_req,
+		rdy  => rmii_rdy,
+		txc  => rmii_clk,
+		txen => rmii_rxdv,
+		txd  => rmii_rxd,
 
-	rmii_txd  <= (gp(10), gn(9));
-	rmii_mdio <= 'H';
+		rxc  => rmii_clk,
+		rxdv => rmii_txen,
+		rxd  => rmii_txd);
+	(gn(11), gp(11)) <= rmii_rxd;
 
 	fire1 <= '0', '1' after 1 us;
 	fire2 <= '0', '1' after 1 us;
-
 	du_e : ulx3s
 	port map (
-		clk_25mhz => xtal,
+		clk_25mhz => clk_25mhz,
 		fire1     => fire1,
 		fire2     => fire2,
 		gp        => gp,
 		gn        => gn,
 		ftdi_txd  => ftdi_txd);
+	rmii_mdio <= 'H';
 
 end;
 
