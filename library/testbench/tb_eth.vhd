@@ -30,10 +30,8 @@ use hdl4fpga.ipoepkg.all;
 
 entity tb_eth is
 	generic (
-		data        : string;
-		default_tha : string := "x00_27_0e_0f_f5_95";
-		default_sda : string := "192.168.0.2";
-		default_pda : string := "192.168.0.14");
+		sha  : string := "0x00_27_0e_0f_f5_95";
+		data : string);
 	port (
 		req  : in  std_logic :='0';
 		rdy  : buffer std_logic :='0';
@@ -43,31 +41,25 @@ entity tb_eth is
 end;
 
 architecture beh of tb_eth is
-	
-	constant bitrom : std_logic_vector := to_stdlogicvector(tha) & to_stdlogicvector(pyl);
-	function proto (
-		constant arg : string)
-		return arg is 
-	begin
-		if arg="arp" then
-			return "{type:0x806}";
-		elsif arg="udp" then
-			return "{type:0x800,proto:0x11}";
-		elsif arg="icmp" then
-			return "{type:0x800,proto:0x01}";
-		end if;
-	end;
 
 	function init_rom (
 		constant data : string)
-		return string is
-		constant tha : string := hdo(data)*".tha=" & default_tha;
-		constant typ : string := proto(hdo(data)*".proto");
+		return std_logic_vector is
+		constant bcast  : string := "0xff_ff_ff_ff_ff_ff";
+		constant spa    : string := hdo(data)**".sda";
+		constant ethtyp : string := "0x0806";
+		constant htype  : string := "0x0001";
+		constant ptype  : string := "0x0800";
+		constant hsize  : string := "0x06";
+		constant psize  : string := "0x04";
+		constant requst : string := "0x0001";
+		constant tmac   : string := "0x00_00_00_00_00_00";
+		constant tpa    : string := hdo(data)**".tda";
 	begin
-		
+		return reverse(to_stdlogicvector(bcast & sha & ethtyp & htype & htype & ptype & hsize & psize & requst & sha & spa & tmac & tpa), 8);
 	end;
+	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)),8);
 
-	signal addr     : unsigned(0 to unsigned_num_bits(bitrom'length/txd'length-1)-1);
 
 	signal pyl_frm  : std_logic;
 	signal pyl_irdy : std_logic;
@@ -77,38 +69,29 @@ architecture beh of tb_eth is
 begin
 
 	process (txc)
+		variable addr : natural range 0 to bitdata'length/txd'length;
 	begin
 		if rising_edge(txc) then
+			pyl_data <= bitdata(addr*txd'length to (addr+1)*txd'length-1);
+			pyl_frm  <= (rdy xor req);
+			pyl_irdy <= (rdy xor req);
 			if (rdy xor req)='1' then
-				if addr < (bitrom'length/txd'length-1) then
-					if pyl_trdy='1' then
-						addr <= addr + 1;
+				if pyl_trdy='1' then
+					if addr > 0 then
+						addr := addr - 1;
+					else
+						rdy <= req;
 					end if;
-				elsif (pyl_irdy and pyl_trdy)='1' then
-					rdy <= req;
 				end if;
 			else
-				addr <= (others => '0');
+				addr := bitdata'length/txd'length-1;
 			end if;
 		end if;
 	end process;
 
-	pyl_frm  <= 
-		'0' when rdy=req else
-		'1' when addr < (bitrom'length/txd'length-1) else
-		'0';
-
-	pyl_irdy <= '1' when rdy /= req else '0';
-	rom_e : entity hdl4fpga.rom
-	generic map (
-		bitdata => reverse(bitrom,8))
-	port map (
-		addr => std_logic_vector(addr),
-		data => pyl_data);
-
 	eth_e : entity hdl4fpga.eth_tx
    	generic map (
-   		sha => sha)
+   		sha => to_stdlogicvector(sha))
    	port map (
    		mii_clk  => txc,
    		mii_frm  => txen,
