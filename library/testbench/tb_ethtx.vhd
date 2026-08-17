@@ -25,6 +25,7 @@ use ieee.std_logic_1164.all;
 library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
+use hdl4fpga.ipoepkg.all;
 
 entity tb_ethtx is
 	generic (
@@ -56,9 +57,9 @@ architecture beh of tb_ethtx is
 	begin
 		return reverse(reverse(
 			to_stdlogicvector(bcast & sha & ethtyp & htype & htype & ptype & hsize & psize & requst & sha) & 
-			to_stdlogicvector(spa)  & 
+			to_stdlogicvector(aton(spa))  & 
 			to_stdlogicvector(tmac) & 
-			to_stdlogicvector(tpa)), 8);
+			to_stdlogicvector(aton(tpa)), 8);
 	end;
 
 	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)),8);
