@@ -166,6 +166,19 @@ begin
 	rmii_clk   <= mii_refclk;
 
 	rmii_txd <= (gp(10), gn(9));
+	process (fire1, rmii_clk)
+		variable req : std_logic;
+	begin
+		if fire1='0' then
+			rmii_req <= rmii_rdy;
+			req := rmii_rdy;
+		elsif rising_edge(rmii_clk) then
+			if fire1='1' then
+				rmii_req <= not req;
+			end if;
+		end if;
+	end process;
+
 	tbipoe_e : entity work.tb_ipoe
 	generic map(
 		sha  => "0x00_27_0e_0f_f5_95",

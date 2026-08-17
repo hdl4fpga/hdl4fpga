@@ -55,16 +55,16 @@ architecture beh of tb_ethtx is
 		constant tmac   : string := "0x00_00_00_00_00_00";
 		constant tpa    : string := hdo(data)**".tpa";
 	begin
-		return reverse(reverse(
+		return 
 			to_stdlogicvector(
 				bcast & sha   & ethtyp & 
 				htype & htype & ptype  & hsize & psize & requst & sha) & 
 			aton(spa) & 
 			to_stdlogicvector(tmac) & 
-			aton(tpa)), 8);
+			aton(tpa);
 	end;
 
-	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)),8);
+	constant bitdata : std_logic_vector := reverse(init_rom(data));
 
 	signal pyl_frm  : std_logic;
 	signal pyl_irdy : std_logic;
