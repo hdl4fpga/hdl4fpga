@@ -256,16 +256,6 @@ begin
 
 	mii_txd <= (gp(10), gn(9));
 	(gn(11), gp(11)) <= mii_txd;
-	tb_eth_e : entity work.tb_eth
-	generic map (
-		tha => hdo(data)**".tha",
-		pyl => hdo(data)**".udp")
-	port map (
-		req  => mii_req,
-		rdy  => mii_rdy,
-		txc  => mii_refclk,
-		txen => mii_txen,
-		txd  => mii_txd);
 
 	du_e : ulx3s
 	generic map (

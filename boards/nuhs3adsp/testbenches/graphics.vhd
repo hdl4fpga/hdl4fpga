@@ -228,17 +228,6 @@ begin
 		end if;
 	end process;
 
-	tb_eth_e : entity work.tb_eth
-	generic map (
-		tha => hdo(data)**".tha",
-		pyl => hdo(data)**".udp")
-	port map (
-		req  => mii_req,
-		rdy  => mii_rdy,
-		txc  => mii_rxc,
-		txen => mii_rxdv,
-		txd  => mii_rxd);
-
 	du_e : nuhs3adsp
 	port map (
 		clk  => clk,
