@@ -28,7 +28,7 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
-entity tb_eth is
+entity tb_ethtx is
 	generic (
 		sha  : string := "0x00_27_0e_0f_f5_95";
 		data : string);
@@ -40,7 +40,7 @@ entity tb_eth is
 		txd  : out std_logic_vector);
 end;
 
-architecture beh of tb_eth is
+architecture beh of tb_ethtx is
 
 	function init_rom (
 		constant data : string)
@@ -59,7 +59,6 @@ architecture beh of tb_eth is
 		return reverse(to_stdlogicvector(bcast & sha & ethtyp & htype & htype & ptype & hsize & psize & requst & sha & spa & tmac & tpa), 8);
 	end;
 	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)),8);
-
 
 	signal pyl_frm  : std_logic;
 	signal pyl_irdy : std_logic;
