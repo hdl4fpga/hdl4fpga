@@ -30,8 +30,10 @@ use hdl4fpga.ipoepkg.all;
 
 entity tb_eth is
 	generic (
-		tha : string;
-		pyl : string);
+		data        : string;
+		default_tha : string := "x00_27_0e_0f_f5_95";
+		default_sda : string := "192.168.0.2";
+		default_pda : string := "192.168.0.14");
 	port (
 		req  : in  std_logic :='0';
 		rdy  : buffer std_logic :='0';
@@ -41,7 +43,30 @@ entity tb_eth is
 end;
 
 architecture beh of tb_eth is
+	
 	constant bitrom : std_logic_vector := to_stdlogicvector(tha) & to_stdlogicvector(pyl);
+	function proto (
+		constant arg : string)
+		return arg is 
+	begin
+		if arg="arp" then
+			return "{type:0x806}";
+		elsif arg="udp" then
+			return "{type:0x800,proto:0x11}";
+		elsif arg="icmp" then
+			return "{type:0x800,proto:0x01}";
+		end if;
+	end;
+
+	function init_rom (
+		constant data : string)
+		return string is
+		constant tha : string := hdo(data)*".tha=" & default_tha;
+		constant typ : string := proto(hdo(data)*".proto");
+	begin
+		
+	end;
+
 	signal addr     : unsigned(0 to unsigned_num_bits(bitrom'length/txd'length-1)-1);
 
 	signal pyl_frm  : std_logic;
@@ -83,7 +108,7 @@ begin
 
 	eth_e : entity hdl4fpga.eth_tx
    	generic map (
-   		sha => x"00_27_0e_0f_f5_95")
+   		sha => sha)
    	port map (
    		mii_clk  => txc,
    		mii_frm  => txen,

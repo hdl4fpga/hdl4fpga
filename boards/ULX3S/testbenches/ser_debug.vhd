@@ -161,25 +161,28 @@ architecture ulx3s_serdebug of testbench is
 
 begin
 
-	rst <= '1', '0' after 0.25 us; --, '1' after 30 us, '0' after 31 us;
-	xtal <= not xtal after 20 ns;
+	rst  <= '1', '0' after  0.25 us;
+	xtal <= not xtal after 20    ns;
 
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
-	rmii_clk <= mii_refclk;
+	rmii_clk   <= mii_refclk;
+
 	rmii_rxdv <= '0', '1' after 0.5 us;
-	rmii_rxd <= (gp(10), gn(9));
-	(gn(11), gp(11)) <= rmii_txd;
+	(gn(11), gp(11)) <= rmii_rxd;
+
+	rmii_txd  <= (gp(10), gn(9));
 	rmii_mdio <= 'H';
 
 	fire1 <= '0', '1' after 1 us;
 	fire2 <= '0', '1' after 1 us;
+
 	du_e : ulx3s
 	port map (
 		clk_25mhz => xtal,
-		fire1 => fire1,
-		fire2 => fire2,
-		gp    => gp,
-		gn    => gn,
+		fire1     => fire1,
+		fire2     => fire2,
+		gp        => gp,
+		gn        => gn,
 		ftdi_txd  => ftdi_txd);
 
 end;
