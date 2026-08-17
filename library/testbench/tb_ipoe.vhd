@@ -23,8 +23,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library hdl4fpga;
-use hdl4fpga.base.all;
-use hdl4fpga.ipoepkg.all;
 
 entity tb_ipoe is
 	generic (
