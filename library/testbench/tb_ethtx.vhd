@@ -80,21 +80,26 @@ architecture beh of tb_ethtx is
 begin
 
 	process (txc)
-		variable addr : natural range 0 to bitdata'length/txd'length;
+		variable addr : natural range 0 to bitdata'length/txd'length-1;
 	begin
 		if rising_edge(txc) then
+			if pyl_trdy='1' then
+			end if;
 			pyl_frm  <= (rdy xor req);
 			pyl_irdy <= (rdy xor req);
-			if pyl_trdy='1' then
-				pyl_data <= bitdata(addr*txd'length to (addr+1)*txd'length-1);
-			end if;
 			if (rdy xor req)='1' then
 				if pyl_trdy='1' then
+					pyl_data <= bitdata(addr*txd'length to (addr+1)*txd'length-1);
 					if addr > 0 then
 						addr := addr - 1;
 					else
 						rdy <= req;
 					end if;
+				end if;
+				else
+					pyl_frm  <= '0';
+					pyl_irdy <= '0';
+					pyl_data <= (others => '-');
 				end if;
 			else
 				addr := bitdata'length/txd'length-1;
