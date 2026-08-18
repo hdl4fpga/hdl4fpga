@@ -171,7 +171,7 @@ begin
 		data    => miirx_data,
 		equ     => arptyp_equ);
 
-	process (miirx_clk)
+	process (miirx_frm, miirx_clk)
 		variable da_vld  : std_logic := '0';
 		variable typ_vld : std_logic := '0';
 	begin

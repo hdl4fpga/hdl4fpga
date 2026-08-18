@@ -55,16 +55,22 @@ architecture beh of tb_ethtx is
 		constant tmac   : string := "0x00_00_00_00_00_00";
 		constant tpa    : string := hdo(data)**".tpa";
 	begin
-		return 
-			to_stdlogicvector(
-				bcast & sha   & ethtyp & 
-				htype & htype & ptype  & hsize & psize & requst & sha) & 
-			aton(spa) & 
-			to_stdlogicvector(tmac) & 
-			aton(tpa);
+		return reverse(
+			to_stdlogicvector(bcast)  &
+			to_stdlogicvector(ethtyp) & 
+			to_stdlogicvector(htype)  &
+			to_stdlogicvector(htype)  & 
+			to_stdlogicvector(ptype)  & 
+			to_stdlogicvector(hsize)  & 
+			to_stdlogicvector(psize)  & 
+			to_stdlogicvector(requst) &
+			to_stdlogicvector(sha)    & 
+			aton(spa)                 & 
+			to_stdlogicvector(tmac)   & 
+			aton(tpa),8);
 	end;
 
-	constant bitdata : std_logic_vector := reverse(init_rom(data));
+	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)), txd'length);
 
 	signal pyl_frm  : std_logic;
 	signal pyl_irdy : std_logic;
@@ -77,9 +83,11 @@ begin
 		variable addr : natural range 0 to bitdata'length/txd'length;
 	begin
 		if rising_edge(txc) then
-			pyl_data <= bitdata(addr*txd'length to (addr+1)*txd'length-1);
 			pyl_frm  <= (rdy xor req);
 			pyl_irdy <= (rdy xor req);
+			if pyl_trdy='1' then
+				pyl_data <= bitdata(addr*txd'length to (addr+1)*txd'length-1);
+			end if;
 			if (rdy xor req)='1' then
 				if pyl_trdy='1' then
 					if addr > 0 then
