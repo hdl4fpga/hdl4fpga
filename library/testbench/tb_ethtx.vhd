@@ -70,42 +70,37 @@ architecture beh of tb_ethtx is
 			aton(tpa),8);
 	end;
 
-	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)), txd'length);
 
 	signal pyl_frm  : std_logic;
 	signal pyl_irdy : std_logic;
 	signal pyl_trdy : std_logic;
 	signal pyl_data : std_logic_vector(txd'range);
 
+	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)), txd'length);
+	signal ptr : natural range 0 to bitdata'length/txd'length-1;
+
 begin
 
-	process (txc)
-		variable addr : natural range 0 to bitdata'length/txd'length-1;
+	process (req, rdy, txc)
 	begin
 		if rising_edge(txc) then
-			if pyl_trdy='1' then
-			end if;
-			pyl_frm  <= (rdy xor req);
-			pyl_irdy <= (rdy xor req);
 			if (rdy xor req)='1' then
 				if pyl_trdy='1' then
-					pyl_data <= bitdata(addr*txd'length to (addr+1)*txd'length-1);
-					if addr > 0 then
-						addr := addr - 1;
+					if ptr > 0 then
+						ptr <= ptr - 1;
 					else
+						ptr <= bitdata'length/txd'length-1;
 						rdy <= req;
 					end if;
 				end if;
-				else
-					pyl_frm  <= '0';
-					pyl_irdy <= '0';
-					pyl_data <= (others => '-');
-				end if;
 			else
-				addr := bitdata'length/txd'length-1;
+				ptr <= bitdata'length/txd'length-1;
 			end if;
 		end if;
 	end process;
+	pyl_frm  <= (rdy xor req) when ptr > 0 else '0';
+	pyl_irdy <= (rdy xor req);
+	pyl_data <= bitdata(ptr*txd'length to (ptr+1)*txd'length-1);
 
 	eth_e : entity hdl4fpga.eth_tx
 	generic map (

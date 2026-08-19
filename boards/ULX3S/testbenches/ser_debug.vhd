@@ -196,7 +196,7 @@ begin
 	(gn(11), gp(11)) <= rmii_rxd;
 
 	fire1 <= '0', '1' after 100 ns;
-	fire2 <= '0', '1' after 100 ns;
+	fire2 <= '0', '0' after 100 ns;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => clk_25mhz,
