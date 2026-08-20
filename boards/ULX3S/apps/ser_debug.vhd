@@ -233,6 +233,8 @@ begin
 		signal rmii_clk  : std_logic;
 		signal rmii_rxdv : std_logic;
 		signal rmii_rxd  : std_logic_vector(0 to 2-1);
+		signal rmii_txen : std_logic;
+		signal rmii_txd  : std_logic_vector(0 to 2-1);
 		alias md_btn  is fire1;
 		alias dhcpc_btn is fire2;
 
@@ -263,6 +265,9 @@ begin
 				shr_rxd   := rotate_left(shr_rxd, 2);
 				shr_dv(0) := rmii_crsdv;
 				shr_dv    := rotate_left(shr_dv, 1);
+				rmii_tx_en <= rmii_txen;
+				rmii_txd0  <= rmii_txd(0);
+				rmii_txd1  <= rmii_txd(1);
 			end if;
 		end process;
 
@@ -285,9 +290,8 @@ begin
 			so_data    => so_data,
 			dhcp_btn   => dhcpc_btn,
 			mii_txc    => rmii_clk,
-			mii_txen   => rmii_tx_en,
-			mii_txd(0) => rmii_txd0,
-			mii_txd(1) => rmii_txd1,
+			mii_txen   => rmii_txen,
+			mii_txd    => rmii_txd,
 
 			fcs_sb     => fcs_sb,
 			fcs_vld    => fcs_vld,
@@ -353,9 +357,9 @@ begin
 		process(rmii_clk)
 		begin
 			if rising_edge(rmii_clk) then
-				ser_frm  <= rmii_tx_en; --rmii_rxdv; --tp(1);
+				ser_frm  <= rmii_txen; --rmii_rxdv; --tp(1);
 				ser_irdy <= '1';
-				ser_data <= rmii_txd0 & rmii_txd1; --rmii_rxd; --tp(2 to 2+1);
+				ser_data <= rmii_txd; --rmii_rxd; --tp(2 to 2+1);
 				if fcs_sb='1' then
 					led(7) <= fcs_vld;
 				end if;
