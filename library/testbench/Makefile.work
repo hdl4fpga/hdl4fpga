@@ -70,9 +70,9 @@ WORK__ulx3s_graphics_md = $(LIB_WORK)/ulx3s_graphics_md/_primary.dat
 WORK__ulx3s__graphics = $(LIB_WORK)/ulx3s/graphics.dat
 WORK__ulx3s__ser_debug = $(LIB_WORK)/ulx3s/ser_debug.dat
 WORK__ulx3s = $(LIB_WORK)/ulx3s/_primary.dat
-WORK__testbench__tb_mio = $(LIB_WORK)/testbench/tb_mio.dat
 WORK__testbench__ulx3s_serdebug = $(LIB_WORK)/testbench/ulx3s_serdebug.dat
 WORK__testbench__ulx3s_graphics = $(LIB_WORK)/testbench/ulx3s_graphics.dat
+WORK__testbench__tb_mio = $(LIB_WORK)/testbench/tb_mio.dat
 WORK__testbench__nuhs3adsp_graphics = $(LIB_WORK)/testbench/nuhs3adsp_graphics.dat
 WORK__testbench__nuhs3adsp_serdebug = $(LIB_WORK)/testbench/nuhs3adsp_serdebug.dat
 WORK__testbench = $(LIB_WORK)/testbench/_primary.dat
@@ -101,9 +101,9 @@ whole_library :     $(WORK__ulx3s_serdebug_structure_md) \
     $(WORK__ulx3s__graphics) \
     $(WORK__ulx3s__ser_debug) \
     $(WORK__ulx3s) \
-    $(WORK__testbench__tb_mio) \
     $(WORK__testbench__ulx3s_serdebug) \
     $(WORK__testbench__ulx3s_graphics) \
+    $(WORK__testbench__tb_mio) \
     $(WORK__testbench__nuhs3adsp_graphics) \
     $(WORK__testbench__nuhs3adsp_serdebug) \
     $(WORK__testbench) \
@@ -174,8 +174,8 @@ $(WORK__tb_ethtx__beh) : tb_ethtx.vhd \
 		$(HDL4FPGA__eth_tx) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
-		$(HDL4FPGA__hdo) \
 		$(IEEE__numeric_std) \
+		$(HDL4FPGA__hdo) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93  tb_ethtx.vhd
@@ -196,11 +196,11 @@ $(WORK__tb_hdlc__def) : tb_hdlc.vhd \
 $(WORK__tb_ipoe) \
 $(WORK__tb_ipoe__def) : tb_ipoe.vhd \
 		$(HDL4FPGA__eth_rx) \
-		$(WORK__tb_ethtx) \
-		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__ipoepkg) \
-		$(IEEE__numeric_std) \
 		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(HDL4FPGA__hdo) \
+		$(WORK__tb_ethtx) \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93  tb_ipoe.vhd
@@ -330,6 +330,7 @@ $(WORK__ulx3s_graphics_structure_md) : ../../boards/ULX3S/testbenches/graphics.v
 $(WORK__testbench__ulx3s_serdebug) \
 $(WORK__ulx3s_serdebug_md) \
 $(WORK__ulx3s_serdebug_structure_md) : ../../boards/ULX3S/testbenches/ser_debug.vhd \
+		$(WORK__tb_ipoe) \
 		$(WORK__ulx3s) \
 		$(HDL4FPGA__base) \
 		$(IEEE__numeric_std) \
