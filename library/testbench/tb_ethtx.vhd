@@ -59,7 +59,6 @@ architecture beh of tb_ethtx is
 			to_stdlogicvector(bcast)  &
 			to_stdlogicvector(ethtyp) & 
 			to_stdlogicvector(htype)  &
-			to_stdlogicvector(htype)  & 
 			to_stdlogicvector(ptype)  & 
 			to_stdlogicvector(hsize)  & 
 			to_stdlogicvector(psize)  & 

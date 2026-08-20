@@ -44,6 +44,7 @@ end;
 
 architecture def of mii_buffer is
 	signal rollback  : std_logic;
+	signal fifoi_irdy : std_logic;
 	signal fifo_frm  : std_logic;
 	signal fifo_irdy : std_logic;
 	signal fifo_trdy : std_logic;
@@ -51,20 +52,24 @@ architecture def of mii_buffer is
 begin
 
 	process (clk)
-		type states is (s1, s2);
+		type states is (s_commit, s_queue);
 		variable state : states;
 	begin
 		if rising_edge(clk) then
 			case state is
-			when s1 =>
+			when s_commit =>
 				if (dst_frm or dst_irdy)='0' then
 					rollback <= '0';
-					state := s2;
+					if (src_frm or src_irdy)='1' then
+						state := s_queue;
+					end if;
 				end if;
-			when s2 =>
+			when s_queue =>
 				if (src_frm or src_irdy)='0' then
 					rollback <= '1';
-					state := s1;
+					if (dst_frm or dst_irdy)='1' then
+						state := s_commit;
+					end if;
 				end if;
 			end case;
 		end if;

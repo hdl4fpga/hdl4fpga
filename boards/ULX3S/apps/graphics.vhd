@@ -246,18 +246,18 @@ begin
 			dhcp_btn   => fire1,
 			mii_txc    => mii_clk,
 			mii_txen   => rmii_tx_en,
-			mii_txd(0) => rmii_tx0,
-			mii_txd(1) => rmii_tx1,
+			mii_txd(0) => rmii_txd0,
+			mii_txd(1) => rmii_txd1,
 
 			mii_rxc    => mii_clk,
 			mii_rxdv   => rmii_crsdv,
-			mii_rxd(0) => rmii_rx0,
-			mii_rxd(1) => rmii_rx1);
+			mii_rxd(0) => rmii_rxd0,
+			mii_rxd(1) => rmii_rxd1);
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
-		rmii_rx0     <= 'Z';
-		rmii_rx1     <= 'Z';
+		rmii_rxd0     <= 'Z';
+		rmii_rxd1     <= 'Z';
 
 		mdclk_p : process(mii_clk)
 			variable cntr : integer range -1 to 50/5-2; -- 50MHz/2.5MHz/2

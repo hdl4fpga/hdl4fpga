@@ -147,14 +147,10 @@ architecture ulx3s_serdebug of testbench is
 	signal rmii_rdy : std_logic;
 
 	alias  rmii_clk   is gn(12);
-	alias  rmii_txen  is gp(12);
+	alias  rmii_txen  is gn(10);
 	signal rmii_txd   : std_logic_vector(0 to 2-1);
 	alias  rmii_rxdv  is gp(12);
 	signal rmii_rxd   : std_logic_vector(0 to 2-1);
-
-	alias rmii_tx_en  is gn(10);
-	alias rmii_tx0    is gp(10);
-	alias rmii_tx1    is gn(9);
 
 	alias rmii_mdc    is gp(13);
 	alias rmii_mdio   is gn(13);

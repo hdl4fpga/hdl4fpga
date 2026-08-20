@@ -201,7 +201,7 @@ begin
 		begin
 			if rising_edge(miitx_clk) then
 				if (tx_rdy xor tx_req)='1' then
-					if (decode_last and not arptx_frm and arptx_irdy and arptx_trdy)='1' then
+					if (decode_last)='1' then
 						tx_rdy <= tx_req;
 						decode_frm <= '0';
 					else

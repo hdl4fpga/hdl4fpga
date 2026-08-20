@@ -114,9 +114,10 @@ end;
 
 architecture def of fifo is
 
+	constant flush    : std_logic_vector := "00";
 	constant rollback : std_logic_vector := "01";
 	constant commit   : std_logic_vector := "10";
-	constant flush    : std_logic_vector := "00";
+	constant queue    : std_logic_vector := "11";
 
 	signal wr_ena    : std_logic;
 	signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');

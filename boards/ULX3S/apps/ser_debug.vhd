@@ -259,7 +259,7 @@ begin
 				end case;
 				rmii_rxd <= std_logic_vector(shr_rxd(0 to 2-1));
 
-				shr_rxd(0 to 2-1) := unsigned'(rmii_rx0 & rmii_rx1);
+				shr_rxd(0 to 2-1) := unsigned'(rmii_rxd0 & rmii_rxd1);
 				shr_rxd   := rotate_left(shr_rxd, 2);
 				shr_dv(0) := rmii_crsdv;
 				shr_dv    := rotate_left(shr_dv, 1);
@@ -286,8 +286,8 @@ begin
 			dhcp_btn   => dhcpc_btn,
 			mii_txc    => rmii_clk,
 			mii_txen   => rmii_tx_en,
-			mii_txd(0) => rmii_tx0,
-			mii_txd(1) => rmii_tx1,
+			mii_txd(0) => rmii_txd0,
+			mii_txd(1) => rmii_txd1,
 
 			fcs_sb     => fcs_sb,
 			fcs_vld    => fcs_vld,
@@ -297,8 +297,8 @@ begin
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
-		rmii_rx0     <= 'Z';
-		rmii_rx1     <= 'Z';
+		rmii_rxd0    <= 'Z';
+		rmii_rxd1    <= 'Z';
 
 		mdclk_p : process(rmii_clk)
 			constant max : natural := (50+2*2-1)/(2*2)-2; -- 50MHz/(2MHz*2);
@@ -353,9 +353,9 @@ begin
 		process(rmii_clk)
 		begin
 			if rising_edge(rmii_clk) then
-				ser_frm  <= tp(1);
+				ser_frm  <= rmii_tx_en; --rmii_rxdv; --tp(1);
 				ser_irdy <= '1';
-				ser_data <= tp(2 to 2+1);
+				ser_data <= rmii_txd0 & rmii_txd1; --rmii_rxd; --tp(2 to 2+1);
 				if fcs_sb='1' then
 					led(7) <= fcs_vld;
 				end if;

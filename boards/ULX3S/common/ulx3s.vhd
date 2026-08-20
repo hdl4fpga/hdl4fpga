@@ -116,17 +116,16 @@ entity ulx3s is
 		user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 		shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 
+	alias rmii_txd1    : std_logic is gn(9);
 	alias rmii_tx_en   : std_logic is gn(10);
-	alias rmii_tx0     : std_logic is gp(10);
-	alias rmii_tx1     : std_logic is gn(9);
+	alias rmii_txd0    : std_logic is gp(10);
 
-	alias rmii_rx0     : std_logic is gn(11);
-	alias rmii_rx1     : std_logic is gp(11);
+	alias rmii_rxd0    : std_logic is gn(11);
+	alias rmii_rxd1    : std_logic is gp(11);
 
 	alias rmii_crsdv   : std_logic is gp(12);
-	alias rmii_rxer    : std_logic is gp(12);
-
 	alias rmii_nintclk : std_logic is gn(12);
+
 	alias rmii_mdio    : std_logic is gn(13);
 	alias rmii_mdc     : std_logic is gp(13);
 
