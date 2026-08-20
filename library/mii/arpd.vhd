@@ -55,8 +55,8 @@ entity arpd is
 end;
 
 architecture def of arpd is
-	signal tx_req      : std_logic := '0';
-	signal tx_rdy      : std_logic := '0';
+	signal tx_req : std_logic := '0';
+	signal tx_rdy : std_logic := '0';
 begin
 
 	rx_b : block

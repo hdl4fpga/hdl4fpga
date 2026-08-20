@@ -94,8 +94,8 @@ architecture def of mii_ipoe is
 	signal ipv4rx_irdy   : std_logic;
 	signal ipv4rx_data   : std_logic_vector(miirx_data'range);
 
-	signal eth_frms  : std_logic_vector(0 to 2-1);
-	signal eth_irdys : std_logic_vector(0 to 2-1);
+	signal eth_frms  : std_logic_vector(0 to 2-1) := (others => '0');
+	signal eth_irdys : std_logic_vector(0 to 2-1) := (others => '0');
 	signal eth_trdys : std_logic_vector(0 to 2-1) := (others => '1');
 
 	alias  arptx_frm   is eth_frms(0);

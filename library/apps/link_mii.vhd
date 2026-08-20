@@ -91,7 +91,7 @@ begin
 		tp         => tp,
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
-		miirx_clk  => mii_txc,
+		miirx_clk  => mii_rxc,
 		miirx_frm  => mii_rxdv,
 		miirx_irdy => mii_rxdv,
 		miirx_data => mii_rxd,
