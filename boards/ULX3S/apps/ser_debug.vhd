@@ -265,6 +265,12 @@ begin
 				shr_rxd   := rotate_left(shr_rxd, 2);
 				shr_dv(0) := rmii_crsdv;
 				shr_dv    := rotate_left(shr_dv, 1);
+			end if;
+		end process;
+
+		process(rmii_clk)
+		begin
+			if rising_edge(rmii_clk) then
 				rmii_tx_en <= rmii_txen;
 				rmii_txd0  <= rmii_txd(0);
 				rmii_txd1  <= rmii_txd(1);
