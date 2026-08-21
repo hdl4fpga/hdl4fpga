@@ -43,38 +43,17 @@ entity mii_buffer is -- skid buffer
 end;
 
 architecture def of mii_buffer is
-	signal rollback  : std_logic;
-	signal fifoi_irdy : std_logic;
-	signal fifo_frm  : std_logic;
 	signal fifo_irdy : std_logic;
 	signal fifo_trdy : std_logic;
 	signal fifo_data : std_logic_vector(dst_data'range);
+
+	signal mode      : std_logic_vector(0 to 2-1);
+	alias commit   is mode(0);
+	alias rollback is mode(1);
 begin
 
-	process (clk)
-		type states is (s_commit, s_queue);
-		variable state : states;
-	begin
-		if rising_edge(clk) then
-			case state is
-			when s_commit =>
-				if (dst_frm or dst_irdy)='0' then
-					rollback <= '0';
-					if (src_frm or src_irdy)='1' then
-						state := s_queue;
-					end if;
-				end if;
-			when s_queue =>
-				if (src_frm or src_irdy)='0' then
-					rollback <= '1';
-					if (dst_frm or dst_irdy)='1' then
-						state := s_commit;
-					end if;
-				end if;
-			end case;
-		end if;
-	end process;
-
+	commit   <=     (src_frm or src_irdy) or  (dst_frm or dst_irdy);
+	rollback <= not (src_frm or src_irdy) and (dst_frm or dst_irdy);
 	fifo_i : entity hdl4fpga.fifo
 	generic map (
 		latency   => 0,
@@ -87,27 +66,33 @@ begin
 		src_trdy => src_trdy,
 		src_data => src_data,
 
-		mode(0)  => '1',
-		mode(1)  => rollback,
+		mode     => mode,
 
 		dst_clk  => clk,
 		dst_irdy => fifo_irdy,
 		dst_trdy => fifo_trdy,
 		dst_data => fifo_data);
 
-	fifo_frm  <= fifo_irdy;
-	fifo_trdy <= not dst_irdy or dst_trdy;
-	process (fifo_irdy, clk)
-		variable frm  : std_logic;
+	fifo_trdy <= dst_trdy or not dst_irdy;
+	process(clk)
+		variable shr_irdy : std_logic := '0';
+		variable shr_data : std_logic_vector(0 to dst_data'length-1);
 	begin
 		if rising_edge(clk) then
-			if fifo_trdy='1' then
-				dst_data <= fifo_data;
-				dst_irdy <= fifo_irdy;
+			if dst_irdy='0' then
+				dst_frm  <= shr_irdy;
+				dst_irdy <= shr_irdy;
+				dst_data <= shr_data;
+				shr_irdy := fifo_irdy;
+				shr_data := fifo_data;
+			elsif dst_trdy='1' then
+				dst_frm  <= fifo_irdy;
+				dst_irdy <= shr_irdy;
+				dst_data <= shr_data;
+				shr_irdy := fifo_irdy;
+				shr_data := fifo_data;
 			end if;
-			frm := fifo_frm;
 		end if;
-		dst_frm <= frm and fifo_irdy;
 	end process;
 
 end;

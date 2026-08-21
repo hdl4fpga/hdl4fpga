@@ -21,8 +21,9 @@
 # more details at http://www.gnu.org/licenses/.                              #
 #                                                                            #
 
+
 ser_debug: apps.ldf
-	echo prj_project open apps.ldf \; prj_run Export -impl $@  -task Bitgen | diamondc
+	echo prj_project open apps.ldf \; prj_run Export -impl $@  -task TimingSimFileVHD \; prj_run Export -impl $@ -task Bitgen | diamondc
 
 graphics: apps.ldf
 	echo prj_project open apps.ldf \; prj_run Export -impl $@  -task Bitgen | diamondc

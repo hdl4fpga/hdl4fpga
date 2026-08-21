@@ -36,10 +36,10 @@ entity frame_decode is
 		clk   : in  std_logic := '0';
 		frm   : in  std_logic := '0';
 		irdy  : in  std_logic := '0';
-		trdy  : buffer std_logic := '0';
+		trdy  : out std_logic := '0';
 		fin   : out std_logic := '0';
 		last  : out std_logic := '0';
-		acts   : out std_logic_vector(0 to length(frame));
+		acts  : out std_logic_vector(0 to length(frame));
 		frms  : out std_logic_vector(0 to length(frame));
 		irdys : out std_logic_vector(0 to length(frame)) := (others => '1');
 		trdys : in  std_logic_vector(0 to length(frame)) := (others => '1'));
@@ -73,14 +73,14 @@ begin
 		end;
 
 		constant boundary : natural_vector := boundaries;
-		variable cntr  : unsigned(0 to unsigned_num_bits(total-1)) := ('1', others => '0');
+		variable cntr  : unsigned(0 to unsigned_num_bits(total-1));
 		variable step  : natural range 0 to length(frame);
 		variable limit : natural range 0 to 2**cntr'length-1;
 
 		variable active : std_logic;
 	begin
 		if rising_edge(clk) then
-			if ((active or frm) and irdy and trdy)='1' then
+			if ((active or frm) and irdy and trdys(step))='1' then
 				if cntr(0)='1' then
 					if limit=cntr then
 						step  := step + 1;
@@ -101,7 +101,6 @@ begin
 			elsif irdy='1' then
 				active := '1';
 			end if;
-			-- if (frm or irdy)='0' then -- Initialization
 			if active='0' then
 				step  := 0;
 				cntr  := to_unsigned(2**cntr'length-total, cntr'length);

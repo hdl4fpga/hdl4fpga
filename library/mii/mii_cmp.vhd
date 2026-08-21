@@ -39,7 +39,7 @@ entity mii_cmp is
 end;
 
 architecture def of mii_cmp is
-	signal si_data : std_logic_vector(data'range);
+	signal si_data : std_logic_vector(data'range) := (others => '-');
 	signal so_data : std_logic_vector(data'range);
 begin
 

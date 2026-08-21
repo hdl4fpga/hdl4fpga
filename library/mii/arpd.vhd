@@ -49,7 +49,7 @@ entity arpd is
 		arptx_frm     : buffer std_logic := '0';
 		arptx_irdy    : buffer std_logic := '0';
 		arptx_trdy    : in  std_logic := '1';
-		arptx_data    : out std_logic_vector;
+		arptx_data    : buffer std_logic_vector;
 
 		tp            : out std_logic_vector(1 to 32));
 end;
@@ -76,7 +76,6 @@ begin
 			hdo(frames)**".format.arp.spa"   +
 			hdo(frames)**".format.arp.tha";
 		constant discard_value : string := natural'image(discard_length);
-		signal framedecode_trdy : std_logic;
 	begin
 
 		decode_i : entity hdl4fpga.frame_decode
@@ -89,7 +88,6 @@ begin
 			clk    => miirx_clk,
 			frm    => arprx_frm,
 			irdy   => arprx_irdy,
-			trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 			frms(0) => discard,
 			frms(1) => tpa_frm,
 			frms(2) => pyl_frm);
@@ -157,7 +155,7 @@ begin
 
 		signal pyl_frm : std_logic;
 
-		signal decode_frm  : std_logic := '0';
+		signal decode_frm  : std_logic;
 		signal decode_irdy : std_logic;
 		signal decode_trdy : std_logic;
 		signal decode_last : std_logic;
@@ -178,7 +176,6 @@ begin
 			hdo(frames)**".format.arp.oper"  +
 			hdo(frames)**".format.arp.sha";
 		constant rom_value : string := natural'image(rom_length);
-		signal framedecode_trdy : std_logic;
 	begin
 
 		spa_e : entity hdl4fpga.sio_ram
@@ -225,7 +222,6 @@ begin
 			clk    => miitx_clk,
 			frm    => decode_frm,
 			irdy   => decode_irdy,
-			trdy   => framedecode_trdy,
 			last   => decode_last,
 			frms(0) => rom_frm,
 			frms(1) => spa_frm,
@@ -286,6 +282,10 @@ begin
 				dst_irdy => arptx_irdy,
 				dst_trdy => arptx_trdy,
 				dst_data => arptx_data);
+			tp(1) <= arptx_frm;
+			tp(2) <= arptx_irdy;
+			tp(3) <= arptx_trdy;
+			tp(4 to 4+arptx_data'length-1) <= arptx_data;
 		end block;
 
 	end block;

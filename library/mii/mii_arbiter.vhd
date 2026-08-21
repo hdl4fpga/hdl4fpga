@@ -32,13 +32,14 @@ entity mii_arbiter is
 		frms  : in  std_logic_vector;
 		irdys : in  std_logic_vector;
 		trdys : out std_logic_vector;
-		gntd  : buffer std_logic_vector;
+		gntd  : out std_logic_vector;
 		frm   : out std_logic;
 		irdy  : out std_ulogic;
 		trdy  : in  std_ulogic);
 end;
 
 architecture mix of mii_arbiter is
+	signal gnt : std_logic_vector(gntd'range) := (gntd'range => '0');
 begin
 
 	process (clk)
@@ -48,25 +49,26 @@ begin
 		if rising_edge(clk) then
 			case state is
 			when s_idle =>
-				gntd <= (gntd'range => '0');
+				gnt <= (gnt'range => '0');
 				for i in frms'range loop
 					if frms(i)='1' then
-						gntd(i) <= '1';
+						gnt(i) <= '1';
 						state   := s_gntd;
 						exit;
 					end if;
 				end loop;
 			when s_gntd =>
-				if ((frms or irdys or (frms'range => trdy)) and gntd)=(frms'range => '0') then
-					gntd  <= (gntd'range => '0');
+				if ((frms or irdys or (frms'range => trdy)) and gnt)=(frms'range => '0') then
+					gnt  <= (gnt'range => '0');
 					state := s_idle;
 				end if;
 			end case;
 		end if;
 	end process;
+	gntd <= gnt;
 
-	frm   <= '1' when  (frms and gntd) /= (gntd'range => '0') else '0';
-	irdy  <= '1' when (irdys and gntd) /= (gntd'range => '0') else '0';
-	trdys <= (gntd'range => trdy) and gntd;
+	frm   <= '0' when  (frms and gnt) = (gnt'range => '0') else '1';
+	irdy  <= '0' when (irdys and gnt) = (gnt'range => '0') else '1';
+	trdys <= (gnt'range => trdy) and gnt;
 
 end;
