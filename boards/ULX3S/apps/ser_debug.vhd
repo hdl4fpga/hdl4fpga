@@ -277,7 +277,7 @@ begin
 			end if;
 		end process;
 
-		rmii_clk <= not rmii_nintclk;
+		rmii_clk <= rmii_nintclk;
 		mii_e : entity hdl4fpga.link_mii
 		generic map (
 			hwaddr     => x"00_40_00_01_02_03",

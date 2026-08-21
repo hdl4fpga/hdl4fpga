@@ -231,21 +231,26 @@ begin
 		signal pyl_data  : std_logic_vector(miitx_data'range);
 	begin
 
-		arbiter_i : entity hdl4fpga.mii_arbiter
-		port map (
-			clk   => miitx_clk,
-			gntd  => gntd,
-			frms  => eth_frms,
-			irdys => eth_irdys,
-			trdys => eth_trdys,
-			frm   => pyl_frm,
-			irdy  => pyl_irdy,
-			trdy  => pyl_trdy);
+--		arbiter_i : entity hdl4fpga.mii_arbiter
+--		port map (
+--			clk   => miitx_clk,
+--			gntd  => gntd,
+--			frms  => eth_frms,
+--			irdys => eth_irdys,
+--			trdys => eth_trdys,
+--			frm   => pyl_frm,
+--			irdy  => pyl_irdy,
+--			trdy  => pyl_trdy);
 
-		pyl_data <= 
-			arptx_data  when gntd(0)='1' else
-			ipv4tx_data when gntd(1)='1' else
-			(pyl_data'range => '-');
+		pyl_frm <= arptx_frm;
+		pyl_irdy <= arptx_irdy;
+		arptx_trdy <= pyl_trdy;
+		pyl_data <= arptx_data;
+
+--		pyl_data <= 
+--			arptx_data  when gntd(0)='1' else
+--			ipv4tx_data when gntd(1)='1' else
+--			(pyl_data'range => '-');
 
 		ethtx_i : entity hdl4fpga.eth_tx
 		port map (
