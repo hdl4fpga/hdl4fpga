@@ -115,6 +115,8 @@ architecture def of ipv4 is
 	alias  udptx_trdy   is ipv4pyltx_trdys(1);
 	signal udptx_data   : std_logic_vector(ipv4tx_data'range);
 
+	signal xxx0 : std_logic;
+	signal xxx1 : std_logic;
 begin
 	rx_b : block
 		signal length_frm : std_logic;
@@ -371,6 +373,8 @@ begin
 		signal framedecode_trdy : std_logic;
 	begin
 
+		udptx_frm  <= '0';
+		udptx_irdy <= '0';
 		arbiter_i : entity hdl4fpga.mii_arbiter
 		port map (
 			clk   => miitx_clk,
@@ -737,8 +741,8 @@ begin
 		pyltx_trdy => udppyltx_trdy,
 		pyltx_data => udppyltx_data,
 
-		udptx_frm  => udptx_frm,
-		udptx_irdy => udptx_irdy,
+		udptx_frm  => xxx0, --udptx_frm,
+		udptx_irdy => xxx1, --udptx_irdy,
 		udptx_trdy => udptx_trdy,
 		udptx_data => udptx_data);
 
