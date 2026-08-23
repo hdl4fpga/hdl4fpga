@@ -107,29 +107,10 @@ architecture beh of tb_ethtx is
 	function init_rom (
 		constant data : string)
 		return std_logic_vector is
-		constant bcast  : string := "0xff_ff_ff_ff_ff_ff";
-		constant spa    : string := hdo(data)**".spa";
-		constant ethtyp : string := "0x0806";
-		constant htype  : string := "0x0001";
-		constant ptype  : string := "0x0800";
-		constant hsize  : string := "0x06";
-		constant psize  : string := "0x04";
-		constant requst : string := "0x0001";
-		constant tmac   : string := "0x00_00_00_00_00_00";
-		constant tpa    : string := hdo(data)**".tpa";
+		constant len : natural := length(data);
 	begin
-		return reverse(
-			to_stdlogicvector(bcast)  &
-			to_stdlogicvector(ethtyp) & 
-			to_stdlogicvector(htype)  &
-			to_stdlogicvector(ptype)  & 
-			to_stdlogicvector(hsize)  & 
-			to_stdlogicvector(psize)  & 
-			to_stdlogicvector(requst) &
-			to_stdlogicvector(sha)    & 
-			aton(spa)                 & 
-			to_stdlogicvector(tmac)   & 
-			aton(tpa),8);
+		report natural'image(len);
+		return "0";
 	end;
 
 	signal pyl_frm  : std_logic;

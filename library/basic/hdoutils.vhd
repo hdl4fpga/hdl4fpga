@@ -27,49 +27,7 @@ library hdl4fpga;
 use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 
-package usbpkg is
-	constant tk_out    : std_logic_vector := x"1";
-	constant tk_sof    : std_logic_vector := x"5";
-	constant tk_in     : std_logic_vector := x"9";
-	constant tk_setup  : std_logic_vector := x"d";
-
-	constant data0     : std_logic_vector := x"3";
-	constant data1     : std_logic_vector := x"b";
-
-	constant hs_ack    : std_logic_vector := x"2";
-	constant hs_nak    : std_logic_vector := x"a";
-	constant hs_stall  : std_logic_vector := x"e";
-
-	constant get_status        : std_logic_vector := x"00";
-	constant clear_feature     : std_logic_vector := x"01";
-	constant get_state         : std_logic_vector := x"02";
-	constant set_feature       : std_logic_vector := x"03";
-	constant set_address       : std_logic_vector := x"05";
-	constant get_descriptor    : std_logic_vector := x"06";
-	constant set_configuration : std_logic_vector := x"09";
-
-	constant DeviceClass_hub   : std_logic_vector := x"09";
-	constant InterfaceClass_hid : std_logic_vector := x"03";
-	constant Protocol_keyboard : std_logic_vector := x"01";
-	constant Protocol_mouse    : std_logic_vector := x"02";
-
-	-- hid device
-	constant get_report        : std_logic_vector := x"01";
-	constant get_idle          : std_logic_vector := x"02";
-	constant get_protocol      : std_logic_vector := x"03";
-	constant set_report        : std_logic_vector := x"09";
-	constant set_idle          : std_logic_vector := x"0a";
-	constant set_protocol      : std_logic_vector := x"0b";
-
-	constant hub_port_power    : std_logic_vector := x"0008";
-	constant hub_port_reset    : std_logic_vector := x"0004";
-
-	constant device    : std_logic_vector := x"01";
-	constant config    : std_logic_vector := x"02";
-	constant str       : std_logic_vector := x"03";
-	constant interface : std_logic_vector := x"04";
-	constant endpoint  : std_logic_vector := x"05";
-	
+package hdoutils is
 	function section_layout (
 		constant description : string;
 		constant max_length  : natural := 1024)
@@ -95,7 +53,7 @@ package usbpkg is
 		return string;
 end;
 
-package body usbpkg is
+package body hdoutils is
 	
 	procedure copy (
 		variable dst : inout string;
