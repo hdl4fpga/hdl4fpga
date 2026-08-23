@@ -175,20 +175,46 @@ begin
 		end if;
 	end process;
 
-	tbipoe_e : entity work.tb_ipoe
-	generic map(
-		sha  => "0x00_27_0e_0f_f5_95",
-		data => "{spa:192.168.0.2,tpa:192.168.0.14}")
-	port map (
-		req  => rmii_req,
-		rdy  => rmii_rdy,
-		txc  => rmii_clk,
-		txen => rmii_rxdv,
-		txd  => rmii_rxd,
+	tb_ipoe_b : block
+		constant icmppkt : std_logic_vector :=
+			x"4500"                 &    -- IP Version, TOS
+			x"003c"                 &    -- IP Length
+			x"0001"                 &    -- IP Identification
+			x"4000"                 &    -- IP Fragmentation
+			x"4001"                 &    -- IP TTL, protocol
+			x"7acb"                 &    -- IP Header Checksum
+			x"c0a80002"             &    -- IP Source IP address
+			x"c0a8000e"             &    -- IP Destiantion IP Address
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"12345678",8) &
+			reverse(x"aaaaaaaa",8) &
+			reverse(x"ffffffff",8) ;
 
-		rxc  => rmii_clk,
-		rxdv => rmii_txen,
-		rxd  => rmii_txd);
+		constant data : string := [
+			{arp  : {spa:192.168.0.2,tpa:192.168.0.14}},
+			{icmp : {spa:192.168.0.2,tpa:192.168.0.14,type:request}}
+		]
+	begin
+		tbipoe_e : entity work.tb_ipoe
+		generic map(
+			sha  => "0x00_27_0e_0f_f5_95",
+			data => "{spa:192.168.0.2,tpa:192.168.0.14}")
+		port map (
+			req  => rmii_req,
+			rdy  => rmii_rdy,
+			txc  => rmii_clk,
+			txen => rmii_rxdv,
+			txd  => rmii_rxd,
+
+			rxc  => rmii_clk,
+			rxdv => rmii_txen,
+			rxd  => rmii_txd);
+	end block;
 	(gn(11), gp(11)) <= rmii_rxd;
 
 	fire1 <= '0', '1' after 100 ns;
