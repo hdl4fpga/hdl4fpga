@@ -20,6 +20,7 @@
 --                                                                                --
 
 library hdl4fpga;
+use hdl4fpga.hdoutils.all;
 
 architecture tb_tbethtx of testbench is
 	signal rst : std_logic;
@@ -48,22 +49,23 @@ begin
 		end if;
 	end process;
 
-	tbipoe_e : entity work.tb_ethtx
-	generic map(
-		sha  => "0x00_27_0e_0f_f5_95",
-		data => "[" &
-			"{ arp: {spa:192.168.0.2,tpa:192.168.0.14}}," &
-			"{icmp: {spa:192.168.0.2,tpa:192.168.0.14}}]")
-	port map (
-		req  => mii_req,
-		rdy  => mii_rdy,
-		txc  => mii_clk,
-		txen => mii_txen,
-		txd  => mii_txd);
+--	tbipoe_e : entity work.tb_ethtx
+--	generic map(
+--		sha  => "0x00_27_0e_0f_f5_95",
+--		data => "[" &
+--			"{ arp: {spa:192.168.0.2,tpa:192.168.0.14}}," &
+--			"{icmp: {spa:192.168.0.2,tpa:192.168.0.14}}]")
+--	port map (
+--		req  => mii_req,
+--		rdy  => mii_rdy,
+--		txc  => mii_clk,
+--		txen => mii_txen,
+--		txd  => mii_txd);
 
 	process
 	begin
-		report "hello world";
+		report section_layout(
+			"[{content:0x122345}, {content:0x122345}]");
 		wait;
 	end process;
 

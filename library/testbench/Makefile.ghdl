@@ -31,6 +31,7 @@ init: force
 	# /usr/lib/ghdl/ieee/v93/../../src/ieee/math_real.vhdl
 	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=. ../basic/base.vhd
 	# /usr/lib/ghdl/ieee/v93/../../src/ieee/math_real-body.vhdl
+	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=. ../basic/hdoutils.vhd
 	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=. ../mii/ipoepkg.vhd
 	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=. ../mii/frame_decode.vhd
 	$(GHDL) -a $(GHDLFLAGS) --work=hdl4fpga --workdir=. ../basic/rom.vhd
