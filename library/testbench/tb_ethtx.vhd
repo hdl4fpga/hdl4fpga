@@ -54,15 +54,15 @@ architecture beh of tb_ethtx is
 	function init_ipv4 (
 		constant data : string)
 		return std_logic_vector is
-		constant tha     : string := hdo(data)**".tha"          &'='& "0x00_00_00_00_00_00";
-		constant tos     : string := hdo(data)**".ipv4.tos"     &'='& hdo(default_ipv4)**".tos";
-		constant length  : string := hdo(data)**".ipv4.length"  &'='& hdo(default_ipv4)**".length";
-		constant flgsoff : string := hdo(data)**".ipv4.flgsoff" &'='& hdo(default_ipv4)**".flgsoff";
-		constant ttl     : string := hdo(data)**".ipv4.ttl"     &'='& hdo(default_ipv4)**".ttl";
-		constant proto   : string := hdo(data)**".ipv4.proto"   &'='& hdo(default_ipv4)**".proto";
-		constant chksum  : string := hdo(data)**".ipv4.chksum"  &'='& hdo(default_ipv4)**".chksum";
-		constant spa     : string := hdo(data)**".spa"          &'='& hdo(data)**".ipv4.spa";
-		constant dpa     : string := hdo(data)**".dpa"          &'='& hdo(data)**".ipv4.dpa";
+		constant verihl  : string := "0x45";
+		constant tos     : string := hdo(data)**(".ipv4.tos"     &'='& string'(hdo(default_ipv4)**".tos"));
+		constant length  : string := hdo(data)**(".ipv4.length"  &'='& string'(hdo(default_ipv4)**".length"));
+		constant flgsoff : string := hdo(data)**(".ipv4.flgsoff" &'='& string'(hdo(default_ipv4)**".flgsoff"));
+		constant ttl     : string := hdo(data)**(".ipv4.ttl"     &'='& string'(hdo(default_ipv4)**".ttl"));
+		constant proto   : string := hdo(data)**(".ipv4.proto"   &'='& string'(hdo(default_ipv4)**".proto"));
+		constant chksum  : string := hdo(data)**(".ipv4.chksum"  &'='& string'(hdo(default_ipv4)**".chksum"));
+		constant spa     : string := hdo(data)**(".spa"          &'='& string'(hdo(data)**".ipv4.spa"));
+		constant dpa     : string := hdo(data)**(".dpa"          &'='& string'(hdo(data)**".ipv4.dpa"));
 	begin
 		return 
 			to_stdlogicvector(verihl)  & 
@@ -81,9 +81,27 @@ architecture beh of tb_ethtx is
 		return std_logic_vector is
 	begin
 		return 
-			to_stdlogicvector(hdo(data)**".type") & 
-			to_stdlogicvector(hdo(data)**".code") & 
-			to_stdlogicvector(hdo(data)**".chksum");
+			to_stdlogicvector(hdo(data)**(".type"   &'='& "0x00")) & 
+			to_stdlogicvector(hdo(data)**(".code"   &'='& "0x00")) & 
+			to_stdlogicvector(hdo(data)**(".chksum" &'='& "0x0000"));
+	end;
+
+	function init_arp (
+		constant data : string)
+		return std_logic_vector is
+	begin
+		return
+			to_stdlogicvector(string'("0xff_ff_ff_ff_ff_ff")) & -- bcast
+			to_stdlogicvector(string'("0x0806"))              & -- ethtyp
+			to_stdlogicvector(string'("0x0001"))              & -- htype
+			to_stdlogicvector(string'("0x0800"))              & -- ptype
+			to_stdlogicvector(string'("0x06"))                & -- hsize
+			to_stdlogicvector(string'("0x04"))                & -- psize 
+			to_stdlogicvector(string'("0x0001"))              & -- requst
+			to_stdlogicvector(sha)                   & 
+			aton(hdo(data)**".spa")                  & 
+			to_stdlogicvector(string'("0x00_00_00_00_00_00")) & -- tmac                  & 
+			aton(hdo(data)**".tpa");
 	end;
 
 	function init_rom (
@@ -113,35 +131,6 @@ architecture beh of tb_ethtx is
 			to_stdlogicvector(tmac)   & 
 			aton(tpa),8);
 	end;
-
-	function init_arp (
-		constant data : string)
-		return std_logic_vector is
-		constant bcast  : string := "0xff_ff_ff_ff_ff_ff";
-		constant spa    : string := hdo(data)**".spa";
-		constant ethtyp : string := "0x0806";
-		constant htype  : string := "0x0001";
-		constant ptype  : string := "0x0800";
-		constant hsize  : string := "0x06";
-		constant psize  : string := "0x04";
-		constant requst : string := "0x0001";
-		constant tmac   : string := "0x00_00_00_00_00_00";
-		constant tpa    : string := hdo(data)**".tpa";
-	begin
-		return reverse(
-			to_stdlogicvector(bcast)  &
-			to_stdlogicvector(ethtyp) & 
-			to_stdlogicvector(htype)  &
-			to_stdlogicvector(ptype)  & 
-			to_stdlogicvector(hsize)  & 
-			to_stdlogicvector(psize)  & 
-			to_stdlogicvector(requst) &
-			to_stdlogicvector(sha)    & 
-			aton(spa)                 & 
-			to_stdlogicvector(tmac)   & 
-			aton(tpa),8);
-	end;
-
 
 	signal pyl_frm  : std_logic;
 	signal pyl_irdy : std_logic;
