@@ -110,12 +110,16 @@ architecture beh of tb_ethtx is
 		return std_logic_vector is
 		constant len : natural := length(data);
 		variable content : string(1 to size);
+		function xxx )
+			constant tag : string)
+			return string is
+		begin
+			return ;
+		end
 	begin
 --		report data;
 		for i in 0 to len-1 loop
-			report "**********************";
-			report tag(data**i);
-			report "----------------------";
+			if tag(data&"["&natural'image(i)&"]");
 --			content := content & to_string(init_)
 		end loop;
 		return (0 to 32-1 => '0');
