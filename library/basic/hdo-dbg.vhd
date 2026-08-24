@@ -536,8 +536,8 @@ package body hdo is
 	end;
 
 	function field (
-		constant name   : string;
-		constant arg    : string;
+		constant name     : string;
+		constant arg      : string;
 		constant position : positive;
 		constant length   : natural)
 		return string is
@@ -546,8 +546,8 @@ package body hdo is
 	end;
 
 	function field (
-		constant name   : string;
-		constant arg    : string;
+		constant name     : string;
+		constant arg      : string;
 		constant position : positive)
 		return string is
 	begin
@@ -1032,64 +1032,64 @@ package body hdo is
 					severity note;                                 --|note
 					-- return; -- Xilinx 14.7 doesn't like a return in a procedure
 			else
-    			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                            --|note
-    				report indent(field("object", object, position, object'right-position+1)) --|note
-    				severity note;                                                            --|note
+				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                            --|note
+					report indent(field("object", object, position, object'right-position+1)) --|note
+					severity note;                                                            --|note
 
-    			parse_string(object, position, value_position, value_length);
-    			skipws(object, position);
-    			tag_position := value_position;
-    			tag_length   := 0;
-    			if position <= object'right then
-    				if value_length=0 then
-    					tag_length     := 0;
-    					value_position := position;
-    					value_length   := object'right-position+1; 
-    					parse_value(object, position, value_position, value_length);
-    					if position > object'right then                                            --|note
-    						assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
-    							report indent(field("value",object, value_position, value_length)) --|note
-    							severity note;                                                     --|note
-    					else                                                                       --|note
-    						assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
-    							report indent(field("value",object, value_position, value_length)) --|note
-    							severity note;                                                     --|note
-    					end if;                                                                    --|note
-    				elsif object(position)/=':' then
-    					tag_length     := 0;
-    					tag_position   := value_position;
+				parse_string(object, position, value_position, value_length);
+				skipws(object, position);
+				tag_position := value_position;
+				tag_length   := 0;
+				if position <= object'right then
+					if value_length=0 then
+						tag_length     := 0;
+						value_position := position;
+						value_length   := object'right-position+1; 
+						parse_value(object, position, value_position, value_length);
+						if position > object'right then                                            --|note
+							assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
+								report indent(field("value",object, value_position, value_length)) --|note
+								severity note;                                                     --|note
+						else                                                                       --|note
+							assert ((log_flags/log_parsetagvaluepath) mod 2=0)                     --|note
+								report indent(field("value",object, value_position, value_length)) --|note
+								severity note;                                                     --|note
+						end if;                                                                    --|note
+					elsif object(position)/=':' then
+						tag_length     := 0;
+						tag_position   := value_position;
 
-    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
-    						report indent(field("value", object, value_position, value_length)) --|note
-    						severity note;                                                      --|note
-    				else
-    					tag_position   := value_position;
-    					tag_length     := value_length;
-    					position       := position + 1;
-    					skipws(object, position);
-    					parse_value(object, position, value_position, value_length);
+						assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
+							report indent(field("value", object, value_position, value_length)) --|note
+							severity note;                                                      --|note
+					else
+						tag_position   := value_position;
+						tag_length     := value_length;
+						position       := position + 1;
+						skipws(object, position);
+						parse_value(object, position, value_position, value_length);
 
-    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
-    						report indent(field("tag",   object, tag_position,   tag_length))   --|note
-    						severity note;                                                      --|note
-    					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
-    						report indent(field("value", object, value_position, value_length)) --|note
-    						severity note;                                                      --|note
-    				end if;
-    			else
-    				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                       --|note
-    					report indent(field("string", object, value_position, value_length)) --|note
-    					severity note;                                                       --|note
-    			end if;
-    			skipws(object, position);
-    			parse_path(object, position, path_position, path_length);
-    			assert ((log_flags/log_parsetagvaluepath) mod 2=0)                  --|note
-    				report indent(field("path", object,path_position, path_length)) --|note
-    				severity note;                                                  --|note
+						assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
+							report indent(field("tag",   object, tag_position,   tag_length))   --|note
+							severity note;                                                      --|note
+						assert ((log_flags/log_parsetagvaluepath) mod 2=0)                      --|note
+							report indent(field("value", object, value_position, value_length)) --|note
+							severity note;                                                      --|note
+					end if;
+				else
+					assert ((log_flags/log_parsetagvaluepath) mod 2=0)                       --|note
+						report indent(field("string", object, value_position, value_length)) --|note
+						severity note;                                                       --|note
+				end if;
+				skipws(object, position);
+				parse_path(object, position, path_position, path_length);
+				assert ((log_flags/log_parsetagvaluepath) mod 2=0)                  --|note
+					report indent(field("path", object,path_position, path_length)) --|note
+					severity note;                                                  --|note
 
-    			assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
-    				report indent("#parsetagvaluepath")            --|note
-    				severity note;                                 --|note
+				assert ((log_flags/log_parsetagvaluepath) mod 2=0) --|note
+					report indent("#parsetagvaluepath")            --|note
+					severity note;                                 --|note
 			end if;
 		end;
 			
@@ -1436,11 +1436,11 @@ package body hdo is
 	function resolve (
 		constant object : string)
 		return boolean is
-		constant true_value : string := "true";
+		constant true_value     : string := "true";
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		if value_length/=true_value'length then          -- avoid synthesizes tools length-warnings
@@ -1456,9 +1456,9 @@ package body hdo is
 		constant object : string)
 		return integer is
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		return to_integer(object(value_position to value_position+value_length-1));
@@ -1469,9 +1469,9 @@ package body hdo is
 		constant object : string)
 		return real is
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		return to_real(object(value_position to value_position+value_length-1));
@@ -1482,9 +1482,9 @@ package body hdo is
 		constant object : string)
 		return std_logic_vector is
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		return to_stdlogicvector(escaped(object(value_position to value_position+value_length-1)));
@@ -1493,7 +1493,7 @@ package body hdo is
 	impure --|note 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return boolean is
 	begin
 		return resolve(string(object) & path);
@@ -1502,7 +1502,7 @@ package body hdo is
 	impure --|note 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return integer is
 		variable retval : integer;
 	begin
@@ -1513,7 +1513,7 @@ package body hdo is
 	impure --|note 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return real is
 	begin
 		return resolve(string(object) & path);
@@ -1522,7 +1522,7 @@ package body hdo is
 	impure --|note 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return std_ulogic is
 		constant value : string := escaped(resolve(string(object) & path));
 	begin
@@ -1541,7 +1541,7 @@ package body hdo is
 	impure --|note 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return unsigned is
 	begin
 		return unsigned(std_logic_vector'(resolve(string(object) & path)));
@@ -1550,7 +1550,7 @@ package body hdo is
 	impure --|note 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return std_logic_vector is
 	begin
 		return resolve(string(object) & path);
@@ -1592,9 +1592,9 @@ package body hdo is
 		constant object : hdo)
 		return string is
 		variable value_position : positive;
-		variable value_length : natural;
+		variable value_length   : natural;
 		variable tag_position   : positive;
-		variable tag_length   : natural;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		return object(tag_position to tag_position+tag_length-1);
@@ -1603,7 +1603,7 @@ package body hdo is
 	procedure escaped (
 		variable retval : inout string;
 		variable length : inout natural;
-		constant object    : in    string) is
+		constant object : in    string) is
 		variable escape : boolean;
 		variable bkslh  : boolean;
 	begin

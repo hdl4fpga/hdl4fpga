@@ -1324,9 +1324,9 @@ package body hdo is
 		constant object : hdo)
 		return string is
 		variable value_position : positive;
-		variable value_length : natural;
+		variable value_length   : natural;
 		variable tag_position   : positive;
-		variable tag_length   : natural;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		return object(tag_position to tag_position+tag_length-1);

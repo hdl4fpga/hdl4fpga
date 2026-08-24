@@ -50,23 +50,23 @@ begin
 		end if;
 	end process;
 
---	tbipoe_e : entity work.tb_ethtx
---	generic map(
---		sha  => "0x00_27_0e_0f_f5_95",
---		data => "[" &
---			"{ arp: {spa:192.168.0.2,tpa:192.168.0.14}}," &
---			"{icmp: {spa:192.168.0.2,tpa:192.168.0.14}}]")
---	port map (
---		req  => mii_req,
---		rdy  => mii_rdy,
---		txc  => mii_clk,
---		txen => mii_txen,
---		txd  => mii_txd);
+	tbipoe_e : entity work.tb_ethtx
+	generic map(
+		sha  => "0x00_27_0e_0f_f5_95",
+		data => "[" &
+			"arp: {spa:192.168.0.2,tpa:192.168.0.14}," &
+			"icmp: {spa:192.168.0.2,tpa:192.168.0.14}]")
+	port map (
+		req  => mii_req,
+		rdy  => mii_rdy,
+		txc  => mii_clk,
+		txen => mii_txen,
+		txd  => mii_txd);
 
 	process
 	begin
-		report section_table(hdo(section_layout(
-			"[{content:0x122345}, {content:0x122345}]"))**".table");
+		report hdo(section_layout(
+			"[{content:0x101010}, {content:0x122345}]"));
 		wait;
 	end process;
 

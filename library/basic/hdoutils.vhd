@@ -28,6 +28,16 @@ use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 
 package hdoutils is
+	procedure copy (
+		variable mem : inout std_logic_vector;
+		variable pos : in  natural;
+		constant val : in  string);
+
+	procedure append (
+		variable mem : inout std_logic_vector;
+		variable pos : in  natural;
+		constant val : in  string);
+
 	function section_layout (
 		constant description : string;
 		constant max_length  : natural := 1024)
@@ -44,13 +54,6 @@ package hdoutils is
 		constant max_sections : natural := 64)
 		return std_logic_vector;
 
-	function description_section (
-		constant object : in string)
-		return string;
-
-	function description_decode (
-		constant description_bin : string)
-		return string;
 end;
 
 package body hdoutils is
@@ -66,12 +69,31 @@ package body hdoutils is
 
 	procedure copy (
 		variable dst : inout string;
-		variable pos : inout  natural;
+		variable pos : inout natural;
 		constant val : in  integer) is
 		constant cvt : string := integer'image(val)&',';
 	begin
 		dst(pos to pos+cvt'length-1) := cvt;
 		pos := pos+cvt'length;
+	end;
+
+	procedure copy (
+		variable mem : inout std_logic_vector;
+		variable pos : in  natural;
+		constant val : in  string) is
+		constant bin : std_logic_vector := to_stdlogicvector(val);
+	begin
+		mem(pos to pos+bin'length-1) := bin;
+	end;
+
+	procedure append (
+		variable mem : inout std_logic_vector;
+		variable pos : in natural;
+		constant val : in string) is
+	begin
+		if val'length > 0 then
+			copy(mem, pos, val);
+		end if;
 	end;
 
 	procedure get_value (
@@ -218,17 +240,17 @@ package body hdoutils is
 		constant max_length  : natural := 1024)
 		return string is
 
-   		procedure copy (
-   			variable dst : inout string;
-   			variable scc : inout natural;
-   			variable pos : in  natural;
-   			constant src : in  string) is
-   		begin
+		procedure copy (
+			variable dst : inout string;
+			variable scc : inout natural;
+			variable pos : in  natural;
+			constant src : in  string) is
+		begin
 			if src'length > 0 then 
 				dst(pos to pos+src'length-1) := src;
 				scc := pos+src'length;
 			end if;
-   		end;
+		end;
 
 		procedure append (
 			variable mem : inout std_logic_vector;
@@ -325,424 +347,4 @@ package body hdoutils is
 		get_value(value, offset, length, expression);
 	end;
 			
-	function description_section (
-		constant object : in string) 
-		return string is
-
-		procedure append(
-			variable dst    : inout string;
-			variable length : out   natural;
-			constant offset : in    natural;
-			constant src    : in    string) is
-		begin
-			dst(offset to offset+src'length-1) := src;
-			length := src'length;
-		end;
-
-		procedure sweep (
-			variable data         : inout string;
-			constant data_offset  : in    natural;
-			variable data_length  : inout natural;
-			constant object       : in    string) is
-			variable value_length : natural;
-			variable value        : string(data'range);
-			variable index        : natural;
-			variable offset       : positive;
-		begin
-			data_length := 0;
-			if object'length=0 then
-				return;
-			end if;
-			index := 0;
-			for i in object'range loop 
-				get_value(value, value'left, value_length, object, index);
-				exit when value_length=0;
-
-				offset := data_offset+data_length;
-				data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
-				data_length := data_length + value_length-2;
-				index := index + 1;
-			end loop;
-		end;
-
-		procedure sweep (
-			variable data         : inout string;
-			constant data_offset  : in    natural;
-			variable data_length  : inout natural;
-			constant object       : in string;
-			constant keys         : in string) is
-			variable key_length   : natural;
-			variable key          : string(keys'range);
-			variable value_length : natural;
-			variable value        : string(data'range);
-			variable index        : natural;
-			variable offset       : positive;
-
-		begin
-			data_length := 0;
-			if object'length=0 then
-				return;
-			end if;
-			index := 0;
-			for i in keys'range loop 
-				get_value(key, key'left, key_length, keys, index);
-				exit when key_length=0;
-				get_value(value, value'left, value_length, object, '.' & key(key'left to key'left+key_length-1));
-				exit when value_length=0;
-
-				offset := data_offset+data_length;
-				if key(key'left to key'left+key_length-1)="bString" then
-    				-- to_utf16("HDL4FPGA")),16)
-					data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1)),16), 16);
-				else
-					data(offset to offset+(value_length-2)-1) := to_string(reverse(to_stdlogicvector(value(value'left to value'left+value_length-1))), 16);
-				end if;
-
-				data_length := data_length + value_length-2;
-				index := index + 1;
-			end loop;
-		end;
-
-		procedure get_device(
-			variable value  : inout string;
-			variable offset : inout positive;
-			variable length : inout natural;
-			constant object : in    string) is
-			constant keys   : string := 
-				"device:["                                                           &
-					"bLength,bDescriptorType,bcdUSB,bDeviceClass,bDeviceSubClass,"   &
-					"bDeviceProtocol,bMaxPacketSize0,idVendor,idProduct, bcdDevice," &
-					"iManufacturer,iProduct,iSerialNumber,bNumConfigurations]";
-			constant device : string := object**".device";
-			variable value_length : natural;
-		begin
-			length := 0;
-			append(value, value_length, offset, ",content:0x");
-			length := length + value_length;
-			sweep(value, offset+length, value_length, device, keys);
-			length := length + value_length;
-			append(value, value_length, offset+length, ",wValue:0x0100");
-			length := length + value_length;
-			value(offset) := '{';
-			append(value, value_length, offset+length, "}");
-			length := length + value_length;
-		end;
-
-		procedure get_configurations(
-			variable value  : inout string;
-			variable offset : inout positive;
-			variable length : inout natural;
-			constant object : in    string) is
-
-			procedure get_configuration(
-				variable value  : inout string;
-    			constant offset : in    positive;
-				variable length : inout natural;
-				constant object : in    string) is
-
-    			procedure get_interfaces (
-    				variable value  : inout string;
-    				constant offset : in    positive;
-    				variable length : inout natural;
-    				constant object : in    string) is
-
-    				procedure get_interface(
-    					variable value  : inout string;
-    					constant offset : in    positive;
-    					variable length : inout natural;
-    					constant object : in    string) is
-
-						procedure get_endpoints(
-							variable value  : inout string;
-    						constant offset : in    positive;
-							variable length : inout natural;
-							constant object : in    string) is
-
-    						procedure get_endpoint(
-    							variable value  : inout string;
-    							constant offset : in    positive;
-    							variable length : inout natural;
-    							constant object : in    string) is
-    							constant keys : string := 
-    								"endpoint:["                                                                        &
-    									"bLength, bDescriptorType, bEndpointAddress, bmAttibutes, wMaxPacketSize, bInterval]";
-    						begin
-								length := 0;
-								if object'length=0 then
-									return;
-								end if;
-    							sweep(value, offset, length, object, keys);
-    						end;
-
-							variable value_length : natural;
-							variable index : natural;
-						begin
-							length := 0;
-							if object'length=0 then
-								return;
-							end if;
-							index := 0;
-							for i in object'range loop 
-								get_endpoint(value, offset+length, value_length, hdo(object)**index);
-								length := length + value_length;
-								exit when value_length=0;
-								index := index + 1;
-							end loop;
-						end;
-
-    					constant keys : string := 
-    						"interface:["                                                                       &
-    							"bLength, bDescriptorType, bInterfaceNumber, bAlternateSetting, bNumEndpoints," &
-    							"bInterfaceClass, bInterfaceSubClass, bIntefaceProtocol, iInterface]";
-
-						variable value_length : natural;
-    				begin
-						length := 0;
-						if object'length=0 then
-							return;
-						end if;
-						sweep(value, offset+length, value_length, hdo(object)**".interface", keys);
-						length := length + value_length;
-						if value_length=0 then
-							return;
-						end if;
-						get_endpoints(value, offset+length, value_length, hdo(object)**".endpoints");
-						length := length + value_length;
-    				end;
-
-    				variable index : natural;
-					variable value_length : natural;
-
-    			begin
-					length := 0;
-					if object'length=0 then
-						return;
-					end if;
-					index := 0;
-					for i in object'range loop 
-						get_interface(value, offset+length, value_length, object**index);
-						length := length + value_length;
-						exit when value_length=0;
-						index := index + 1;
-					end loop;
-    			end;
-
-				constant keys : string := 
-					"configuration:["                                                               &
-						"bLength,bDescriptorType,wTotalLength,bNumInterfaces,bConfigurationValue,"  &
-						"iConfiguration,bmAttribute,MaxPower]";
-				variable value_length : natural;
-			begin
-				length := 0;
-				if object'length=0 then
-					return;
-				end if;
-				sweep(value, offset+length, value_length, hdo(object)**".configuration", keys);
-				length := length + value_length;
-				get_interfaces(value, offset+length, value_length, hdo(object)**".interfaces");
-				length := length + value_length;
-			end;
-			constant data : string := ",data:0x";
-
-			constant configurations : string := object**".configurations";
-
-			variable index : natural;
-			variable value_length : natural;
-
-		begin
-			length := 0;
-			if object'length=0 then
-				return;
-			end if;
-			index := 0;
-			for i in object'range loop 
-				append(value, value_length, offset+length, ",content:0x");
-				length := length + value_length;
-				get_configuration(value, offset+length, value_length, configurations**index);
-				exit when value_length=0;
-				length := length + value_length;
-				append(value, value_length, offset+length, ",wValue:0x0200");
-				length := length + value_length;
-				index  := index  + 1;
-			end loop;
-			value(offset) := '{';
-			append(value, value_length, offset+length, "}");
-			length := length + value_length;
-		end;
-
-		procedure get_strings(
-			variable value  : inout string;
-			constant offset : in    positive;
-			variable length : inout natural;
-			constant object : in    string) is
-
-			procedure get_string (
-				variable value  : inout string;
-				constant offset : in    positive;
-				variable length : inout natural;
-				constant object : in    string) is
-				constant keys : string := 
-					"string:["              &
-						"bLength,"          &
-						"bDescriptorType]";
-			begin
-				sweep(value, offset, length, hdo(object)**".string", keys);
-			end;
-
-			procedure get_landids(
-				variable value   : inout string;
-				constant offset : in    positive;
-				variable length : inout natural;
-				constant object : in    string) is
-			begin
-				sweep(value, offset, length, hdo(object)**".wLANGID");
-			end;
-
-			procedure get_unicodes(
-				variable value   : inout string;
-				constant offset : in    positive;
-				variable length : inout natural;
-				constant object : in    string) is
-
-				procedure get_unicode(
-					variable value   : inout string;
-					constant offset : in    positive;
-					variable length : inout natural;
-					constant object : in    string) is
-					constant keys : string := 
-						"unicodes:["                           &
-							"bLength," & 
-							"bDescriptorType," &
-							"bString]";
-					variable value_length : natural;
-				begin
-					length := 0;
-					append(value, value_length, offset+length, "{content:0x");
-					length := length + value_length;
-					sweep(value, offset+length, value_length, object, keys);
-					length := length + value_length;
-					if value_length=0 then
-						length := 0;
-						return;
-					end if;
-				end;
-				constant unicodes : string := object**".unicodes";
-				constant lanids   : string := object**".wLANGID";
-
-				variable index : natural;
-				variable value_length : natural;
-			begin
-				length := 0;
-				if object'length=0 then
-					return;
-				end if;
-				for i in object'range loop
-					get_unicode(value, offset+length, value_length, unicodes**index);
-					exit when value_length=0;
-					length := length + value_length;
-					append(value, value_length, offset+length, ",wValue:0x0300,wIndex:"&lanids**index);
-					length := length + value_length;
-					append(value, value_length, offset+length, "}");
-					length := length + value_length;
-					append(value, value_length, offset+length, ",");
-					length := length + value_length;
-					index  := index  + 1;
-				end loop;
-				length := length - 1;
-			end;
-
-			constant strings : string := object**".strings";
-			variable value_length : natural;
-		begin
-			length := 0;
-			append(value, value_length, offset+length, ",content:0x");
-			length := length + value_length;
-			get_string(value, offset+length, value_length, strings);
-			length := length + value_length;
-			get_landids(value, offset+length, value_length, strings);
-			length := length + value_length;
-			append(value, value_length, offset+length, ",wValue:0x0300,wIndex:0x0000");
-			length := length + value_length;
-			value(offset) := '{';
-			append(value, value_length, offset+length, "},");
-			length := length + value_length;
-
-			get_unicodes(value, offset+length, value_length, strings);
-			length := length + value_length;
-
-		end;
-
-		variable value  : string(object'range);
-		variable offset : natural;
-		variable length : natural;
-
-	begin
-		length := 0;
-		offset := value'left;
-		append(value, length, offset, "[");
-		offset := offset + length;
-
-		get_device(value, offset, length, object);
-		offset := offset + length;
-
-		append(value, length, offset, ",");
-		offset := offset + length;
-
-		get_configurations(value, offset, length, object);
-		offset := offset + length;
-
-		append(value, length, offset, ",");
-		offset := offset + length;
-
-		get_strings(value, offset, length, object);
-		offset := offset + length;
-
-		append(value, length, offset, "]");
-		offset := offset + length;
-
-		return value(value'left to offset-1);
-
-	end;
-
-	function description_decode (
-		constant description_bin : string)
-		return string is
-		constant mem_map      : string := section_layout(description_bin);
-		constant mem_table    : string := section_table(mem_map**".table");
-		constant num_of_sgmts : natural := mem_map**".length";
-
-		variable valuew : std_logic_vector(0 to 16*num_of_sgmts-1);
-		variable indexw : std_logic_vector(0 to 16*num_of_sgmts-1);
-		variable maskw  : std_logic_vector(0 to  1*num_of_sgmts-1);
-		variable value  : string(description_bin'range);
-		variable wvalue_length : natural;
-		variable wvalue : string(1 to 16);
-		variable windex_length : natural;
-		variable windex : string(1 to 16);
-		variable index  : natural;
-		variable length : natural;
-
-	begin
-		valuew := (others => '0');
-		indexw := (others => '0');
-		maskw  := (others => '0');
-		index := 0;
-		for i in 0 to num_of_sgmts-1 loop
-			get_value(value, value'left, length, description_bin, index);
-			exit when length=0;
-			index := index + 1;
-			get_value(wvalue, wvalue'left, wvalue_length, value(value'left to value'left+length-1), ".wValue");
-			next when wvalue_length=0;
-			valuew(i*16 to (i+1)*16-1) := to_stdlogicvector(wvalue(1 to wvalue_length));
-			get_value(windex, windex'left, windex_length, value(value'left to value'left+length-1), ".wIndex");
-			next when windex_length=0;
-			maskw(i) := '1';
-			indexw(i*16 to (i+1)*16-1) := to_stdlogicvector(windex(1 to windex_length));
-		end loop;
-		return '{' 
-			& "wValue:0x" & to_string(valuew, 16) & ',' 
-			& "wIndex:0x" & to_string(indexw, 16) & ','
-			& "mask:0b"   & to_string(maskw,2)  
-			& '}';
-	end;
 end;

@@ -105,12 +105,20 @@ architecture beh of tb_ethtx is
 	end;
 
 	function init_rom (
-		constant data : string)
+		constant data : string;
+		constant size : natural := 1024)
 		return std_logic_vector is
 		constant len : natural := length(data);
+		variable content : string(1 to size);
 	begin
-		report natural'image(len);
-		return "0";
+--		report data;
+		for i in 0 to len-1 loop
+			report "**********************";
+			report tag(data**i);
+			report "----------------------";
+--			content := content & to_string(init_)
+		end loop;
+		return (0 to 32-1 => '0');
 	end;
 
 	signal pyl_frm  : std_logic;
