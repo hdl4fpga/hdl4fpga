@@ -20,6 +20,7 @@
 --                                                                                --
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.hdoutils.all;
 
 architecture tb_tbethtx of testbench is
@@ -64,8 +65,8 @@ begin
 
 	process
 	begin
-		report section_layout(
-			"[{content:0x122345}, {content:0x122345}]");
+		report section_table(hdo(section_layout(
+			"[{content:0x122345}, {content:0x122345}]"))**".table");
 		wait;
 	end process;
 
