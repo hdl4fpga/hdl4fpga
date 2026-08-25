@@ -106,7 +106,7 @@ architecture beh of tb_ethtx is
 			aton(hdo(data)**".tpa");
 	end;
 
-	function init_rom (
+	function data_content (
 		constant data : string;
 		constant max_size : natural := 1024)
 		return std_logic_vector is
