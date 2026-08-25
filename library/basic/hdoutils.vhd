@@ -29,14 +29,30 @@ use hdl4fpga.base.all;
 
 package hdoutils is
 	procedure copy (
-		variable mem : inout std_logic_vector;
+		variable dst : inout string;
+		variable scc : inout natural;
 		variable pos : in  natural;
-		constant val : in  string);
+		constant src : in  string) is
+	begin
+		if src'length > 0 then 
+			dst(pos to pos+src'length-1) := src;
+			scc := pos+src'length;
+		end if;
+	end;
 
 	procedure append (
-		variable mem : inout std_logic_vector;
+		variable dst : inout string;
+		variable scc : inout natural;
 		variable pos : in  natural;
-		constant val : in  string);
+		constant src : in  string);
+
+	begin
+		if src'length > 0 then
+			copy(dst, scc, pos, src);
+		else
+			scc := pos;
+		end if;
+	end;
 
 	function section_layout (
 		constant description : string;
@@ -78,21 +94,39 @@ package body hdoutils is
 	end;
 
 	procedure copy (
-		variable mem : inout std_logic_vector;
+		variable dst : inout string;
+		variable scc : inout natural;
 		variable pos : in  natural;
-		constant val : in  string) is
-		constant bin : std_logic_vector := to_stdlogicvector(val);
+		constant src : in  string) is
 	begin
-		mem(pos to pos+bin'length-1) := bin;
+		if src'length > 0 then 
+			dst(pos to pos+src'length-1) := src;
+			scc := pos+src'length;
+		end if;
 	end;
 
 	procedure append (
 		variable mem : inout std_logic_vector;
-		variable pos : in natural;
-		constant val : in string) is
+		variable scc : inout natural;
+		variable pos : in  natural;
+		constant val : in  string) is
+
+		procedure copy (
+			variable mem : inout std_logic_vector;
+			variable scc : out natural;
+			variable pos : in  natural;
+			constant val : in  string) is
+			constant bin : std_logic_vector := to_stdlogicvector(val);
+		begin
+			mem(pos to pos+bin'length-1) := bin;
+			scc := pos+bin'length;
+		end;
+
 	begin
 		if val'length > 0 then
-			copy(mem, pos, val);
+			copy(mem, scc, pos, val);
+		else
+			scc := pos;
 		end if;
 	end;
 

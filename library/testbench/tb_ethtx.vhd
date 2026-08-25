@@ -108,11 +108,9 @@ architecture beh of tb_ethtx is
 
 	function init_rom (
 		constant data : string;
-		constant size : natural := 1024)
+		constant max_size : natural := 1024)
 		return std_logic_vector is
-		constant len : natural := length(data);
-		variable content : string(1 to size);
-		function xxx (
+		function pick (
 			constant proto : string;
 			constant data  : string)
 			return string is
@@ -132,13 +130,28 @@ architecture beh of tb_ethtx is
 						init_icmp(data**".arp"), 16);
 			end if;
 			return "";
-		end
+		end;
+		
+		variable succ : positive;
+		variable pos  : positive;
+		variable cont : string(1 to size);
 	begin
-		for i in 0 to len-1 loop
-			xxx(tag(data&"["&natural'image(i)&"]", data**[natural'image(i)]);
---			content := content & to_string(init_)
+		pos := string'left;
+		cont(pos)='{'
+		pos := pos + 1;
+		for i in 0 to length(data)-1 loop
+			append (
+				dst  => cont,
+				succ => succ,
+				pos  => pos,
+				src  => pick(
+					proto => tag(data&"["&natural'image(i)&"]"), 
+					data  => data**[natural'image(i)])&',');
+			pos := succ;
 		end loop;
-		return (0 to 32-1 => '0');
+		cont(pos-1)='}'
+
+		return cont(cont'left to pos-1);
 	end;
 
 	signal pyl_frm  : std_logic;
