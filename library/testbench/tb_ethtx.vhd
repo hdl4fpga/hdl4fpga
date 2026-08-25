@@ -24,6 +24,7 @@ use ieee.std_logic_1164.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
+use hdl4fpga.hdoutils.all;
 use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
@@ -65,7 +66,7 @@ architecture beh of tb_ethtx is
 		constant dpa     : string := hdo(data)**(".dpa"          &'='& string'(hdo(data)**".ipv4.dpa"));
 	begin
 		return 
-			to_stdlogicvector(string'("0xff_ff_ff_ff_ff_ff"))
+			to_stdlogicvector(string'("0xff_ff_ff_ff_ff_ff")) &
 			to_stdlogicvector(string'("0x0800"))              & -- ethtyp
 			to_stdlogicvector(verihl)  & 
 			to_stdlogicvector(tos)     & 
@@ -109,7 +110,7 @@ architecture beh of tb_ethtx is
 	function data_content (
 		constant data : string;
 		constant max_size : natural := 1024)
-		return std_logic_vector is
+		return string is
 		function pick (
 			constant proto : string;
 			constant data  : string)
@@ -119,37 +120,37 @@ architecture beh of tb_ethtx is
 				return
 					"content:" &
 					to_string(
-						init_mac (data**".mac")  &
+--						init_mac (data**".mac")  &
 						init_ipv4(data**".ipv4") &
 						init_icmp(data**".icmp"), 16);
-			elsif tag="arp"
+			elsif proto="arp" then
 				return
 					"content:" &
 					to_string(
-						init_mac (data**".mac") &
+--						init_mac (data**".mac") &
 						init_icmp(data**".arp"), 16);
 			end if;
 			return "";
 		end;
 		
-		variable succ : positive;
-		variable pos  : positive;
-		variable cont : string(1 to size);
+		variable succ : natural;
+		variable pos  : natural;
+		variable cont : string(1 to max_size);
 	begin
-		pos := string'left;
-		cont(pos)='{'
+		pos := cont'left;
+		cont(pos) := '{';
 		pos := pos + 1;
 		for i in 0 to length(data)-1 loop
 			append (
 				dst  => cont,
-				succ => succ,
+				scc => succ,
 				pos  => pos,
 				src  => pick(
 					proto => tag(data&"["&natural'image(i)&"]"), 
-					data  => data**[natural'image(i)])&',');
+					data  => data**("["&natural'image(i)&"]")&','));
 			pos := succ;
 		end loop;
-		cont(pos-1)='}'
+		cont(pos-1) := '}';
 
 		return cont(cont'left to pos-1);
 	end;

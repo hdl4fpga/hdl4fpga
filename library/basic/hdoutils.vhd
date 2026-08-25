@@ -32,27 +32,13 @@ package hdoutils is
 		variable dst : inout string;
 		variable scc : inout natural;
 		variable pos : in  natural;
-		constant src : in  string) is
-	begin
-		if src'length > 0 then 
-			dst(pos to pos+src'length-1) := src;
-			scc := pos+src'length;
-		end if;
-	end;
+		constant src : in  string);
 
 	procedure append (
 		variable dst : inout string;
 		variable scc : inout natural;
 		variable pos : in  natural;
 		constant src : in  string);
-
-	begin
-		if src'length > 0 then
-			copy(dst, scc, pos, src);
-		else
-			scc := pos;
-		end if;
-	end;
 
 	function section_layout (
 		constant description : string;
@@ -125,6 +111,20 @@ package body hdoutils is
 	begin
 		if val'length > 0 then
 			copy(mem, scc, pos, val);
+		else
+			scc := pos;
+		end if;
+	end;
+
+	procedure append (
+		variable dst : inout string;
+		variable scc : inout natural;
+		variable pos : in  natural;
+		constant src : in  string) is
+
+	begin
+		if src'length > 0 then
+			copy(dst, scc, pos, src);
 		else
 			scc := pos;
 		end if;
