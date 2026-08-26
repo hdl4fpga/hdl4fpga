@@ -196,13 +196,13 @@ begin
 			reverse(x"ffffffff",8) ;
 
 		constant data : string := "["                     &
-			"{ arp: {spa:192.168.0.2,tpa:192.168.0.14}}," &
-			"{icmp: {spa:192.168.0.2,tpa:192.168.0.14}}]";
+			" arp: {spa:192.168.0.2,tpa:192.168.0.14}," &
+			"icmp: {spa:192.168.0.2,tpa:192.168.0.14}]";
 	begin
 		tbipoe_e : entity work.tb_ipoe
 		generic map(
 			sha  => "0x00_27_0e_0f_f5_95",
-			data => "{spa:192.168.0.2,tpa:192.168.0.14}")
+			data => data)
 		port map (
 			req  => rmii_req,
 			rdy  => rmii_rdy,

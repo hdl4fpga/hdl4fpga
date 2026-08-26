@@ -146,18 +146,18 @@ package body hdo is
 		constant object : string)
 		return string is
 		variable retval : string(1 to object'length);
-		variable escape : boolean;
+		variable quote  : character;
 		variable bkslh  : boolean;
 		variable n      : positive;
 	begin
 		bkslh  := false;
-		escape := false;
+		quote  := NUL;
 		n      := retval'left;
 		for i in object'range loop
 			if bkslh then
 				retval(n) := object(i);
 				n := n + 1;
-			elsif escape then
+			elsif quote/=NUL then
 				retval(n) := object(i);
 				n := n + 1;
 			elsif not isws(object(i)) then
@@ -168,10 +168,18 @@ package body hdo is
 				bkslh := false;
 			elsif object(i)='\' then
 				bkslh := true;
-			elsif object(i)=''' or object(i)='"' then
-				escape := not escape;
+			elsif quote=NUL and (object(i)=''' or object(i)='"') then
+				quote := object(i);
+			elsif quote/=NUL and object(i)=quote then
+				quote := NUL;
 			end if;
 		end loop;
+		assert not bkslh
+			report "compact: trailing escape character"
+			severity failure;
+		assert quote=NUL
+			report "compact: unterminated quoted string"
+			severity failure;
 		return retval(1 to n-1);
 	end;
 
@@ -522,8 +530,8 @@ package body hdo is
 	end;
 
 	function field (
-		constant name   : string;
-		constant arg    : string;
+		constant name     : string;
+		constant arg      : string;
 		constant position : positive;
 		constant length   : natural)
 		return string is
@@ -532,8 +540,8 @@ package body hdo is
 	end;
 
 	function field (
-		constant name   : string;
-		constant arg    : string;
+		constant name     : string;
+		constant arg      : string;
 		constant position : positive)
 		return string is
 	begin
@@ -578,53 +586,51 @@ package body hdo is
 
 	procedure parse_string (
 		constant object         : in  string;
-		variable postion        : inout positive;
+		variable position       : inout positive;
 		variable value_position : inout positive;
 		variable value_length   : inout natural) is
-		variable aphos  : boolean := false;
+		variable quote  : character := NUL;
 		variable bkslh  : boolean := false;
 	begin
 
-		skipws(object, postion);
-		value_position := postion;
+		skipws(object, position);
+		value_position := position;
 		for l in object'range loop           -- Avoid synthesizes tools loop-warnings
-			exit when postion > object'right; -- Avoid synthesizes tools loop-warnings
+			exit when position > object'right; -- Avoid synthesizes tools loop-warnings
 
-			if object(postion)='\' then
+			if bkslh then
+				position := position + 1;
+				bkslh := false;
+			elsif object(position)='\' then
 				bkslh := true;
-				next;
-			elsif (postion-value_position)=0 then
-				if object(postion)=''' then
-					aphos  := true;
-					value_position := postion;
-					postion := postion + 1;
-					next;
-				end if;
-			end if;
-			if not bkslh then
-				if aphos then
-					if object(postion)=''' then
-						postion := postion + 1;
+				position := position + 1;
+			elsif (position-value_position)=0 and (object(position)=''' or object(position)='"') then
+					quote  := object(position);
+					value_position := position;
+					position := position + 1;
+			elsif quote/=NUL then
+					if object(position)=quote then
+						position := position + 1;
+						quote := NUL;
 						exit;
 					else
-						postion := postion + 1;
+						position := position + 1;
 					end if;
-				elsif isalnum(object(postion)) then
-					postion := postion + 1;
+			elsif isalnum(object(position)) then
+					position := position + 1;
 				else
-					case object(postion) is
+					case object(position) is
 					when '-'|'_' =>
-						postion := postion + 1;
+						position := position + 1;
 					when others =>
 						exit;
 					end case;
 				end if;
-			else
-				postion := postion + 1;
-				bkslh := false;
-			end if;
 		end loop;
-		value_length := postion-value_position;
+		value_length := position-value_position;
+		assert quote=NUL
+			report "unterminated quoted string " & field(object, value_position, value_length)
+			severity failure;
 	end;
 
 	function compare_string (
@@ -644,22 +650,22 @@ package body hdo is
 
 	procedure parse_natural (
 		constant object         : in    string;
-		variable postion        : inout positive;
+		variable position       : inout positive;
 		variable value_position : inout positive;
 		variable value_length   : inout natural) is
 	begin
-		skipws(object, postion);
-		value_position := postion;
+		skipws(object, position);
+		value_position := position;
 		for l in object'range loop            -- Avoid synthesizes tools loop-warnings
-			exit when postion > object'right; -- Avoid synthesizes tools loop-warnings
+			exit when position > object'right; -- Avoid synthesizes tools loop-warnings
 
-			if isalnum(object(postion)) then
-				postion := postion + 1;
+			if isalnum(object(position)) then
+				position := position + 1;
 			else
 				exit;
 			end if;
 		end loop;
-		value_length := postion-value_position;
+		value_length := position-value_position;
 	end;
 
 	function max (
@@ -839,7 +845,7 @@ package body hdo is
 				stptr := stptr - 1;
 			end;
 
-			variable aphos  : boolean := false;
+			variable quote  : character := NUL;
 			variable bkslh  : boolean := false;
 			variable list   : boolean := false;
 		begin
@@ -847,7 +853,7 @@ package body hdo is
 			skipws(object, position);
 			value_position := position;
 			for i in value_position to object'right loop
-				if not aphos and not bkslh then
+				if quote=NUL and not bkslh then
 					case object(position) is
 					when '['|'{' =>
 						if stptr=stack'left then 
@@ -855,7 +861,12 @@ package body hdo is
 								list := true;
 							end if;
 						end if;
-						push(stptr, object(position));
+						assert stptr<=stack'right
+							report "parse_value nesting exceeds " & natural'image(stack'length)
+							severity failure;
+						if stptr<=stack'right then
+							push(stptr, object(position));
+						end if;
 					when ',' =>
 						if stptr=stack'left then
 							exit;
@@ -885,14 +896,14 @@ package body hdo is
 					when others =>
 					end case;
 				end if;
-				if not bkslh then
-					if object(position)='\' then
-						bkslh := true;
-					elsif object(position)=''' then
-						aphos := not aphos;
-					end if;
-				else
+				if bkslh then
 					bkslh := false;
+				elsif object(position)='\' then
+					bkslh := true;
+				elsif quote=NUL and (object(position)=''' or object(position)='"') then
+					quote := object(position);
+				elsif quote/=NUL and object(position)=quote then
+					quote := NUL;
 				end if;
 				position := position + 1;
 				if list then
@@ -900,8 +911,14 @@ package body hdo is
 						exit;
 					end if;
 				end if;
-			end loop;
-			value_length := position-value_position;
+		end loop;
+		value_length := position-value_position;
+		assert quote=NUL
+			report "unterminated quoted value " & field(object, value_position, value_length)
+			severity failure;
+		assert stptr=stack'left
+			report "unterminated nested value " & field(object, value_position, value_length)
+			severity failure;
 
 		end;
 
@@ -921,32 +938,32 @@ package body hdo is
 					-- return; -- Xilinx 14.7 doesn't like a return in a procedure
 			else
 
-    			parse_string(object, position, value_position, value_length);
-    			skipws(object, position);
-    			tag_position := value_position;
-    			tag_length   := 0;
-    			if position <= object'right then
-    				if value_length=0 then
-    					tag_length     := 0;
-    					value_position := position;
-    					value_length   := object'right-position+1; 
-    					parse_value(object, position, value_position, value_length);
-    				elsif object(position)/=':' then
-    					tag_length     := 0;
-    					tag_position   := value_position;
+				parse_string(object, position, value_position, value_length);
+				skipws(object, position);
+				tag_position := value_position;
+				tag_length   := 0;
+				if position <= object'right then
+					if value_length=0 then
+						tag_length     := 0;
+						value_position := position;
+						value_length   := object'right-position+1; 
+						parse_value(object, position, value_position, value_length);
+					elsif object(position)/=':' then
+						tag_length     := 0;
+						tag_position   := value_position;
 
-    				else
-    					tag_position   := value_position;
-    					tag_length     := value_length;
-    					position       := position + 1;
-    					skipws(object, position);
-    					parse_value(object, position, value_position, value_length);
+					else
+						tag_position   := value_position;
+						tag_length     := value_length;
+						position       := position + 1;
+						skipws(object, position);
+						parse_value(object, position, value_position, value_length);
 
-    				end if;
-    			else
-    			end if;
-    			skipws(object, position);
-    			parse_path(object, position, path_position, path_length);
+					end if;
+				else
+				end if;
+				skipws(object, position);
+				parse_path(object, position, path_position, path_length);
 
 			end if;
 		end;
@@ -1054,7 +1071,7 @@ package body hdo is
 					end if;
 					if open_char/='{' then
 						assert false
-							report "wrong close path at " & at(object, position) & " opened by " & character'image(open_char)
+								report "wrong close path at " & at(object, position) & " opened by " & character'image(open_char)
 							severity failure;
 					end if;
 
@@ -1181,11 +1198,11 @@ package body hdo is
 	function resolve (
 		constant object : string)
 		return boolean is
-		constant true_value : string := "true";
+		constant true_value     : string := "true";
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		if value_length/=true_value'length then          -- avoid synthesizes tools length-warnings
@@ -1200,9 +1217,9 @@ package body hdo is
 		constant object : string)
 		return integer is
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
 		return to_integer(object(value_position to value_position+value_length-1));
@@ -1212,11 +1229,14 @@ package body hdo is
 		constant object : string)
 		return real is
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
+		if value_length=0 then
+			return 0.0;
+		end if;
 		return to_real(object(value_position to value_position+value_length-1));
 	end;
 
@@ -1224,17 +1244,20 @@ package body hdo is
 		constant object : string)
 		return std_logic_vector is
 		variable value_position : positive;
-		variable value_length : natural;
-		variable tag_position : positive;
-		variable tag_length : natural;
+		variable value_length   : natural;
+		variable tag_position   : positive;
+		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
+		if value_length=0 then
+			return "X";
+		end if;
 		return to_stdlogicvector(escaped(object(value_position to value_position+value_length-1)));
 	end;
 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return boolean is
 	begin
 		return resolve(string(object) & path);
@@ -1242,7 +1265,7 @@ package body hdo is
 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return integer is
 		variable retval : integer;
 	begin
@@ -1252,7 +1275,7 @@ package body hdo is
 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return real is
 	begin
 		return resolve(string(object) & path);
@@ -1260,7 +1283,7 @@ package body hdo is
 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return std_ulogic is
 		constant value : string := escaped(resolve(string(object) & path));
 	begin
@@ -1278,7 +1301,7 @@ package body hdo is
 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return unsigned is
 	begin
 		return unsigned(std_logic_vector'(resolve(string(object) & path)));
@@ -1286,7 +1309,7 @@ package body hdo is
 
 	function "**" (
 		constant object : hdo;
-		constant path : string)
+		constant path   : string)
 		return std_logic_vector is
 	begin
 		return resolve(string(object) & path);
@@ -1298,6 +1321,9 @@ package body hdo is
 		return character is
 		constant retval : string := resolve(string(object) & path);
 	begin
+		if retval'length=0 then
+			return NUL;
+		end if;
 		if retval(retval'left)='\' then
 			return retval(retval'left+1);
 		end if;
@@ -1335,19 +1361,19 @@ package body hdo is
 	procedure escaped (
 		variable retval : inout string;
 		variable length : inout natural;
-		constant object    : in    string) is
-		variable escape : boolean;
+		constant object : in    string) is
+		variable quote  : character;
 		variable bkslh  : boolean;
 	begin
 		length := 0;
-		escape := false;
+		quote  := NUL;
 		bkslh  := false;
 		for i in object'range loop
 			if bkslh then
 				retval(retval'left+length) := object(i);
 				length := length + 1;
-			elsif escape then
-				if not (object(i)=''' or object(i)='"' or object(i)='\') then
+			elsif quote/=NUL then
+				if object(i)/=quote then
 					retval(retval'left+length) := object(i);
 					length := length + 1;
 				end if;
@@ -1359,10 +1385,18 @@ package body hdo is
 				bkslh := false;
 			elsif object(i)='\' then
 				bkslh := true;
-			elsif object(i)=''' or object(i)='"' then
-				escape := not escape;
+			elsif quote=NUL and (object(i)=''' or object(i)='"') then
+				quote := object(i);
+			elsif quote/=NUL and object(i)=quote then
+				quote := NUL;
 			end if;
 		end loop;
+		assert not bkslh
+			report "escaped: trailing escape character"
+			severity failure;
+		assert quote=NUL
+			report "escaped: unterminated quoted string"
+			severity failure;
 	end;
 
 	function escaped (
@@ -1370,7 +1404,6 @@ package body hdo is
 		return string is
 		variable length : natural;
 		variable retval : string(1 to object'length);
-		variable escape : boolean;
 	begin
 		escaped(retval, length, object);
 		if length/=0 then

@@ -116,6 +116,9 @@ architecture beh of tb_ethtx is
 			constant data  : string)
 			return string is
 		begin
+			report "***********";
+			report proto;
+
 			if proto="icmp" then
 				return
 					"content:" &
@@ -141,13 +144,14 @@ architecture beh of tb_ethtx is
 		cont(pos) := '{';
 		pos := pos + 1;
 		for i in 0 to length(data)-1 loop
+			report data**("["&natural'image(i)&"]"); 
 			append (
 				dst  => cont,
 				scc => succ,
 				pos  => pos,
 				src  => pick(
 					proto => tag(data&"["&natural'image(i)&"]"), 
-					data  => data**("["&natural'image(i)&"]")&','));
+					data  => string'(data**("["&natural'image(i)&"]"))&','));
 			pos := succ;
 		end loop;
 		cont(pos-1) := '}';
@@ -160,10 +164,14 @@ architecture beh of tb_ethtx is
 	signal pyl_trdy : std_logic;
 	signal pyl_data : std_logic_vector(txd'range);
 
-	constant bitdata : std_logic_vector := reverse(reverse(init_rom(data)), txd'length);
+	constant bitdata : std_logic_vector := x"12345678"; --reverse(reverse(init_rom(data)), txd'length);
 	signal ptr : natural range 0 to bitdata'length/txd'length-1;
 
 begin
+
+	assert false
+		report CR & data_content(data)
+		severity note;
 
 	process (req, rdy, txc)
 	begin
