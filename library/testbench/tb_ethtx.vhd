@@ -56,14 +56,14 @@ architecture beh of tb_ethtx is
 		constant data : string)
 		return std_logic_vector is
 		constant verihl  : string := "0x45";
-		constant tos     : string := hdo(data)**(".ipv4.tos"     &'='& string'(hdo(default_ipv4)**".tos"));
-		constant length  : string := hdo(data)**(".ipv4.length"  &'='& string'(hdo(default_ipv4)**".length"));
-		constant flgsoff : string := hdo(data)**(".ipv4.flgsoff" &'='& string'(hdo(default_ipv4)**".flgsoff"));
-		constant ttl     : string := hdo(data)**(".ipv4.ttl"     &'='& string'(hdo(default_ipv4)**".ttl"));
-		constant proto   : string := hdo(data)**(".ipv4.proto"   &'='& string'(hdo(default_ipv4)**".proto"));
-		constant chksum  : string := hdo(data)**(".ipv4.chksum"  &'='& string'(hdo(default_ipv4)**".chksum"));
-		constant spa     : string := hdo(data)**(".spa"          &'='& string'(hdo(data)**".ipv4.spa"));
-		constant dpa     : string := hdo(data)**(".dpa"          &'='& string'(hdo(data)**".ipv4.dpa"));
+		constant tos     : string := hdo(data)**(".tos"     &'='& string'(hdo(default_ipv4)**".tos"));
+		constant length  : string := hdo(data)**(".length"  &'='& string'(hdo(default_ipv4)**".length"));
+		constant flgsoff : string := hdo(data)**(".flgsoff" &'='& string'(hdo(default_ipv4)**".flgsoff"));
+		constant ttl     : string := hdo(data)**(".ttl"     &'='& string'(hdo(default_ipv4)**".ttl"));
+		constant proto   : string := hdo(data)**(".proto"   &'='& string'(hdo(default_ipv4)**".proto"));
+		constant chksum  : string := hdo(data)**(".chksum"  &'='& string'(hdo(default_ipv4)**".chksum"));
+		constant sa      : string := hdo(data)**".sa";
+		constant da      : string := hdo(data)**".da";
 	begin
 		return 
 			to_stdlogicvector(string'("0xff_ff_ff_ff_ff_ff")) &
@@ -75,8 +75,8 @@ architecture beh of tb_ethtx is
 			to_stdlogicvector(ttl)     & 
 			to_stdlogicvector(proto)   & 
 			to_stdlogicvector(chksum)  & 
-			to_stdlogicvector(spa)     & 
-			to_stdlogicvector(dpa);
+			to_stdlogicvector(sa)      & 
+			to_stdlogicvector(da);
 	end;
 
 	function init_icmp (
@@ -124,8 +124,8 @@ architecture beh of tb_ethtx is
 					"content:" &
 					to_string(
 --						init_mac (data**".mac")  &
-						init_ipv4(data**".ipv4") &
-						init_icmp(data**".icmp"), 16);
+						init_ipv4(data**".ipv4"),16); -- &
+--						init_icmp(data), 16);
 			elsif proto="arp" then
 				return
 					"content:" &
@@ -133,6 +133,7 @@ architecture beh of tb_ethtx is
 --						init_mac (data**".mac") &
 						init_icmp(data**".arp"), 16);
 			end if;
+			report "///////////";
 			return "";
 		end;
 		
