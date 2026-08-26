@@ -41,20 +41,48 @@ entity tb_ethtx is
 end;
 
 architecture beh of tb_ethtx is
+	constant bcast : string := "0xff_ff_ff_ff_ff_ff";
 
-	constant default_ipv4 : string := "{" &
-		"verihl:0x45,"    &
-		    "tos:0x0,"    &
-		 "length:0x0000," &
-		  "ident:0x0000," &
-		"flgsoff:0x0000," &
-		    "ttl:0x40,"   &
-		  "proto:0x01,"   &
-		 "chksum:0x0000}";
+	function init_mac (
+		constant data   : string;
+		constant tha    : string := bcast;
+		constant ethtyp : string)
+		return std_logic_vector is
+	begin
+		return
+			to_stdlogicvector(hdo(data)**(".tha"&'='&tha)) &
+			to_stdlogicvector(hdo(data)**(".ethtyp"&'='&ethtyp));
+	end;
+
+	function init_arp (
+		constant data : string)
+		return std_logic_vector is
+	begin
+		return
+			to_stdlogicvector(string'("0x0001"))              & -- htype
+			to_stdlogicvector(string'("0x0800"))              & -- ptype
+			to_stdlogicvector(string'("0x06"))                & -- hsize
+			to_stdlogicvector(string'("0x04"))                & -- psize 
+			to_stdlogicvector(string'("0x0001"))              & -- requst
+			to_stdlogicvector(sha)                   & 
+			aton(hdo(data)**".spa")                  & 
+			to_stdlogicvector(string'("0x00_00_00_00_00_00")) & -- tmac                  & 
+			aton(hdo(data)**".tpa");
+	end;
 
 	function init_ipv4 (
 		constant data : string)
 		return std_logic_vector is
+		constant default_ipv4 : string := "{" &
+			"verihl:0x45,"    &
+				"tos:0x0,"    &
+			 "length:0x0000," &
+			  "ident:0x0000," &
+			"flgsoff:0x0000," &
+				"ttl:0x40,"   &
+			  "proto:0x01,"   &
+			 "chksum:0x0000}";
+
 		constant verihl  : string := "0x45";
 		constant tos     : string := hdo(data)**(".tos"     &'='& string'(hdo(default_ipv4)**".tos"));
 		constant length  : string := hdo(data)**(".length"  &'='& string'(hdo(default_ipv4)**".length"));
@@ -65,21 +93,16 @@ architecture beh of tb_ethtx is
 		constant sa      : string := hdo(data)**".sa";
 		constant da      : string := hdo(data)**".da";
 	begin
-		report data;
-		report sa;
-		report da;
 		return 
-			to_stdlogicvector(string'("0xff_ff_ff_ff_ff_ff")) &
-			to_stdlogicvector(string'("0x0800"))              & -- ethtyp
 			to_stdlogicvector(verihl)  & 
 			to_stdlogicvector(tos)     & 
 			to_stdlogicvector(length)  & 
 			to_stdlogicvector(flgsoff) & 
 			to_stdlogicvector(ttl)     & 
 			to_stdlogicvector(proto)   & 
-			to_stdlogicvector(chksum); --  & 
---			to_stdlogicvector(sa)      & 
---			to_stdlogicvector(da);
+			to_stdlogicvector(chksum)  & 
+			aton(sa)                   & 
+			aton(da);
 	end;
 
 	function init_icmp (
@@ -92,24 +115,6 @@ architecture beh of tb_ethtx is
 			to_stdlogicvector(hdo(data)**(".chksum" &'='& "0x0000"));
 	end;
 
-	function init_arp (
-		constant data : string)
-		return std_logic_vector is
-	begin
-		return
-			to_stdlogicvector(string'("0xff_ff_ff_ff_ff_ff")) & -- bcast
-			to_stdlogicvector(string'("0x0806"))              & -- ethtyp
-			to_stdlogicvector(string'("0x0001"))              & -- htype
-			to_stdlogicvector(string'("0x0800"))              & -- ptype
-			to_stdlogicvector(string'("0x06"))                & -- hsize
-			to_stdlogicvector(string'("0x04"))                & -- psize 
-			to_stdlogicvector(string'("0x0001"))              & -- requst
-			to_stdlogicvector(sha)                   & 
-			aton(hdo(data)**".spa")                  & 
-			to_stdlogicvector(string'("0x00_00_00_00_00_00")) & -- tmac                  & 
-			aton(hdo(data)**".tpa");
-	end;
-
 	function data_content (
 		constant data : string;
 		constant max_size : natural := 1024)
@@ -119,26 +124,20 @@ architecture beh of tb_ethtx is
 			constant data  : string)
 			return string is
 		begin
-			report "***********";
-			report proto;
 
 			if proto="icmp" then
-			report "+++++++++++";
-				report data;
-				report data**"[0]";
-			report "+++++++++++";
 				return
 					"content:" &
 					to_string(
---						init_mac (data**".mac")  &
+						init_mac (data**".mac", tha => bcast, ethtyp => "0x0800")  &
 						init_ipv4(data**".ipv4"),16); -- &
 --						init_icmp(data), 16);
 			elsif proto="arp" then
 				return
 					"content:" &
 					to_string(
---						init_mac (data**".mac") &
-						init_icmp(data**".arp"), 16);
+						init_mac (data**".mac", tha => bcast, ethtyp => "0x0800")  &
+						init_arp(data), 16);
 			end if;
 			return "";
 		end;
@@ -157,8 +156,7 @@ architecture beh of tb_ethtx is
 				pos  => pos,
 				src  => pick(
 					proto => tag(data&"["&natural'image(i)&"]"), 
-					data  => string'(data**("["&natural'image(i)&"]"))&','));
-			report "///////////";
+					data  => data**("["&natural'image(i)&"]")) &',');
 			pos := succ;
 		end loop;
 		cont(pos-1) := '}';
