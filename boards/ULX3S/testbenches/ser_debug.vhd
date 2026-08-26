@@ -195,9 +195,17 @@ begin
 			reverse(x"aaaaaaaa",8) &
 			reverse(x"ffffffff",8) ;
 
-		constant data : string := "{"                     &
-			"arp:  {mac:{tha:0xff_ff_ff_ff_ff_ff}, spa:192.168.0.2,tpa:192.168.0.14}," &
-			"icmp: {mac:{tha:0x00_40_00_01_02_03}, ipv4:{sa:192.168.0.2,da:192.168.0.14}}}";
+		constant data : string := "{"                    &
+			"arp:{"                                      &
+				"mac:{tha:0xff_ff_ff_ff_ff_ff},"         &
+				"spa:192.168.0.2,tpa:192.168.0.14},"     &
+			"icmp:{"                                     &
+				"mac:{tha:0x00_40_00_01_02_03},"         &
+				"ipv4:{sa:192.168.0.2,da:192.168.0.14}," &
+				"type:0x08,"                             &
+				"code:0x00,"                             & 
+				"chksum:0x0000,"                         &
+				"identifier:0x0000}}";
 	begin
 		tbipoe_e : entity work.tb_ipoe
 		generic map(

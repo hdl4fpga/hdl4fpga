@@ -129,15 +129,26 @@ architecture beh of tb_ethtx is
 				return
 					"content:" &
 					to_string(
-						init_mac (data**".mac", tha => bcast, ethtyp => "0x0800")  &
-						init_ipv4(data**".ipv4"),16); -- &
---						init_icmp(data), 16);
+						init_mac (
+							data   => data**".mac", 
+							tha    => bcast, 
+							ethtyp => "0x0800")      &
+						init_ipv4(
+							data   => data**".ipv4") &
+						init_icmp(
+							data   => data), 
+						16);
 			elsif proto="arp" then
 				return
 					"content:" &
 					to_string(
-						init_mac (data**".mac", tha => bcast, ethtyp => "0x0806")  &
-						init_arp(data), 16);
+						init_mac (
+							data   => data**".mac", 
+							tha    => bcast,
+							ethtyp => "0x0806")  &
+						init_arp(
+							data   => data),
+						16);
 			end if;
 			return "";
 		end;
