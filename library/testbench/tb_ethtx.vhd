@@ -65,6 +65,9 @@ architecture beh of tb_ethtx is
 		constant sa      : string := hdo(data)**".sa";
 		constant da      : string := hdo(data)**".da";
 	begin
+		report data;
+		report sa;
+		report da;
 		return 
 			to_stdlogicvector(string'("0xff_ff_ff_ff_ff_ff")) &
 			to_stdlogicvector(string'("0x0800"))              & -- ethtyp
@@ -74,9 +77,9 @@ architecture beh of tb_ethtx is
 			to_stdlogicvector(flgsoff) & 
 			to_stdlogicvector(ttl)     & 
 			to_stdlogicvector(proto)   & 
-			to_stdlogicvector(chksum)  & 
-			to_stdlogicvector(sa)      & 
-			to_stdlogicvector(da);
+			to_stdlogicvector(chksum); --  & 
+--			to_stdlogicvector(sa)      & 
+--			to_stdlogicvector(da);
 	end;
 
 	function init_icmp (
@@ -120,6 +123,10 @@ architecture beh of tb_ethtx is
 			report proto;
 
 			if proto="icmp" then
+			report "+++++++++++";
+				report data;
+				report data**"[0]";
+			report "+++++++++++";
 				return
 					"content:" &
 					to_string(
@@ -133,7 +140,6 @@ architecture beh of tb_ethtx is
 --						init_mac (data**".mac") &
 						init_icmp(data**".arp"), 16);
 			end if;
-			report "///////////";
 			return "";
 		end;
 		
@@ -145,7 +151,6 @@ architecture beh of tb_ethtx is
 		cont(pos) := '{';
 		pos := pos + 1;
 		for i in 0 to length(data)-1 loop
-			report data**("["&natural'image(i)&"]"); 
 			append (
 				dst  => cont,
 				scc => succ,
@@ -153,6 +158,7 @@ architecture beh of tb_ethtx is
 				src  => pick(
 					proto => tag(data&"["&natural'image(i)&"]"), 
 					data  => string'(data**("["&natural'image(i)&"]"))&','));
+			report "///////////";
 			pos := succ;
 		end loop;
 		cont(pos-1) := '}';
