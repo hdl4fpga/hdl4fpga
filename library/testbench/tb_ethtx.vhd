@@ -136,7 +136,7 @@ architecture beh of tb_ethtx is
 				return
 					"content:" &
 					to_string(
-						init_mac (data**".mac", tha => bcast, ethtyp => "0x0800")  &
+						init_mac (data**".mac", tha => bcast, ethtyp => "0x0806")  &
 						init_arp(data), 16);
 			end if;
 			return "";
