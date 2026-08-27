@@ -40,12 +40,12 @@ package hdoutils is
 		variable pos : in  natural;
 		constant src : in  string);
 
-	function section_layout (
+	function map_memory (
 		constant description : string;
 		constant max_length  : natural := 1024)
 		return string;
 
-	function section_table (
+	function map_table (
 		constant description  : string;
 		constant max_sections : natural := 64)
 		return string;
@@ -166,7 +166,7 @@ package body hdoutils is
 		variable valid    : boolean;
 		variable n        : natural;
 		variable length   : natural;
-		variable offsets  : natural_vector(0 to max_sections-1);
+		variable bases    : natural_vector(0 to max_sections-1);
 		variable retval   : std_logic_vector(0 to max_length-1);
 		variable num_bits : natural;
 	begin
@@ -174,18 +174,18 @@ package body hdoutils is
 		for i in 0 to max_sections-1 loop
 			n := i;
 			if i > 0 then
-				offsets(i) := offsets(i-1) + length;
+				bases(i) := bases(i-1) + length;
 			else
-				offsets(i) := 0;
+				bases(i) := 0;
 			end if;
 			get_value(length, valid, escaped(hdo(object)**("["&natural'image(i)&"]=")));
 			exit when not valid;
 		end loop;
-		num_bits := unsigned_num_bits(offsets(n-1));
+		num_bits := unsigned_num_bits(bases(n-1));
 		retval := (others => '0');
 		for i in 0 to 2**num_bits-1 loop
 			for j in 0 to n-1 loop
-				if offsets(j) <= i and i < offsets(j+1) then
+				if bases(j) <= i and i < bases(j+1) then
 					retval(i*n+j) := '1';
 				else
 					retval(i*n+j) := '0';
@@ -195,26 +195,26 @@ package body hdoutils is
 		return retval(0 to 2**num_bits*n-1);
 	end;
 
-	function section_table (
+	function map_table (
 		constant description  : string;
 		constant max_sections : natural := 64)
 		return string is
 
 		function table_content (
-			constant offsets : natural_vector;
-			constant offset_num_bits : natural;
+			constant bases   : natural_vector;
+			constant base_num_bits : natural;
 			constant lengths : natural_vector;
 			constant length_num_bits : natural)
 			return std_logic_vector is
-			variable content : unsigned(0 to (offset_num_bits+length_num_bits)*offsets'length-1);
+			variable content : unsigned(0 to (base_num_bits+length_num_bits)*bases'length-1);
 		begin
-			assert offsets'length=lengths'length
-				report "section_table() : offsets'length => (" & natural'image(offsets'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
+			assert bases'length=lengths'length
+				report "map_table() : bases'length => (" & natural'image(bases'length) & ") /= " & "lengths'length -> (" & natural'image(lengths'length) & ")"
 				severity failure;
 
-			for i in offsets'range loop
-				content(0 to offset_num_bits-1) := to_unsigned(offsets(i), offset_num_bits);
-				content := content rol offset_num_bits;
+			for i in bases'range loop
+				content(0 to base_num_bits-1) := to_unsigned(bases(i), base_num_bits);
+				content := content rol base_num_bits;
 				content(0 to length_num_bits-1) := to_unsigned(lengths(i)-1, length_num_bits);
 				content := content rol length_num_bits;
 			end loop;
@@ -222,14 +222,14 @@ package body hdoutils is
 		end;
 
 		variable lengths : natural_vector(0 to max_sections-1);
-		variable offsets : natural_vector(0 to max_sections-1);
+		variable bases   : natural_vector(0 to max_sections-1);
 		variable length_num_bits : natural;
-		variable offset_num_bits : natural;
+		variable base_num_bits   : natural;
 		variable valid        : boolean;
 		variable address      : natural;
 		variable num_bits     : natural;
-		variable offset_left  : natural;
-		variable offset_right : natural;
+		variable base_left    : natural;
+		variable base_right   : natural;
 		variable length_left  : natural;
 		variable length_right : natural;
 		variable n            : natural;
@@ -237,31 +237,31 @@ package body hdoutils is
 		n := 0;
 		for i in 0 to max_sections-1 loop
 			n := i;
-			get_value(offsets(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
+			get_value(bases(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][0]=")));
 			get_value(lengths(i), valid, escaped(hdo(description)**("["&natural'image(i)&"][1]=")));
 			exit when not valid;
 		end loop;
 		length_num_bits := unsigned_num_bits(max(lengths(0 to n-1))-1);
-		offset_num_bits := unsigned_num_bits(offsets(n-1)+lengths(n-1)-1);
+		base_num_bits := unsigned_num_bits(bases(n-1)+lengths(n-1)-1);
 
 		assert true 
-			report "section_table() : length_num_bits -> " & natural'image(length_num_bits)
+			report "map_table() : length_num_bits -> " & natural'image(length_num_bits)
 			severity note;
 
-		address := unsigned_num_bits(n-1);
-		num_bits := offset_num_bits+length_num_bits;
-		offset_left  := 0;
-		offset_right := offset_left+offset_num_bits-1;
-		length_left  := offset_right+1;
+		address  := unsigned_num_bits(n-1);
+		num_bits := base_num_bits+length_num_bits;
+		base_left    := 0;
+		base_right   := base_left+base_num_bits-1;
+		length_left  := base_right+1;
 		length_right := length_left+length_num_bits-1;
 		return
 			"{" &
-				"content:"   & hdl4fpga.base.to_string(table_content(offsets(0 to n-1), offset_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
+				"content:"   & hdl4fpga.base.to_string(table_content(bases(0 to n-1), base_num_bits, lengths(0 to n-1), length_num_bits)) & "," &
 				"address:"   & natural'image(address)      & "," &
 				"data:"      & natural'image(num_bits)     & "," &
-				"offset:{"   &
-					"left:"  & natural'image(offset_left)  & "," &
-					"right:" & natural'image(offset_right) &
+				"base:{"   &
+					"left:"  & natural'image(base_left)    & "," &
+					"right:" & natural'image(base_right)   &
 					"},"     &
 				"length:{"   &
 					"left:"  & natural'image(length_left)  & "," &
@@ -269,7 +269,7 @@ package body hdoutils is
 					"}}";
 	end;
 
-	function section_layout (
+	function map_memory (
 		constant description : string;
 		constant max_length  : natural := 1024)
 		return string is
@@ -345,40 +345,39 @@ package body hdoutils is
 
 	procedure get_value (
 		variable value        : inout string;
-		constant offset       : in    natural;
+		constant base         : in    natural;
 		variable length       : inout natural;
 		constant object       : in    string) is
-		variable value_offset : positive;
-		variable tag_offset   : positive;
+		variable value_base   : positive;
+		variable tag_base     : positive;
 		variable tag_length   : natural;
 	begin
-		resolve(object, value_offset, length, tag_offset, tag_length);
+		resolve(object, value_base, length, tag_base, tag_length);
 		if length/=0 then
-			value(offset to offset+length-1) := object(value_offset to value_offset+length-1);
+			value(base to base+length-1) := object(value_base to value_base+length-1);
 		end if;
 	end;
 		
 	procedure get_value (
 		variable value      : inout string;
-		constant offset     : in    natural;
+		constant base       : in    natural;
 		variable length     : inout natural;
 		constant object     : in    string;
 		constant position   : in    natural) is
 		constant key        : string := '[' & natural'image(position) & ']';
 		constant expression : string := object & key;
 	begin
-		get_value(value, offset, length, expression);
+		get_value(value, base, length, expression);
 	end;
 		
 	procedure get_value (
 		variable value    : inout string;
-		constant offset   : in    natural;
+		constant base     : in    natural;
 		variable length   : inout natural;
 		constant object   : in    string;
 		constant key      : in    string) is
 		constant expression : string := object & key;
 	begin
-		get_value(value, offset, length, expression);
+		get_value(value, base, length, expression);
 	end;
-			
 end;

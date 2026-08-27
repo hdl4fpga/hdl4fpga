@@ -21,6 +21,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
 use hdl4fpga.hdo.all;
@@ -182,15 +183,15 @@ architecture beh of tb_ethtx is
 	signal pyl_trdy : std_logic;
 	signal pyl_data : std_logic_vector(txd'range);
 
-	constant data_layout : string := section_layout(data_content(data));
-	constant data_table  : string := section_table(data_layout**".table");
-	constant bitdata : std_logic_vector := x"12345678"; --reverse(reverse(init_rom(data)), txd'length);
-	signal ptr : natural range 0 to bitdata'length/txd'length-1;
+	constant data_mapped : string := map_memory(data_content(data));
+	constant data_table  : string := map_table(data_mapped**".table");
+	constant mem_data    : std_logic_vector := reverse(hdo(data_mapped)**".content",8);
+	constant mem_table   : unsigned := hdo(data_table)**".content";
 
 begin
 
 	assert false
-		report CR & data_layout
+		report CR & data_mapped
 		severity note;
 
 	assert false
@@ -198,25 +199,30 @@ begin
 		severity note;
 
 	process (req, rdy, txc)
+		variable line   : unsigned(hdo(data_table)**".base.left" to hdo(data_table)**".length.right");
+		variable base   : unsigned(hdo(data_table)**".base.left" to hdo(data_table)**".base.right");
+		variable length : unsigned(hdo(data_table)**".length.left" to hdo(data_table)**".length.right");
+		variable addr   : natural range 0 to 2**length'length-1;
 	begin
 		if rising_edge(txc) then
 			if (rdy xor req)='1' then
 				if pyl_trdy='1' then
-					if ptr > 0 then
-						ptr <= ptr - 1;
-					else
-						ptr <= bitdata'length/txd'length-1;
+					addr := addr + 1;
+					if addr >= length then
 						rdy <= req;
 					end if;
 				end if;
 			else
-				ptr <= bitdata'length/txd'length-1;
+				line   := to_unsigned(line'length*id to line'length*(id+1)-1);
+				base   := line(offset'range);
+				length := line(length'range);
+				addr   := to_integer(offset);
 			end if;
+			pyl_frm  <= (rdy xor req) when addr > 0 else '0';
+			pyl_irdy <= (rdy xor req);
+			pyl_data <= mem_data(addr*txd'length to (addr+1)*txd'length-1);
 		end if;
 	end process;
-	pyl_frm  <= (rdy xor req) when ptr > 0 else '0';
-	pyl_irdy <= (rdy xor req);
-	pyl_data <= bitdata(ptr*txd'length to (ptr+1)*txd'length-1);
 
 	eth_e : entity hdl4fpga.eth_tx
 	generic map (
