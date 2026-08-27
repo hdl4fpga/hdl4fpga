@@ -36,6 +36,7 @@ entity tb_ethtx is
 	port (
 		req  : in  std_logic :='0';
 		rdy  : buffer std_logic :='0';
+		id   : std_logic_vector;
 		txc  : in  std_logic;
 		txen : buffer std_logic;
 		txd  : out std_logic_vector);
@@ -188,6 +189,10 @@ architecture beh of tb_ethtx is
 	constant mem_data    : std_logic_vector := reverse(hdo(data_mapped)**".content",8);
 	constant mem_table   : unsigned := hdo(data_table)**".content";
 
+	signal line   : std_logic_vector(hdo(data_table)**".base.left"   to hdo(data_table)**".length.right");
+	signal addr   : unsigned(hdo(data_table)**".base.left"   to hdo(data_table)**".base.right");
+	signal length : unsigned(hdo(data_table)**".length.left" to hdo(data_table)**".length.right");
+
 begin
 
 	assert false
@@ -198,31 +203,40 @@ begin
 		report CR & data_table
 		severity note;
 
+	tab_rom_e : entity hdl4fpga.rom
+	generic map(
+		bitdata => reverse(hdo(data_mapped)**".content",8))
+	port map(
+		addr => std_logic_vector(addr),
+		data => pyl_data);
+
+	data_rom_e : entity hdl4fpga.rom
+	generic map(
+		bitdata => hdo(data_table)**".content")
+	port map(
+		addr => id,
+		data => line);
+
 	process (req, rdy, txc)
-		variable line   : unsigned(hdo(data_table)**".base.left" to hdo(data_table)**".length.right");
-		variable base   : unsigned(hdo(data_table)**".base.left" to hdo(data_table)**".base.right");
-		variable length : unsigned(hdo(data_table)**".length.left" to hdo(data_table)**".length.right");
-		variable addr   : natural range 0 to 2**length'length-1;
+		variable pos : natural range 0 to 2**addr'length-1;
 	begin
 		if rising_edge(txc) then
 			if (rdy xor req)='1' then
 				if pyl_trdy='1' then
-					addr := addr + 1;
-					if addr >= length then
+					pos := pos + 1;
+					addr  <= addr  + 1;
+					if pos >= length then
 						rdy <= req;
 					end if;
 				end if;
 			else
-				line   := to_unsigned(line'length*id to line'length*(id+1)-1);
-				base   := line(offset'range);
-				length := line(length'range);
-				addr   := to_integer(offset);
+				length <= unsigned(line(length'range));
+				addr   <= unsigned(line(addr'range));
 			end if;
-			pyl_frm  <= (rdy xor req) when addr > 0 else '0';
-			pyl_irdy <= (rdy xor req);
-			pyl_data <= mem_data(addr*txd'length to (addr+1)*txd'length-1);
 		end if;
 	end process;
+	pyl_frm  <= (rdy xor req) when addr > 0 else '0';
+	pyl_irdy <= (rdy xor req);
 
 	eth_e : entity hdl4fpga.eth_tx
 	generic map (
