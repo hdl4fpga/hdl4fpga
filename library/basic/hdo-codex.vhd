@@ -391,10 +391,7 @@ package body hdo is
 		elsif value'length > 0 then
 			return to_bin(value(value'left to value'right), 2);
 		else
-			assert false
-				report "value'range is null"
-				severity failure;
-			return "X";
+			return "";
 		end if;
 	end;
 

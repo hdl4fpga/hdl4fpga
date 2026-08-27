@@ -205,7 +205,7 @@ begin
 				"type:0x08,"                             &
 				"code:0x00,"                             & 
 				"chksum:0x0000,"                         &
-				"identifier:0x0000}}";
+				"extn:0x00000000}}";
 	begin
 		tbipoe_e : entity work.tb_ipoe
 		generic map(

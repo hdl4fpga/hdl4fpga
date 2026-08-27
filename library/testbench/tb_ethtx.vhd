@@ -110,9 +110,11 @@ architecture beh of tb_ethtx is
 		return std_logic_vector is
 	begin
 		return 
-			to_stdlogicvector(hdo(data)**(".type"   &'='& "0x00")) & 
-			to_stdlogicvector(hdo(data)**(".code"   &'='& "0x00")) & 
-			to_stdlogicvector(hdo(data)**(".chksum" &'='& "0x0000"));
+			to_stdlogicvector(hdo(data)**(".type"   &'='& "0x00"))       & 
+			to_stdlogicvector(hdo(data)**(".code"   &'='& "0x00"))       & 
+			to_stdlogicvector(hdo(data)**(".chksum" &'='& "0x0000"))     &
+			to_stdlogicvector(hdo(data)**(".extn"   &'='& "0x00000000")) &
+			to_stdlogicvector(hdo(data)**".data");
 	end;
 
 	function data_content (
