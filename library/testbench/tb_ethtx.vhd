@@ -129,7 +129,7 @@ architecture beh of tb_ethtx is
 
 			if proto="icmp" then
 				return
-					"content:" &
+					"content:0x" &
 					to_string(
 						init_mac (
 							data   => data**".mac", 
@@ -142,7 +142,7 @@ architecture beh of tb_ethtx is
 						16);
 			elsif proto="arp" then
 				return
-					"content:" &
+					"content:0x" &
 					to_string(
 						init_mac (
 							data   => data**".mac", 
@@ -182,13 +182,19 @@ architecture beh of tb_ethtx is
 	signal pyl_trdy : std_logic;
 	signal pyl_data : std_logic_vector(txd'range);
 
+	constant data_layout : string := section_layout(data_content(data));
+	constant data_table  : string := section_table(data_layout**".table");
 	constant bitdata : std_logic_vector := x"12345678"; --reverse(reverse(init_rom(data)), txd'length);
 	signal ptr : natural range 0 to bitdata'length/txd'length-1;
 
 begin
 
 	assert false
-		report CR & data_content(data)
+		report CR & data_layout
+		severity note;
+
+	assert false
+		report CR & data_table
 		severity note;
 
 	process (req, rdy, txc)
