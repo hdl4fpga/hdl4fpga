@@ -223,10 +223,6 @@ begin
 				ser_irdy    <= not fltr_bs;
 				ser_data(0) <= fltr_d;
 		end generate;
-
-		-- led(4) <= tp(4);
-		-- led(3) <= tp(5);
-		-- led(2) <= cfgd;
 	end generate;
 
 	ipoe_g : if io_link="io_ipoe" generate
@@ -363,9 +359,12 @@ begin
 		process(rmii_clk)
 		begin
 			if rising_edge(rmii_clk) then
-				ser_frm  <= rmii_rxdv; --tp(1);
+				ser_frm  <= rmii_txen; --tp(1);
 				ser_irdy <= '1';
-				ser_data <= rmii_rxd; --tp(2 to 2+1);
+				ser_data <= rmii_txd; --tp(2 to 2+1);
+--				ser_frm  <= rmii_rxdv;
+--				ser_irdy <= '1';
+--				ser_data <= rmii_rxd;
 				if fcs_sb='1' then
 					led(7) <= fcs_vld;
 				end if;
