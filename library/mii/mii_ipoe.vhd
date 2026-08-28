@@ -223,7 +223,7 @@ begin
 		arptx_data    => arptx_data);
 
 	tx_b : block
-		signal gntd  : std_logic_vector(0 to 2-1);
+		signal gntd      : std_logic_vector(0 to 2-1);
 
 		signal pyl_frm   : std_logic;
 		signal pyl_irdy  : std_logic;
