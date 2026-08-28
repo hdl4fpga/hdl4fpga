@@ -21,8 +21,11 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
+use hdl4fpga.base.all;
 
 entity tb_ipoe is
 	generic (
@@ -31,7 +34,7 @@ entity tb_ipoe is
 	port (
 		txc  : in  std_logic;
 		req  : in  std_logic;
-		rdy  : buffer std_logic;
+		rdy  : buffer std_logic := '0';
 		txen : buffer std_logic;
 		txd  : out std_logic_vector;
 
@@ -41,16 +44,49 @@ entity tb_ipoe is
 end;
 
 architecture def of tb_ipoe is
+	signal ethtx_req : std_logic := '0';
+	signal ethtx_rdy : std_logic := '0';
+	signal fcs_sb    : std_logic;
+	signal id : unsigned(0 to unsigned_num_bits(length(data)-1)-1);
 begin
+
+	process(txc)
+		type states is (s_tx, s_rx);
+		variable state : states;
+	begin
+		if rising_edge(txc) then
+			if (rdy xor req)='1' then
+				case state is
+				when s_tx =>
+					ethtx_req <= not ethtx_rdy;
+					state := s_rx;
+				when s_rx =>
+					if (ethtx_req xor ethtx_rdy)='0' then
+						if fcs_sb='1' then
+							if (id+1) < length(data) then
+								id <= id + 1;
+							else
+								rdy <= req;
+							end if;
+							state := s_tx;
+						end if;
+					end if;
+				end case;
+			else
+				id <= (others => '0');
+				state := s_tx;
+			end if;
+		end if;
+	end process;
 
 	tbethtx_e : entity work.tb_ethtx
 	generic map (
 		sha  => sha,
 		data => data)
 	port map (
-		req  => req,
-		rdy  => rdy,
-		id   => "0",
+		req  => ethtx_req,
+		rdy  => ethtx_rdy,
+		id   => std_logic_vector(id),
 		txc  => txc,
 		txen => txen,
 		txd  => txd);
@@ -60,5 +96,6 @@ begin
 		mii_clk  => rxc,
 		mii_frm  => rxdv,
 		mii_irdy => rxdv,
-		mii_data => rxd);
+		mii_data => rxd,
+		fcs_sb   => fcs_sb);
 end;

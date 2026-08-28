@@ -77,7 +77,7 @@ architecture beh of tb_ethtx is
 		return std_logic_vector is
 		constant default_ipv4 : string := "{" &
 			"verihl:0x45,"    &
-				"tos:0x0,"    &
+				"tos:0x00,"    &
 			 "length:0x0000," &
 			  "ident:0x0000," &
 			"flgsoff:0x0000," &
@@ -88,6 +88,7 @@ architecture beh of tb_ethtx is
 		constant verihl  : string := "0x45";
 		constant tos     : string := hdo(data)**(".tos"     &'='& string'(hdo(default_ipv4)**".tos"));
 		constant length  : string := hdo(data)**(".length"  &'='& string'(hdo(default_ipv4)**".length"));
+		constant ident   : string := hdo(data)**(".ident"   &'='& string'(hdo(default_ipv4)**".ident"));
 		constant flgsoff : string := hdo(data)**(".flgsoff" &'='& string'(hdo(default_ipv4)**".flgsoff"));
 		constant ttl     : string := hdo(data)**(".ttl"     &'='& string'(hdo(default_ipv4)**".ttl"));
 		constant proto   : string := hdo(data)**(".proto"   &'='& string'(hdo(default_ipv4)**".proto"));
@@ -99,6 +100,7 @@ architecture beh of tb_ethtx is
 			to_stdlogicvector(verihl)  & 
 			to_stdlogicvector(tos)     & 
 			to_stdlogicvector(length)  & 
+			to_stdlogicvector(ident)   & 
 			to_stdlogicvector(flgsoff) & 
 			to_stdlogicvector(ttl)     & 
 			to_stdlogicvector(proto)   & 
@@ -193,7 +195,20 @@ architecture beh of tb_ethtx is
 	signal addr   : unsigned(hdo(data_table)**".base.left"   to hdo(data_table)**".base.right");
 	signal pos    : integer range -1 to 2**((hdo(data_table)**".length.right"-hdo(data_table)**".length.left")+1)-1;
 
+	constant debug : boolean := false;
 begin
+
+	assert not debug
+		report CR & data_mapped
+		severity note;
+
+	assert not debug
+		report CR & data_table
+		severity note;
+
+	assert not debug
+		report CR & data_content(data)
+		severity note;
 
 	data_rom_e : entity hdl4fpga.rom
 	generic map(
@@ -218,7 +233,9 @@ begin
 						rdy <= req;
 					else
 						pos  <= pos  - txd'length;
+						if pos > 1 then
 						addr <= addr + txd'length;
+						end if;
 					end if;
 				end if;
 			else

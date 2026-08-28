@@ -139,8 +139,8 @@ begin
 		fcs_sb   => fcs_sb,
 		fcs_vld  => fcs_vld);
 
-	tp(1) <= ethda_frm;
-	tp(2 to miirx_data'length+1) <= miirx_data;
+--	tp(1) <= ethda_frm;
+--	tp(2 to miirx_data'length+1) <= miirx_data;
 	bcstcmp_i : entity hdl4fpga.sio_cmp
 	port map (
 		clk     => miirx_clk,
@@ -199,28 +199,29 @@ begin
 
 	arpd_i : entity hdl4fpga.arpd
 	generic map (
-		ipv4addr      => ipv4addr,
-		hwaddr        => hwaddr)
+		ipv4addr   => ipv4addr,
+		hwaddr     => hwaddr)
 	port map (
-		arp_req       => arp_req,
-		arp_rdy       => arp_rdy,
+		tp => tp,
+		arp_req    => arp_req,
+		arp_rdy    => arp_rdy,
 
-		miirx_clk     => miirx_clk,
+		miirx_clk  => miirx_clk,
 
-		upspa_frm     => upspa_frm,
-		upspa_irdy    => upspa_irdy,
-		upspa_trdy    => upspa_trdy,
-		upspa_data    => upspa_data,
+		upspa_frm  => '0', --upspa_frm,
+		upspa_irdy => '0', --upspa_irdy,
+		upspa_trdy => upspa_trdy,
+		upspa_data => upspa_data,
 
-		arprx_frm     => arprx_frm,
-		arprx_irdy    => arprx_irdy,
-		arprx_data    => arprx_data,
+		arprx_frm  => arprx_frm,
+		arprx_irdy => arprx_irdy,
+		arprx_data => arprx_data,
 
-		miitx_clk     => miitx_clk,
-		arptx_frm     => arptx_frm,
-		arptx_irdy    => arptx_irdy,
-		arptx_trdy    => arptx_trdy,
-		arptx_data    => arptx_data);
+		miitx_clk  => miitx_clk,
+		arptx_frm  => arptx_frm,
+		arptx_irdy => arptx_irdy,
+		arptx_trdy => arptx_trdy,
+		arptx_data => arptx_data);
 
 	tx_b : block
 		signal gntd      : std_logic_vector(0 to 2-1);
@@ -247,10 +248,10 @@ begin
 			ipv4tx_data when gntd(1)='1' else
 			(pyl_data'range => '-');
 
---		pyl_frm <= arptx_frm;
---		pyl_irdy <= arptx_irdy;
+--		pyl_frm    <= arptx_frm;
+--		pyl_irdy   <= arptx_irdy;
 --		arptx_trdy <= pyl_trdy;
---		pyl_data <= arptx_data;
+--		pyl_data   <= arptx_data;
 
 		ethtx_i : entity hdl4fpga.eth_tx
 		port map (

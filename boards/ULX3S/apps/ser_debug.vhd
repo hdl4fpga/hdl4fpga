@@ -76,7 +76,7 @@ architecture ser_debug of ulx3s is
 
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
-	signal ser_irdy        : std_logic;
+	signal ser_irdy        : std_logic :='1';
 	signal ser_data        : std_logic_vector(0 to setif(io_link="io_ipoe", 2,1)-1);
 
 	constant hdplx         : std_logic := setif(debug, '0', '1');
@@ -175,7 +175,7 @@ begin
 				cken => cken,
 				init_req => init_req,
 				init_rdy => init_rdy);
-			led <= (others => '1'); --tp(9 to 16);
+			led <= (others => '1');
 		end generate;
 			
 		monitor_g : if monitor generate 
@@ -183,7 +183,6 @@ begin
 			signal cken : std_logic;
 		begin
 
-			--tp(1 to 3) <= tp_phy (1 to 3);
 			usbphy_e : entity hdl4fpga.usbphy
 		   	generic map (
 				-- monitor => true,
@@ -355,29 +354,25 @@ begin
 		rmii_mdc  <= not md_clk; 
 		rmii_mdio <= '0' when md_t='0' else 'Z';
 
-		ser_clk <= rmii_clk;
 		process(rmii_clk)
 		begin
 			if rising_edge(rmii_clk) then
-				ser_frm  <= rmii_txen; --tp(1);
-				ser_irdy <= '1';
-				ser_data <= rmii_txd; --tp(2 to 2+1);
---				ser_frm  <= rmii_rxdv;
---				ser_irdy <= '1';
---				ser_data <= rmii_rxd;
 				if fcs_sb='1' then
 					led(7) <= fcs_vld;
 				end if;
 			end if;
 		end process;
 
-		process (md_clk)
-			variable q : std_logic;
+		ser_clk  <= rmii_clk;
+		process(ser_clk)
 		begin
-			if rising_edge(md_clk) then
-				q := not q;
-				led(0) <= q;
-				led(1) <= not q;
+			if rising_edge(ser_clk) then
+--				ser_frm  <= tp(1);
+--				ser_data <= tp(2 to 2+rmii_rxd'length-1);
+				ser_frm  <= rmii_txen;
+				ser_data <= rmii_txd;
+--				ser_frm  <= rmii_rxdv;
+--				ser_data <= rmii_rxd;
 			end if;
 		end process;
 

@@ -141,8 +141,8 @@ architecture ulx3s_serdebug of testbench is
 	signal fire2      : std_logic;
 
 	signal mii_refclk : std_logic := '0';
-	signal rmii_req   : std_logic;
-	signal rmii_rdy   : std_logic;
+	signal rmii_req   : std_logic := '0';
+	signal rmii_rdy   : std_logic := '0';
 	alias  rmii_clk   is gn(12);
 	alias  rmii_txen  is gn(10);
 	signal rmii_txd   : std_logic_vector(0 to 2-1);
