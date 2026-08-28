@@ -232,20 +232,21 @@ begin
 	ipoe_g : if io_link="io_ipoe" generate
 		alias md_btn    is fire1;
 		alias dhcpc_btn is fire2;
+
 		alias  rmii_clk  : std_logic is rmii_nintclk;
 		signal rmii_rxdv : std_logic;
 		signal rmii_rxd  : std_logic_vector(0 to 2-1);
 		signal rmii_txen : std_logic;
 		signal rmii_txd  : std_logic_vector(0 to 2-1);
 
-		signal md_clk : std_logic;
-		signal md_req : std_logic := '0';
-		signal md_rdy : std_logic := '0';
-		signal md_t   : std_logic;
-		signal tp     : std_logic_vector(1 to 32);
+		signal md_clk    : std_logic;
+		signal md_req    : std_logic := '0';
+		signal md_rdy    : std_logic := '0';
+		signal md_t      : std_logic;
+		signal tp        : std_logic_vector(1 to 32);
 
-		signal fcs_sb : std_logic;
-		signal fcs_vld : std_logic;
+		signal fcs_sb    : std_logic;
+		signal fcs_vld   : std_logic;
 	begin
 
 		process(rmii_crsdv, rmii_clk)

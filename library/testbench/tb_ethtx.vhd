@@ -195,18 +195,6 @@ architecture beh of tb_ethtx is
 
 begin
 
-	assert false
-		report CR & data_mapped
-		severity note;
-
-	assert false
-		report CR & data_table
-		severity note;
-
-	assert false
-		report CR & data_content(data)
-		severity note;
-
 	data_rom_e : entity hdl4fpga.rom
 	generic map(
 		bitdata => reverse(hdo(data_mapped)**".content",8))
