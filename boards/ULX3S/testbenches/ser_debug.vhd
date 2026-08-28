@@ -112,7 +112,7 @@ architecture ulx3s_serdebug of testbench is
 			gn             : inout std_logic_vector(28-1 downto 0) := (others => '-');
 			gp_i           : in    std_logic_vector(12 downto 9) := (others => '-');
 
-			user_programn  : out   std_logic := '1'; -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
+			user_programn  : out   std_logic := '1';  -- '0' loads next bitstream from SPI FLASH (e.g. bootloader)
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 	end component;
 
@@ -132,20 +132,17 @@ architecture ulx3s_serdebug of testbench is
 	constant req_data  : std_logic_vector :=
 		x"010008_1702_00000f_1603_8000_0000";
 
-	constant baudrate : natural := 3_000_000;
+	signal ftdi_txd   : std_logic;
+	signal gp         : std_logic_vector(28-1 downto 0);
+	signal gn         : std_logic_vector(28-1 downto 0);
 
-	signal ftdi_txd    : std_logic;
-	signal gp          : std_logic_vector(28-1 downto 0);
-	signal gn          : std_logic_vector(28-1 downto 0);
-
-	signal clk_25mhz : std_logic := '0';
-	signal fire1 : std_logic;
-	signal fire2 : std_logic;
+	signal clk_25mhz  : std_logic := '0';
+	signal fire1      : std_logic;
+	signal fire2      : std_logic;
 
 	signal mii_refclk : std_logic := '0';
-	signal rmii_req : std_logic;
-	signal rmii_rdy : std_logic;
-
+	signal rmii_req   : std_logic;
+	signal rmii_rdy   : std_logic;
 	alias  rmii_clk   is gn(12);
 	alias  rmii_txen  is gn(10);
 	signal rmii_txd   : std_logic_vector(0 to 2-1);
@@ -176,25 +173,6 @@ begin
 	end process;
 
 	tb_ipoe_b : block
-		constant icmppkt : std_logic_vector :=
-			x"4500"                 &    -- IP Version, TOS
-			x"003c"                 &    -- IP Length
-			x"0001"                 &    -- IP Identification
-			x"4000"                 &    -- IP Fragmentation
-			x"4001"                 &    -- IP TTL, protocol
-			x"7acb"                 &    -- IP Header Checksum
-			x"c0a80002"             &    -- IP Source IP address
-			x"c0a8000e"             &    -- IP Destiantion IP Address
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"12345678",8) &
-			reverse(x"aaaaaaaa",8) &
-			reverse(x"ffffffff",8) ;
-
 		constant data : string := "{"                      &
 			"arp:{"                                        &
 				   "mac:{tha:0xff_ff_ff_ff_ff_ff},"        &
