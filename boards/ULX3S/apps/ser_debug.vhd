@@ -280,30 +280,30 @@ begin
 
 		mii_e : entity hdl4fpga.link_mii
 		generic map (
-			hwaddr     => x"00_40_00_01_02_03",
-			ipv4addr   => aton("192.168.0.14"),
-			n          => 2)
+			hwaddr   => x"00_40_00_01_02_03",
+			ipv4addr => aton("192.168.0.14"),
+			n        => 2)
 		port map (
-			tp         => tp,
-			si_frm     => si_frm,
-			si_irdy    => si_irdy,
-			si_trdy    => si_trdy,
-			si_data    => si_data,
+			tp       => tp,
+			si_frm   => si_frm,
+			si_irdy  => si_irdy,
+			si_trdy  => si_trdy,
+			si_data  => si_data,
 		
-			so_frm     => so_frm,
-			so_irdy    => so_irdy,
-			so_trdy    => so_trdy,
-			so_data    => so_data,
-			dhcp_btn   => dhcpc_btn,
-			mii_txc    => rmii_clk,
-			mii_txen   => rmii_txen,
-			mii_txd    => rmii_txd,
+			so_frm   => so_frm,
+			so_irdy  => so_irdy,
+			so_trdy  => so_trdy,
+			so_data  => so_data,
+			dhcp_btn => dhcpc_btn,
+			mii_txc  => rmii_clk,
+			mii_txen => rmii_txen,
+			mii_txd  => rmii_txd,
 
-			fcs_sb     => fcs_sb,
-			fcs_vld    => fcs_vld,
-			mii_rxc    => rmii_clk,
-			mii_rxdv   => rmii_rxdv,
-			mii_rxd    => rmii_rxd);
+			fcs_sb   => fcs_sb,
+			fcs_vld  => fcs_vld,
+			mii_rxc  => rmii_clk,
+			mii_rxdv => rmii_rxdv,
+			mii_rxd  => rmii_rxd);
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
