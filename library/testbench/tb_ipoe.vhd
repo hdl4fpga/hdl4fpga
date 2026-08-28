@@ -50,7 +50,7 @@ begin
 	port map (
 		req  => req,
 		rdy  => rdy,
-		id => "0",
+		id   => "0",
 		txc  => txc,
 		txen => txen,
 		txd  => txd);

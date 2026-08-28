@@ -189,9 +189,9 @@ architecture beh of tb_ethtx is
 	constant mem_data    : std_logic_vector := reverse(hdo(data_mapped)**".content",8);
 	constant mem_table   : unsigned := hdo(data_table)**".content";
 
-	signal line   : std_logic_vector(hdo(data_table)**".base.left"   to hdo(data_table)**".length.right");
+	signal line   : std_logic_vector(hdo(data_table)**".base.left" to hdo(data_table)**".length.right");
 	signal addr   : unsigned(hdo(data_table)**".base.left"   to hdo(data_table)**".base.right");
-	signal length : unsigned(hdo(data_table)**".length.left" to hdo(data_table)**".length.right");
+	signal pos    : integer range -1 to 2**((hdo(data_table)**".length.right"-hdo(data_table)**".length.left")+1)-1;
 
 begin
 
@@ -203,14 +203,18 @@ begin
 		report CR & data_table
 		severity note;
 
-	tab_rom_e : entity hdl4fpga.rom
+	assert false
+		report CR & data_content(data)
+		severity note;
+
+	data_rom_e : entity hdl4fpga.rom
 	generic map(
 		bitdata => reverse(hdo(data_mapped)**".content",8))
 	port map(
-		addr => std_logic_vector(addr),
+		addr => std_logic_vector(addr(addr'left to addr'right-(unsigned_num_bits(txd'length)-1))),
 		data => pyl_data);
 
-	data_rom_e : entity hdl4fpga.rom
+	tab_rom_e : entity hdl4fpga.rom
 	generic map(
 		bitdata => hdo(data_table)**".content")
 	port map(
@@ -218,24 +222,24 @@ begin
 		data => line);
 
 	process (req, rdy, txc)
-		variable pos : natural range 0 to 2**addr'length-1;
 	begin
 		if rising_edge(txc) then
 			if (rdy xor req)='1' then
 				if pyl_trdy='1' then
-					pos := pos + 1;
-					addr  <= addr  + 1;
-					if pos >= length then
+					if pos < 0 then
 						rdy <= req;
+					else
+						pos  <= pos  - txd'length;
+						addr <= addr + txd'length;
 					end if;
 				end if;
 			else
-				length <= unsigned(line(length'range));
-				addr   <= unsigned(line(addr'range));
+				pos  <= to_integer(unsigned(line(hdo(data_table)**".length.left" to hdo(data_table)**".length.right")));
+				addr <= unsigned(line(addr'range));
 			end if;
 		end if;
 	end process;
-	pyl_frm  <= (rdy xor req) when addr > 0 else '0';
+	pyl_frm  <= (rdy xor req) when pos >= 0 else '0';
 	pyl_irdy <= (rdy xor req);
 
 	eth_e : entity hdl4fpga.eth_tx
