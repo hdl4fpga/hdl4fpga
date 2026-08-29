@@ -63,7 +63,7 @@ begin
 				when s_rx =>
 					if (ethtx_req xor ethtx_rdy)='0' then
 						if fcs_sb='1' then
-							if (id+1) < length(data) then
+							if id < length(data)-1 then
 								id <= id + 1;
 							else
 								rdy <= req;

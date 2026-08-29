@@ -375,33 +375,33 @@ begin
 
 		udptx_frm  <= '0';
 		udptx_irdy <= '0';
---		arbiter_i : entity hdl4fpga.mii_arbiter
---		port map (
---			clk   => miitx_clk,
---			gntd  => gntd,
---			frms  => ipv4pyltx_frms,
---			irdys => ipv4pyltx_irdys,
---			trdys => ipv4pyltx_trdys,
---			frm   => ipv4pyltx_frm,
---			irdy  => ipv4pyltx_irdy,
---			trdy  => ipv4pyltx_trdy);
---
---		ipv4pyltx_trdy <= 
---			buffer_trdy when tha_act='1' else
---			'1'         when ipv4lentx_act='1' else 
---			'1'         when ipv4tpatx_act='1' else 
---			buffer_trdy when pyl_act='1' else
---			'0';
---
---		ipv4pyltx_data <= 
---			icmptx_data when gntd(0)='1' else
---			 udptx_data when gntd(1)='1' else
---			(ipv4pyltx_data'range => '-');
+		arbiter_i : entity hdl4fpga.mii_arbiter
+		port map (
+			clk   => miitx_clk,
+			gntd  => gntd,
+			frms  => ipv4pyltx_frms,
+			irdys => ipv4pyltx_irdys,
+			trdys => ipv4pyltx_trdys,
+			frm   => ipv4pyltx_frm,
+			irdy  => ipv4pyltx_irdy,
+			trdy  => ipv4pyltx_trdy);
 
-		ipv4pyltx_frm    <= icmptx_frm;
-		ipv4pyltx_irdy   <= icmptx_irdy;
-		icmptx_trdy <= ipv4pyltx_trdy;
-		ipv4pyltx_data   <= icmptx_data;
+		ipv4pyltx_data <= 
+			icmptx_data when gntd(0)='1' else
+			 udptx_data when gntd(1)='1' else
+			(ipv4pyltx_data'range => '-');
+
+	ipv4pyltx_trdy <= 
+		buffer_trdy when tha_act='1' else
+		'1'         when ipv4lentx_act='1' else 
+		'1'         when ipv4tpatx_act='1' else 
+		buffer_trdy when pyl_act='1' else
+		'0';
+
+--		ipv4pyltx_frm  <= icmptx_frm;
+--		ipv4pyltx_irdy <= icmptx_irdy;
+--		icmptx_trdy    <= ipv4pyltx_trdy;
+--		ipv4pyltx_data <= icmptx_data;
 
 		decode_frm  <= ipv4pyltx_frm or ipv4pyltx_irdy;
 		decode_irdy <= ipv4pyltx_frm or ipv4pyltx_irdy;

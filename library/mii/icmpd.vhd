@@ -232,8 +232,6 @@ begin
 				if (tx_req xor tx_rdy)='1' then
 					if decode_fin='0' then
 						decode_frm <= '1';
-					elsif icmptx_frm='1' then
-						decode_frm <= '1';
 					elsif (icmptx_irdy and not icmptx_trdy)='1' then
 						decode_frm <= '1';
 					else
