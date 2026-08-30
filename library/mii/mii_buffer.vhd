@@ -28,14 +28,15 @@ use hdl4fpga.base.all;
 
 entity mii_buffer is -- skid buffer
 	generic (
-		flush   : boolean := false;
-		latency : natural := 1);
+		flush    : boolean := false;
+		latency  : natural := 1);
 	port (
-		clk : in std_logic;
+		src_clk  : in  std_logic;
 		src_frm  : in  std_logic := '1';
 		src_irdy : in  std_logic;
 		src_trdy : out std_logic;
 		src_data : in  std_logic_vector;
+		dst_clk  : in  std_logic;
 		dst_frm  : buffer std_logic := '0';
 		dst_irdy : buffer std_logic := '0';
 		dst_trdy : in  std_logic;
@@ -61,24 +62,24 @@ begin
 		check_dov => true,
 		max_depth => (32*8)/src_data'length)
 	port map (
-		src_clk  => clk,
-		src_irdy => src_irdy,
-		src_trdy => src_trdy,
-		src_data => src_data,
+		src_clk   => src_clk,
+		src_irdy  => src_irdy,
+		src_trdy  => src_trdy,
+		src_data  => src_data,
 
-		mode     => mode,
+		mode      => mode,
 
-		dst_clk  => clk,
-		dst_irdy => fifo_irdy,
-		dst_trdy => fifo_trdy,
-		dst_data => fifo_data);
+		dst_clk   => dst_clk,
+		dst_irdy  => fifo_irdy,
+		dst_trdy  => fifo_trdy,
+		dst_data  => fifo_data);
 
 	fifo_trdy <= dst_trdy or not dst_irdy;
-	process(clk)
+	process(dst_clk)
 		variable shr_irdy : std_logic := '0';
 		variable shr_data : std_logic_vector(0 to dst_data'length-1);
 	begin
-		if rising_edge(clk) then
+		if rising_edge(dst_clk) then
 			if dst_irdy='0' then
 				dst_frm  <= shr_irdy;
 				dst_irdy <= shr_irdy;

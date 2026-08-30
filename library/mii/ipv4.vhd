@@ -664,11 +664,12 @@ begin
 			generic map (
 				latency => 12)
 			port map (
-				clk => miitx_clk,
+				src_clk  => miitx_clk,
 				src_frm  => buffer_frm,
 				src_irdy => buffer_irdy,
 				src_trdy => buffer_trdy,
 				src_data => decode_data,
+				dst_clk  => miitx_clk,
 				dst_frm  => ipv4tx_frm,
 				dst_irdy => ipv4tx_irdy,
 				dst_trdy => ipv4tx_trdy,

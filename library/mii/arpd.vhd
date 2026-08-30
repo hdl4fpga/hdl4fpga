@@ -276,11 +276,12 @@ begin
 			buffer_irdy <= decode_frm;
 			buffer_i : entity hdl4fpga.mii_buffer
 			port map (
-				clk => miitx_clk,
+				src_clk  => miitx_clk,
 				src_frm  => buffer_frm,
 				src_irdy => buffer_irdy,
 				src_trdy => decode_trdy,
 				src_data => decode_data,
+				dst_clk  => miitx_clk,
 				dst_frm  => arptx_frm,
 				dst_irdy => arptx_irdy,
 				dst_trdy => arptx_trdy,
