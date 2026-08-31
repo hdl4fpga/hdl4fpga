@@ -135,7 +135,6 @@ begin
 			end if;
 		end process;
 
-
 		process (miirx_clk)
 			variable shr_irdy : std_logic;
 			variable shr_data : std_logic_vector(icmprx_data'range);
