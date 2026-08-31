@@ -58,16 +58,24 @@ entity icmpd is
 end;
 
 architecture def of icmpd is
+	signal mode    : std_logic_vector(0 to 2-1) := "00";
+	signal rx_irdy : std_logic;
+	signal rx_trdy : std_logic;
+	signal rx_data : std_logic_vector(icmprx_data'range);
+	signal tx_irdy : std_logic;
+	signal tx_trdy : std_logic;
+	signal tx_data : std_logic_vector(icmptx_data'range);
 begin
 
 	rqst_b : block
-		signal type_frm   : std_logic;
-		signal code_frm   : std_logic;
-		signal chksum_frm : std_logic;
-		signal pyl_frm    : std_logic;
-		signal rom_frm    : std_logic;
+		signal type_frm    : std_logic;
+		signal code_frm    : std_logic;
+		signal chksum_frm  : std_logic;
+		signal pyl_frm     : std_logic;
+		signal rom_frm     : std_logic;
 		alias  rom_irdy is icmprx_irdy;
-		signal rom_data   : std_logic_vector(icmprx_data'range);
+		signal rom_data    : std_logic_vector(icmprx_data'range);
+		signal chksum_data : std_logic_vector(icmprx_data'range);
 	begin
 		icmprx_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -98,7 +106,7 @@ begin
 			so_trdy => open,
 			so_data => rom_data);
 
-		rxdata_p : process (icmprx_frm, miirx_clk)
+		chksump_p : process (icmprx_frm, miirx_clk)
 			variable cy   : std_logic;
 			variable sum  : unsigned(0 to icmprx_data'length+1);
 			variable op1  : unsigned(sum'range);
@@ -122,11 +130,35 @@ begin
 				end if;
 
 				if (chksum_frm and icmprx_irdy)='1' then
-					rx_data <= std_logic_vector(reverse(sum(1 to icmprx_data'length)));
-				elsif ((type_frm or code_frm) and icmprx_irdy)='1' then
-					rx_data <= rom_data;
-				else 
-					rx_data <= icmprx_data;
+					chksum_data <= std_logic_vector(reverse(sum(1 to icmprx_data'length)));
+				end if;
+			end if;
+		end process;
+
+
+		process (miirx_clk)
+			variable shr_irdy : std_logic;
+			variable shr_data : std_logic_vector(icmprx_data'range);
+		begin
+			if rising_edge(miirx_clk) then
+				if chksum_frm='1' then
+					rx_data <= chksum_data;
+				else
+					rx_data <= shr_data;
+				end if;
+				rx_irdy <= shr_irdy;
+				if (type_frm or code_frm)='1' then
+					shr_data := rom_data;
+				else
+					shr_data := icmprx_data;
+				end if;
+				if icmprx_frm='1' then
+					shr_irdy := icmprx_irdy;
+				else
+					shr_irdy := 
+						(sharx_frm     and sharx_irdy) or
+						(ipv4lenrx_frm and ipv4lenrx_irdy) or
+						(sparx_frm     and sparx_irdy);
 				end if;
 			end if;
 		end process;
@@ -152,18 +184,21 @@ begin
 						end if;
 					end case;
 				end if;
-				rx_irdy <= sharx_irdy;
 			end if;
 		end process;
 
 	end block;
 
 	buffer_i : entity hdl4fpga.fifo
+	generic map(
+		check_sov => true,
+		check_dov => true,
+		max_depth => 1024)
 	port map (
 		mode     => mode,
-		src_clk  => miitx_clk,
+		src_clk  => miirx_clk,
 		src_irdy => rx_irdy,
-		src_trdy => tx_trdy,
+		src_trdy => rx_trdy,
 		src_data => rx_data,
 		dst_clk  => miitx_clk,
 		dst_irdy => tx_irdy,
@@ -183,6 +218,7 @@ begin
 
 		signal buffer_frm  : std_logic;
 		signal buffer_irdy : std_logic;
+		signal buffer_trdy : std_logic;
 
 		constant lead_length : natural := -- Latticesemi : Expecting constant string
 			hdo(frames)**".format.arp.tha"   +
@@ -191,23 +227,6 @@ begin
 			hdo(frames)**".format.icmp.code";
 		constant lead_value : string := natural'image(lead_length);
 	begin
-
-		process (miitx_clk)
-		begin
-			if rising_edge(miitx_clk) then
-				if (tx_req xor tx_rdy)='1' then
-					if decode_fin='0' then
-					elsif (icmptx_irdy and not icmptx_trdy)='1' then
-						decode_frm <= '1';
-					else
-						decode_frm <= '0';
-						tx_rdy <= tx_req;
-					end if;
-				else
-					decode_frm <= '0';
-				end if;
-			end if;
-		end process;
 
 		decode_frm  <= tx_irdy;
 		tx_trdy     <= decode_trdy;
@@ -220,14 +239,17 @@ begin
 				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}'),
 			size  => icmptx_data'length)
 		port map (
-			clk     => miitx_clk,
-			frm     => decode_frm,
-			irdy    => decode_irdy,
-			trdy    => decode_trdy,
-			fin     => decode_fin ,
-			frms(0) => lead_frm,
-			frms(1) => chksum_frm,
-			frms(2) => pyl_frm);
+			clk      => miitx_clk,
+			frm      => decode_frm,
+			irdy     => decode_irdy,
+			trdy     => decode_trdy,
+			fin      => decode_fin ,
+			frms(0)  => lead_frm,
+			frms(1)  => chksum_frm,
+			frms(2)  => pyl_frm,
+			trdys(0) => buffer_trdy,
+			trdys(1) => buffer_trdy,
+			trdys(2) => buffer_trdy);
 
 		buffer_frm  <= decode_frm;
 		buffer_irdy <= decode_frm;

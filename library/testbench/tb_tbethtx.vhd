@@ -55,7 +55,7 @@ begin
 		sha  => "0x00_27_0e_0f_f5_95",
 		data => "[" &
 			"arp: {spa:192.168.0.2,tpa:192.168.0.14}," &
-			"icmp: {spa:192.168.0.2,tpa:192.168.0.14}]")
+			"icmp: {sa:192.168.0.2,da:192.168.0.14}]")
 	port map (
 		req  => mii_req,
 		rdy  => mii_rdy,
