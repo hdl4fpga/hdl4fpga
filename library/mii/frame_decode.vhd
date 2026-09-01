@@ -41,6 +41,7 @@ entity frame_decode is
 		last  : out std_logic := '0';
 		acts  : out std_logic_vector(0 to length(frame));
 		frms  : out std_logic_vector(0 to length(frame));
+		fins  : out std_logic_vector(0 to length(frame));
 		irdys : out std_logic_vector(0 to length(frame)) := (others => '1');
 		trdys : in  std_logic_vector(0 to length(frame)) := (others => '1'));
 end;
@@ -83,6 +84,7 @@ begin
 			if ((active or frm) and irdy and trdys(step))='1' then
 				if cntr(0)='1' then
 					if limit=cntr then
+						fins(step) <= '1';
 						step  := step + 1;
 						limit := boundary(step);
 					end if;
@@ -105,10 +107,12 @@ begin
 				step  := 0;
 				cntr  := to_unsigned(2**cntr'length-total, cntr'length);
 				limit := boundary(step);
+				fins  <= (others => '0');
 				last  <= '0';
 			end if;
 		end if;
 		fin  <= not cntr(0);
+		fins(fins'right) <= not active;
 		trdy <= trdys(step);
 
 		irdys <= (others => '0');
