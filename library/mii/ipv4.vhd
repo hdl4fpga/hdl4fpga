@@ -363,7 +363,6 @@ begin
 			std_logic_vector'(hdo(frames)**".data.ipv4.ttl");
 
 		signal trdys : std_logic_vector(0 to 8);
-		signal fins  : std_logic_vector(0 to 8);
 		alias  rom_frm   : std_logic is decode_frm;
 		signal rom_irdy  : std_logic;
 		signal rom_data  : std_logic_vector(ipv4rx_data'range);
@@ -425,7 +424,6 @@ begin
 			frms(6) => spa_act,
 			frms(7) => dpa_act,
 			frms(8) => pyl_act,
-			fins    => fins,
 			trdys   => trdys);
 
 		trdys <= (others => buffer_trdy);
@@ -479,6 +477,7 @@ begin
 
 		begin
 
+			decode_irdy <= (ipv4pyltx_irdy and buffer_trdy) when tha_act='0' else '0';
 			chksum_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => compact('{'                                        &
@@ -488,22 +487,17 @@ begin
 					"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & '}'), -- &
 				size  => ipv4tx_data'length)
 			port map (
-				clk      => miitx_clk,
-				frm      => fins(0),
-				irdy     => ipv4pyltx_irdy,
-				frms(0)  => ipv4lentx_act,
-				frms(1)  => adjlen_act,
-				frms(2)  => ipv4tpatx_act,
-				frms(3)  => spa_act,
-				frms(4)  => act3,
-				trdys(0) => buffer_rdy,
-				trdys(1) => buffer_rdy,
-				trdys(2) => buffer_rdy,
-				trdys(3) => buffer_rdy,
-				trdys(4) => buffer_rdy);
+				clk     => miitx_clk,
+				frm     => ipv4pyltx_frm,
+				irdy    => decode_irdy,
+				frms(0) => ipv4lentx_act,
+				frms(1) => adjlen_act,
+				frms(2) => ipv4tpatx_act,
+				frms(3) => spa_act,
+				frms(4) => act3);
 
 			adjlen_irdy <= 
-				ipv4pyltx_irdy when ipv4lentx_act='1' else
+				decode_irdy when ipv4lentx_act='1' else
 				buffer_trdy when    length_act='1' else
 				decode_irdy when    adjlen_act='1' else
 				'0';
@@ -517,7 +511,7 @@ begin
 				diff => ipv4hdr_value)
 			port map (
 				clk     => miitx_clk,
-				frm     => fins(0),
+				frm     => ipv4pyltx_frm,
 				irdy    => adjlen_irdy,
 				trdy    => adjlen_trdy,
 				si_data => si_data,
