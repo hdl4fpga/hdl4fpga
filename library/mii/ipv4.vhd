@@ -324,6 +324,7 @@ begin
 		alias da_frm      is header_frms(2);
 		alias da_irdy     is header_irdys(2);
 		alias da_act      is header_acts(2);
+		alias sa_act      is header_acts(3);
 
 		constant ipv4hdr_size   : natural := hdo(frames)**".format.ipv4.length";
 		constant ipv4hdr_length : natural := summation(hdo(frames)**".format.ipv4")/8;
@@ -360,12 +361,13 @@ begin
 
 		alias ipv4_act        is header_fins(0);
 		alias ipv4_frm        is header_fins(0);
-		signal ipv4_irdy   : std_logic;
+		signal ipv4_irdy       : std_logic;
+		signal ipv4_fin        : std_logic;
 		alias vertos_act      is ipv4_acts(0);
 		alias vertos_irdy     is ipv4_irdys(0);
-		alias ipv4length_act  is ipv4_acts(3);
-		alias ipv4length_frm  is ipv4_frms(3);
-		alias ipv4length_irdy is ipv4_irdys(3);
+		alias ipv4length_act  is ipv4_acts(1);
+		alias ipv4length_frm  is ipv4_frms(1);
+		alias ipv4length_irdy is ipv4_irdys(1);
 		signal ipv4length_data : std_logic_vector(ipv4tx_data'range);
 		alias frags_act       is ipv4_acts(2);
 		alias frags_irdy      is ipv4_irdys(2);
@@ -391,9 +393,9 @@ begin
 		signal rom_data        : std_logic_vector(ipv4tx_data'range);
 
 		alias  buffer_frm     is ipv4pyltx_frm;
-		signal buffer_irdy : std_logic;
-		signal buffer_trdy : std_logic;
-		signal buffer_data : std_logic_vector(ipv4tx_data'range);
+		signal buffer_irdy     : std_logic;
+		signal buffer_trdy     : std_logic;
+		signal buffer_data     : std_logic_vector(ipv4tx_data'range);
 
 	begin
 
@@ -408,6 +410,12 @@ begin
 --			irdy  => ipv4pyltx_irdy,
 --			trdy  => ipv4pyltx_trdy);
 --
+--		ipv4pyltx_trdy <= 
+--			buffer_trdy when    tha_act='1' else
+--			'1'         when length_act='1' else 
+--			'1'         when     da_act='1' else 
+--			'0'         when   ipv4_fin='0' else
+--			buffer_trdy;
 --		ipv4pyltx_data <= 
 --			icmptx_data when gntd(0)='1' else
 --			 udptx_data when gntd(1)='1' else
@@ -417,15 +425,32 @@ begin
 
 		ipv4pyltx_frm  <= icmptx_frm;
 		ipv4pyltx_irdy <= icmptx_irdy;
-		ipv4pyltx_trdy <= 
+		icmptx_trdy <= 
 			buffer_trdy when    tha_act='1' else
 			'1'         when length_act='1' else 
 			'1'         when     da_act='1' else 
-			'0'         when vertos_act='1' else
-			'0'         when  frags_act='1' else
+			'0'         when   ipv4_fin='0' else
 			buffer_trdy;
 		ipv4pyltx_data <= icmptx_data;
 
+		process (miitx_clk)
+			variable cntr : natural range 0 to 4;
+			variable q : std_logic := '0';
+		begin
+			if rising_edge(miitx_clk) then
+				if ipv4pyltx_frm='1' then
+					cntr := cntr + ipv4tx_data'length;
+					if cntr=4 then
+						cntr := 0;
+						q:='1';
+					else
+						q:='0';
+					end if;
+				else
+					cntr := ipv4tx_data'length;
+				end if;
+			end if;
+		end process;
 		header_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => header_frame,
@@ -435,6 +460,7 @@ begin
 			frm   => ipv4pyltx_frm,
 			irdy  => ipv4pyltx_irdy,
 			acts  => header_acts,
+			frms  => header_frms,
 			irdys => header_irdys,
 			fins  => header_fins);
 
@@ -460,7 +486,7 @@ begin
 			so_clk  => miitx_clk,
 			so_frm  => ipv4sa_frm,
 			so_irdy => ipv4sa_irdy,
-			so_trdy => buffer_trdy,
+			so_trdy => open,
 			so_data => ipv4sa_data);
 
 		da_i : entity hdl4fpga.sio_ram
@@ -475,7 +501,7 @@ begin
 			so_clk  => miitx_clk,
 			so_frm  => ipv4da_frm,
 			so_irdy => ipv4da_irdy,
-			so_trdy => buffer_trdy,
+			so_trdy => open,
 			so_data => ipv4da_data);
 
 		ipv4_irdy <= ipv4_act and ipv4pyltx_irdy;
@@ -487,7 +513,10 @@ begin
 			clk   => miitx_clk,
 			frm   => ipv4_frm,
 			irdy  => ipv4_irdy,
+			fin   => ipv4_fin,
+			acts  => ipv4_acts,
 			frms  => ipv4_frms,
+			irdys => ipv4_irdys,
 			trdys => ipv4_trdys);
 
 		ipv4_trdys <= (others => buffer_trdy);
@@ -550,10 +579,10 @@ begin
 		buffer_data <= 
 			ipv4pyltx_data  when        tha_act='1' else
 			rom_data        when     vertos_act='1' else
+			ipv4length_data when ipv4length_act='1' else
 			rom_data        when      frags_act='1' else
 			ipv4proto_data  when  ipv4proto_act='1' else
 			chksum_data     when     chksum_act='1' else
-			ipv4length_data when ipv4length_act='1' else
 			ipv4sa_data     when     ipv4sa_act='1' else
 			ipv4da_data     when     ipv4da_act='1' else
 			ipv4pyltx_data;
