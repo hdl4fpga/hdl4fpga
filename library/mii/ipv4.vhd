@@ -505,15 +505,14 @@ begin
 
 		chksum_b : block
 
-			signal chksum_init      : std_logic_vector(0 to 16-1);
-			alias  chksum_frm       : std_logic is ipv4_frm;
-			signal chksum_irdy      : std_logic;
-			signal ipv4hdr_data     : std_logic_vector(ipv4rx_data'range);
-			signal decode_irdy      : std_logic;
-			signal adjlen_act       : std_logic;
-			signal spa_act          : std_logic;
-			signal spa_data         : std_logic_vector(ipv4rx_data'range);
-
+			signal chksum_init  : std_logic_vector(0 to 16-1);
+			alias  chksum_frm   : std_logic is ipv4_frm;
+			signal chksum_irdy  : std_logic;
+			signal ipv4hdr_data : std_logic_vector(ipv4rx_data'range);
+			signal decode_irdy  : std_logic;
+			signal adjlen_act   : std_logic;
+			signal spa_act      : std_logic;
+			signal spa_data     : std_logic_vector(ipv4rx_data'range);
 
 		begin
 
