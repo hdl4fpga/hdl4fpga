@@ -297,9 +297,16 @@ begin
 	end block;
 
 	tx_b : block
+		signal ipv4pyltx_frm  : std_logic;
+		signal ipv4pyltx_irdy : std_logic;
+		signal ipv4pyltx_trdy : std_logic;
+
 		signal gntd : std_logic_vector(0 to 2-1) := (others => '0');
-		alias  icmp_gntd is gntd(0);
-		alias  udp_gntd  is gntd(1);
+		alias  icmp_gntd   is gntd(0);
+		alias  udp_gntd    is gntd(1);
+		alias  buffer_frm  is ipv4pyltx_frm;
+		signal buffer_irdy : std_logic;
+		signal buffer_trdy : std_logic;
 
 		constant header_frame : string := compact('{'                     &
 			"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
@@ -308,9 +315,23 @@ begin
 			"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & '}');
 
 		signal header_frms  : std_logic_vector(0 to length(header_frame));
-		signal header_trdys : std_logic_vector(0 to length(header_frame));
-		alias length_frm is header_frms(1);
+		signal header_acts  : std_logic_vector(header_frms'range);
+		signal header_irdys : std_logic_vector(header_frms'range);
+		signal header_trdys : std_logic_vector(header_frms'range);
+		signal header_fins  : std_logic_vector(header_frms'range);
 
+		alias tha_act     is header_acts(0);
+		alias length_act  is header_acts(1);
+		alias length_frm  is header_frms(1);
+		alias length_irdy is header_irdys(1);
+		signal adjlen_data : std_logic_vector(ipv4tx_data'range);
+		alias da_frm      is header_frms(2);
+		alias da_irdy     is header_irdys(2);
+		alias da_act      is header_acts(2);
+
+		constant ipv4hdr_size   : natural := hdo(frames)**".format.ipv4.length";
+		constant ipv4hdr_length : natural := summation(hdo(frames)**".format.ipv4")/8;
+		constant ipv4hdr_value  : std_logic_vector := std_logic_vector(to_unsigned(ipv4hdr_length, ipv4hdr_size));
 		constant verihltos_length : natural :=  -- latticesemi Expecting constant string
 			hdo(frames)**".format.mac.type"     +
 			hdo(frames)**".format.ipv4.verihl"  +
@@ -324,7 +345,7 @@ begin
 		constant ipv4_frame : string := compact('{'                              &
 				"vertos:" & verihltos_value                             & ',' & 
 				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				"  frag:" & identflgsfrgttl_value                       & ',' & 
+				" frags:" & identflgsfrgttl_value                       & ',' & 
 				" proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
 				"chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
 				"    sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
@@ -337,14 +358,25 @@ begin
 			std_logic_vector'(hdo(frames)**".data.ipv4.ttl");
 
 		signal ipv4_frms  : std_logic_vector(0 to length(ipv4_frame));
-		signal ipv4_trdys : std_logic_vector(0 to length(ipv4_frame));
+		signal ipv4_acts  : std_logic_vector(ipv4_frms'range);
+		signal ipv4_irdys : std_logic_vector(ipv4_frms'range);
+		signal ipv4_trdys : std_logic_vector(ipv4_frms'range);
 
-		alias vertos_frm is ipv4_frms(0);
-		alias frag_frm   is ipv4_frms(2);
+		alias ipv4_frm    is header_fins(0);
+		alias vertos_act  is ipv4_acts(0);
+		alias vertos_irdy is ipv4_irdys(0);
+		alias frags_act   is ipv4_acts(2);
+		alias frags_irdy  is ipv4_irdys(2);
+		alias ipv4sa_frm  is ipv4_frms(4);
+		alias ipv4sa_irdy is ipv4_irdys(4);
+		signal ipv4sa_data : std_logic_vector(ipv4tx_data'range);
+		alias ipv4da_frm  is ipv4_frms(5);
+		alias ipv4da_irdy is ipv4_irdys(5);
+		signal ipv4da_data : std_logic_vector(ipv4tx_data'range);
 
-		alias  rom_frm   : std_logic is decode_frm;
+		alias  rom_frm   is ipv4_frm;
 		signal rom_irdy  : std_logic;
-		signal rom_data  : std_logic_vector(ipv4rx_data'range);
+		signal rom_data  : std_logic_vector(ipv4tx_data'range);
 
 	begin
 
@@ -369,11 +401,11 @@ begin
 		ipv4pyltx_frm  <= icmptx_frm;
 		ipv4pyltx_irdy <= icmptx_irdy;
 		ipv4pyltx_trdy <= 
-			buffer_trdy when             tha_act='1' else
-			'1'         when          length_act='1' else 
-			'1'         when              da_act='1' else 
-			'0'         when       verihltos_act='1' else
-			'0'         when identflgsfrgttl_act='1' else
+			buffer_trdy when    tha_act='1' else
+			'1'         when length_act='1' else 
+			'1'         when     da_act='1' else 
+			'0'         when vertos_act='1' else
+			'0'         when  frags_act='1' else
 			buffer_trdy;
 		ipv4pyltx_data <= icmptx_data;
 
@@ -382,12 +414,12 @@ begin
 			frame => header_frame,
 			size  => ipv4tx_data'length)
 		port map (
-			clk      => miitx_clk,
-			frm      => ipv4pyltx_frm,
-			irdy     => decode_irdy,
-			frms(0)  => header_frms,
-			irdys(0) => header_irdys,
-			fins(0)  => header_fins);
+			clk   => miitx_clk,
+			frm   => ipv4pyltx_frm,
+			irdy  => ipv4pyltx_irdy,
+			acts  => header_acts,
+			irdys => header_irdys,
+			fins  => header_fins);
 
 		miiadjlen_i : entity hdl4fpga.mii_adjlen
 		generic map (
@@ -437,7 +469,6 @@ begin
 			clk   => miitx_clk,
 			frm   => ipv4_frm,
 			irdy  => ipv4_irdy,
-			trdy  => ipv4_trdy,
 			frms  => ipv4_frms,
 			trdys => ipv4_trdys);
 
@@ -455,9 +486,6 @@ begin
 			so_data => rom_data);
 
 		chksum_b : block
-			constant ipv4hdr_size   : natural := hdo(frames)**".format.ipv4.length";
-			constant ipv4hdr_length : natural := summation(hdo(frames)**".format.ipv4")/8;
-			constant ipv4hdr_value  : std_logic_vector := std_logic_vector(to_unsigned(ipv4hdr_length, ipv4hdr_size));
 
 			alias  chksum_frm       : std_logic is tha_fin(0);
 			signal chksum_irdy      : std_logic;
@@ -543,31 +571,25 @@ begin
 			da_data         when     ipv4da_act='1' else
 			ipv4pyltx_data;
 
-		buffer_b : block
-			signal buffer_frm  : std_logic;
-			signal buffer_irdy : std_logic;
-		begin
-			buffer_frm  <= ipv4pyltx_frm;
-			buffer_irdy <= 
-				ipv4pyltx_irdy when icmp_gntd='1' else
-				ipv4pyltx_irdy or rom_irdy;
+		buffer_irdy <= 
+			ipv4pyltx_irdy when icmp_gntd='1' else
+			ipv4pyltx_irdy or rom_irdy;
 
-			buffer_i : entity hdl4fpga.mii_buffer
-			generic map (
-				latency => 12)
-			port map (
-				src_clk  => miitx_clk,
-				src_frm  => buffer_frm,
-				src_irdy => buffer_irdy,
-				src_trdy => buffer_trdy,
-				src_data => decode_data,
-				dst_clk  => miitx_clk,
-				dst_frm  => ipv4tx_frm,
-				dst_irdy => ipv4tx_irdy,
-				dst_trdy => ipv4tx_trdy,
-				dst_data => ipv4tx_data);
+		buffer_i : entity hdl4fpga.mii_buffer
+		generic map (
+			latency => 12)
+		port map (
+			src_clk  => miitx_clk,
+			src_frm  => buffer_frm,
+			src_irdy => buffer_irdy,
+			src_trdy => buffer_trdy,
+			src_data => decode_data,
+			dst_clk  => miitx_clk,
+			dst_frm  => ipv4tx_frm,
+			dst_irdy => ipv4tx_irdy,
+			dst_trdy => ipv4tx_trdy,
+			dst_data => ipv4tx_data);
 
-		end block;
 	end block;
 
 	icmpd_i : entity hdl4fpga.icmpd
