@@ -102,9 +102,4 @@ begin
 
 	crc_equ <= '1' when crc_rem=x"38fb2284" else '0';
 
-	da_irdy  <= dll_irdy; -- and  da_frm;
-	sa_irdy  <= dll_irdy; -- and  sa_frm;
-	typ_irdy <= dll_irdy; -- and typ_frm;
-	pyl_irdy <= dll_irdy; -- and pyl_frm;
-
 end;
