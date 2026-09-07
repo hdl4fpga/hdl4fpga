@@ -382,11 +382,12 @@ begin
 		alias ipv4proto_act   is ipv4_acts(3);
 		alias ipv4proto_frm   is ipv4_frms(3);
 		alias ipv4proto_irdy  is ipv4_irdys(3);
+		signal ipv4proto_init  : std_logic_vector(0 to hdo(frames)**".format.ipv4.proto"-1);
 		signal ipv4proto_data  : std_logic_vector(ipv4tx_data'range);
-		alias chksum_act      is ipv4_acts(4);
-		alias chksum_frm      is ipv4_frms(4);
-		alias chksum_irdy     is ipv4_irdys(4);
-		signal chksum_data     : std_logic_vector(ipv4tx_data'range);
+		alias ipv4chksum_act  is ipv4_acts(4);
+		alias ipv4chksum_frm  is ipv4_frms(4);
+		alias ipv4chksum_irdy is ipv4_irdys(4);
+		signal ipv4chksum_data : std_logic_vector(ipv4tx_data'range);
 		alias ipv4sa_act      is ipv4_acts(5);
 		alias ipv4sa_frm      is ipv4_frms(5);
 		alias ipv4sa_irdy     is ipv4_irdys(5);
@@ -543,12 +544,24 @@ begin
 			so_trdy => open,
 			so_data => rom_data);
 
+		ipv4proto_init <=
+			reverse(hdo(frames)**".data.ipv4.proto.icmp",8) when icmp_gntd='1' else
+			reverse(hdo(frames)**".data.ipv4.proto.udp", 8);
+
+		proto_e : entity hdl4fpga.sio_mux
+		port map (
+			mux_data => ipv4proto_init,
+			sio_clk  => miitx_clk,
+			sio_frm  => ipv4proto_frm,
+			sio_irdy => ipv4proto_irdy,
+			so_data  => ipv4proto_data);
+
 		chksum_b : block
 
-			signal chksum_init : std_logic_vector(0 to 16-1);
+			signal chksum_init : std_logic_vector(0 to hdo(frames)**".format.ipv4.chksum"-1);
 			signal chksum_irdy : std_logic;
+			signal chksum_data : std_logic_vector(ipv4rx_data'range);
 			signal sa_data     : std_logic_vector(ipv4rx_data'range);
-			signal si_data     : std_logic_vector(ipv4rx_data'range);
 
 		begin
 
@@ -586,7 +599,7 @@ begin
 					16);
 
 			chksum_irdy <= da_irdy or al_irdy or sa_irdy;
-			si_data <=
+			chksum_data <=
 				ipv4length_data when al_act='1' else
 				sa_data         when sa_act='1' else
 				ipv4pyltx_data;
@@ -597,20 +610,21 @@ begin
 				init    => chksum_init,
 				frm     => ipv4_frm,
 				irdy    => chksum_irdy,
-				si_data => si_data,
-				so_data => chksum_data);
+				so_irdy => ipv4chksum_irdy,
+				si_data => chksum_data,
+				so_data => ipv4chksum_data);
 
 		end block;
 
 		buffer_data <= 
-			ipv4pyltx_data  when        tha_act='1' else
-			rom_data        when     vertos_act='1' else
-			ipv4length_data when ipv4length_act='1' else
-			rom_data        when      frags_act='1' else
-			ipv4proto_data  when  ipv4proto_act='1' else
-			not chksum_data when     chksum_act='1' else
-			ipv4sa_data     when     ipv4sa_act='1' else
-			ipv4da_data     when     ipv4da_act='1' else
+			ipv4pyltx_data      when        tha_act='1' else
+			rom_data            when     vertos_act='1' else
+			ipv4length_data     when ipv4length_act='1' else
+			rom_data            when      frags_act='1' else
+			ipv4proto_data      when  ipv4proto_act='1' else
+			not ipv4chksum_data when ipv4chksum_act='1' else
+			ipv4sa_data         when     ipv4sa_act='1' else
+			ipv4da_data         when     ipv4da_act='1' else
 			ipv4pyltx_data;
 
 		buffer_irdy <= 
