@@ -33,17 +33,19 @@ entity mii_adjlen is
 		init    : in  std_logic_vector;
 		frm     : in  std_logic;
 		irdy    : in  std_logic;
-		trdy    : buffer std_logic := '1';
+		trdy    : buffer std_logic;
 		si_cy   : in  std_logic    := '0';
 		si_data : in  std_logic_vector;
 		so_irdy : in  std_logic := '0';
-		so_trdy : buffer std_logic := '1';
+		so_trdy : buffer std_logic;
 		so_data : out std_logic_vector;
 		so_cy   : out std_logic);
 end;
 
 architecture def of mii_adjlen is
 begin
+	trdy    <= '1';
+	so_trdy <= '1';
 	process (clk)
 		variable value : unsigned(0 to init'length-1);
 		alias  miib is value(0 to si_data'length-1);

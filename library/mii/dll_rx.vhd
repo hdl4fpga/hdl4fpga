@@ -57,24 +57,30 @@ entity dll_rx is
 end;
 
 architecture def of dll_rx is
-	signal irdy : std_logic;
-	signal framedecode_trdy : std_logic;
+	constant dllrx_frame : string := hdo(frames)**".format.mac";
+	signal dllrx_acts  : std_logic_vector(0 to length(dllrx_frame));
+	signal dllrx_frms  : std_logic_vector(dllrx_acts'range);
+	signal dllrx_irdys : std_logic_vector(dllrx_acts'range);
+	signal dllrx_trdys : std_logic_vector(dllrx_acts'range) := (others => '1');
+
 begin
 
-	irdy <= dll_irdy and dll_trdy;
+	dllrx_trdys <= (da_trdy, sa_trdy, typ_trdy, pyl_trdy);
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
-		frame => hdo(frames)**".format.mac",
+		frame => dllrx_frame,
 		size  => dll_data'length)
 	port map (
-		clk    => mii_clk,
-		frm    => dll_frm,
-		irdy   => irdy,
-		trdy   => framedecode_trdy,
-		frms(0) => da_frm,
-		frms(1) => sa_frm,
-		frms(2) => typ_frm,
-		frms(3) => pyl_frm);
+		clk   => mii_clk,
+		frm   => dll_frm,
+		irdy  => dll_irdy,
+		acts  => dllrx_acts,
+		frms  => dllrx_frms,
+		irdys => dllrx_irdys,
+		trdys => dllrx_trdys);
+	(da_frm,  sa_frm,  typ_frm,  pyl_frm)  <= dllrx_frms;
+	(da_irdy, sa_irdy, typ_irdy, pyl_irdy) <= dllrx_irdys;
+
 
 	crc_i : entity hdl4fpga.crc
 	port map (
@@ -95,13 +101,6 @@ begin
 	end process;
 
 	crc_equ <= '1' when crc_rem=x"38fb2284" else '0';
-
-	dll_trdy <=
-		da_trdy  when  da_frm='1' else
-		sa_trdy  when  sa_frm='1' else
-		typ_trdy when typ_frm='1' else
-		pyl_trdy when pyl_frm='1' else
-		'0';
 
 	da_irdy  <= dll_irdy; -- and  da_frm;
 	sa_irdy  <= dll_irdy; -- and  sa_frm;

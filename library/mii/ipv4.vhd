@@ -117,16 +117,6 @@ architecture def of ipv4 is
 
 begin
 	rx_b : block
-		signal length_frm : std_logic;
-		signal proto_frm  : std_logic;
-		alias  proto_irdy is ipv4rx_irdy;
-		signal spa_frm    : std_logic;
-		signal ipv4da_frm : std_logic;
-		alias  ipv4da_irdy is ipv4rx_irdy;
-		signal pyl_frm    : std_logic;
-		signal discard0   : std_logic;
-		signal discard2   : std_logic;
-		signal chksum     : std_logic;
 		constant discard0_length : natural := -- latticesemi : Expecting constant string
 			hdo(frames)**".format.ipv4.verihl" +
 			hdo(frames)**".format.ipv4.tos";
@@ -136,30 +126,43 @@ begin
 			hdo(frames)**".format.ipv4.flgsfrg" +
 			hdo(frames)**".format.ipv4.ttl";
 		constant discard1_value  : string := natural'image(discard1_length); -- latticesemi : Expecting constant string
+		constant ipv4rx_frame : string := compact('{'                           &
+			"discard0:" & discard0_value                              & ',' &
+			"  length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+			"discard1:" & discard1_value                              & ',' &
+			"   proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
+			"  chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
+			"      sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
+			"      da:" & string'(hdo(frames)**".format.ipv4.da")     & '}');
+		signal ipv4rx_acts  : std_logic_vector(0 to length(ipv4rx_frame));
+		signal ipv4rx_frms  : std_logic_vector(ipv4rx_acts'range);
+		signal ipv4rx_irdys : std_logic_vector(ipv4rx_acts'range);
+		signal ipv4rx_trdys : std_logic_vector(ipv4rx_acts'range) := (others => '1');
+
+		alias length_frm  is ipv4rx_frms(1);
+		alias proto_frm   is ipv4rx_frms(3);
+		alias chksum_frm  is ipv4rx_frms(4);
+		alias spa_frm     is ipv4rx_frms(5);
+		alias ipv4da_frm  is ipv4rx_frms(6);
+		alias length_irdy is ipv4rx_irdys(1);
+		alias proto_irdy  is ipv4rx_irdys(3);
+		alias chksum_irdy is ipv4rx_irdys(4);
+		alias spa_irdy    is ipv4rx_irdys(5);
+		alias ipv4da_irdy is ipv4rx_irdys(6);
+
 	begin
 		ipv4_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                                                  &
-				"discard0:" & discard0_value                              & ',' &
-				"  length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				"discard1:" & discard1_value                              & ',' &
-				"   proto:" & string'(hdo(frames)**".format.ipv4.proto")  & ',' &
-				"  chksum:" & string'(hdo(frames)**".format.ipv4.chksum") & ',' &
-				"      sa:" & string'(hdo(frames)**".format.ipv4.sa")     & ',' &
-				"      da:" & string'(hdo(frames)**".format.ipv4.da")     & '}'),
+			frame => ipv4rx_frame,
 			size  => ipv4rx_data'length)
 		port map (
 			clk    => miirx_clk,
 			frm    => ipv4rx_frm,
 			irdy   => ipv4rx_irdy,
-			frms(0) => discard0,
-			frms(1) => length_frm,
-			frms(2) => discard2,
-			frms(3) => proto_frm,
-			frms(4) => chksum,
-			frms(5) => spa_frm,
-			frms(6) => ipv4da_frm,
-			frms(7) => pyl_frm);
+			acts   => ipv4rx_acts,
+			frms   => ipv4rx_frms,
+			irdys  => ipv4rx_irdys,
+			trdys  => ipv4rx_trdys);
 
 		process (miirx_clk)
 		begin
@@ -168,7 +171,7 @@ begin
 				tha1rx_irdy   <= sharx_irdy;
 				ipv4lenrx_frm <= length_frm;
 				sparx_frm     <= spa_frm;
-				sparx_irdy    <= ipv4rx_irdy;
+				sparx_irdy    <= spa_irdy;
 			end if;
 		end process;
 
@@ -482,8 +485,8 @@ begin
 			init    => adjlen_init,
 			frm     => ipv4_frm,
 			irdy    => length_irdy,
-			so_irdy => adjlen_irdy,
 			si_data => ipv4pyltx_data,
+			so_irdy => adjlen_irdy,
 			so_data => ipv4length_data);
 
 		sa_i : entity hdl4fpga.sio_ram
@@ -582,21 +585,14 @@ begin
  
 			chksum_init <= 
 				chksum1(
-					reverse(
-						reverse(
-							ipv4hdr_bitdata & 
-							std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp"), 
-							natural'(hdo(frames)**".format.ipv4.chksum")),
-						8),
-					16) when icmp_gntd='1' else
+					ipv4hdr_bitdata & 
+					std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp"), 
+					natural'(hdo(frames)**".format.ipv4.chksum")) when icmp_gntd='1' else
 				chksum1(
-					reverse(
-						reverse(
-							ipv4hdr_bitdata & 
-							std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp") & 
-							ipv4hdr_value ,  natural'(hdo(frames)**".format.ipv4.chksum")),
-						8), 
-					16);
+					ipv4hdr_bitdata & 
+					std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp") & 
+					ipv4hdr_value,  
+					natural'(hdo(frames)**".format.ipv4.chksum"));
 
 			chksum_irdy <= da_irdy or al_irdy or sa_irdy;
 			chksum_data <=
@@ -610,8 +606,8 @@ begin
 				init    => chksum_init,
 				frm     => ipv4_frm,
 				irdy    => chksum_irdy,
-				so_irdy => ipv4chksum_irdy,
 				si_data => chksum_data,
+				so_irdy => ipv4chksum_irdy,
 				so_data => ipv4chksum_data);
 
 		end block;

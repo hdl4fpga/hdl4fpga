@@ -42,7 +42,7 @@ entity icmpd is
 
 		ipv4lenrx_frm  : in  std_logic;
 		ipv4lenrx_irdy : in  std_logic;
-		ipv4lenrx_trdy : buffer std_logic := '1';
+		ipv4lenrx_trdy : buffer std_logic;
 
 		icmprx_frm  : in  std_logic;
 		icmprx_irdy : in  std_logic;
@@ -67,33 +67,48 @@ architecture def of icmpd is
 	signal tx_data : std_logic_vector(icmptx_data'range);
 begin
 
+	sharx_trdy     <= '1';
+	ipv4lenrx_trdy <= '1';
+	icmprx_trdy    <= '1';
+
 	rqst_b : block
-		signal type_frm    : std_logic;
-		signal code_frm    : std_logic;
-		signal chksum_frm  : std_logic;
-		signal pyl_frm     : std_logic;
-		signal rom_frm     : std_logic;
-		alias  rom_irdy is icmprx_irdy;
-		signal rom_data    : std_logic_vector(icmprx_data'range);
+		constant icmp_frame : string := compact('{'                                    &
+				"  type:" & string'(hdo(frames)**".format.icmp.type")   & ',' &
+				"  code:" & string'(hdo(frames)**".format.icmp.code")   & ',' &
+				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}');
+
+		signal icmp_acts  : std_logic_vector(0 to length(icmp_frame));
+		signal icmp_frms  : std_logic_vector(icmp_acts'range);
+		signal icmp_irdys : std_logic_vector(icmp_acts'range);
+		signal icmp_trdys : std_logic_vector(icmp_acts'range);
+		alias type_act    is icmp_acts(0);
+		alias type_frm    is icmp_frms(0);
+		alias type_irdy   is icmp_irdys(0);
+		alias code_act    is icmp_acts(1);
+		alias code_frm    is icmp_frms(1);
+		alias code_irdy   is icmp_irdys(1);
+		alias chksum_act  is icmp_acts(2);
+		alias chksum_frm  is icmp_frms(2);
+		alias chksum_irdy is icmp_irdys(2);
 		signal chksum_data : std_logic_vector(icmprx_data'range);
+		signal rom_irdy    : std_logic;
+		signal rom_data    : std_logic_vector(icmprx_data'range);
 	begin
 		icmprx_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                                              &
-				"  type:" & string'(hdo(frames)**".format.icmp.type")   & ',' &
-				"  code:" & string'(hdo(frames)**".format.icmp.code")   & ',' &
-				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}'),
+			frame => icmp_frame,
 			size  => icmprx_data'length)
 		port map (
-			clk     => miirx_clk,
-			frm     => icmprx_frm,
-			irdy    => icmprx_irdy,
-			frms(0) => type_frm,
-			frms(1) => code_frm,
-			frms(2) => chksum_frm,
-			frms(3) => pyl_frm);
+			clk   => miirx_clk,
+			frm   => icmprx_frm,
+			irdy  => icmprx_irdy,
+			acts  => icmp_acts,
+			frms  => icmp_frms,
+			irdys => icmp_irdys,
+			trdys => icmp_trdys);
+		icmp_trdys <= (others => rx_trdy);
 
-		rom_frm <= type_frm or code_frm;
+		rom_irdy <= type_irdy or code_irdy;
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => 
@@ -101,63 +116,41 @@ begin
 				std_logic_vector'(hdo(frames)**".data.icmp.reply.code"))
 		port map (
 			so_clk  => miirx_clk,
-			so_frm  => rom_frm,
+			so_frm  => icmprx_frm,
 			so_irdy => rom_irdy,
 			so_trdy => open,
 			so_data => rom_data);
 
-		chksump_p : process (icmprx_frm, miirx_clk)
-			variable cy   : std_logic;
-			variable sum  : unsigned(0 to icmprx_data'length+1);
-			variable op1  : unsigned(sum'range);
-			variable op2  : unsigned(sum'range);
-			variable diff : unsigned(0 to hdo(frames)**".format.icmp.chksum"-1);
-		begin
-			if rising_edge(miirx_clk) then
-				if icmprx_frm='1' then
-					if (chksum_frm and icmprx_irdy)='1' then
-						op1  := unsigned('0' & reverse(icmprx_data) & '1');
-						op2  := unsigned('0' & reverse(diff(0 to icmprx_data'length-1)) & cy);
-						sum  := op1 + op2;
-						cy   := sum(0);
-						diff := rotate_left(diff, icmprx_data'length);
-					end if;
-				else
-					cy   := '0';
-					diff :=
-						reverse((hdo(frames)**".data.icmp.rqst.type")) &
-						reverse((hdo(frames)**".data.icmp.rqst.code"));
-				end if;
-
-				if (chksum_frm and icmprx_irdy)='1' then
-					chksum_data <= std_logic_vector(reverse(sum(1 to icmprx_data'length)));
-				end if;
-			end if;
-		end process;
+		miiadjlen_i : entity hdl4fpga.mii_adjlen
+		port map (
+			clk     => miitx_clk,
+			init    => 
+				std_logic_vector'(hdo(frames)**".data.icmp.rqst.type") & 
+				std_logic_vector'(hdo(frames)**".data.icmp.rqst.code"),
+			frm     => icmprx_frm,
+			irdy    => chksum_irdy,
+			si_data => icmprx_data,
+			so_irdy => '0',
+			so_data => chksum_data);
 
 		process (miirx_clk)
 			variable shr_irdy : std_logic;
 			variable shr_data : std_logic_vector(icmprx_data'range);
 		begin
 			if rising_edge(miirx_clk) then
-				if chksum_frm='1' then
-					rx_data <= chksum_data;
-				else
-					rx_data <= shr_data;
-				end if;
-				rx_irdy <= shr_irdy;
-				if (type_frm or code_frm)='1' then
+				rx_data <= shr_data;
+				if (type_act or code_act)='1' then
 					shr_data := rom_data;
+				elsif chksum_act='1' then
+					shr_data := chksum_data;
 				else
 					shr_data := icmprx_data;
 				end if;
+				rx_irdy <= shr_irdy;
 				if icmprx_frm='1' then
 					shr_irdy := icmprx_irdy;
 				else
-					shr_irdy := 
-						(sharx_frm     and sharx_irdy) or
-						(ipv4lenrx_frm and ipv4lenrx_irdy) or
-						(sparx_frm     and sparx_irdy);
+					shr_irdy := sharx_irdy or ipv4lenrx_irdy or sparx_irdy;
 				end if;
 			end if;
 		end process;

@@ -195,8 +195,14 @@ begin
 					"da:192.168.0.14},"                    &
 				  "type:0x08,"                             &
 				  "code:0x00,"                             & 
-				"chksum:0x0000,"                           &
-				"extn:0x00000000}}";
+				"chksum:0xebc7,"                           &
+				"extn:0x39720003,"                         &
+				"data:0x"                                  &
+					"d7189f6a00000000946c090000000000"     &
+				    "101112131415161718191a1b1c1d1e1f"     &
+					"202122232425262728292a2b2c2d2e2f"     &
+					"3031323334353637}}";
+
 	begin
 		tbipoe_e : entity work.tb_ipoe
 		generic map(
