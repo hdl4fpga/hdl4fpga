@@ -325,10 +325,9 @@ begin
 			(udptx_data'range => '0');
 
 		miiadjlen_i : entity hdl4fpga.mii_adjlen
-		generic map (
-			diff => udphdr_value)
 		port map (
 			clk     => miitx_clk,
+			init    => udphdr_value,
 			frm     => pyltx_frm,
 			irdy    => adjlen_irdy,
 			trdy    => adjlen_trdy,

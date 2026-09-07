@@ -28,21 +28,24 @@ use hdl4fpga.base.all;
 use hdl4fpga.ipoepkg.all;
 
 entity mii_adjlen is
-	generic (
-		diff : std_logic_vector);
 	port (
 		clk     : in  std_logic;
+		init    : in  std_logic_vector;
 		frm     : in  std_logic;
 		irdy    : in  std_logic;
 		trdy    : buffer std_logic := '1';
+		si_cy   : in  std_logic    := '0';
 		si_data : in  std_logic_vector;
-		so_data : out std_logic_vector);
+		so_irdy : in  std_logic := '0';
+		so_trdy : buffer std_logic := '1';
+		so_data : out std_logic_vector;
+		so_cy   : out std_logic);
 end;
 
 architecture def of mii_adjlen is
 begin
 	process (clk)
-		variable value : unsigned(0 to diff'length-1);
+		variable value : unsigned(0 to init'length-1);
 		alias  miib is value(0 to si_data'length-1);
 		variable sum : unsigned(0 to si_data'length+1);
 		alias    cy  is sum(0);
@@ -65,6 +68,19 @@ begin
 							active := '1';
 						end if;
 					end if;
+				elsif so_irdy='1' then
+					if so_trdy='1' then
+						op1   := '0' & (so_data'range => '0') & '1';
+						op2   := unsigned('0' & reverse(miib)          &  cy);
+						sum   := op1 + op2;
+						miib  := reverse(sum(1 to so_data'length));
+						value := rotate_left(value, so_data'length);
+						if frm='0' then
+							active := '0';
+						else
+							active := '1';
+						end if;
+					end if;
 				elsif frm='0' then
 					active := '0';
 				else
@@ -74,10 +90,11 @@ begin
 				active := '0';
 			end if;
 			if active='0' then
-				value := unsigned(reverse(diff,8));
-				cy    := '0';
+				value := unsigned(reverse(init,8));
+				cy    := si_cy;
 			end if;
 		end if;
 		so_data <= std_logic_vector(reverse(reverse(miib) + sum(0 to 0)));
+		so_cy   <= sum(0);
 	end process;
 end;

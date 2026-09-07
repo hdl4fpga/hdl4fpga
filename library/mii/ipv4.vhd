@@ -320,7 +320,6 @@ begin
 		alias length_act  is header_acts(1);
 		alias length_frm  is header_frms(1);
 		alias length_irdy is header_irdys(1);
-		signal adjlen_data : std_logic_vector(ipv4tx_data'range);
 		alias da_frm      is header_frms(2);
 		alias da_irdy     is header_irdys(2);
 		alias da_act      is header_acts(2);
@@ -358,6 +357,9 @@ begin
 		signal ipv4_acts  : std_logic_vector(ipv4_frms'range);
 		signal ipv4_irdys : std_logic_vector(ipv4_frms'range);
 		signal ipv4_trdys : std_logic_vector(ipv4_frms'range);
+
+		signal adjlen_irdy    : std_logic;
+		signal adjlen_init    : std_logic_vector(0 to ipv4hdr_size-1);
 
 		alias ipv4_act        is header_fins(0);
 		alias ipv4_frm        is header_fins(0);
@@ -397,6 +399,7 @@ begin
 		signal buffer_trdy     : std_logic;
 		signal buffer_data     : std_logic_vector(ipv4tx_data'range);
 
+			signal q : std_logic := '0';
 	begin
 
 --		arbiter_i : entity hdl4fpga.mii_arbiter
@@ -435,22 +438,22 @@ begin
 
 		process (miitx_clk)
 			variable cntr : natural range 0 to 4;
-			variable q : std_logic := '0';
 		begin
 			if rising_edge(miitx_clk) then
 				if ipv4pyltx_frm='1' then
 					cntr := cntr + ipv4tx_data'length;
 					if cntr=4 then
 						cntr := 0;
-						q:='1';
+						q<='1';
 					else
-						q:='0';
+						q<='0';
 					end if;
 				else
 					cntr := ipv4tx_data'length;
 				end if;
 			end if;
 		end process;
+
 		header_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => header_frame,
@@ -464,15 +467,16 @@ begin
 			irdys => header_irdys,
 			fins  => header_fins);
 
+		adjlen_init <= ipv4hdr_value when icmp_gntd='0' else (others => '0');
+		adjlen_irdy <= length_irdy or ipv4length_irdy;
 		miiadjlen_i : entity hdl4fpga.mii_adjlen
-		generic map (
-			diff => ipv4hdr_value)
 		port map (
 			clk     => miitx_clk,
-			frm     => length_frm,
-			irdy    => length_irdy,
+			init    => adjlen_init,
+			frm     => ipv4_frm,
+			irdy    => adjlen_irdy,
 			si_data => ipv4pyltx_data,
-			so_data => adjlen_data);
+			so_data => ipv4length_data);
 
 		sa_i : entity hdl4fpga.sio_ram
 		generic map (
