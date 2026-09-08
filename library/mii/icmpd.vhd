@@ -142,11 +142,13 @@ begin
 			variable shr_data : unsigned(0 to 16-1);
 		begin
 			if rising_edge(miirx_clk) then
-				rx_data <= std_logic_vector(shr_data(rx_data'range));
+				if icmpchksum_irdy='1' then
+					rx_data <= chksum_data;
+				else
+					rx_data <= std_logic_vector(shr_data(rx_data'range));
+				end if;
 				if (type_act or code_act)='1' then
 					shr_data(rx_data'range) := unsigned(rom_data);
-				elsif icmpchksum_irdy='1' then
-					rx_data  <= chksum_data;
 				else
 					shr_data(rx_data'range) := unsigned(icmprx_data);
 				end if;
@@ -173,16 +175,16 @@ begin
 		begin
 			if rising_edge(miirx_clk) then
 				if rx_frm='1' then
-					mode <= "10";
+					mode <= "10"; -- fifo commit
 				else
 					case state is
 					when s_flush =>
 						if sharx_frm='1' then
-							mode  <= "00";
+							mode  <= "00"; -- fifo flush
 							state := s_queue;
 						end if;
 					when s_queue =>
-						mode <= "11";
+						mode <= "11"; --fifo queue
 						if sharx_frm='0' then
 							state := s_flush;
 						end if;
