@@ -63,8 +63,6 @@ architecture def of dhcpcd is
 begin
 
 	offer_b : block
-		signal discard0 : std_logic;
-		signal discard2 : std_logic;
 		constant discard0_length : natural :=  -- Lattice Semi error
 			hdo(frames)**".format.dhcp.op"      +
 			hdo(frames)**".format.dhcp.htype"   +
@@ -75,23 +73,28 @@ begin
 			hdo(frames)**".format.dhcp.flags"   +
 			hdo(frames)**".format.dhcp.ciaddr";
 		constant discard0_value : string := natural'image(discard0_length);  -- Lattice Semi error
+		constant dhcpoffer_frame : string := compact('{'                        &
+				"discard0:" & discard0_value                              & ',' &
+				"  yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}');
+		signal dhcpoffer_acts  : std_logic_vector(0 to length(dhcpoffer_frame));
+		signal dhcpoffer_frms  : std_logic_vector(dhcpoffer_acts'range);
+		signal dhcpoffer_irdys : std_logic_vector(dhcpoffer_acts'range);
+		signal dhcpoffer_trdys : std_logic_vector(dhcpoffer_acts'range);
 
-		signal framedecode_trdy : std_logic;
 	begin
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'                                          &
-				"discard0:" & discard0_value                              & ',' &
-				"  yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}'),
+			frame => dhcpoffer_frame,
 			size  => dhcpcdtx_data'length)
 		port map (
 			clk    => miirx_clk,
 			frm    => dhcpcdrx_frm,
 			irdy   => dhcpcdrx_irdy,
-			trdy   => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
-			frms(0) => discard0,
-			frms(1) => yiaddr_act,
-			frms(2) => discard2);
+			acts   => dhcpoffer_acts,
+			frms   => dhcpoffer_frms,
+			irdys  => dhcpoffer_irdys,
+			trdys  => dhcpoffer_trdys);
+		yiaddr_act <= dhcpoffer_acts(1);
 		
 		process (miirx_clk)
 			variable refresh_req : std_logic := '0';
@@ -132,17 +135,6 @@ begin
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.vendordata") &
 				std_logic_vector'(hdo(frames)**".data.dhcp.discover.iprequest")  &
 				std_logic_vector'(hdo(frames)**".data.dhcp.endmark"), 16);
-		signal decode_frm  : std_logic := '0';
-		signal decode_irdy : std_logic;
-		signal decode_last : std_logic;
-		signal rom0_act    : std_logic;
-		signal rom2_act    : std_logic;
-		signal rom4_act    : std_logic;
-		signal rom_irdy    : std_logic;
-		signal rom_data    : std_logic_vector(dhcpcdtx_data'range);
-		signal discard1    : std_logic;
-		signal discard3    : std_logic;
-		signal discard5    : std_logic;
 		constant rom0_length : natural :=
 			hdo(frames)**".format.mac.hwda"   +
 			hdo(frames)**".format.udp.length" +
@@ -176,54 +168,62 @@ begin
 			hdo(frames)**".format.dhcp.iprequest"  +
 			hdo(frames)**".format.dhcp.endmark";
 		constant rom2_value : string := natural'image(rom2_length);
-		signal framedecode_trdy : std_logic;
+		constant dhcpdiscover_frame : string := compact('{'                      &
+				"    rom0:" & rom0_value                                   & ',' &
+				"discard0:" & discard0_value                               & ',' &
+				"    rom1:" & string'(hdo(frames)**".format.dhcp.chaddr6") & ',' & 
+				"discard1:" & discard1_value                               & ',' & 
+				"    rom2:" & rom2_value & '}');
+		signal dhcpdiscover_acts  : std_logic_vector(0 to length(dhcpdiscover_frame ));
+		signal dhcpdiscover_frms  : std_logic_vector(dhcpdiscover_acts'range);
+		signal dhcpdiscover_irdys : std_logic_vector(dhcpdiscover_acts'range);
+		signal dhcpdiscover_trdys : std_logic_vector(dhcpdiscover_acts'range);
+
+		alias rom0_irdy is dhcpdiscover_irdys(0);
+		alias rom2_irdy is dhcpdiscover_irdys(2);
+		alias rom4_irdy is dhcpdiscover_irdys(4);
+		alias rom0_act  is dhcpdiscover_acts(0);
+		alias rom2_act  is dhcpdiscover_acts(2);
+		alias rom4_act  is dhcpdiscover_acts(4);
+
+		signal decode_frm  : std_logic;
+		signal decode_irdy : std_logic;
+		signal decode_last : std_logic;
+		signal rom_irdy    : std_logic;
+		signal rom_data    : std_logic_vector(dhcpcdtx_data'range);
 	begin
 
 		process (miitx_clk)
 		begin
 			if rising_edge(miitx_clk) then
 				if (dhcpcd_req xor dhcpcd_rdy)='1' then
-					if decode_last='0' then
-						decode_frm <= '1';
-					elsif (dhcpcdtx_irdy and not dhcpcdtx_trdy)='1' then
-						decode_frm <= '1';
-					else
-						decode_frm <= '0';
+					if (decode_last and dhcpcdtx_irdy and dhcpcdtx_trdy)='1' then
 						dhcpcd_rdy <= dhcpcd_req;
 					end if;
-				else
-					decode_frm <= '0';
 				end if;
 			end if;
 		end process;
 
-		dhcpcdtx_frm  <= decode_frm and not decode_last;
+		decode_frm    <= '1' when (dhcpcd_req xor dhcpcd_rdy)='1' else '0';
+		decode_irdy   <= decode_frm;
+		dhcpcdtx_frm  <= decode_frm;
 		dhcpcdtx_irdy <= decode_frm;
-		decode_irdy   <= dhcpcdtx_trdy when decode_frm='1' else '0';
 
+		dhcpdiscover_trdys <= (others => dhcpcdtx_trdy);
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{'             &
-				"    rom0:" & rom0_value     & ',' &
-				"discard0:" & discard0_value & ',' &
-				"    rom1:" & string'(hdo(frames)**".format.dhcp.chaddr6") & ',' & 
-				"discard1:" & discard1_value & ',' & 
-				"    rom2:" & rom2_value     & '}'),
+			frame => dhcpdiscover_frame,
 			size  => dhcpcdtx_data'length)
 		port map (
-			clk    => miitx_clk,
-			frm    => decode_frm,
-			irdy   => decode_irdy,
-			trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
-			last   => decode_last,
-			frms(0) => rom0_act,
-			frms(1) => discard1,
-			frms(2) => rom2_act,
-			frms(3) => discard3,
-			frms(4) => rom4_act,
-			frms(5) => discard5);
+			clk   => miitx_clk,
+			frm   => decode_frm,
+			irdy  => decode_irdy,
+			last  => decode_last,
+			acts  => dhcpdiscover_acts,
+			irdys => dhcpdiscover_irdys,
+			trdys => dhcpdiscover_trdys);
 		
-		rom_irdy <= (rom0_act or rom2_act or rom4_act) and dhcpcdtx_trdy when decode_frm='1' else '0';
+		rom_irdy <= (rom0_irdy or rom2_irdy or rom4_irdy) and dhcpcdtx_trdy;
 		rom_i : entity hdl4fpga.sio_rom
 		generic map (
 			bitdata => reverse(
@@ -259,7 +259,7 @@ begin
 		
 	end block;
 
-	upspa_frm  <= dhcpcdtx_irdy or yiaddr_act;
+	upspa_frm  <= dhcpcdtx_frm  or yiaddr_act;
 	upspa_irdy <= dhcpcdtx_irdy or yiaddr_act;
 	upspa_data <= 
 		dhcpcdrx_data             when    yiaddr_act='1' else
