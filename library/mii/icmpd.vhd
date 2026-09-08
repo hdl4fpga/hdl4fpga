@@ -72,41 +72,43 @@ begin
 	icmprx_trdy    <= '1';
 
 	rqst_b : block
-		constant icmp_frame : string := compact('{'                                    &
+		constant icmprx_frame : string := compact('{'                                    &
 				"  type:" & string'(hdo(frames)**".format.icmp.type")   & ',' &
 				"  code:" & string'(hdo(frames)**".format.icmp.code")   & ',' &
 				"chksum:" & string'(hdo(frames)**".format.icmp.chksum") & '}');
 
-		signal icmp_acts  : std_logic_vector(0 to length(icmp_frame));
-		signal icmp_frms  : std_logic_vector(icmp_acts'range);
-		signal icmp_irdys : std_logic_vector(icmp_acts'range);
-		signal icmp_trdys : std_logic_vector(icmp_acts'range);
-		alias type_act    is icmp_acts(0);
-		alias type_frm    is icmp_frms(0);
-		alias type_irdy   is icmp_irdys(0);
-		alias code_act    is icmp_acts(1);
-		alias code_frm    is icmp_frms(1);
-		alias code_irdy   is icmp_irdys(1);
-		alias chksum_act  is icmp_acts(2);
-		alias chksum_frm  is icmp_frms(2);
-		alias chksum_irdy is icmp_irdys(2);
+		signal icmprx_acts  : std_logic_vector(0 to length(icmprx_frame));
+		signal icmprx_frms  : std_logic_vector(icmprx_acts'range);
+		signal icmprx_irdys : std_logic_vector(icmprx_acts'range);
+		signal icmprx_trdys : std_logic_vector(icmprx_acts'range);
+		alias type_act    is icmprx_acts(0);
+		alias type_frm    is icmprx_frms(0);
+		alias type_irdy   is icmprx_irdys(0);
+		alias code_act    is icmprx_acts(1);
+		alias code_frm    is icmprx_frms(1);
+		alias code_irdy   is icmprx_irdys(1);
+		alias chksum_act  is icmprx_acts(2);
+		alias chksum_frm  is icmprx_frms(2);
+		alias chksum_irdy is icmprx_irdys(2);
 		signal chksum_data : std_logic_vector(icmprx_data'range);
+		signal icmpchksum_irdy : std_logic;
 		signal rom_irdy    : std_logic;
 		signal rom_data    : std_logic_vector(icmprx_data'range);
+		signal rx_frm : std_logic;
 	begin
 		icmprx_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => icmp_frame,
+			frame => icmprx_frame,
 			size  => icmprx_data'length)
 		port map (
 			clk   => miirx_clk,
 			frm   => icmprx_frm,
 			irdy  => icmprx_irdy,
-			acts  => icmp_acts,
-			frms  => icmp_frms,
-			irdys => icmp_irdys,
-			trdys => icmp_trdys);
-		icmp_trdys <= (others => rx_trdy);
+			acts  => icmprx_acts,
+			frms  => icmprx_frms,
+			irdys => icmprx_irdys,
+			trdys => icmprx_trdys);
+		icmprx_trdys <= (others => rx_trdy);
 
 		rom_irdy <= type_irdy or code_irdy;
 		rom_i : entity hdl4fpga.sio_rom
@@ -130,28 +132,38 @@ begin
 			frm     => icmprx_frm,
 			irdy    => chksum_irdy,
 			si_data => icmprx_data,
-			so_irdy => '0',
+			so_irdy => icmpchksum_irdy,
 			so_data => chksum_data);
 
 		process (miirx_clk)
-			variable shr_irdy : std_logic;
-			variable shr_data : std_logic_vector(icmprx_data'range);
+			variable shr_frm : unsigned(0 to 16/rx_data'length-1);
+			variable shr_chksumirdy : unsigned(0 to (16/rx_data'length-1)-1);
+			variable shr_irdy : unsigned(0 to 16/rx_data'length-1);
+			variable shr_data : unsigned(0 to 16-1);
 		begin
 			if rising_edge(miirx_clk) then
-				rx_data <= shr_data;
+				rx_data <= std_logic_vector(shr_data(rx_data'range));
 				if (type_act or code_act)='1' then
-					shr_data := rom_data;
-				elsif chksum_act='1' then
-					shr_data := chksum_data;
+					shr_data(rx_data'range) := unsigned(rom_data);
+				elsif icmpchksum_irdy='1' then
+					rx_data  <= chksum_data;
 				else
-					shr_data := icmprx_data;
+					shr_data(rx_data'range) := unsigned(icmprx_data);
 				end if;
-				rx_irdy <= shr_irdy;
+				icmpchksum_irdy <= shr_chksumirdy(0);
+				rx_frm  <= shr_frm(0);
+				rx_irdy <= shr_irdy(0);
+				shr_frm(0) := icmprx_frm;
+				shr_chksumirdy(0) := chksum_irdy;
 				if icmprx_frm='1' then
-					shr_irdy := icmprx_irdy;
+					shr_irdy(0) := icmprx_irdy;
 				else
-					shr_irdy := sharx_irdy or ipv4lenrx_irdy or sparx_irdy;
+					shr_irdy(0) := sharx_irdy or ipv4lenrx_irdy or sparx_irdy;
 				end if;
+				shr_frm  := rotate_left(shr_frm, 1);
+				shr_chksumirdy := rotate_left(shr_chksumirdy, 1);
+				shr_irdy := rotate_left(shr_irdy, 1);
+				shr_data := rotate_left(shr_data, rx_data'length);
 			end if;
 		end process;
 
@@ -160,7 +172,7 @@ begin
 			variable state : states;
 		begin
 			if rising_edge(miirx_clk) then
-				if icmprx_frm='1' then
+				if rx_frm='1' then
 					mode <= "10";
 				else
 					case state is
