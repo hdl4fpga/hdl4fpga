@@ -935,9 +935,6 @@
         <Source name="../../../library/mii/mii_adjlen.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../library/mii/mii_chksum1.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="../../../library/mii/mdio.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
