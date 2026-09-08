@@ -59,7 +59,9 @@ entity dhcpcd is
 end;
 
 architecture def of dhcpcd is
-	signal yiaddr_act : std_logic;
+	signal yiaddr_act  : std_logic;
+	signal yiaddr_frm  : std_logic;
+	signal yiaddr_irdy : std_logic;
 begin
 
 	offer_b : block
@@ -74,8 +76,8 @@ begin
 			hdo(frames)**".format.dhcp.ciaddr";
 		constant discard0_value : string := natural'image(discard0_length);  -- Lattice Semi error
 		constant dhcpoffer_frame : string := compact('{'                        &
-				"discard0:" & discard0_value                              & ',' &
-				"  yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}');
+				"discard:" & discard0_value                              & ',' &
+				" yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}');
 		signal dhcpoffer_acts  : std_logic_vector(0 to length(dhcpoffer_frame));
 		signal dhcpoffer_frms  : std_logic_vector(dhcpoffer_acts'range);
 		signal dhcpoffer_irdys : std_logic_vector(dhcpoffer_acts'range);
@@ -87,14 +89,16 @@ begin
 			frame => dhcpoffer_frame,
 			size  => dhcpcdtx_data'length)
 		port map (
-			clk    => miirx_clk,
-			frm    => dhcpcdrx_frm,
-			irdy   => dhcpcdrx_irdy,
-			acts   => dhcpoffer_acts,
-			frms   => dhcpoffer_frms,
-			irdys  => dhcpoffer_irdys,
-			trdys  => dhcpoffer_trdys);
-		yiaddr_act <= dhcpoffer_acts(1);
+			clk   => miirx_clk,
+			frm   => dhcpcdrx_frm,
+			irdy  => dhcpcdrx_irdy,
+			acts  => dhcpoffer_acts,
+			frms  => dhcpoffer_frms,
+			irdys => dhcpoffer_irdys,
+			trdys => dhcpoffer_trdys);
+		yiaddr_act  <= dhcpoffer_acts(1);
+		yiaddr_frm  <= dhcpoffer_frms(1);
+		yiaddr_irdy <= dhcpoffer_irdys(1);
 		
 		process (miirx_clk)
 			variable refresh_req : std_logic := '0';
@@ -260,7 +264,7 @@ begin
 	end block;
 
 	upspa_frm  <= dhcpcdtx_frm  or yiaddr_act;
-	upspa_irdy <= dhcpcdtx_irdy or yiaddr_act;
+	upspa_irdy <= dhcpcdtx_irdy or yiaddr_irdy;
 	upspa_data <= 
 		dhcpcdrx_data             when    yiaddr_act='1' else
 		(upspa_data'range => '0') when dhcpcdtx_irdy='1' else
