@@ -409,60 +409,41 @@ begin
 		signal buffer_trdy     : std_logic;
 		signal buffer_data     : std_logic_vector(ipv4tx_data'range);
 
-			signal q : std_logic := '0';
 	begin
 
---		arbiter_i : entity hdl4fpga.mii_arbiter
---		port map (
---			clk   => miitx_clk,
---			gntd  => gntd,
---			frms  => ipv4pyltx_frms,
---			irdys => ipv4pyltx_irdys,
---			trdys => ipv4pyltx_trdys,
---			frm   => ipv4pyltx_frm,
---			irdy  => ipv4pyltx_irdy,
---			trdy  => ipv4pyltx_trdy);
---
---		ipv4pyltx_trdy <= 
---			buffer_trdy when    tha_act='1' else
---			'1'         when length_act='1' else 
---			'1'         when     da_act='1' else 
---			'0'         when   ipv4_fin='0' else
---			buffer_trdy;
---		ipv4pyltx_data <= 
---			icmptx_data when gntd(0)='1' else
---			 udptx_data when gntd(1)='1' else
---			(ipv4pyltx_data'range => '-');
---
-		gntd <= "10";
+		arbiter_i : entity hdl4fpga.mii_arbiter
+		port map (
+			clk   => miitx_clk,
+			gntd  => gntd,
+			frms  => ipv4pyltx_frms,
+			irdys => ipv4pyltx_irdys,
+			trdys => ipv4pyltx_trdys,
+			frm   => ipv4pyltx_frm,
+			irdy  => ipv4pyltx_irdy,
+			trdy  => ipv4pyltx_trdy);
 
-		ipv4pyltx_frm  <= icmptx_frm;
-		ipv4pyltx_irdy <= icmptx_irdy;
-		icmptx_trdy <= 
+		ipv4pyltx_trdy <= 
 			buffer_trdy when    tha_act='1' else
 			'1'         when length_act='1' else 
 			'1'         when     da_act='1' else 
 			'0'         when   ipv4_fin='0' else
 			buffer_trdy;
-		ipv4pyltx_data <= icmptx_data;
+		ipv4pyltx_data <= 
+			icmptx_data when gntd(0)='1' else
+			 udptx_data when gntd(1)='1' else
+			(ipv4pyltx_data'range => '-');
 
-		process (miitx_clk)
-			variable cntr : natural range 0 to 4;
-		begin
-			if rising_edge(miitx_clk) then
-				if ipv4pyltx_frm='1' then
-					cntr := cntr + ipv4tx_data'length;
-					if cntr=4 then
-						cntr := 0;
-						q<='1';
-					else
-						q<='0';
-					end if;
-				else
-					cntr := ipv4tx_data'length;
-				end if;
-			end if;
-		end process;
+-- disable UDP
+--		gntd <= "10";
+--		ipv4pyltx_frm  <= icmptx_frm;
+--		ipv4pyltx_irdy <= icmptx_irdy;
+--		icmptx_trdy <= 
+--			buffer_trdy when    tha_act='1' else
+--			'1'         when length_act='1' else 
+--			'1'         when     da_act='1' else 
+--			'0'         when   ipv4_fin='0' else
+--			buffer_trdy;
+--		ipv4pyltx_data <= icmptx_data;
 
 		header_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -669,54 +650,54 @@ begin
 		icmptx_trdy    => icmptx_trdy,
 		icmptx_data    => icmptx_data);
 
---	udp_i: entity hdl4fpga.udp
---	generic map (
---		hwaddr => hwaddr)
---	port map (
---		tp => tp,
---
---		dhcpcd_req => dhcpcd_req,
---		dhcpcd_rdy => dhcpcd_rdy,
---
---		arp_req    => arp_req,
---		arp_rdy    => arp_rdy,
---
---		upspa_frm  => upspa_frm,
---		upspa_irdy => upspa_irdy,
---		upspa_trdy => upspa_trdy,
---		upspa_data => upspa_data,
---
---		miirx_clk  => miirx_clk,
---
---		sharx_frm  => tha1rx_frm,
---		sharx_irdy => tha1rx_irdy,
---		sharx_trdy => udptharx_trdy,
---                                 
---		sparx_frm  => sparx_frm ,
---		sparx_irdy => sparx_irdy,
---		sparx_trdy => udpsparx_trdy,
---
---		udprx_frm  => udprx_frm,
---		udprx_irdy => udprx_irdy,
---		udprx_trdy => udprx_trdy,
---		udprx_data => udprx_data,
---
---		pylrx_frm  => udppylrx_frm,
---		pylrx_irdy => udppylrx_irdy,
---		pylrx_trdy => udppylrx_trdy,
---		pylrx_data => udppylrx_data,
---
---		miitx_clk  => miitx_clk,
---
---		pyltx_frm  => udppyltx_frm,
---		pyltx_irdy => udppyltx_irdy,
---		pyltx_trdy => udppyltx_trdy,
---		pyltx_data => udppyltx_data,
---
---		udptx_frm  => udptx_frm,
---		udptx_irdy => udptx_irdy,
---		udptx_trdy => udptx_trdy,
---		udptx_data => udptx_data);
+	udp_i: entity hdl4fpga.udp
+	generic map (
+		hwaddr => hwaddr)
+	port map (
+		tp => tp,
+
+		dhcpcd_req => dhcpcd_req,
+		dhcpcd_rdy => dhcpcd_rdy,
+
+		arp_req    => arp_req,
+		arp_rdy    => arp_rdy,
+
+		upspa_frm  => upspa_frm,
+		upspa_irdy => upspa_irdy,
+		upspa_trdy => upspa_trdy,
+		upspa_data => upspa_data,
+
+		miirx_clk  => miirx_clk,
+
+		sharx_frm  => tha1rx_frm,
+		sharx_irdy => tha1rx_irdy,
+		sharx_trdy => udptharx_trdy,
+                                 
+		sparx_frm  => sparx_frm ,
+		sparx_irdy => sparx_irdy,
+		sparx_trdy => udpsparx_trdy,
+
+		udprx_frm  => udprx_frm,
+		udprx_irdy => udprx_irdy,
+		udprx_trdy => udprx_trdy,
+		udprx_data => udprx_data,
+
+		pylrx_frm  => udppylrx_frm,
+		pylrx_irdy => udppylrx_irdy,
+		pylrx_trdy => udppylrx_trdy,
+		pylrx_data => udppylrx_data,
+
+		miitx_clk  => miitx_clk,
+
+		pyltx_frm  => udppyltx_frm,
+		pyltx_irdy => udppyltx_irdy,
+		pyltx_trdy => udppyltx_trdy,
+		pyltx_data => udppyltx_data,
+
+		udptx_frm  => udptx_frm,
+		udptx_irdy => udptx_irdy,
+		udptx_trdy => udptx_trdy,
+		udptx_data => udptx_data);
 
 	-- tp(1) <= ipv4tx_frm;
 	-- tp(2 to 2+ipv4rx_data'length-1) <= ipv4tx_data;
