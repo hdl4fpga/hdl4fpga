@@ -672,8 +672,8 @@ begin
 		sharx_frm  => tha1rx_frm,
 		sharx_irdy => tha1rx_irdy,
 		sharx_trdy => udptharx_trdy,
-                                 
-		sparx_frm  => sparx_frm ,
+
+		sparx_frm  => sparx_frm,
 		sparx_irdy => sparx_irdy,
 		sparx_trdy => udpsparx_trdy,
 
