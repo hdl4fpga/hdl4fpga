@@ -566,13 +566,10 @@ begin
  
 			chksum_init <= 
 				chksum1(
-					ipv4hdr_bitdata & 
-					std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp"), 
+					ipv4hdr_bitdata & std_logic_vector'(hdo(frames)**".data.ipv4.proto.icmp"), 
 					natural'(hdo(frames)**".format.ipv4.chksum")) when icmp_gntd='1' else
 				chksum1(
-					ipv4hdr_bitdata & 
-					std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp") & 
-					ipv4hdr_value,  
+					ipv4hdr_bitdata & std_logic_vector'(hdo(frames)**".data.ipv4.proto.udp"),
 					natural'(hdo(frames)**".format.ipv4.chksum"));
 
 			chksum_irdy <= da_irdy or al_irdy or sa_irdy;
