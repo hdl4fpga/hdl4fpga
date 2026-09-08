@@ -65,7 +65,7 @@ architecture def of dhcpcd is
 begin
 
 	offer_b : block
-		constant discard0_length : natural :=  -- Lattice Semi error
+		constant discard_length : natural :=  -- Lattice Semi error
 			hdo(frames)**".format.dhcp.op"      +
 			hdo(frames)**".format.dhcp.htype"   +
 			hdo(frames)**".format.dhcp.hlen "   +
@@ -74,9 +74,9 @@ begin
 			hdo(frames)**".format.dhcp.secs"    +
 			hdo(frames)**".format.dhcp.flags"   +
 			hdo(frames)**".format.dhcp.ciaddr";
-		constant discard0_value : string := natural'image(discard0_length);  -- Lattice Semi error
-		constant dhcpoffer_frame : string := compact('{'                        &
-				"discard:" & discard0_value                              & ',' &
+		constant discard_value : string := natural'image(discard0_length);  -- Lattice Semi error
+		constant dhcpoffer_frame : string := compact('{'                       &
+				"discard:" & discard_value                               & ',' &
 				" yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}');
 		signal dhcpoffer_acts  : std_logic_vector(0 to length(dhcpoffer_frame));
 		signal dhcpoffer_frms  : std_logic_vector(dhcpoffer_acts'range);
@@ -152,7 +152,7 @@ begin
 			hdo(frames)**".format.dhcp.hlen " +
 			hdo(frames)**".format.dhcp.hops " +
 			hdo(frames)**".format.dhcp.xid";
-		constant rom0_value : string := natural'image(rom0_length);
+		constant rom0_value      : string := natural'image(rom0_length);
 		constant discard0_length : natural := 
 			hdo(frames)**".format.dhcp.secs"    +
 			hdo(frames)**".format.dhcp.flags"   +
@@ -160,24 +160,24 @@ begin
 			hdo(frames)**".format.dhcp.yiaddr"  +
 			hdo(frames)**".format.dhcp.siaddr"  +
 			hdo(frames)**".format.dhcp.giaddr";
-		constant discard0_value : string := natural'image(discard0_length);
+		constant discard0_value  : string := natural'image(discard0_length);
 		constant discard1_length : natural := 
 			hdo(frames)**".format.dhcp.chaddr10" +
 			hdo(frames)**".format.dhcp.shname"   +
 			hdo(frames)**".format.dhcp.fbname";
-		constant discard1_value : string := natural'image(discard1_length);
-		constant rom2_length : natural :=
+		constant discard1_value  : string := natural'image(discard1_length);
+		constant rom2_length     : natural :=
 			hdo(frames)**".format.dhcp.cookie"     +
 			hdo(frames)**".format.dhcp.vendordata" +
 			hdo(frames)**".format.dhcp.iprequest"  +
 			hdo(frames)**".format.dhcp.endmark";
 		constant rom2_value : string := natural'image(rom2_length);
-		constant dhcpdiscover_frame : string := compact('{'                      &
-				"    rom0:" & rom0_value                                   & ',' &
-				"discard0:" & discard0_value                               & ',' &
-				"    rom1:" & string'(hdo(frames)**".format.dhcp.chaddr6") & ',' & 
-				"discard1:" & discard1_value                               & ',' & 
-				"    rom2:" & rom2_value & '}');
+		constant dhcpdiscover_frame : string := compact('{'                     &
+				"   rom0:" & rom0_value                                   & ',' &
+				"discard:" & discard0_value                               & ',' &
+				"   rom1:" & string'(hdo(frames)**".format.dhcp.chaddr6") & ',' & 
+				"discard:" & discard1_value                               & ',' & 
+				"   rom2:" & rom2_value & '}');
 		signal dhcpdiscover_acts  : std_logic_vector(0 to length(dhcpdiscover_frame ));
 		signal dhcpdiscover_frms  : std_logic_vector(dhcpdiscover_acts'range);
 		signal dhcpdiscover_irdys : std_logic_vector(dhcpdiscover_acts'range);
@@ -266,8 +266,8 @@ begin
 	upspa_frm  <= dhcpcdtx_frm  or yiaddr_act;
 	upspa_irdy <= dhcpcdtx_irdy or yiaddr_irdy;
 	upspa_data <= 
-		dhcpcdrx_data             when    yiaddr_act='1' else
-		(upspa_data'range => '0') when dhcpcdtx_irdy='1' else
+		dhcpcdrx_data             when   yiaddr_act='1' else
+		(upspa_data'range => '0') when dhcpcdtx_frm='1' else
 		(upspa_data'range => '-');
 
 end;
