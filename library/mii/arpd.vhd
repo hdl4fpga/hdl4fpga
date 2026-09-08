@@ -95,7 +95,7 @@ begin
 		tpacmp_b : block
 			signal tpa_equ : std_logic;
 		begin
-			ipsa_i : entity hdl4fpga.sio_ram
+			spa_i : entity hdl4fpga.sio_ram
 			generic map (
 				bitdata => reverse(ipv4addr,8))
 			port map (
@@ -116,7 +116,6 @@ begin
 				clk     => miirx_clk,
 				mr_frm  => tpa_frm,
 				mr_irdy => tpa_irdy,
-				-- mr_trdy => tpa_trdy,
 				mr_data => tpa_data,
 				sl_data => arprx_data,
 				equ     => tpa_equ);

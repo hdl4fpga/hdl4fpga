@@ -330,7 +330,6 @@ begin
 			init    => udphdr_value,
 			frm     => pyltx_frm,
 			irdy    => adjlen_irdy,
---			trdy    => adjlen_trdy,
 			si_data => si_data,
 			so_data => adjlen_data);
 

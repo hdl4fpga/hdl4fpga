@@ -208,8 +208,8 @@ begin
 
 		miirx_clk  => miirx_clk,
 
-		upspa_frm  => '0', --upspa_frm,
-		upspa_irdy => '0', --upspa_irdy,
+		upspa_frm  => upspa_frm,
+		upspa_irdy => upspa_irdy,
 		upspa_trdy => upspa_trdy,
 		upspa_data => upspa_data,
 
