@@ -202,7 +202,7 @@ begin
 		ipv4addr   => ipv4addr,
 		hwaddr     => hwaddr)
 	port map (
-		tp => tp,
+--		tp => tp,
 		arp_req    => arp_req,
 		arp_rdy    => arp_rdy,
 
@@ -310,7 +310,7 @@ begin
 		hwaddr   => hwaddr,
 		ipv4addr => ipv4addr)
 	port map (
-		--tp => tp,
+		tp => tp,
 
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,

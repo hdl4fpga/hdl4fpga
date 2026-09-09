@@ -65,7 +65,7 @@ architecture def of dhcpcd is
 begin
 
 	offer_b : block
-		constant discard_length : natural :=  -- Lattice Semi error
+		constant discard_length : natural :=
 			hdo(frames)**".format.dhcp.op"      +
 			hdo(frames)**".format.dhcp.htype"   +
 			hdo(frames)**".format.dhcp.hlen "   +
@@ -74,31 +74,30 @@ begin
 			hdo(frames)**".format.dhcp.secs"    +
 			hdo(frames)**".format.dhcp.flags"   +
 			hdo(frames)**".format.dhcp.ciaddr";
-		constant discard_value : string := natural'image(discard0_length);  -- Lattice Semi error
-		constant dhcpoffer_frame : string := compact('{'                       &
+		constant discard_value : string := natural'image(discard_length);  -- Diamond LatticeSemi complain
+		constant dhcpcdoffer_frame : string := compact('{'                       &
 				"discard:" & discard_value                               & ',' &
 				" yiaddr:" & string'(hdo(frames)**".format.dhcp.yiaddr") & '}');
-		signal dhcpoffer_acts  : std_logic_vector(0 to length(dhcpoffer_frame));
-		signal dhcpoffer_frms  : std_logic_vector(dhcpoffer_acts'range);
-		signal dhcpoffer_irdys : std_logic_vector(dhcpoffer_acts'range);
-		signal dhcpoffer_trdys : std_logic_vector(dhcpoffer_acts'range);
+		signal dhcpcdoffer_acts  : std_logic_vector(0 to length(dhcpcdoffer_frame));
+		signal dhcpcdoffer_frms  : std_logic_vector(dhcpcdoffer_acts'range);
+		signal dhcpcdoffer_irdys : std_logic_vector(dhcpcdoffer_acts'range);
+		signal dhcpcdoffer_trdys : std_logic_vector(dhcpcdoffer_acts'range);
 
 	begin
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => dhcpoffer_frame,
+			frame => dhcpcdoffer_frame,
 			size  => dhcpcdtx_data'length)
 		port map (
 			clk   => miirx_clk,
 			frm   => dhcpcdrx_frm,
 			irdy  => dhcpcdrx_irdy,
-			acts  => dhcpoffer_acts,
-			frms  => dhcpoffer_frms,
-			irdys => dhcpoffer_irdys,
-			trdys => dhcpoffer_trdys);
-		yiaddr_act  <= dhcpoffer_acts(1);
-		yiaddr_frm  <= dhcpoffer_frms(1);
-		yiaddr_irdy <= dhcpoffer_irdys(1);
+			acts  => dhcpcdoffer_acts,
+			frms  => dhcpcdoffer_frms,
+			irdys => dhcpcdoffer_irdys);
+		yiaddr_act  <= dhcpcdoffer_acts(1);
+		yiaddr_frm  <= dhcpcdoffer_frms(1);
+		yiaddr_irdy <= dhcpcdoffer_irdys(1);
 		
 		process (miirx_clk)
 			variable refresh_req : std_logic := '0';
@@ -109,15 +108,16 @@ begin
 					refresh_req := not refresh_rdy;
 				elsif (refresh_rdy xor refresh_req)='1' then
 					refresh_rdy := refresh_req;
-					arp_req <= not arp_rdy;
+					arp_req     <= not arp_rdy;
 				end if;
 			end if;
 		end process;
 
+	--	tp(1) <= yiaddr_act;
+	--	tp(1) <= dhcpcdrx_frm;
+	--	tp(2 to 2+dhcpcdrx_data'length-1) <= dhcpcdrx_data;
 	end block;
 
-	tp(1) <= dhcpcdrx_frm;
-	tp(2 to 2+dhcpcdrx_data'length-1) <= dhcpcdrx_data;
 	discover_b : block
 		constant bcst_tha : std_logic_vector := x"ff_ff_ff_ff_ff_ff";
 		constant bcst_tpa : std_logic_vector := x"ff_ff_ff_ff";
@@ -172,23 +172,23 @@ begin
 			hdo(frames)**".format.dhcp.iprequest"  +
 			hdo(frames)**".format.dhcp.endmark";
 		constant rom2_value : string := natural'image(rom2_length);
-		constant dhcpdiscover_frame : string := compact('{'                     &
+		constant dhcpcddiscover_frame : string := compact('{'                     &
 				"   rom0:" & rom0_value                                   & ',' &
 				"discard:" & discard0_value                               & ',' &
 				"   rom1:" & string'(hdo(frames)**".format.dhcp.chaddr6") & ',' & 
 				"discard:" & discard1_value                               & ',' & 
 				"   rom2:" & rom2_value & '}');
-		signal dhcpdiscover_acts  : std_logic_vector(0 to length(dhcpdiscover_frame ));
-		signal dhcpdiscover_frms  : std_logic_vector(dhcpdiscover_acts'range);
-		signal dhcpdiscover_irdys : std_logic_vector(dhcpdiscover_acts'range);
-		signal dhcpdiscover_trdys : std_logic_vector(dhcpdiscover_acts'range);
+		signal dhcpcddiscover_acts  : std_logic_vector(0 to length(dhcpcddiscover_frame ));
+		signal dhcpcddiscover_frms  : std_logic_vector(dhcpcddiscover_acts'range);
+		signal dhcpcddiscover_irdys : std_logic_vector(dhcpcddiscover_acts'range);
+		signal dhcpcddiscover_trdys : std_logic_vector(dhcpcddiscover_acts'range);
 
-		alias rom0_irdy is dhcpdiscover_irdys(0);
-		alias rom2_irdy is dhcpdiscover_irdys(2);
-		alias rom4_irdy is dhcpdiscover_irdys(4);
-		alias rom0_act  is dhcpdiscover_acts(0);
-		alias rom2_act  is dhcpdiscover_acts(2);
-		alias rom4_act  is dhcpdiscover_acts(4);
+		alias rom0_act  is dhcpcddiscover_acts(0);
+		alias rom0_irdy is dhcpcddiscover_irdys(0);
+		alias rom2_act  is dhcpcddiscover_acts(2);
+		alias rom2_irdy is dhcpcddiscover_irdys(2);
+		alias rom4_act  is dhcpcddiscover_acts(4);
+		alias rom4_irdy is dhcpcddiscover_irdys(4);
 
 		signal decode_frm  : std_logic;
 		signal decode_irdy : std_logic;
@@ -200,10 +200,8 @@ begin
 		process (miitx_clk)
 		begin
 			if rising_edge(miitx_clk) then
-				if (dhcpcd_req xor dhcpcd_rdy)='1' then
-					if (decode_last and dhcpcdtx_irdy and dhcpcdtx_trdy)='1' then
-						dhcpcd_rdy <= dhcpcd_req;
-					end if;
+				if (decode_last and dhcpcdtx_irdy and dhcpcdtx_trdy)='1' then
+					dhcpcd_rdy <= dhcpcd_req;
 				end if;
 			end if;
 		end process;
@@ -213,19 +211,19 @@ begin
 		dhcpcdtx_frm  <= decode_frm;
 		dhcpcdtx_irdy <= decode_frm;
 
-		dhcpdiscover_trdys <= (others => dhcpcdtx_trdy);
+		dhcpcddiscover_trdys <= (others => dhcpcdtx_trdy);
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => dhcpdiscover_frame,
+			frame => dhcpcddiscover_frame,
 			size  => dhcpcdtx_data'length)
 		port map (
 			clk   => miitx_clk,
 			frm   => decode_frm,
 			irdy  => decode_irdy,
 			last  => decode_last,
-			acts  => dhcpdiscover_acts,
-			irdys => dhcpdiscover_irdys,
-			trdys => dhcpdiscover_trdys);
+			acts  => dhcpcddiscover_acts,
+			irdys => dhcpcddiscover_irdys,
+			trdys => dhcpcddiscover_trdys);
 		
 		rom_irdy <= (rom0_irdy or rom2_irdy or rom4_irdy) and dhcpcdtx_trdy;
 		rom_i : entity hdl4fpga.sio_rom

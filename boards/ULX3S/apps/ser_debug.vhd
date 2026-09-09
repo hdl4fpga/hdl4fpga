@@ -367,10 +367,10 @@ begin
 		process(ser_clk)
 		begin
 			if rising_edge(ser_clk) then
---				ser_frm  <= tp(1);
---				ser_data <= tp(2 to 2+rmii_rxd'length-1);
-				ser_frm  <= rmii_txen;
-				ser_data <= rmii_txd;
+				ser_frm  <= tp(1);
+				ser_data <= tp(2 to 2+rmii_rxd'length-1);
+--				ser_frm  <= rmii_txen;
+--				ser_data <= rmii_txd;
 --				ser_frm  <= rmii_rxdv;
 --				ser_data <= rmii_rxd;
 			end if;
