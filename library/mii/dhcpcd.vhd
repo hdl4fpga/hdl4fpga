@@ -113,9 +113,9 @@ begin
 			end if;
 		end process;
 
-	--	tp(1) <= yiaddr_act;
+	tp(1) <= yiaddr_act;
 	--	tp(1) <= dhcpcdrx_frm;
-	--	tp(2 to 2+dhcpcdrx_data'length-1) <= dhcpcdrx_data;
+	tp(2 to 2+dhcpcdrx_data'length-1) <= dhcpcdrx_data;
 	end block;
 
 	discover_b : block

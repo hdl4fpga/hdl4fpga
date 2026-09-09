@@ -121,7 +121,6 @@ begin
 				equ     => tpa_equ);
 
 			tp(1) <= tx_req xor tx_rdy;
-			-- tp(1) <= tpa_frm;
 			tp(2 to 2+arptx_data'length-1) <= arprx_data;
 			process (miirx_clk)
 				variable lat1 : std_logic;
@@ -132,10 +131,10 @@ begin
 							tx_req <= not tx_rdy;
 						end if;
 					end if;
---					if (arp_rdy xor arp_req)='1' then
---						tx_req  <= not tx_rdy;
---						arp_rdy <= arp_req;
---					end if;
+					if (arp_rdy xor arp_req)='1' then
+						tx_req  <= not tx_rdy;
+						arp_rdy <= arp_req;
+					end if;
 					lat1 := (tpa_frm or tpa_irdy);
 				end if;
 			end process;
