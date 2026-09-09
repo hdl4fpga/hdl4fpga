@@ -99,10 +99,12 @@ architecture graphics of ulx3s is
 	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(0 to 8-1);
 
+	constant monitor : boolean := true;
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
 	signal ser_irdy        : std_logic :='1';
 	signal ser_data        : std_logic_vector(0 to setif(io_link="io_ipoe", 2,1)-1);
+	signal extdvid_crgb    : std_logic_vector(dvid_crgb'range);
 begin
 
 	videodcm_e : entity hdl4fpga.ecp5_videodcm
@@ -214,14 +216,21 @@ begin
 	end generate;
 
 	ipoe_g : if io_link="io_ipoe" generate
-		alias mii_clk is rmii_nintclk;
-		alias md_btn  is fire2;
+		alias md_btn    is fire1;
+		alias dhcpc_btn is fire2;
 
-		signal md_clk : std_logic;
-		signal md_req : std_logic;
-		signal md_rdy : std_logic;
-		signal md_t   : std_logic;
-		signal tp       : std_logic_vector(1 to 32);
+		alias  rmii_clk  : std_logic is rmii_nintclk;
+		signal rmii_txen : std_logic;
+		signal rmii_txd  : std_logic_vector(0 to 2-1);
+
+		signal md_clk    : std_logic;
+		signal md_req    : std_logic := '0';
+		signal md_rdy    : std_logic := '0';
+		signal md_t      : std_logic;
+		signal tp        : std_logic_vector(1 to 32);
+
+		signal fcs_sb    : std_logic;
+		signal fcs_vld   : std_logic;
 
 	begin
 
@@ -248,25 +257,26 @@ begin
 			so_trdy    => so_trdy,
 			so_data    => so_data,
 			dhcp_btn   => fire1,
-			mii_txc    => mii_clk,
-			mii_txen   => rmii_tx_en,
-			mii_txd(0) => rmii_txd0,
-			mii_txd(1) => rmii_txd1,
+			mii_txc    => rmii_clk,
+			mii_txen   => rmii_txen,
+			mii_txd    => rmii_txd,
 
-			mii_rxc    => mii_clk,
+			mii_rxc    => rmii_clk,
 			mii_rxdv   => rmii_crsdv,
 			mii_rxd(0) => rmii_rxd0,
 			mii_rxd(1) => rmii_rxd1);
 
+		rmii_tx_en <= rmii_txen;
+		(rmii_txd0, rmii_txd1) <= rmii_txd;
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
 		rmii_rxd0    <= 'Z';
 		rmii_rxd1    <= 'Z';
 
-		mdclk_p : process(mii_clk)
+		mdclk_p : process(rmii_clk)
 			variable cntr : integer range -1 to 50/5-2; -- 50MHz/2.5MHz/2
 		begin
-			if rising_edge(mii_clk) then
+			if rising_edge(rmii_clk) then
 				if cntr < 0 then
 					cntr := 10-2;
 					md_clk <= not md_clk;
@@ -311,7 +321,7 @@ begin
 		rmii_mdc  <= md_clk; 
 		rmii_mdio <= '0' when md_t='0' else 'Z';
 
-		sio_clk   <= mii_clk;
+		sio_clk   <= rmii_clk;
 		wifi_en   <= '0';
 
 		ser_clk  <= rmii_clk;
@@ -319,7 +329,7 @@ begin
 		begin
 			if rising_edge(ser_clk) then
 --				ser_frm  <= tp(1);
---				ser_data <= tp(2 to 2+rmii_rxd'length-1);
+--				ser_data <= tp(2 to 2+rmii_txd'length-1);
 				ser_frm  <= rmii_txen;
 				ser_data <= rmii_txd;
 --				ser_frm  <= rmii_rxdv;
@@ -455,61 +465,36 @@ begin
 
 	end generate;
 
+	video_g : if monitor generate
+		signal video_pixel     : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+	begin
+		ser_debug_e : entity hdl4fpga.ser_debug
+		generic map (
+			settings        => hdo(settings)**".video")
+		port map (
+			ser_clk         => ser_clk, 
+			ser_frm         => ser_frm, 
+			ser_irdy        => ser_irdy, 
+			ser_data        => ser_data, 
+			
+			video_clk       => video_clk,
+			video_shift_clk => video_shift_clk,
+			video_pixel     => video_pixel,
+			dvid_crgb       => extdvid_crgb);
+	end generate;
+		
 	hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
-		signal crgb : std_logic_vector(dvid_crgb'range);
 
 	begin
-		video_g : if monitor generate
-			ser_debug_e : entity hdl4fpga.ser_debug
-			generic map (
-				settings        => hdo(settings)**".video")
-			port map (
-				ser_clk         => ser_clk, 
-				ser_frm         => ser_frm, 
-				ser_irdy        => ser_irdy, 
-				ser_data        => ser_data, 
-				
-				video_clk       => video_clk,
-				video_shift_clk => video_shift_clk,
-				video_hzsync    => video_hzsync,
-				video_vtsync    => video_vtsync,
-				video_pixel     => video_pixel,
-				dvid_crgb       => dvid_crgb);
-		
 		ddr_g : for i in gpdi_d'range generate
 			oddr_i : oddrx1f
 			port map(
 				sclk => video_shift_clk,
 				rst  => '0',
-				d0   => dvid_crgb(2*i),
-				d1   => dvid_crgb(2*i+1),
+				d0   => extdvid_crgb(2*i),
+				d1   => extdvid_crgb(2*i+1),
 				q    => gpdi_d(i));
 		end generate;
-	end generate;
-
-		reg_e : entity hdl4fpga.latency
-		generic map (
-			n => dvid_crgb'length,
-			d => (dvid_crgb'range => 1))
-		port map (
-			clk => video_shift_clk,
-			di  => dvid_crgb,
-			do  => crgb);
-
-		hdmi_ext_g : entity hdl4fpga.ecp5_ogbx
-	   	generic map (
-			mem_mode  => false,
-			lfbt_frst => false,
-			interlace => true,
-			size      => gpdi_d'length,
-			gear      => settings**".video.gear")
-	   	port map (
-			eclk      => video_eclk,
-			sclk      => video_shift_clk,
-			d         => crgb,
-			q         => gp(13-1 downto 9));
-
-		wifi_en   <= '0';
 	end generate;
 
 	-- SDRAM-clk-divided-by-2 monitor
