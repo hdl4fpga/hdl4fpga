@@ -20,6 +20,7 @@
 --                                                                                --
 
 library hdl4fpga;
+use hdl4fpga.hdo.all;
 use hdl4fpga.base.all;
 
 architecture ulx3s_serdebug of testbench is
@@ -178,15 +179,6 @@ begin
 				   "mac:{tha:0xff_ff_ff_ff_ff_ff},"        &
 				   "spa:192.168.0.2,"                      & 
 				   "tpa:192.168.0.14},"                    &
---			"icmp:{"                                       &
---				   "mac:{tha:0x00_40_00_01_02_04},"        &
---				  "ipv4:{"                                 &
---					"sa:192.168.0.2,"                      &
---					"da:192.168.0.15},"                    &
---				  "type:0x08,"                             &
---				  "code:0x00,"                             & 
---				"chksum:0x0000,"                           &
---				"extn:0x00000000},"                        &
 			"icmp:{"                                       &
 				   "mac:{tha:0x00_40_00_01_02_03},"        &
 				  "ipv4:{"                                 &
@@ -201,13 +193,35 @@ begin
 					"d7189f6a00000000946c090000000000"     &
 				    "101112131415161718191a1b1c1d1e1f"     &
 					"202122232425262728292a2b2c2d2e2f"     &
-					"3031323334353637}}";
+					"3031323334353637},"                   &
+			"udp:{"                                        &
+				   "mac:{tha:0x00_40_00_01_02_03},"        &
+				  "ipv4:{"                                 &
+			    "length:0x0054,"                           &
+					"sa:192.168.0.2,"                      &
+					"da:192.168.0.14},"                    &
+				  "sp:0x0001,"                             &
+				  "dp:0x0002,"                             & 
+				"data:0x"                                  &
+					"01007e" &
+					"18ff"   &
+					"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+					"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+					"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+					"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+					"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+					"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+					"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+					"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+					"}}";
 
 	begin
 		tbipoe_e : entity work.tb_ipoe
 		generic map(
 			sha  => "0x00_27_0e_0f_f5_95",
-			data => data)
+			data => "{"  &
+				"udp:" & string'(hdo(data)**"[2]") &
+				"}")
 		port map (
 			req  => rmii_req,
 			rdy  => rmii_rdy,
@@ -221,8 +235,8 @@ begin
 	end block;
 	(gn(11), gp(11)) <= rmii_rxd;
 
-	fire1 <= '0', '0' after 100 ns;
-	fire2 <= '0', '1' after 100 ns;
+	fire1 <= '0', '1' after 100 ns;
+	fire2 <= '0', '0' after 100 ns;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => clk_25mhz,

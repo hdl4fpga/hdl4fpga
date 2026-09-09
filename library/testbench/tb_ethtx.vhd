@@ -114,10 +114,22 @@ architecture beh of tb_ethtx is
 		return std_logic_vector is
 	begin
 		return 
-			to_stdlogicvector(hdo(data)**(".type"   &'='& "0x00"))       & 
-			to_stdlogicvector(hdo(data)**(".code"   &'='& "0x00"))       & 
-			to_stdlogicvector(hdo(data)**(".chksum" &'='& "0x0000"))     &
-			to_stdlogicvector(hdo(data)**(".extn"   &'='& "0x00000000")) &
+			to_stdlogicvector(hdo(data)**(".type"   &'='& "0x00"))   & 
+			to_stdlogicvector(hdo(data)**(".code"   &'='& "0x00"))   & 
+			to_stdlogicvector(hdo(data)**(".chksum" &'='& "0x0000")) &
+			to_stdlogicvector(hdo(data)**".extn")                    &
+			to_stdlogicvector(hdo(data)**".data");
+	end;
+
+	function init_udp (
+		constant data : string)
+		return std_logic_vector is
+	begin
+		return 
+			to_stdlogicvector(hdo(data)**(".sp"     &'='& "0x0000")) & 
+			to_stdlogicvector(hdo(data)**(".dp"     &'='& "0x0000")) & 
+			to_stdlogicvector(hdo(data)**(".length" &'='& "0x0000")) &
+			to_stdlogicvector(hdo(data)**(".chksum" &'='& "0x0000")) &
 			to_stdlogicvector(hdo(data)**".data");
 	end;
 
@@ -131,7 +143,20 @@ architecture beh of tb_ethtx is
 			return string is
 		begin
 
-			if proto="icmp" then
+			if proto="udp" then
+				return
+					"content:0x" &
+					to_string(
+						init_mac (
+							data   => data**".mac", 
+							tha    => bcast, 
+							ethtyp => "0x0800")      &
+						init_ipv4(
+							data   => data**".ipv4") &
+						init_udp(
+							data   => data), 
+						16);
+			elsif proto="icmp" then
 				return
 					"content:0x" &
 					to_string(
