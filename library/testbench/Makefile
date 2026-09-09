@@ -164,6 +164,8 @@ HDL4FPGA__rom7seg__mixed = $(LIB_HDL4FPGA)/rom7seg/mixed.dat
 HDL4FPGA__rom7seg = $(LIB_HDL4FPGA)/rom7seg/_primary.dat
 HDL4FPGA__rom__def = $(LIB_HDL4FPGA)/rom/def.dat
 HDL4FPGA__rom = $(LIB_HDL4FPGA)/rom/_primary.dat
+HDL4FPGA__rmii__beh = $(LIB_HDL4FPGA)/rmii/beh.dat
+HDL4FPGA__rmii = $(LIB_HDL4FPGA)/rmii/_primary.dat
 HDL4FPGA__rdyreq__beh = $(LIB_HDL4FPGA)/rdyreq/beh.dat
 HDL4FPGA__rdyreq = $(LIB_HDL4FPGA)/rdyreq/_primary.dat
 HDL4FPGA__phy_iofifo__mix = $(LIB_HDL4FPGA)/phy_iofifo/mix.dat
@@ -495,6 +497,8 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__rom7seg) \
     $(HDL4FPGA__rom__def) \
     $(HDL4FPGA__rom) \
+    $(HDL4FPGA__rmii__beh) \
+    $(HDL4FPGA__rmii) \
     $(HDL4FPGA__rdyreq__beh) \
     $(HDL4FPGA__rdyreq) \
     $(HDL4FPGA__phy_iofifo__mix) \
@@ -1321,11 +1325,13 @@ $(HDL4FPGA__ipoepkg__body) : ../mii/ipoepkg.vhd \
 
 $(HDL4FPGA__ipv4) \
 $(HDL4FPGA__ipv4__def) : ../mii/ipv4.vhd \
+		$(HDL4FPGA__udp) \
 		$(HDL4FPGA__icmpd) \
 		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_rom) \
 		$(HDL4FPGA__mii_adjlen) \
+		$(HDL4FPGA__mii_arbiter) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__sio_cmp) \
@@ -1374,6 +1380,7 @@ $(HDL4FPGA__link_hdlc__def) : ../apps/link_hdlc.vhd \
 $(HDL4FPGA__link_mii) \
 $(HDL4FPGA__link_mii__graphics) : ../apps/link_mii.vhd \
 		$(HDL4FPGA__sio_dayudp) \
+		$(HDL4FPGA__rmii) \
 		$(HDL4FPGA__hdo) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
@@ -1498,6 +1505,13 @@ $(HDL4FPGA__rdyreq__beh) : ../basic/rdyreq.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../basic/rdyreq.vhd
+
+$(HDL4FPGA__rmii) \
+$(HDL4FPGA__rmii__beh) : ../mii/rmii.vhd \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../mii/rmii.vhd
 
 $(HDL4FPGA__rom) \
 $(HDL4FPGA__rom__def) : ../basic/rom.vhd \

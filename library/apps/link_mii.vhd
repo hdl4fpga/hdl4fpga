@@ -57,6 +57,10 @@ entity link_mii is
 end;
 
 architecture graphics of link_mii is
+	signal miirx_dv   : std_logic;
+	signal miirx_d    : std_logic_vector(0 to n-1);
+	signal miitx_en   : std_logic;
+	signal miitx_d    : std_logic_vector(0 to n-1);
 	signal dhcpcd_req : std_logic := '0';
 	signal dhcpcd_rdy : std_logic := '0';
 
@@ -83,6 +87,21 @@ begin
 		end if;
 	end process;
 
+	rmii_e : entity hdl4fpga.rmii
+	generic map (
+		n => n)
+	port map (
+		rmii_clk   => mii_rxc,
+		rmii_crsdv => mii_rxdv,
+		rmii_rxd   => mii_rxd,
+		rmii_txen  => mii_txen,
+		rmii_txd   => mii_txd,
+
+		mii_rxdv   => miirx_dv,   
+		mii_rxd    => miirx_d,     
+		mii_txen   => miitx_en,   
+		mii_txd    => miitx_d);
+
 	udpdaisy_e : entity hdl4fpga.sio_dayudp
 	generic map (
 		hwaddr     => hwaddr,
@@ -92,17 +111,17 @@ begin
 		dhcpcd_req => dhcpcd_req,
 		dhcpcd_rdy => dhcpcd_rdy,
 		miirx_clk  => mii_rxc,
-		miirx_frm  => mii_rxdv,
-		miirx_irdy => mii_rxdv,
-		miirx_data => mii_rxd,
+		miirx_frm  => miirx_dv,
+		miirx_irdy => miirx_dv,
+		miirx_data => miirx_d,
 		fcs_sb     => fcs_sb,
 		fcs_vld    => fcs_vld,
 
 	
 		miitx_clk  => mii_txc,
-		miitx_frm  => mii_txen,
+		miitx_frm  => miitx_en,
 		miitx_irdy => open,
-		miitx_data => mii_txd,
+		miitx_data => miitx_d,
 	
 		si_frm     => si_frm,
 		si_irdy    => si_irdy,
