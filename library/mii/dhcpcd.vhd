@@ -206,7 +206,7 @@ begin
 			end if;
 		end process;
 
-		decode_frm    <= '1' when (dhcpcd_req xor dhcpcd_rdy)='1' else '0';
+		decode_frm    <= dhcpcd_req xor dhcpcd_rdy;
 		decode_irdy   <= decode_frm;
 		dhcpcdtx_frm  <= decode_frm;
 		dhcpcdtx_irdy <= decode_frm;

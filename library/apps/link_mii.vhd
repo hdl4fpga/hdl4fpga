@@ -57,8 +57,8 @@ entity link_mii is
 end;
 
 architecture graphics of link_mii is
-	signal dhcpcd_req : std_logic;
-	signal dhcpcd_rdy : std_logic;
+	signal dhcpcd_req : std_logic := '0';
+	signal dhcpcd_rdy : std_logic := '0';
 
 begin
 
