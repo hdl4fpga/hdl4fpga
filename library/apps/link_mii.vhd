@@ -31,6 +31,7 @@ entity link_mii is
 	generic (
 		hwaddr   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
 		ipv4addr : std_logic_vector(0 to 32-1) := aton("192.168.1.1");
+		rmii     : boolean;
 		n        : natural);
 	port (
 		tp       : out std_logic_vector(1 to 32);
@@ -89,6 +90,7 @@ begin
 
 	rmii_e : entity hdl4fpga.rmii
 	generic map (
+		enable => rmii,
 		n => n)
 	port map (
 		rmii_clk   => mii_rxc,
