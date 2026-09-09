@@ -141,45 +141,7 @@ architecture ulx3s_graphics of testbench is
 			dq    : inout std_logic_vector(data_bits - 1 downto 0));
 	end component;
 
-	constant usb_freq     : real := 12.0e6;
-	constant data : string := "{"           &
-		"tha:0x"                 &
-			"00_40_00_01_02_03," & -- target hardware address
-		"udp:0x"                 &
-			"0800"               & -- mac type
-			"4500"               & -- IP Version, TOS
-			"0054"               & -- IP Length
-			"0000"               & -- IP Identification
-			"0000"               & -- IP Fragmentation
-			"0511"               & -- IP TTL, protocol
-			"0000"               & -- IP Header Checksum
-			"21436587"           & -- IP Source IP address
-			"c0a8000e"           & -- IP Destiantion IP Address
-			"482c"               & -- UDP source port 
-			"6a1e"               & -- UDP destination port 
-			"ffff"               & -- UDP length
-			"0000"               & -- UDP checksum
-			"010042"             &
-    		"1702_000103_1603_0000_0000_ffff" &
-		"}";
-	constant snd_data  : std_logic_vector :=
-		x"01007e" &
-		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-
-		x"1702_0000ff_1603_0000_0000";
-	constant req_data  : std_logic_vector :=
-		x"010008_1702_0000ff_1603_8000_0000";
-
-	signal rst         : std_logic;
-	signal xtal        : std_logic := '0';
+	constant usb_freq  : real := 12.0e6;
 
 	signal sdram_dq    : std_logic_vector (data_bits - 1 downto 0) := (others => 'Z');
 	signal sdram_addr  : std_logic_vector (addr_bits - 1 downto 0);
@@ -192,95 +154,154 @@ architecture ulx3s_graphics of testbench is
 	signal sdram_we_n  : std_logic;
 	signal sdram_dqm   : std_logic_vector(1 downto 0);
 
-	signal gp          : std_logic_vector(28-1 downto 0);
-	signal gn          : std_logic_vector(28-1 downto 0) := (others => '0');
+	signal uart_clk    : std_logic := '0';
+	signal usb_clk     : std_logic := '0';
 
+	signal clk_25mhz   : std_logic := '0';
 	signal usb_fpga_dp : std_logic;
 	signal usb_fpga_dn : std_logic;
 	signal ftdi_txd    : std_logic;
 	signal ftdi_rxd    : std_logic;
+	signal gp          : std_logic_vector(28-1 downto 0);
+	signal gn          : std_logic_vector(28-1 downto 0);
 
 	signal fire1       : std_logic;
 	signal fire2       : std_logic;
 
-	alias mii_refclk   : std_logic is gn(12);
+	signal mii_refclk  : std_logic := '0';
+	signal rmii_req    : std_logic := '0';
+	signal rmii_rdy    : std_logic := '0';
+	alias  rmii_clk   is gn(12);
+	alias  rmii_txen  is gn(10);
+	signal rmii_txd    : std_logic_vector(0 to 2-1);
+	alias  rmii_rxdv  is gp(12);
+	signal rmii_rxd    : std_logic_vector(0 to 2-1);
 
-	signal uart_clk    : std_logic := '0';
-	signal usb_clk     : std_logic := '0';
-
-
-	signal mii_req    : std_logic;
-	signal mii_rdy    : std_logic;
-	alias  mii_txen   : std_logic is gp(12);
-	signal mii_txd    : std_logic_vector(0 to 2-1);
+	alias rmii_mdc    is gp(13);
+	alias rmii_mdio   is gn(13);
 
 begin
 
-	rst      <= '1', '0' after 10 us;
-	xtal     <= not xtal after 20 ns;
-	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
-	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
-
+	fire1 <= '0', '1' after 100 ns;
+	fire2 <= '0', '0' after 100 ns;
+	clk_25mhz  <= not clk_25mhz  after 20 ns;
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
-	fire1    <= '0';
-	fire2    <= '0';
+	rmii_clk   <= mii_refclk;
 
-	hdlctb_e : entity work.tb_hdlc
-	generic map (
-		debug     => debug,
-		baudrate  =>    3e6,
-		uart_freq => 40.0e6,
-		payload_segments => (0 => snd_data'length, 1 => req_data'length),
-		payload   => snd_data & req_data)
-	port map (
-		rst       => rst,
-		uart_clk  => uart_clk,
-		uart_sin  => ftdi_rxd,
-		uart_sout => ftdi_txd);
+	rmii_txd <= (gp(10), gn(9));
+	process (fire1, rmii_clk)
+		variable req : std_logic;
+	begin
+		if fire1='0' then
+			rmii_req <= rmii_rdy;
+			req := rmii_rdy;
+		elsif rising_edge(rmii_clk) then
+			if fire1='1' then
+				rmii_req <= not req;
+			end if;
+		end if;
+	end process;
 
-	usb_fpga_dp <= 'H';
-	usb_fpga_dn <= 'L';
+	rmii_txd <= (gp(10), gn(9));
+	tb_ipoe_b : block
+		constant data : string := "{"                      &
+			"arp:{"                                        &
+				   "mac:{tha:0xff_ff_ff_ff_ff_ff},"        &
+				   "spa:192.168.0.2,"                      & 
+				   "tpa:192.168.0.14},"                    &
+			"icmp:{"                                       &
+				   "mac:{tha:0x00_40_00_01_02_03},"        &
+				  "ipv4:{"                                 &
+			    "length:0x0054,"                           &
+					"sa:192.168.0.2,"                      &
+					"da:192.168.0.14},"                    &
+				  "type:0x08,"                             &
+				  "code:0x00,"                             & 
+				"chksum:0xebc7,"                           &
+				"extn:0x39720003,"                         &
+				"data:0x"                                  &
+					"d7189f6a00000000946c090000000000"     &
+				    "101112131415161718191a1b1c1d1e1f"     &
+					"202122232425262728292a2b2c2d2e2f"     &
+					"3031323334353637},"                   &
+			"udp:{"                                        &
+				   "mac:{tha:0x00_40_00_01_02_03},"        &
+				  "ipv4:{"                                 &
+			    "length:0x0054,"                           &
+					"sa:192.168.0.2,"                      &
+					"da:192.168.0.14},"                    &
+				  "sp:0x0001,"                             &
+				  "dp:0x0002,"                             & 
+				"data:0x"                                  &
+					"01007e" &
+					"18ff"   &
+					"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
+					"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
+					"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
+					"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
+					"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
+					"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
+					"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
+					"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+					"},"                                   &
+			"udp:{"                                        &
+				   "mac:{tha:0x00_40_00_01_02_03},"        &
+				  "ipv4:{"                                 &
+			    "length:0x0054,"                           &
+					"sa:192.168.0.2,"                      &
+					"da:192.168.0.14},"                    &
+				  "sp:0x0001,"                             &
+				  "dp:0x0002,"                             & 
+				"data:0x"                                  &
+					"010008"                               &
+					"170200000f"                           & 
+					"160380000000"                         &
+					"}}";
 
-	usbtb_e : entity work.tb_usb
-	generic map (
-		debug   => debug,
-		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
-		-- payload   => snd_data & req_data)
-		payload_segments => (0 => snd_data'length),
-		payload   => snd_data)
-	port map (
-		rst     => rst,
-		usb_clk => usb_clk,
-		usb_dp  => usb_fpga_dp,
-		usb_dn  => usb_fpga_dn);
+	begin
+		tbipoe_e : entity work.tb_ipoe
+		generic map(
+			sha  => "0x00_27_0e_0f_f5_95",
+			data => "{"  &
+				"udp:" & string'(hdo(data)**"[2]") &
+				"}")
+		port map (
+			req  => rmii_req,
+			rdy  => rmii_rdy,
+			txc  => rmii_clk,
+			txen => rmii_rxdv,
+			txd  => rmii_rxd,
 
-	mii_txd <= (gp(10), gn(9));
-	(gn(11), gp(11)) <= mii_txd;
+			rxc  => rmii_clk,
+			rxdv => rmii_txen,
+			rxd  => rmii_txd);
+	end block;
+	(gn(11), gp(11)) <= rmii_rxd;
 
 	du_e : ulx3s
 	generic map (
 		debug => debug)
 	port map (
-		clk_25mhz  => xtal,
+		clk_25mhz   => clk_25mhz,
 		usb_fpga_dp => usb_fpga_dp,
 		usb_fpga_dn => usb_fpga_dn,
-		ftdi_txd   => ftdi_txd,
-		ftdi_rxd   => ftdi_rxd,
-		up         => '0',
-		fire1      => fire1,
-		fire2      => fire2,
-		gp         => gp,
-		gn         => gn,
-		sdram_clk  => sdram_clk,
-		sdram_cke  => sdram_cke,
-		sdram_csn  => sdram_cs_n,
-		sdram_rasn => sdram_ras_n,
-		sdram_casn => sdram_cas_n,
-		sdram_wen  => sdram_we_n,
-		sdram_ba   => sdram_ba,
-		sdram_a    => sdram_addr,
-		sdram_dqm  => sdram_dqm,
-		sdram_d    => sdram_dq);
+		ftdi_txd    => ftdi_txd,
+		ftdi_rxd    => ftdi_rxd,
+		up          => '0',
+		fire1       => fire1,
+		fire2       => fire2,
+		gp          => gp,
+		gn          => gn,
+		sdram_clk   => sdram_clk,
+		sdram_cke   => sdram_cke,
+		sdram_csn   => sdram_cs_n,
+		sdram_rasn  => sdram_ras_n,
+		sdram_casn  => sdram_cas_n,
+		sdram_wen   => sdram_we_n,
+		sdram_ba    => sdram_ba,
+		sdram_a     => sdram_addr,
+		sdram_dqm   => sdram_dqm,
+		sdram_d     => sdram_dq);
 
 	sdr_model_g: mt48lc32m16a2
 	port map (
@@ -294,6 +315,37 @@ begin
 		addr  => sdram_addr,
 		dqm   => sdram_dqm,
 		dq    => sdram_dq);
+
+--	uart_clk <= not uart_clk after 0.1 ns /2 when debug else not uart_clk after 12.5 ns;
+--	hdlctb_e : entity work.tb_hdlc
+--	generic map (
+--		debug     => debug,
+--		baudrate  =>    3e6,
+--		uart_freq => 40.0e6,
+--		payload_segments => (0 => snd_data'length, 1 => req_data'length),
+--		payload   => snd_data & req_data)
+--	port map (
+--		rst       => rst,
+--		uart_clk  => uart_clk,
+--		uart_sin  => ftdi_rxd,
+--		uart_sout => ftdi_txd);
+
+--	usb_fpga_dp <= 'H';
+--	usb_fpga_dn <= 'L';
+--	usb_clk <= not usb_clk after 1 sec/(2.0*usb_freq);
+--	usbtb_e : entity work.tb_usb
+--	generic map (
+--		debug   => debug,
+--		-- payload_segments => (0 => snd_data'length, 1 => req_data'length),
+--		-- payload   => snd_data & req_data)
+--		payload_segments => (0 => snd_data'length),
+--		payload   => snd_data)
+--	port map (
+--		rst     => rst,
+--		usb_clk => usb_clk,
+--		usb_dp  => usb_fpga_dp,
+--		usb_dn  => usb_fpga_dn);
+
 end;
 
 library micron;

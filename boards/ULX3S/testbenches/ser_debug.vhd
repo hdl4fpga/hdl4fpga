@@ -117,27 +117,14 @@ architecture ulx3s_serdebug of testbench is
 			shutdown       : out   std_logic := '0'); -- '1' power off the board, 10uA sleep
 	end component;
 
-	constant snd_data  : std_logic_vector :=
-		x"01007e" &
-		x"18ff"   &
-		x"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" &
-		x"202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f" &
-		x"404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f" &
-		x"606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f" &
-		x"808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f" &
-		x"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
-		x"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
-		x"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
-
-		x"1702_00000f_1603_0000_0000";
-	constant req_data  : std_logic_vector :=
-		x"010008_1702_00000f_1603_8000_0000";
-
+	signal clk_25mhz  : std_logic := '0';
+	signal usb_fpga_dp : std_logic;
+	signal usb_fpga_dn : std_logic;
 	signal ftdi_txd   : std_logic;
+	signal ftdi_rxd   : std_logic;
 	signal gp         : std_logic_vector(28-1 downto 0);
 	signal gn         : std_logic_vector(28-1 downto 0);
 
-	signal clk_25mhz  : std_logic := '0';
 	signal fire1      : std_logic;
 	signal fire2      : std_logic;
 
@@ -155,11 +142,12 @@ architecture ulx3s_serdebug of testbench is
 
 begin
 
+	fire1 <= '0', '1' after 100 ns;
+	fire2 <= '0', '0' after 100 ns;
 	clk_25mhz  <= not clk_25mhz  after 20 ns;
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;
 	rmii_clk   <= mii_refclk;
 
-	rmii_txd <= (gp(10), gn(9));
 	process (fire1, rmii_clk)
 		variable req : std_logic;
 	begin
@@ -173,6 +161,7 @@ begin
 		end if;
 	end process;
 
+	rmii_txd <= (gp(10), gn(9));
 	tb_ipoe_b : block
 		constant data : string := "{"                      &
 			"arp:{"                                        &
@@ -213,6 +202,19 @@ begin
 					"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 					"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 					"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+					"},"                                   &
+			"udp:{"                                        &
+				   "mac:{tha:0x00_40_00_01_02_03},"        &
+				  "ipv4:{"                                 &
+			    "length:0x0054,"                           &
+					"sa:192.168.0.2,"                      &
+					"da:192.168.0.14},"                    &
+				  "sp:0x0001,"                             &
+				  "dp:0x0002,"                             & 
+				"data:0x"                                  &
+					"010008"                               &
+					"170200000f"                           & 
+					"160380000000"                         &
 					"}}";
 
 	begin
@@ -235,8 +237,6 @@ begin
 	end block;
 	(gn(11), gp(11)) <= rmii_rxd;
 
-	fire1 <= '0', '1' after 100 ns;
-	fire2 <= '0', '0' after 100 ns;
 	du_e : ulx3s
 	port map (
 		clk_25mhz => clk_25mhz,
