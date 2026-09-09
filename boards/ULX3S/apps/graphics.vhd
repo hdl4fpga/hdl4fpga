@@ -99,6 +99,10 @@ architecture graphics of ulx3s is
 	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(0 to 8-1);
 
+	signal ser_clk         : std_logic;
+	signal ser_frm         : std_logic;
+	signal ser_irdy        : std_logic :='1';
+	signal ser_data        : std_logic_vector(0 to setif(io_link="io_ipoe", 2,1)-1);
 begin
 
 	videodcm_e : entity hdl4fpga.ecp5_videodcm
@@ -256,8 +260,8 @@ begin
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
-		rmii_rxd0     <= 'Z';
-		rmii_rxd1     <= 'Z';
+		rmii_rxd0    <= 'Z';
+		rmii_rxd1    <= 'Z';
 
 		mdclk_p : process(mii_clk)
 			variable cntr : integer range -1 to 50/5-2; -- 50MHz/2.5MHz/2
@@ -309,6 +313,19 @@ begin
 
 		sio_clk   <= mii_clk;
 		wifi_en   <= '0';
+
+		ser_clk  <= rmii_clk;
+		process(ser_clk)
+		begin
+			if rising_edge(ser_clk) then
+--				ser_frm  <= tp(1);
+--				ser_data <= tp(2 to 2+rmii_rxd'length-1);
+				ser_frm  <= rmii_txen;
+				ser_data <= rmii_txd;
+--				ser_frm  <= rmii_rxdv;
+--				ser_data <= rmii_rxd;
+			end if;
+		end process;
 
 	end generate;
 
@@ -440,7 +457,36 @@ begin
 
 	hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
 		signal crgb : std_logic_vector(dvid_crgb'range);
+
 	begin
+		video_g : if monitor generate
+			ser_debug_e : entity hdl4fpga.ser_debug
+			generic map (
+				settings        => hdo(settings)**".video")
+			port map (
+				ser_clk         => ser_clk, 
+				ser_frm         => ser_frm, 
+				ser_irdy        => ser_irdy, 
+				ser_data        => ser_data, 
+				
+				video_clk       => video_clk,
+				video_shift_clk => video_shift_clk,
+				video_hzsync    => video_hzsync,
+				video_vtsync    => video_vtsync,
+				video_pixel     => video_pixel,
+				dvid_crgb       => dvid_crgb);
+		
+		ddr_g : for i in gpdi_d'range generate
+			oddr_i : oddrx1f
+			port map(
+				sclk => video_shift_clk,
+				rst  => '0',
+				d0   => dvid_crgb(2*i),
+				d1   => dvid_crgb(2*i+1),
+				q    => gpdi_d(i));
+		end generate;
+	end generate;
+
 		reg_e : entity hdl4fpga.latency
 		generic map (
 			n => dvid_crgb'length,

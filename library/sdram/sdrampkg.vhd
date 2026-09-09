@@ -217,7 +217,7 @@ package body sdrampkg is
 		constant reg : string := hdo(hdo(row)**2)**".a";
 	begin
 		b <= (b'range => '-');
-		a <= (b'range => '-');
+		a <= (a'range => '-');
 		if op ="pre" then
 			a(10) <= '1';
 		elsif reg'length > 0  then
