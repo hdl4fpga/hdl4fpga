@@ -44,50 +44,33 @@ end;
 
 architecture def of sio_pack is
 begin
-	process (si_frm, so_trdy, sio_clk)
-		variable shr_frm  : unsigned(0 to 16/si_data'length-1);
-		variable shr_irdy : unsigned(shr_frm'range) := (others => '0');
+	process (si_frm, si_irdy, si_data, sio_clk)
 		variable shr_data : unsigned(0 to 16-1);
+		variable shr_irdy : unsigned(0 to shr_data'length/si_data'length-1);
+		variable shr_trdy : unsigned(0 to shr_data'length/si_data'length-1);
+		variable active   : std_logic;
 	begin
 		if rising_edge(sio_clk) then
-			if si_frm='1' then 
-				if shr_irdy=(shr_irdy'range => '0') then
-					shr_frm  := (others => '1');
-					shr_irdy := (others => '1');
-					shr_data := unsigned(reverse(si_rid & si_len, 8));
-				end if;
-			end if;
-
-			so_frm  <= shr_frm(0);
-			so_irdy <= shr_irdy(0);
-			so_data <= std_logic_vector(shr_data(0 to si_data'length-1));
 			if so_trdy='1' then
-				shr_frm(0) := si_frm;
-				shr_frm := rotate_left(shr_frm, 1);
-
-				if si_frm='1' then
-					shr_irdy(0) := si_irdy;
-				elsif shr_frm=(shr_frm'range => '0') then
-					shr_irdy(0) := '0';
-				else
-					shr_irdy(0) := si_irdy;
-				end if;
-				shr_irdy := rotate_left(shr_irdy, 1);
-				shr_data(0 to si_data'length-1) := unsigned(si_data);
-				shr_data := rotate_left(shr_data, si_data'length);
+				shr_irdy := shift_left(shr_irdy, 1);
+				shr_data := shift_left(shr_data, so_data'length);
+			end if;
+			shr_trdy(0) := so_trdy;
+			shr_trdy    := rotate_left(shr_trdy, 1);
+			if (si_frm or si_irdy)='0' then
+				shr_irdy := (others => '1');
+				shr_trdy := (others => '0');
+				shr_data := unsigned(reverse(si_rid & si_len, 8));
 			end if;
 		end if;
 
-		if si_frm='1' then
-			si_trdy <= so_trdy;
-		elsif shr_frm=(shr_frm'range => '0') then
-			if shr_irdy=(shr_irdy'range => '0') then
-				si_trdy <= '0';
-			else
-				si_trdy <= so_trdy;
-			end if;
+		so_frm  <= si_frm;
+		so_irdy <= si_irdy or (si_frm and shr_irdy(0));
+		si_trdy <= (si_frm or si_irdy) and shr_trdy(0);
+		if shr_irdy(0)='1' then
+			so_data <= std_logic_vector(shr_data(0 to so_data'length-1));
 		else
-			si_trdy <= '0';
+			so_data <= si_data;
 		end if;
 	end process;
 

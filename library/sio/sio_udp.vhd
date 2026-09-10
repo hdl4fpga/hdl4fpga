@@ -140,15 +140,22 @@ begin
 		src_trdy => udppylrx_trdy,
 		src_data => udppylrx_data,
 		dst_clk  => so_clk,
-		dst_frm  => srzrx_frm,
+--		dst_frm  => srzrx_frm,
 		dst_irdy => srzrx_irdy,
 		dst_trdy => srzrx_trdy,
 		dst_data => srzrx_data);
 
+	process (so_clk)
+	begin
+		if rising_edge(so_clk) then
+			srzrx_frm <= udppylrx_frm;
+		end if;
+	end process;
+
 	rxpack_e : entity hdl4fpga.sio_pack
 	port map (
 		sio_clk => so_clk,
-		si_frm  => srztx_frm,
+		si_frm  => srzrx_frm,
 		si_rid  => x"00",
 		si_len  => std_logic_vector(to_unsigned(summation(hdo(frames)**".format.pyl")/8-1,8)),
 		si_irdy => srzrx_irdy,
@@ -157,7 +164,7 @@ begin
 
 		so_frm  => pylrx_frm,
 		so_irdy => pylrx_irdy,
-		so_trdy => pylrx_irdy,
+		so_trdy => pylrx_trdy,
 		so_data => pylrx_data);
 
 	process (miirx_clk)
