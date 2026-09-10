@@ -29,31 +29,33 @@ use hdl4fpga.ipoepkg.all;
 
 entity link_mii is
 	generic (
-		hwaddr   : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
-		ipv4addr : std_logic_vector(0 to 32-1) := aton("192.168.1.1");
-		n        : natural);
+		hwaddr    : std_logic_vector(0 to 48-1) := x"00_40_00_01_02_03";
+		ipv4addr  : std_logic_vector(0 to 32-1) := aton("192.168.1.1");
+		n         : natural);
 	port (
-		tp       : out std_logic_vector(1 to 32);
-		si_frm   : in  std_logic;
-		si_irdy  : in  std_logic := '1';
-		si_trdy  : out std_logic := '1';
-		si_data  : in  std_logic_vector(0 to 8-1);
+		tp        : out std_logic_vector(1 to 32);
+		si_frm    : in  std_logic;
+		si_irdy   : in  std_logic := '1';
+		si_trdy   : out std_logic := '1';
+		si_data   : in  std_logic_vector(0 to 8-1);
 
-		so_frm   : out std_logic;
-		so_irdy  : out std_logic := '1';
-		so_trdy  : in  std_logic := '1';
-		so_data  : out std_logic_vector(0 to 8-1);
+		so_frm    : out std_logic;
+		so_irdy   : out std_logic := '1';
+		so_trdy   : in  std_logic := '1';
+		so_data   : out std_logic_vector(0 to 8-1);
 
-		dhcp_btn : in  std_logic;
-		mii_rxc  : in  std_logic;
-		mii_rxdv : in  std_logic;
-		mii_rxd  : in  std_logic_vector(0 to n-1);
-		fcs_sb   : buffer std_logic;
-		fcs_vld  : buffer std_logic;
+		dhcp_btn  : in  std_logic;
+		mii_rxc   : in  std_logic;
+		mii_rxdv  : in  std_logic;
+		mii_rxd   : in  std_logic_vector(0 to n-1);
+		fcs_sb    : buffer std_logic;
+		fcs_vld   : buffer std_logic;
 
-		mii_txc  : in  std_logic;
-		mii_txen : out std_logic;
-		mii_txd  : out std_logic_vector(0 to n-1));
+		mii_txc   : in  std_logic;
+		mii_txen  : out std_logic;
+		mii_txd   : out std_logic_vector(0 to n-1);
+		rmii_rxdv : out std_logic;
+		rmii_rxd  : out std_logic_vector(0 to n-1));
 end;
 
 architecture graphics of link_mii is
@@ -101,6 +103,9 @@ begin
 		mii_rxd    => miirx_d,     
 		mii_txen   => miitx_en,   
 		mii_txd    => miitx_d);
+
+	rmii_rxdv <= miirx_dv;
+	rmii_rxd  <= miirx_d;
 
 	udpdaisy_e : entity hdl4fpga.sio_dayudp
 	generic map (

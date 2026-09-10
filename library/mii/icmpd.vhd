@@ -142,6 +142,9 @@ begin
 			variable shr_chksumirdy : unsigned(0 to (shr_frm'length-1)-1);
 		begin
 			if rising_edge(miirx_clk) then
+				rx_frm  <= shr_frm(0);
+				rx_irdy <= shr_irdy(0);
+				icmpchksum_irdy <= shr_chksumirdy(0);
 				if icmpchksum_irdy='1' then
 					rx_data <= chksum_data;
 				else
@@ -152,31 +155,26 @@ begin
 				else
 					shr_data(rx_data'range) := unsigned(icmprx_data);
 				end if;
-				icmpchksum_irdy <= shr_chksumirdy(0);
-				rx_frm  <= shr_frm(0);
-				rx_irdy <= shr_irdy(0);
-				shr_frm(0) := icmprx_frm;
+				shr_frm(0)  := icmprx_frm;
+				shr_irdy(0) := sharx_irdy or ipv4lenrx_irdy or sparx_irdy or icmprx_irdy;
 				shr_chksumirdy(0) := chksum_irdy;
-				if icmprx_frm='1' then
-					shr_irdy(0) := icmprx_irdy;
-				else
-					shr_irdy(0) := sharx_irdy or ipv4lenrx_irdy or sparx_irdy;
-				end if;
+
 				shr_frm  := rotate_left(shr_frm, 1);
-				shr_chksumirdy := rotate_left(shr_chksumirdy, 1);
 				shr_irdy := rotate_left(shr_irdy, 1);
 				shr_data := rotate_left(shr_data, rx_data'length);
+				shr_chksumirdy := rotate_left(shr_chksumirdy, 1);
 			end if;
 		end process;
 
 		process (miirx_clk)
 			type states is (s_flush, s_queue);
 			variable state : states;
+			variable sy_irdy : std_logic;
 		begin
 			if rising_edge(miirx_clk) then
 				if rx_frm='1' then
 					mode <= "10"; -- fifo commit
-				else
+				elsif sy_irdy='0' then
 					case state is
 					when s_flush =>
 						if sharx_frm='1' then
@@ -190,9 +188,9 @@ begin
 						end if;
 					end case;
 				end if;
+				sy_irdy := tx_irdy;
 			end if;
 		end process;
-
 	end block;
 
 	buffer_i : entity hdl4fpga.fifo

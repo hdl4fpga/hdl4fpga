@@ -244,25 +244,32 @@ begin
 		signal fcs_vld   : std_logic;
 	begin
 
-		process(rmii_crsdv, rmii_clk)
-			variable shr_dv  : unsigned(0 to 2-1);
-			variable shr_rxd : unsigned(0 to 2*2-1);
-		begin
-			if rising_edge(rmii_clk) then
-				case std_logic_vector'(shr_dv(0), shr_dv(1), rmii_crsdv) is
-				when "000"|"001"|"011" =>
-					rmii_rxdv <= '0';
-				when others =>
-					rmii_rxdv <=  '1';
-				end case;
-				rmii_rxd <= std_logic_vector(shr_rxd(0 to 2-1));
+		mii_e : entity hdl4fpga.link_mii
+		generic map (
+			hwaddr     => x"00_40_00_01_02_03",
+			ipv4addr   => aton("192.168.0.14"),
+			n          => 2)
+		port map (
+			si_frm     => si_frm,
+			si_irdy    => si_irdy,
+			si_trdy    => si_trdy,
+			si_data    => si_data,
+		
+			so_frm     => so_frm,
+			so_irdy    => so_irdy,
+			so_trdy    => so_trdy,
+			so_data    => so_data,
+			dhcp_btn   => dhcpc_btn,
+			mii_txc    => rmii_clk,
+			mii_txen   => rmii_txen,
+			mii_txd    => rmii_txd,
 
-				shr_rxd(0 to 2-1) := unsigned'(rmii_rxd0 & rmii_rxd1);
-				shr_rxd   := rotate_left(shr_rxd, 2);
-				shr_dv(0) := rmii_crsdv;
-				shr_dv    := rotate_left(shr_dv, 1);
-			end if;
-		end process;
+			mii_rxc    => rmii_clk,
+			mii_rxdv   => rmii_crsdv,
+			mii_rxd(0) => rmii_rxd0,
+			mii_rxd(1) => rmii_rxd1,
+			rmii_rxdv  => rmii_rxdv,
+			rmii_rxd   => rmii_rxd);
 
 		process(rmii_clk)
 		begin
@@ -272,33 +279,6 @@ begin
 				rmii_txd1  <= rmii_txd(1);
 			end if;
 		end process;
-
-		mii_e : entity hdl4fpga.link_mii
-		generic map (
-			hwaddr   => x"00_40_00_01_02_03",
-			ipv4addr => aton("192.168.0.14"),
-			n        => 2)
-		port map (
-			tp       => tp,
-			si_frm   => si_frm,
-			si_irdy  => si_irdy,
-			si_trdy  => si_trdy,
-			si_data  => si_data,
-		
-			so_frm   => so_frm,
-			so_irdy  => so_irdy,
-			so_trdy  => so_trdy,
-			so_data  => so_data,
-			dhcp_btn => dhcpc_btn,
-			mii_txc  => rmii_clk,
-			mii_txen => rmii_txen,
-			mii_txd  => rmii_txd,
-
-			fcs_sb   => fcs_sb,
-			fcs_vld  => fcs_vld,
-			mii_rxc  => rmii_clk,
-			mii_rxdv => rmii_rxdv,
-			mii_rxd  => rmii_rxd);
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
