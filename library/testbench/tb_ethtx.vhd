@@ -73,7 +73,8 @@ architecture beh of tb_ethtx is
 	end;
 
 	function init_ipv4 (
-		constant data : string)
+		constant data  : string;
+		constant proto : string := "0x01")
 		return std_logic_vector is
 		constant default_ipv4 : string := "{" &
 			"verihl:0x45,"    &
@@ -91,7 +92,6 @@ architecture beh of tb_ethtx is
 		constant ident   : string := hdo(data)**(".ident"   &'='& string'(hdo(default_ipv4)**".ident"));
 		constant flgsoff : string := hdo(data)**(".flgsoff" &'='& string'(hdo(default_ipv4)**".flgsoff"));
 		constant ttl     : string := hdo(data)**(".ttl"     &'='& string'(hdo(default_ipv4)**".ttl"));
-		constant proto   : string := hdo(data)**(".proto"   &'='& string'(hdo(default_ipv4)**".proto"));
 		constant chksum  : string := hdo(data)**(".chksum"  &'='& string'(hdo(default_ipv4)**".chksum"));
 		constant sa      : string := hdo(data)**".sa";
 		constant da      : string := hdo(data)**".da";
@@ -103,7 +103,7 @@ architecture beh of tb_ethtx is
 			to_stdlogicvector(ident)   & 
 			to_stdlogicvector(flgsoff) & 
 			to_stdlogicvector(ttl)     & 
-			to_stdlogicvector(proto)   & 
+			to_stdlogicvector(hdo(data)**(".proto" &'='& proto))   & 
 			to_stdlogicvector(chksum)  & 
 			aton(sa)                   & 
 			aton(da);
@@ -152,6 +152,7 @@ architecture beh of tb_ethtx is
 							tha    => bcast, 
 							ethtyp => "0x0800")      &
 						init_ipv4(
+							proto  => hdo(frames)**".data.ipv4.proto.udp",
 							data   => data**".ipv4") &
 						init_udp(
 							data   => data), 

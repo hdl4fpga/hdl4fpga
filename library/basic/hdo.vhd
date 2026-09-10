@@ -146,18 +146,18 @@ package body hdo is
 		constant object : string)
 		return string is
 		variable retval : string(1 to object'length);
-		variable quote  : character;
+		variable escape : boolean;
 		variable bkslh  : boolean;
 		variable n      : positive;
 	begin
 		bkslh  := false;
-		quote  := NUL;
+		escape := false;
 		n      := retval'left;
 		for i in object'range loop
 			if bkslh then
 				retval(n) := object(i);
 				n := n + 1;
-			elsif quote/=NUL then
+			elsif escape then
 				retval(n) := object(i);
 				n := n + 1;
 			elsif not isws(object(i)) then
@@ -168,18 +168,10 @@ package body hdo is
 				bkslh := false;
 			elsif object(i)='\' then
 				bkslh := true;
-			elsif quote=NUL and (object(i)=''' or object(i)='"') then
-				quote := object(i);
-			elsif quote/=NUL and object(i)=quote then
-				quote := NUL;
+			elsif object(i)=''' or object(i)='"' then
+				escape := not escape;
 			end if;
 		end loop;
-		assert not bkslh
-			report "compact: trailing escape character"
-			severity failure;
-		assert quote=NUL
-			report "compact: unterminated quoted string"
-			severity failure;
 		return retval(1 to n-1);
 	end;
 
@@ -377,10 +369,10 @@ package body hdo is
 		elsif value'length > 0 then
 			return to_bin(value(value'left to value'right), 2);
 		else
---			assert false
---				report "value'range is null"
---				severity failure;
-			return "";
+			assert false
+				report "value'range is null"
+				severity failure;
+			return "X";
 		end if;
 	end;
 
@@ -1234,9 +1226,6 @@ package body hdo is
 		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
-		if value_length=0 then
-			return 0.0;
-		end if;
 		return to_real(object(value_position to value_position+value_length-1));
 	end;
 
@@ -1249,9 +1238,6 @@ package body hdo is
 		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
-		if value_length=0 then
-			return "X";
-		end if;
 		return to_stdlogicvector(escaped(object(value_position to value_position+value_length-1)));
 	end;
 
@@ -1321,9 +1307,6 @@ package body hdo is
 		return character is
 		constant retval : string := resolve(string(object) & path);
 	begin
-		if retval'length=0 then
-			return NUL;
-		end if;
 		if retval(retval'left)='\' then
 			return retval(retval'left+1);
 		end if;
@@ -1362,18 +1345,18 @@ package body hdo is
 		variable retval : inout string;
 		variable length : inout natural;
 		constant object : in    string) is
-		variable quote  : character;
+		variable escape : boolean;
 		variable bkslh  : boolean;
 	begin
 		length := 0;
-		quote  := NUL;
+		escape := false;
 		bkslh  := false;
 		for i in object'range loop
 			if bkslh then
 				retval(retval'left+length) := object(i);
 				length := length + 1;
-			elsif quote/=NUL then
-				if object(i)/=quote then
+			elsif escape then
+				if not (object(i)=''' or object(i)='"' or object(i)='\') then
 					retval(retval'left+length) := object(i);
 					length := length + 1;
 				end if;
@@ -1385,18 +1368,10 @@ package body hdo is
 				bkslh := false;
 			elsif object(i)='\' then
 				bkslh := true;
-			elsif quote=NUL and (object(i)=''' or object(i)='"') then
-				quote := object(i);
-			elsif quote/=NUL and object(i)=quote then
-				quote := NUL;
+			elsif object(i)=''' or object(i)='"' then
+				escape := not escape;
 			end if;
 		end loop;
-		assert not bkslh
-			report "escaped: trailing escape character"
-			severity failure;
-		assert quote=NUL
-			report "escaped: unterminated quoted string"
-			severity failure;
 	end;
 
 	function escaped (
@@ -1404,6 +1379,7 @@ package body hdo is
 		return string is
 		variable length : natural;
 		variable retval : string(1 to object'length);
+		variable escape : boolean;
 	begin
 		escaped(retval, length, object);
 		if length/=0 then

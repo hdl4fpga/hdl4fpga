@@ -263,7 +263,7 @@ begin
 		generic map(
 			sha  => "0x00_27_0e_0f_f5_95",
 			data => "{"  &
-				"udp:" & string'(hdo(data)**"[2]") &
+				"udp:" & string'(hdo(data)**"[3]") &
 				"}")
 		port map (
 			req  => rmii_req,

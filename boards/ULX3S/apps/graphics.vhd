@@ -55,6 +55,7 @@ architecture graphics of ulx3s is
 	constant io_link      : string  := settings**".io_link";
 	constant baudrate     : natural := 3000000;
 
+	alias sys_rst is fire1;
 	alias sys_clk is clk_25mhz;
 
 	signal video_clk       : std_logic;
@@ -256,7 +257,7 @@ begin
 			so_irdy    => so_irdy,
 			so_trdy    => so_trdy,
 			so_data    => so_data,
-			dhcp_btn   => fire1,
+			dhcp_btn   => dhcpc_btn,
 			mii_txc    => rmii_clk,
 			mii_txen   => rmii_txen,
 			mii_txd    => rmii_txd,
@@ -330,10 +331,10 @@ begin
 			if rising_edge(ser_clk) then
 --				ser_frm  <= tp(1);
 --				ser_data <= tp(2 to 2+rmii_txd'length-1);
-				ser_frm  <= rmii_txen;
-				ser_data <= rmii_txd;
---				ser_frm  <= rmii_rxdv;
---				ser_data <= rmii_rxd;
+--				ser_frm  <= rmii_txen;
+--				ser_data <= rmii_txd;
+				ser_frm  <= rmii_crsdv;
+				ser_data <= rmii_rxd0 & rmii_rxd1;
 			end if;
 		end process;
 
