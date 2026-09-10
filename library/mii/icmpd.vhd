@@ -136,10 +136,10 @@ begin
 			so_data => chksum_data);
 
 		process (miirx_clk)
-			variable shr_frm : unsigned(0 to 16/rx_data'length-1);
-			variable shr_chksumirdy : unsigned(0 to (16/rx_data'length-1)-1);
-			variable shr_irdy : unsigned(0 to 16/rx_data'length-1);
 			variable shr_data : unsigned(0 to 16-1);
+			variable shr_frm  : unsigned(0 to shr_data'length/rx_data'length-1);
+			variable shr_irdy : unsigned(shr_frm'range);
+			variable shr_chksumirdy : unsigned(0 to (shr_frm'length-1)-1);
 		begin
 			if rising_edge(miirx_clk) then
 				if icmpchksum_irdy='1' then

@@ -96,112 +96,112 @@ architecture def of udp is
 begin
 
 	rx_b : block
-		signal sp_frm  : std_logic;
-		signal dp_frm  : std_logic;
-		signal act2    : std_logic;
-		signal act3    : std_logic;
-		signal pyl_frm : std_logic;
-		signal framedecode_trdy : std_logic;
+		constant udprx_frame : string := compact('{' &
+			    "sp:" & string'(hdo(frames)**".format.udp.sp")     & ',' &
+			    "dp:" & string'(hdo(frames)**".format.udp.dp")     & ',' &
+			"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
+			"chksum:" & string'(hdo(frames)**".format.udp.chksum") & '}');
+
+		signal udprx_acts  : std_logic_vector(0 to length(udprx_frame));
+		signal udprx_frms  : std_logic_vector(udprx_acts'range);
+		signal udprx_irdys : std_logic_vector(udprx_acts'range);
+		signal udprx_trdys : std_logic_vector(udprx_acts'range);
+
+		alias sp_act   is udprx_acts(0);
+		alias dp_act   is udprx_acts(1);
+		alias pyl_act  is udprx_acts(4);
+
+		alias sp_frm   is udprx_frms(0);
+		alias dp_frm   is udprx_frms(1);
+		alias pyl_frm  is udprx_frms(4);
+
+		alias sp_irdy  is udprx_irdys(0);
+		alias dp_irdy  is udprx_irdys(1);
+		alias pyl_irdy is udprx_irdys(4);
+
+		signal mode    : std_logic_vector(0 to 2-1) := "00";
+		signal rx_frm  : std_logic;
+		signal rx_irdy : std_logic;
+		signal rx_trdy : std_logic;
+		signal rx_data : std_logic_vector(udprx_data'range);
+
 	begin
 
-		udp_i : entity hdl4fpga.frame_decode
+		udprx_i : entity hdl4fpga.frame_decode
 		generic map (
-			frame => compact('{' &
-				"    sp:" & string'(hdo(frames)**".format.udp.sp")     & ',' &
-				"    dp:" & string'(hdo(frames)**".format.udp.dp")     & ',' &
-				"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
-				"chksum:" & string'(hdo(frames)**".format.udp.chksum") & '}'),
+			frame => udprx_frame,
 			size  => udprx_data'length)
 		port map (
-			clk    => miirx_clk,
-			frm    => udprx_frm,
-			irdy   => udprx_irdy,
-			trdy   => framedecode_trdy,
-			frms(0) => sp_frm,
-			frms(1) => dp_frm,
-			frms(2) => act2,
-			frms(3) => act3,
-			frms(4) => pyl_frm);
+			clk   => miirx_clk,
+			frm   => udprx_frm,
+			irdy  => udprx_irdy,
+			acts  => udprx_acts,
+			frms  => udprx_frms,
+			irdys => udprx_irdys,
+			trdys => udprx_trdys);
+		udprx_trdys <= (others => rx_trdy);
 
-		fifo_b : block
-			signal src_irdy : std_logic;
-			signal src_data : std_logic_vector(udprx_data'range);
-			signal commit   : std_logic;
-			signal rollback : std_logic;
+		process (miirx_clk)
+			variable shr_data : unsigned(0 to rx_data'length-1);
+			variable shr_frm  : unsigned(0 to shr_data'length/rx_data'length-1);
+			variable shr_irdy : unsigned(0 to shr_data'length/rx_data'length-1);
 		begin
+			if rising_edge(miirx_clk) then
+				rx_data     <= std_logic_vector(shr_data(rx_data'range));
+				rx_frm      <= shr_frm(0);
+				rx_irdy     <= shr_irdy(0);
+				shr_frm(0)  := udprx_frm;
+				shr_irdy(0) := sharx_irdy or sparx_irdy or sp_irdy or dp_irdy or pyl_irdy;
+				shr_data    := unsigned(udprx_data);
+				shr_frm     := rotate_left(shr_frm, 1);
+				shr_irdy    := rotate_left(shr_irdy, 1);
+				shr_data    := rotate_left(shr_data, rx_data'length);
+			end if;
+		end process;
 
-			process (miirx_clk)
-				type states is (s_flush, s_commit);
-				variable state : states;
-			begin
-				if rising_edge(miirx_clk) then
+		process (miirx_clk)
+			type states is (s_flush, s_queue);
+			variable state : states;
+			variable sy_irdy : std_logic;
+		begin
+			if rising_edge(miirx_clk) then
+				if udprx_frm='1' then
+					mode <= "10"; -- fifo commit
+				elsif sy_irdy='0' then
 					case state is
 					when s_flush =>
 						if sharx_frm='1' then
-    						commit   <= '0';
-    						rollback <= '0';
-							state := s_commit;
-						elsif udprx_frm='1' then
-							commit   <= '1';
-							rollback <= '0';
-						elsif pylrx_irdy='0' then
-							commit   <= '0';
-							rollback <= '0';
+							mode  <= "00"; -- fifo flush
+							state := s_queue;
 						end if;
-					when s_commit =>
-						if udprx_frm='1' then
-							commit   <= '1';
-							rollback <= '0';
+					when s_queue =>
+						mode <= "11"; -- fifo queue
+						if sharx_frm='0' then
 							state := s_flush;
-						else
-							commit   <= '1';
-							rollback <= '1';
 						end if;
 					end case;
-					src_irdy <= 
-						(sharx_irdy and sharx_frm) or
-						(sparx_irdy and sparx_frm) or
-						(udprx_irdy and sp_frm)    or
-						(udprx_irdy and dp_frm)    or
-						(udprx_irdy and pyl_frm);
-					src_data <= udprx_data;
 				end if;
-			end process;
+				sy_irdy := pyltx_irdy;
+			end if;
+		end process;
 
-			process (miirx_clk)
-			begin
-				if rising_edge(miirx_clk) then
-					if (udprx_frm or src_irdy)='1' then
-						pylrx_frm <= '1';
-					elsif pylrx_frm='1' then
-						if (pylrx_irdy and pylrx_trdy)='1' then
-							pylrx_frm <= '0';
-						end if;
-					end if;
-				end if;
-			end process;
-
-			fifo_i : entity hdl4fpga.fifo
-			generic map (
-				latency   => 1,
-				check_sov => true,
-				check_dov => true,
-				max_depth => (2048*8)/udprx_data'length)
-			port map (
-				src_clk  => miirx_clk,
-				src_irdy => src_irdy,
-				src_trdy => udprx_trdy,
-				src_data => src_data,
-
-				mode(0)  => commit,
-				mode(1)  => rollback,
-
-				dst_clk  => miirx_clk,
-				dst_irdy => pylrx_irdy,
-				dst_trdy => pylrx_trdy,
-				dst_data => pylrx_data);
-
-		end block;
+		buffer_i : entity hdl4fpga.fifo
+		generic map(
+			latency   => 1,
+			check_sov => true,
+			check_dov => true,
+			max_depth => 1024)
+		port map (
+			mode      => mode,
+			src_clk   => miirx_clk,
+			src_irdy  => rx_irdy,
+			src_trdy  => rx_trdy,
+			src_data  => rx_data,
+			dst_clk   => miitx_clk,
+			dst_irdy  => pylrx_irdy,
+			dst_trdy  => pylrx_trdy,
+			dst_data  => pylrx_data);
+		pylrx_frm <= pylrx_irdy;
 
 		dhcpcd_b : block
 			signal dhcpcd_equ : std_logic;
@@ -212,7 +212,7 @@ begin
 			port map (
 				mii_clk => miirx_clk,
 				frm     => sp_frm,
-				irdy    => sp_frm,
+				irdy    => sp_irdy,
 				trdy    => open,
 				data    => udprx_data,
 				equ     => dhcpcd_equ);
@@ -275,7 +275,6 @@ begin
 		signal si_data     : std_logic_vector(udptx_data'range);
 		signal adjlen_data : std_logic_vector(udptx_data'range);
 		signal decode_irdy : std_logic;
-		signal framedecode_trdy : std_logic;
 
 	begin
 
@@ -316,7 +315,6 @@ begin
 			clk  => miitx_clk,
 			frm  => udppyltx_frm,
 			irdy => decode_irdy,
-			trdy   => framedecode_trdy,
 			acts => udp_act);
 
 		adjlen_irdy <= length_act or adjlen_act or lentx_act;
@@ -345,7 +343,7 @@ begin
 	generic map (
 		hwaddr        => hwaddr)
 	port map (
-		tp => tp,
+--		tp => tp,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
 
