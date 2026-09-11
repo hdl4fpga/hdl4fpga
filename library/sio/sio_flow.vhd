@@ -233,15 +233,22 @@ begin
 
 		ack_b : if reply generate
 
-			alias  ackrx_frm  is tx_frms(1);
-			alias  ackrx_irdy is tx_irdys(1);
-			alias  ackrx_trdy is tx_trdys(1);
+			alias  acktx_frm  is tx_frms(1);
+			alias  acktx_irdy is tx_irdys(1);
+			alias  acktx_trdy is tx_trdys(1);
 
+			signal mode      : std_logic_vector(0 to 1);
 			signal rxdp_frm  : std_logic;
 			signal rxdp_irdy : std_logic;
 			signal src_irdy  : std_logic;
 			signal src_trdy  : std_logic;
 			signal src_data  : std_logic_vector(rx_data'range);
+			signal dst_irdy  : std_logic;
+			signal dst_trdy  : std_logic;
+			signal dst_data  : std_logic_vector(tx_data'range);
+			signal txdp_frm  : std_logic;
+			signal txdp_irdy : std_logic;
+			signal txdp_data : std_logic_vector(tx_data'range);
 		begin
 
 			src_b : block
@@ -251,35 +258,36 @@ begin
 				constant thada_value : string := natural'image(thada_length);  -- lattice semi complains
 				constant frame : string := compact('{'                           &
 					 "thada:" & thada_value                                & ',' &
-					"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
 						"sp:" & string'(hdo(frames)**".format.udp.dp")     & ',' &
 						"dp:" & string'(hdo(frames)**".format.udp.dp")     & '}');
-				signal length_data : std_logic_vector(rx_data'range);
-				signal dp_data  : std_logic_vector(rx_data'range);
 
-				signal acts  : std_logic_vector(0 to length(dst_frame));
+				signal acts  : std_logic_vector(0 to length(frame));
 				signal frms  : std_logic_vector(acts'range);
 				signal irdys : std_logic_vector(acts'range);
 				signal trdys : std_logic_vector(acts'range);
 
 				alias thada_act   is acts(0);
+				alias sp_act      is acts(1);
 				alias length_act  is acts(1);
 				alias dp_act      is acts(2);
 
 				alias thada_frm   is frms(0);
+				alias sp_frm      is frms(1);
 				alias length_frm  is frms(1);
 				alias dp_frm      is frms(2);
 
 				alias thada_irdy  is irdys(0);
+				alias sp_irdy     is irdys(1);
 				alias length_irdy is irdys(1);
 				alias dp_irdy     is irdys(2);
 
 				signal length_data : std_logic_vector(rx_data'range);
 
 			begin
+
 				frame_i : entity hdl4fpga.frame_decode
 				generic map (
-					frame => dst_frame,
+					frame => frame,
 					size  => tx_data'length)
 				port map (
 					clk   => rx_clk,
@@ -289,7 +297,7 @@ begin
 					frms  => frms,
 					irdys => irdys,
 					trdys => trdys);
-				trdys <= (others => src_trdy);
+				trdys     <= (others => src_trdy);
 				rxdp_frm  <= dp_frm;
 				rxdp_irdy <= dp_irdy;
 
@@ -307,6 +315,10 @@ begin
 					sio_trdy => open,
 					so_data  => length_data);
 
+				src_irdy <= thada_irdy or length_irdy or dp_irdy;
+				src_data <= 
+					length_data when length_act='1' else
+					rx_data;
 			end block;
 
 			dp_i : entity hdl4fpga.sio_ram
@@ -322,10 +334,6 @@ begin
 				so_irdy => txdp_irdy,
 				so_data => txdp_data);
 
-			src_irdy <= thada_irdy or length_irdy or dp_irdy;
-			src_data <= 
-				length_data when length_act='1' else
-				rx_data;
 			fifo_i : entity hdl4fpga.fifo
 			generic map (
 				latency   => 1,
@@ -344,6 +352,54 @@ begin
 				dst_trdy => dst_trdy,
 				dst_data => dst_data);
 
+			dst_b : block
+				constant header_length : natural :=    -- lattice semi complains
+					hdo(frames)**".format.mac.hwda"   + -- lattice semi complains
+					hdo(frames)**".format.ipv4.da"    + -- lattice semi complains
+					hdo(frames)**".format.udp.length" + -- lattice semi complains
+					hdo(frames)**".format.udp.sp";      -- lattice semi complains
+				constant header_value : string := natural'image(header_length);  -- lattice semi complains
+				constant frame : string := compact('{'                       &
+					"header:" & header_value                           & ',' &
+						"dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
+
+				signal acts  : std_logic_vector(0 to length(frame));
+				signal frms  : std_logic_vector(acts'range);
+				signal irdys : std_logic_vector(acts'range);
+				signal trdys : std_logic_vector(acts'range);
+
+				alias header_act  is acts(0);
+				alias dp_act      is acts(1);
+
+				alias header_frm  is frms(0);
+				alias dp_frm      is frms(1);
+
+				alias header_irdy is irdys(0);
+				alias dp_irdy     is irdys(1);
+
+			begin
+
+				frame_i : entity hdl4fpga.frame_decode
+				generic map (
+					frame => frame,
+					size  => tx_data'length)
+				port map (
+					clk   => tx_clk,
+					frm   => dst_irdy,
+					irdy  => dst_irdy,
+					acts  => acts,
+					frms  => frms,
+					irdys => irdys,
+					trdys => trdys);
+				trdys <= (others => acktx_trdy);
+				rxdp_frm  <= dp_frm;
+				rxdp_irdy <= dp_irdy;
+
+				acktx_frm  <= dst_irdy;
+				acktx_irdy <= dst_irdy;
+				dst_trdy   <= acktx_trdy;
+
+			end block;
 
 		end generate;
 
