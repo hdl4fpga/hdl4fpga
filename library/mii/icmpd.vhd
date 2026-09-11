@@ -123,7 +123,7 @@ begin
 			so_trdy => open,
 			so_data => rom_data);
 
-		miiadjlen_i : entity hdl4fpga.mii_adjlen
+		recalculate_icmp_chksum_e : entity hdl4fpga.mii_adjlen
 		port map (
 			clk     => miitx_clk,
 			init    => 
@@ -135,7 +135,7 @@ begin
 			so_irdy => icmpchksum_irdy,
 			so_data => chksum_data);
 
-		process (miirx_clk)
+		recalculate_icmp_chksum_p : process (miirx_clk)
 			variable shr_data : unsigned(0 to 16-1);
 			variable shr_frm  : unsigned(0 to shr_data'length/rx_data'length-1);
 			variable shr_irdy : unsigned(shr_frm'range);

@@ -237,64 +237,95 @@ begin
 			alias  ackrx_irdy is tx_irdys(1);
 			alias  ackrx_trdy is tx_trdys(1);
 
-			signal data_frm  : std_logic;
-			signal data_irdy : std_logic;
-
-			signal fifo_irdy : std_logic;
-			signal fifo_trdy : std_logic;
-			signal commit    : std_logic;
-			signal rollback  : std_logic;
-
-			constant dasp_length : natural :=  -- lattice semi complains
-				hdo(frames)**".format.ipv4.da" +  -- lattice semi complains
-				hdo(frames)**".format.udp.sp";  -- lattice semi complains
-			constant dasp_value : string := natural'image(dasp_length);  -- lattice semi complains
-			constant dst_frame : string := compact('{' &
-				"   tha:" & string'(hdo(frames)**".format.mac.hwda")   & ',' &
-				"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
-				"  dasp:" & dasp_value  & ',' &  -- lattice semi complains
-				"    dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
-			signal dst_irdy  : std_logic;
-			signal dst_trdy  : std_logic;
-			signal dst_data  : std_logic_vector(rx_data'range);
-			signal length_data : std_logic_vector(rx_data'range);
-			signal dp_data  : std_logic_vector(rx_data'range);
-
-			signal dst_acts  : std_logic_vector(0 to length(dst_frame));
-			signal dst_frms  : std_logic_vector(0 to length(dst_frame));
-			signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
-
+			signal rxdp_frm  : std_logic;
+			signal rxdp_irdy : std_logic;
+			signal src_irdy  : std_logic;
+			signal src_trdy  : std_logic;
+			signal src_data  : std_logic_vector(rx_data'range);
 		begin
 
-			process (rgtr0_irdys, pyl_irdys, rx_clk)
-				type states is (s_start, s_bridge);
-				variable state : states;
-			begin
-				if rising_edge(rx_clk) then
-					if (rgtr_frm or rgtr_irdy)='1' then
-						case state is
-						when s_start =>
-							if pyl_irdys(0)='1' then
-								state := s_bridge;
-							end if;
-						when s_bridge =>
-							if pyl_irdys(1)='1' then
-								state := s_start;
-							end if;
-						end case;
-					else
-						state := s_start;
-					end if;
-				end if;
-				if state=s_bridge then
-					fifo_irdy <= rgtr0_irdys(0) or rgtr0_irdys(2);
-				else
-					fifo_irdy <= pyl_irdys(0) or pyl_irdys(1);
-				end if;
-			end process;
+			src_b : block
+				constant thada_length : natural :=     -- lattice semi complains
+					hdo(frames)**".format.mac.hwda" +  -- lattice semi complains
+					hdo(frames)**".format.ipv4.da";    -- lattice semi complains
+				constant thada_value : string := natural'image(thada_length);  -- lattice semi complains
+				constant frame : string := compact('{'                           &
+					 "thada:" & thada_value                                & ',' &
+					"length:" & string'(hdo(frames)**".format.udp.length") & ',' &
+						"sp:" & string'(hdo(frames)**".format.udp.dp")     & ',' &
+						"dp:" & string'(hdo(frames)**".format.udp.dp")     & '}');
+				signal length_data : std_logic_vector(rx_data'range);
+				signal dp_data  : std_logic_vector(rx_data'range);
 
-			commit   <= not fcs_sb or     (fcs_vld and (dup_equ or '1'));
-			rollback <= not fcs_sb or not (fcs_vld and (dup_equ or '1'));
+				signal acts  : std_logic_vector(0 to length(dst_frame));
+				signal frms  : std_logic_vector(acts'range);
+				signal irdys : std_logic_vector(acts'range);
+				signal trdys : std_logic_vector(acts'range);
+
+				alias thada_act   is acts(0);
+				alias length_act  is acts(1);
+				alias dp_act      is acts(2);
+
+				alias thada_frm   is frms(0);
+				alias length_frm  is frms(1);
+				alias dp_frm      is frms(2);
+
+				alias thada_irdy  is irdys(0);
+				alias length_irdy is irdys(1);
+				alias dp_irdy     is irdys(2);
+
+				signal length_data : std_logic_vector(rx_data'range);
+
+			begin
+				frame_i : entity hdl4fpga.frame_decode
+				generic map (
+					frame => dst_frame,
+					size  => tx_data'length)
+				port map (
+					clk   => rx_clk,
+					frm   => dst_irdy,
+					irdy  => dst_irdy,
+					acts  => acts,
+					frms  => frms,
+					irdys => irdys,
+					trdys => trdys);
+				trdys <= (others => src_trdy);
+				rxdp_frm  <= dp_frm;
+				rxdp_irdy <= dp_irdy;
+
+				mode <= 
+					"10" when (fcs_sb and     fcs_vld)='1' else
+					"00" when (fcs_sb and not fcs_vld)='1' else
+					"11";
+
+				length_i : entity hdl4fpga.sio_mux
+				port map (
+					mux_data => reverse(x"0003",8),
+					sio_clk  => rx_clk,
+					sio_frm  => length_frm,
+					sio_irdy => length_irdy,
+					sio_trdy => open,
+					so_data  => length_data);
+
+			end block;
+
+			dp_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => x"0000")
+			port map (
+				si_clk  => rx_clk,
+				si_frm  => rxdp_frm,
+				si_irdy => rxdp_irdy,
+				si_data => rx_data,
+				so_clk  => tx_clk,
+				so_frm  => txdp_frm,
+				so_irdy => txdp_irdy,
+				so_data => txdp_data);
+
+			src_irdy <= thada_irdy or length_irdy or dp_irdy;
+			src_data <= 
+				length_data when length_act='1' else
+				rx_data;
 			fifo_i : entity hdl4fpga.fifo
 			generic map (
 				latency   => 1,
@@ -302,87 +333,17 @@ begin
 				check_dov => true,
 				max_depth => (64*8)/rx_data'length)
 			port map (
+				mode     => mode,
 				src_clk  => rx_clk,
-				src_irdy => fifo_irdy,
-				src_trdy => fifo_trdy,
-				src_data => rx_data,
-
-				mode(0)  => commit,
-				mode(1)  => rollback,
+				src_irdy => src_irdy,
+				src_trdy => src_trdy,
+				src_data => src_data,
 
 				dst_clk  => tx_clk,
 				dst_irdy => dst_irdy,
 				dst_trdy => dst_trdy,
 				dst_data => dst_data);
 
-			dst_i : entity hdl4fpga.frame_decode
-			generic map (
-				frame => dst_frame,
-				size  => tx_data'length)
-			port map (
-				clk   => tx_clk,
-				frm   => dst_irdy,
-				irdy  => dst_irdy,
-				frms  => dst_frms,
-				trdys => dst_trdys,
-				acts  => dst_acts);
-
-			length_i : entity hdl4fpga.sio_mux
-			port map (
-				mux_data => reverse(x"0003",8),
-				sio_clk  => tx_clk,
-				sio_frm  => dst_frms(1),
-				sio_irdy => ackrx_trdy,
-				sio_trdy => open,
-				so_data  => length_data);
-
-			dp_i : entity hdl4fpga.sio_ram
-			generic map (
-				bitdata => x"0000")
-			port map (
-				si_clk  => rx_clk,
-				si_frm  => rgtr0_frms(1),
-				si_irdy => rgtr0_irdys(1),
-				si_data => rx_data,
-				so_clk  => tx_clk,
-				so_frm  => dst_frms(3),
-				so_irdy => ackrx_trdy,
-				so_data => dp_data);
-
-			process (ackrx_trdy, dst_acts, dst_irdy, tx_clk)
-				variable prefecth : std_logic;
-			begin
-				if rising_edge(tx_clk) then
-					if dst_irdy='1' then
-						ackrx_irdy <= dst_irdy;
-						if ackrx_trdy='1' then
-							if dst_acts(1)='1' then
-								acktx_data <= length_data;
-							elsif dst_acts(3)='1' then
-								acktx_data <= dp_data;
-							else
-								acktx_data <= dst_data;
-							end if;
-						elsif prefecth='1' then
-							acktx_data <= dst_data;
-							prefecth := '0';
-						end if;
-					elsif ackrx_frm='0' then
-						if (ackrx_irdy and (ackrx_trdy and not (dst_acts(1) or dst_acts(3))))='1' then
-							prefecth := '1';
-						elsif ackrx_irdy='0' then
-							prefecth := '1';
-						end if;
-						if tx_trdy='1' then
-							ackrx_irdy <= dst_irdy;
-							acktx_data <= dst_data;
-						end if;
-					end if;
-				end if;
-				dst_trdys <= (others => ackrx_trdy or prefecth);
-				dst_trdy  <= (ackrx_trdy and not (dst_acts(1) or dst_acts(3))) or prefecth;
-				ackrx_frm <= dst_irdy and not prefecth;
-			end process;
 
 		end generate;
 
