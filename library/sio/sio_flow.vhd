@@ -81,6 +81,8 @@ architecture struct of sio_flow is
 
 	constant addr_length: natural := hdo(frames)**".format.mac.hwda" + hdo(frames)**".format.ipv4.da"; -- latticesemi Expecting constant string
 	constant addr_value : string := natural'image(addr_length);
+	alias rgtr0_frm  is pyl_frms(0);
+	alias rgtr0_irdy is pyl_irdys(0);
 	constant rgtr0_frame : string := compact('{' &
 		"addr:" & addr_value             & ',' &
 		  "sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
@@ -261,6 +263,7 @@ begin
 						"sp:" & string'(hdo(frames)**".format.udp.dp")     & ',' &
 						"dp:" & string'(hdo(frames)**".format.udp.dp")     & '}');
 
+				signal irdy  : std_logic;
 				signal acts  : std_logic_vector(0 to length(frame));
 				signal frms  : std_logic_vector(acts'range);
 				signal irdys : std_logic_vector(acts'range);
@@ -291,8 +294,8 @@ begin
 					size  => tx_data'length)
 				port map (
 					clk   => rx_clk,
-					frm   => dst_irdy,
-					irdy  => dst_irdy,
+					frm   => rgtr0_frm,
+					irdy  => rgtr0_irdy,
 					acts  => acts,
 					frms  => frms,
 					irdys => irdys,
@@ -392,12 +395,16 @@ begin
 					irdys => irdys,
 					trdys => trdys);
 				trdys <= (others => acktx_trdy);
-				rxdp_frm  <= dp_frm;
-				rxdp_irdy <= dp_irdy;
+				rxsp_frm  <= dp_frm;
+				rxsp_irdy <= dp_irdy;
 
 				acktx_frm  <= dst_irdy;
 				acktx_irdy <= dst_irdy;
 				dst_trdy   <= acktx_trdy;
+
+				acktx_data <=
+					dst_data  when header_act='1' else
+					txdp_data; -- when     dp_act='1' else
 
 			end block;
 
