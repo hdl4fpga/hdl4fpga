@@ -83,12 +83,11 @@ architecture struct of sio_flow is
 	constant addr_value : string := natural'image(addr_length);
 	constant rgtr0_frame : string := compact('{' &
 		"addr:" & addr_value             & ',' &
-		" sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
+		  "sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
 	signal rgtr0_acts  : std_logic_vector(0 to length(rgtr0_frame));
 	signal rgtr0_frms  : std_logic_vector(0 to length(rgtr0_frame));
 	signal rgtr0_irdys : std_logic_vector(0 to length(rgtr0_frame));
 	signal sin_trdy    : std_logic;
-	signal framedecode_trdy    : std_logic;
 
 begin
 
@@ -116,8 +115,8 @@ begin
 		data       => rx_data,
 		rid_act    => rid_act,
 		pyl_act    => pyl_act,
-		pyl_frm    => pyl_frms,
-		pyl_irdy   => pyl_irdys);
+		pyl_frms   => pyl_frms,
+		pyl_irdys  => pyl_irdys);
 
 	rxrgtr_i : entity hdl4fpga.frame_decode
 	generic map (
@@ -127,7 +126,6 @@ begin
 		clk   => rx_clk,
 		frm   => pyl_frms(0),
 		irdy  => rgtr_irdy,
-		trdy  => framedecode_trdy, -- lattice semi complains : Port trdy cannot be connected to a constant
 		frms  => rgtr0_frms,
 		irdys => rgtr0_irdys,
 		acts  => rgtr0_acts);
@@ -266,7 +264,6 @@ begin
 			signal dst_frms  : std_logic_vector(0 to length(dst_frame));
 			signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
 
-			signal framedecode_trdy : std_logic;
 		begin
 
 			process (rgtr0_irdys, pyl_irdys, rx_clk)
@@ -326,7 +323,6 @@ begin
 				clk   => tx_clk,
 				frm   => dst_irdy,
 				irdy  => dst_irdy,
-				trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 				frms  => dst_frms,
 				trdys => dst_trdys,
 				acts  => dst_acts);
@@ -439,7 +435,6 @@ begin
 		signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
 		signal dp_data   : std_logic_vector(so_data'range);
 
-		signal framedecode_trdy : std_logic;
 	begin
 
 		src_irdy <= 
@@ -479,7 +474,6 @@ begin
 			clk   => so_clk,
 			frm   => dst_irdy,
 			irdy  => dst_irdy,
-			trdy  => framedecode_trdy, -- Latticesemi complains : Port trdy cannot be connected to a constant
 			frms  => dst_frms,
 			trdys => dst_trdys,
 			acts  => dst_acts);

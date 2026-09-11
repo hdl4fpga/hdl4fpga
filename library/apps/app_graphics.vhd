@@ -258,8 +258,8 @@ begin
 			data       => sin_data,
 			rid_act    => rid_act,
 			pyl_act    => pyl_act,
-			pyl_frm    => rgtr_frms,
-			pyl_irdy   => rgtr_irdys);
+			pyl_frms   => rgtr_frms,
+			pyl_irdys  => rgtr_irdys);
 
 		rx_b : block
 			alias  rgtr0_frm   is rgtr_frms(0);
