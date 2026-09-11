@@ -32,11 +32,11 @@ entity sio_sin is
 		clk        : in  std_logic;
 		frm        : in  std_logic;
 		irdy       : in  std_logic;
-		trdy       : buffer std_logic := '1';
+		trdy       : out std_logic;
 		data       : in  std_logic_vector;
 
 		rid_act    : buffer std_logic;
-		length_act : buffer std_logic;
+		len_act    : buffer std_logic;
 		pyl_act    : buffer std_logic;
 
 		rgtr_frm   : buffer std_logic;
@@ -46,41 +46,41 @@ entity sio_sin is
 end;
 
 architecture beh of sio_sin is
-	constant frame : string := "{rid:8,length:8}";
 
-	signal rgtr_last   : std_logic;
-	signal rid_frm     : std_logic;
-	signal length_frm  : std_logic;
-	signal pyl_frm     : std_logic;
-	signal rid_irdy    : std_logic;
-	signal length_irdy : std_logic;
-	signal pyl_irdy    : std_logic;
-	signal frame_decode_trdy : std_logic;
+	signal rgtr_last : std_logic;
+
+	constant frame : string := "{rid:8,length:8}";
+	signal acts    : std_logic_vector(0 to length(frame));
+	signal frms    : std_logic_vector(acts'range);
+	signal irdys   : std_logic_vector(acts'range);
+	signal trdys   : std_logic_vector(acts'range);
+
+	alias rid_frm  is frms(0);
+	alias len_frm  is frms(1);
+	alias pyl_frm  is frms(2);
+	alias rid_irdy is irdys(0);
+	alias len_irdy is irdys(1);
+	alias pyl_irdy is irdys(2);
 
 begin
 
+	trdys <= (others => rgtr_trdy);
 	decode_i : entity hdl4fpga.frame_decode
 	generic map (
 		frame => frame,
 		size  => data'length)
 	port map (
-		clk      => clk,
-		frm      => rgtr_frm,
-		irdy     => rgtr_irdy,
-		trdy     => frame_decode_trdy,
-		last     => rgtr_last,
-		frms(0)  => rid_frm,
-		frms(1)  => length_frm,
-		frms(2)  => pyl_frm,
-		irdys(0) => rid_irdy,
-		irdys(1) => length_irdy,
-		irdys(2) => pyl_irdy);
+		clk   => clk,
+		frm   => rgtr_frm,
+		irdy  => rgtr_irdy,
+		last  => rgtr_last,
+		frms  => frms,
+		acts  => acts,
+		irdys => irdys,
+		trdys => trdys);
+	(rid_act, len_act, pyl_act) <= acts;
 
-	rid_act    <= rid_irdy or rid_frm;
-	length_act <= length_irdy or length_frm;
-	pyl_act    <= pyl_irdy or pyl_frm;
-
-	process (frm, irdy, length_act, clk)
+	process (frm, irdy, len_act, clk)
 		-- variable cntr : unsigned(0 to hdo(frame)**".length"+unsigned_num_bits(8/data'length)-1); -- Xilinx ISE 14.7 bug
 		-- alias    algn : unsigned(0 to hdo(frame)**".length"-1) is cntr(1 to hdo(frame)**".length"); -- Xilinx ISE 14.7 bug
 		constant length : natural := hdo(frame)**".length"; -- Xilinx ISE 14.7 bug
@@ -89,8 +89,8 @@ begin
 	begin
 		if rising_edge(clk) then
 			if (frm or irdy)='1' then
-				if (irdy and trdy)='1' then
-					if length_act='1' then
+				if (irdy and rgtr_trdy)='1' then
+					if len_act='1' then
 						algn := rotate_left(algn, data'length);
 						algn(data'range) := reverse(unsigned(data));
 						cntr(0) := '0';

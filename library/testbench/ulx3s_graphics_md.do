@@ -1,9 +1,5 @@
 onerror {resume}
 quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/rxserlzr_e {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/rxserlzr_e/dst_data  } rev_data
-quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/rxserlzr_e { (context /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/rxserlzr_e )( dst_data(7) & dst_data(6) & dst_data(5) & dst_data(4) & dst_data(3) & dst_data(2) & dst_data(1) & dst_data(0) )} xxxx
-quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data  } yyyy
-quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srzrx_data  } zzzz
-quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e { (context /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e )( srzrx_data(7) & srzrx_data(6) & srzrx_data(5) & srzrx_data(4) & srzrx_data(3) & srzrx_data(2) & srzrx_data(1) & srzrx_data(0) )} xxxxx
 quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e { (context /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e )( srzrx_data(7) & srzrx_data(6) & srzrx_data(5) & srzrx_data(4) & srzrx_data(3) & srzrx_data(2) & srzrx_data(1) & srzrx_data(0) )} rev_srzrx_data
 quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e { (context /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e )( pylrx_data(7) & pylrx_data(6) & pylrx_data(5) & pylrx_data(4) & pylrx_data(3) & pylrx_data(2) & pylrx_data(1) & pylrx_data(0) )} rev_pylrx_data
 quietly WaveActivateNextPane {} 0
@@ -41,9 +37,14 @@ add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rx_frm
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rx_irdy
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rx_trdy
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rx_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rx_data
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rgtr0_acts
+add wave -noupdate -expand /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rgtr0_frms
+add wave -noupdate -expand /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rgtr0_irdys
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6630000000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {5073821360 fs} 0} {{Cursor 2} {5775382470 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 178
 configure wave -valuecolwidth 100
@@ -59,4 +60,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {3041999740 fs} {11729167100 fs}
+WaveRestoreZoom {3211733950 fs} {6365480590 fs}

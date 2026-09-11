@@ -34,7 +34,7 @@ entity sio_decode is
 		clk        : in  std_logic;
 		frm        : in  std_logic;
 		irdy       : in  std_logic;
-		trdy       : out std_logic := '1';
+		trdy       : out std_logic;
 		data       : in  std_logic_vector;
 		
 		rid_act    : in  std_logic;
@@ -62,13 +62,13 @@ begin
 		pyl_frms  <= (others => '0');
 		pyl_acts  <= (others => '0');
 		pyl_irdys <= (others => '0');
-		trdy <= '0';
+		trdy      <= '1';
 		for i in 0 to length-1 loop
 			if hdo(rids)**("["&natural'image(i)&"]")=std_logic_vector(rid) then
 				pyl_frms(i)  <= frm  and pyl_act;
 				pyl_acts(i)  <= pyl_act;
 				pyl_irdys(i) <= irdy and pyl_act;
-				trdy <= pyl_trdys(i) and pyl_act;
+				trdy <= pyl_trdys(i);
 			end if;
 		end loop;
 	end process;

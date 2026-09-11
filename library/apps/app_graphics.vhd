@@ -242,7 +242,7 @@ begin
 			irdy      => sin_irdy,
 			data      => sin_data,
 			rid_act   => rid_act,
-			length_act => length_act,
+			len_act   => length_act,
 			pyl_act   => pyl_act,
 			rgtr_frm  => rgtr_frm,
 			rgtr_irdy => rgtr_irdy);
