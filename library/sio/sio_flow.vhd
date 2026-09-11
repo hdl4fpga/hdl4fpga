@@ -238,8 +238,8 @@ begin
 			alias  acktx_trdy is tx_trdys(1);
 
 			signal mode      : std_logic_vector(0 to 1);
-			signal rxdp_frm  : std_logic;
-			signal rxdp_irdy : std_logic;
+			signal rxsp_frm  : std_logic;
+			signal rxsp_irdy : std_logic;
 			signal src_irdy  : std_logic;
 			signal src_trdy  : std_logic;
 			signal src_data  : std_logic_vector(rx_data'range);
@@ -298,8 +298,8 @@ begin
 					irdys => irdys,
 					trdys => trdys);
 				trdys     <= (others => src_trdy);
-				rxdp_frm  <= dp_frm;
-				rxdp_irdy <= dp_irdy;
+				rxsp_frm  <= sp_frm;
+				rxsp_irdy <= sp_irdy;
 
 				mode <= 
 					"10" when (fcs_sb and     fcs_vld)='1' else
@@ -326,8 +326,8 @@ begin
 				bitdata => x"0000")
 			port map (
 				si_clk  => rx_clk,
-				si_frm  => rxdp_frm,
-				si_irdy => rxdp_irdy,
+				si_frm  => rxsp_frm,
+				si_irdy => rxsp_irdy,
 				si_data => rx_data,
 				so_clk  => tx_clk,
 				so_frm  => txdp_frm,
@@ -353,7 +353,7 @@ begin
 				dst_data => dst_data);
 
 			dst_b : block
-				constant header_length : natural :=    -- lattice semi complains
+				constant header_length : natural :=     -- lattice semi complains
 					hdo(frames)**".format.mac.hwda"   + -- lattice semi complains
 					hdo(frames)**".format.ipv4.da"    + -- lattice semi complains
 					hdo(frames)**".format.udp.length" + -- lattice semi complains
