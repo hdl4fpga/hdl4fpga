@@ -64,32 +64,54 @@ end;
 
 architecture struct of sio_flow is
 
-	signal rgtr_frm  : std_logic;
-	signal rgtr_irdy : std_logic;
-	signal rgtr_trdy : std_logic;
-	signal rid_act   : std_logic;
-	signal pyl_act   : std_logic;
-	signal pyl_frms  : std_logic_vector(0 to 2-1);
-	signal pyl_irdys : std_logic_vector(0 to 2-1);
-
-	signal tx_frms   : std_logic_vector(0 to 2-1) := (others => '0');
-	signal tx_irdys  : std_logic_vector(0 to 2-1) := (others => '0');
-	signal tx_trdys  : std_logic_vector(0 to 2-1) := (others => '1');
+	signal rgtr_frm   : std_logic;
+	signal rgtr_irdy  : std_logic;
+	signal rgtr_trdy  : std_logic;
+	signal rid_act    : std_logic;
+	signal pyl_act    : std_logic;
+	signal rgtr_frms  : std_logic_vector(0 to 2-1);
+	signal rgtr_irdys : std_logic_vector(0 to 2-1);
+	signal rgtr_trdys : std_logic_vector(0 to 2-1);
 
 	signal acktx_data : std_logic_vector(tx_data'range);
 	signal dup_equ    : std_logic := '0';
 
-	constant addr_length: natural := hdo(frames)**".format.mac.hwda" + hdo(frames)**".format.ipv4.da"; -- latticesemi Expecting constant string
-	constant addr_value : string := natural'image(addr_length);
-	alias rgtr0_frm  is pyl_frms(0);
-	alias rgtr0_irdy is pyl_irdys(0);
-	constant rgtr0_frame : string := compact('{' &
-		"addr:" & addr_value             & ',' &
-		  "sp:" & string'(hdo(frames)**".format.udp.sp") & '}');
+	alias rgtr0_frm  is rgtr_frms(0);
+	alias rgtr0_irdy is rgtr_irdys(0);
+	alias rgtr1_frm  is rgtr_frms(1);
+	alias rgtr1_irdy is rgtr_irdys(1);
+
+	constant thada_length : natural :=     -- lattice semi complains
+		hdo(frames)**".format.mac.hwda" +  -- lattice semi complains
+		hdo(frames)**".format.ipv4.da";    -- lattice semi complains
+	constant thada_value : string := natural'image(thada_length);  -- lattice semi complains
+	constant rgtr0_frame : string := compact('{'                       &
+		 "thada:" & thada_value                            & ',' &
+			"sp:" & string'(hdo(frames)**".format.udp.dp") & ',' &
+			"dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
+
 	signal rgtr0_acts  : std_logic_vector(0 to length(rgtr0_frame));
-	signal rgtr0_frms  : std_logic_vector(0 to length(rgtr0_frame));
-	signal rgtr0_irdys : std_logic_vector(0 to length(rgtr0_frame));
-	signal sin_trdy    : std_logic;
+	signal rgtr0_frms  : std_logic_vector(rgtr0_acts'range);
+	signal rgtr0_irdys : std_logic_vector(rgtr0_acts'range);
+
+	alias thada_act   is rgtr0_acts(0);
+	alias sp_act      is rgtr0_acts(1);
+	alias length_act  is rgtr0_acts(1);
+	alias dp_act      is rgtr0_acts(2);
+
+	alias thada_frm   is rgtr0_frms(0);
+	alias sp_frm      is rgtr0_frms(1);
+	alias length_frm  is rgtr0_frms(1);
+	alias dp_frm      is rgtr0_frms(2);
+
+	alias thada_irdy  is rgtr0_irdys(0);
+	alias sp_irdy     is rgtr0_irdys(1);
+	alias length_irdy is rgtr0_irdys(1);
+	alias dp_irdy     is rgtr0_irdys(2);
+
+	signal tx_frms  : std_logic_vector(0 to 2-1) := (others => '0');
+	signal tx_irdys : std_logic_vector(0 to 2-1) := (others => '0');
+	signal tx_trdys : std_logic_vector(0 to 2-1) := (others => '1');
 
 begin
 
@@ -98,7 +120,7 @@ begin
 		clk       => rx_clk,
 		frm       => rx_frm,
 		irdy      => rx_irdy,
-		trdy      => sin_trdy, -- lattice semi complains : Port trdy cannot be connected to a constant
+		trdy      => rx_trdy,
 		data      => rx_data,
 		rid_act   => rid_act,
 		pyl_act   => pyl_act,
@@ -108,7 +130,7 @@ begin
 
 	siodecode_e : entity hdl4fpga.sio_decode
 	generic map (
-		rids => "[0x00, 0x01]")
+		rids => "[0x00,0x01]")
 	port map (
 		clk        => rx_clk,
 		frm        => rgtr_frm,
@@ -117,8 +139,10 @@ begin
 		data       => rx_data,
 		rid_act    => rid_act,
 		pyl_act    => pyl_act,
-		pyl_frms   => pyl_frms,
-		pyl_irdys  => pyl_irdys);
+		pyl_frms   => rgtr_frms,
+		pyl_irdys  => rgtr_irdys,
+		pyl_trdys  => rgtr_trdys);
+	rgtr_trdys <= (others => '1');
 
 	rxrgtr_i : entity hdl4fpga.frame_decode
 	generic map (
@@ -126,11 +150,11 @@ begin
 		size  => rx_data'length)
 	port map (
 		clk   => rx_clk,
-		frm   => pyl_frms(0),
-		irdy  => rgtr_irdy,
+		frm   => rgtr0_frm,
+		irdy  => rgtr0_irdy,
+		acts  => rgtr0_acts,
 		frms  => rgtr0_frms,
-		irdys => rgtr0_irdys,
-		acts  => rgtr0_acts);
+		irdys => rgtr0_irdys);
 
 	dup_b : block
 
@@ -150,13 +174,13 @@ begin
 
 	begin
 
-		process (rgtr_irdy, pyl_frms(1), rx_clk)
+		process (rgtr_irdy, rgtr1_frm, rx_clk)
 			variable equ : std_logic;
 		begin
 			if rising_edge(rx_clk) then
 				if equ='0' then
 					if (rgtr_frm or rgtr_irdy)='1' then
-						equ := pyl_frms(1);
+						equ := rgtr1_frm;
 					end if;
 				elsif (rgtr_frm or rgtr_irdy)='0' then
 					equ := '0';
@@ -164,7 +188,7 @@ begin
 					equ := '0';
 				end if;
 			end if;
-			mr_irdy <= (pyl_frms(1) or equ) and rgtr_irdy;
+			mr_irdy <= ( rgtr1_frm or equ) and rgtr_irdy;
 		end process;
 
 		process (rx_clk)
@@ -242,6 +266,7 @@ begin
 			signal mode      : std_logic_vector(0 to 1);
 			signal rxsp_frm  : std_logic;
 			signal rxsp_irdy : std_logic;
+			signal length_data : std_logic_vector(rx_data'range);
 			signal src_irdy  : std_logic;
 			signal src_trdy  : std_logic;
 			signal src_data  : std_logic_vector(rx_data'range);
@@ -253,76 +278,27 @@ begin
 			signal txdp_data : std_logic_vector(tx_data'range);
 		begin
 
-			src_b : block
-				constant thada_length : natural :=     -- lattice semi complains
-					hdo(frames)**".format.mac.hwda" +  -- lattice semi complains
-					hdo(frames)**".format.ipv4.da";    -- lattice semi complains
-				constant thada_value : string := natural'image(thada_length);  -- lattice semi complains
-				constant frame : string := compact('{'                           &
-					 "thada:" & thada_value                                & ',' &
-						"sp:" & string'(hdo(frames)**".format.udp.dp")     & ',' &
-						"dp:" & string'(hdo(frames)**".format.udp.dp")     & '}');
+			rxsp_frm  <= sp_frm;
+			rxsp_irdy <= sp_irdy;
 
-				signal irdy  : std_logic;
-				signal acts  : std_logic_vector(0 to length(frame));
-				signal frms  : std_logic_vector(acts'range);
-				signal irdys : std_logic_vector(acts'range);
-				signal trdys : std_logic_vector(acts'range);
+			mode <= 
+				"10" when (fcs_sb and     fcs_vld)='1' else
+				"00" when (fcs_sb and not fcs_vld)='1' else
+				"11";
 
-				alias thada_act   is acts(0);
-				alias sp_act      is acts(1);
-				alias length_act  is acts(1);
-				alias dp_act      is acts(2);
+			length_i : entity hdl4fpga.sio_mux
+			port map (
+				mux_data => reverse(x"0003",8),
+				sio_clk  => rx_clk,
+				sio_frm  => length_frm,
+				sio_irdy => length_irdy,
+				sio_trdy => open,
+				so_data  => length_data);
 
-				alias thada_frm   is frms(0);
-				alias sp_frm      is frms(1);
-				alias length_frm  is frms(1);
-				alias dp_frm      is frms(2);
-
-				alias thada_irdy  is irdys(0);
-				alias sp_irdy     is irdys(1);
-				alias length_irdy is irdys(1);
-				alias dp_irdy     is irdys(2);
-
-				signal length_data : std_logic_vector(rx_data'range);
-
-			begin
-
-				frame_i : entity hdl4fpga.frame_decode
-				generic map (
-					frame => frame,
-					size  => tx_data'length)
-				port map (
-					clk   => rx_clk,
-					frm   => rgtr0_frm,
-					irdy  => rgtr0_irdy,
-					acts  => acts,
-					frms  => frms,
-					irdys => irdys,
-					trdys => trdys);
-				trdys     <= (others => src_trdy);
-				rxsp_frm  <= sp_frm;
-				rxsp_irdy <= sp_irdy;
-
-				mode <= 
-					"10" when (fcs_sb and     fcs_vld)='1' else
-					"00" when (fcs_sb and not fcs_vld)='1' else
-					"11";
-
-				length_i : entity hdl4fpga.sio_mux
-				port map (
-					mux_data => reverse(x"0003",8),
-					sio_clk  => rx_clk,
-					sio_frm  => length_frm,
-					sio_irdy => length_irdy,
-					sio_trdy => open,
-					so_data  => length_data);
-
-				src_irdy <= thada_irdy or length_irdy or dp_irdy;
-				src_data <= 
-					length_data when length_act='1' else
-					rx_data;
-			end block;
+			src_irdy <= thada_irdy or length_irdy or dp_irdy;
+			src_data <= 
+				length_data when length_act='1' else
+				rx_data;
 
 			dp_i : entity hdl4fpga.sio_ram
 			generic map (
@@ -462,7 +438,7 @@ begin
 	begin
 
 		src_irdy <= 
-			rx_irdy when pyl_frms=(pyl_frms'range => '0') else
+			rx_irdy when rgtr_frms=(rgtr_frms'range => '0') else
 			'1'     when rgtr0_irdys(0)='1' else
 			'1'     when rgtr0_irdys(2)='1' else
 			'0';
@@ -478,7 +454,7 @@ begin
 		port map (
 			src_clk  => rx_clk,
 			src_irdy => src_irdy,
-			src_trdy => rx_trdy,
+			src_trdy => open,
 			src_data => rx_data,
 
 			mode(0)  => commit,

@@ -62,7 +62,7 @@ begin
 		pyl_frms  <= (others => '0');
 		pyl_acts  <= (others => '0');
 		pyl_irdys <= (others => '0');
-		trdy      <= '1';
+		trdy      <= frm or irdy;
 		for i in 0 to length-1 loop
 			if hdo(rids)**("["&natural'image(i)&"]")=std_logic_vector(rid) then
 				pyl_frms(i)  <= frm  and pyl_act;

@@ -73,6 +73,7 @@ begin
 		clk   => clk,
 		frm   => rgtr_frm,
 		irdy  => rgtr_irdy,
+		trdy  => trdy,
 		last  => rgtr_last,
 		frms  => frms,
 		acts  => acts,
