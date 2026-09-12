@@ -174,7 +174,7 @@ begin
 
 	begin
 
-		process (rgtr_irdy, rgtr1_frm, rx_clk)
+		process (rgtr1_irdy, rx_clk)
 			variable equ : std_logic;
 		begin
 			if rising_edge(rx_clk) then
@@ -188,7 +188,7 @@ begin
 					equ := '0';
 				end if;
 			end if;
-			mr_irdy <= ( rgtr1_frm or equ) and rgtr_irdy;
+			mr_irdy <= equ and rgtr1_irdy;
 		end process;
 
 		process (rx_clk)

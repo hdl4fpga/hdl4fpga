@@ -258,9 +258,9 @@ begin
 					if pos < 0 then
 						rdy <= req;
 					else
-						pos  <= pos  - txd'length;
+						pos <= pos - txd'length;
 						if pos > 1 then
-						addr <= addr + txd'length;
+							addr <= addr + txd'length;
 						end if;
 					end if;
 				end if;

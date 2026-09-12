@@ -50,7 +50,7 @@ architecture def of tb_ipoe is
 	signal id : unsigned(0 to unsigned_num_bits(length(data)-1)-1);
 begin
 
-	process(txc)
+	process
 		type states is (s_tx, s_rx);
 		variable state : states;
 	begin
@@ -62,7 +62,8 @@ begin
 					state := s_rx;
 				when s_rx =>
 					if (ethtx_req xor ethtx_rdy)='0' then
-						if fcs_sb='1' then
+						wait for 2 us;
+						if true or fcs_sb='1' then
 							if id < length(data)-1 then
 								id <= id + 1;
 							else
@@ -77,6 +78,7 @@ begin
 				state := s_tx;
 			end if;
 		end if;
+		wait on txc;
 	end process;
 
 	tbethtx_e : entity work.tb_ethtx
