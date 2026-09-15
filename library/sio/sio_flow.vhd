@@ -353,16 +353,16 @@ begin
 					irdys => irdys,
 					trdys => trdys);
 				trdys <= (others => acktx_trdy);
-				rxsp_frm  <= dp_frm;
-				rxsp_irdy <= dp_irdy;
+				txdp_frm  <= dp_frm;
+				txdp_irdy <= dp_irdy and acktx_trdy;
 
 				acktx_frm  <= dst_irdy;
 				acktx_irdy <= dst_irdy;
 				dst_trdy   <= acktx_trdy;
 
 				acktx_data <=
-					dst_data  when header_act='1' else
-					txdp_data; -- when     dp_act='1' else
+					txdp_data when dp_act='1' else
+					dst_data;
 
 			end block;
 

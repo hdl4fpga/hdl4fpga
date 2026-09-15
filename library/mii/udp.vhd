@@ -238,7 +238,7 @@ begin
 	end block;
 
 	tx_b : block
-		constant udphdr_size   : natural := hdo(frames)**".format.udp.length"; -- latticesemi : Unable to evaluate expression type
+		constant udphdr_size   : natural := hdo(frames)**".format.udp.length";       -- latticesemi : Unable to evaluate expression type
 		constant udphdr_length : natural := summation(hdo(frames)**".format.udp")/8; -- latticesemi : Unable to evaluate expression type
 		constant udphdr_value : std_logic_vector := std_logic_vector(to_unsigned(udphdr_length, udphdr_size));
 		alias  udppyltx_frm  is udptx_frms(0);
@@ -250,13 +250,13 @@ begin
 
 		constant ports_length : natural :=  -- Lattice Semi error
 			hdo(frames)**".format.udp.sp" + -- Lattice Semi error
-			hdo(frames)**".format.udp.dp"; -- Lattice Semi error
+			hdo(frames)**".format.udp.dp";  -- Lattice Semi error
 		constant ports_value : string := natural'image(ports_length); -- Lattice Semi error
 		constant udp_frame : string := compact('{' &
 				"   tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
+				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 				"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 				"adjlen:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				"    da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 				" ports:" & ports_value                                 & ',' & -- Lattice Semi error
 				"udplen:" & string'(hdo(frames)**".format.udp.length")  & ',' &
 				"chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}');
@@ -273,7 +273,7 @@ begin
 
 		signal adjlen_irdy : std_logic;
 		signal adjlen_trdy : std_logic;
-		signal si_data     : std_logic_vector(udptx_data'range);
+
 		signal adjlen_data : std_logic_vector(udptx_data'range);
 		signal decode_irdy : std_logic;
 

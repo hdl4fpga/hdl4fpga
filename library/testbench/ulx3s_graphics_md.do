@@ -2,6 +2,7 @@ onerror {resume}
 quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/rxserlzr_e {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/rxserlzr_e/dst_data  } rev_data
 quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e { (context /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e )( srzrx_data(7) & srzrx_data(6) & srzrx_data(5) & srzrx_data(4) & srzrx_data(3) & srzrx_data(2) & srzrx_data(1) & srzrx_data(0) )} rev_srzrx_data
 quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e { (context /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e )( pylrx_data(7) & pylrx_data(6) & pylrx_data(5) & pylrx_data(4) & pylrx_data(3) & pylrx_data(2) & pylrx_data(1) & pylrx_data(0) )} rev_pylrx_data
+quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e { (context /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e )( srztx_data(7) & srztx_data(6) & srztx_data(5) & srztx_data(4) & srztx_data(3) & srztx_data(2) & srztx_data(1) & srztx_data(0) )} rev_srztx_data
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {CGA CODE}
 add wave -noupdate /testbench/du_e/video_g/ser_debug_e/ser_display_e/cga_we
@@ -44,7 +45,8 @@ add wave -noupdate -expand -group sio_udp /testbench/du_e/ipoe_g/mii_e/udpdaisy_
 add wave -noupdate -expand -group sio_udp /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_frm
 add wave -noupdate -expand -group sio_udp /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_irdy
 add wave -noupdate -expand -group sio_udp /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_trdy
-add wave -noupdate -expand -group sio_udp -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data
+add wave -noupdate -expand -group sio_udp -radix hexadecimal -childformat {{/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(0) {-radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(1) {-radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(2) {-radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(3) {-radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(4) {-radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(5) {-radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(6) {-radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data(7) {-radix hexadecimal}} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/srztx_data
+add wave -noupdate -expand -group sio_udp -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/rev_srztx_data
 add wave -noupdate -expand -group sio_udp /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/udppyltx_frm
 add wave -noupdate -expand -group sio_udp /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/udppyltx_irdy
 add wave -noupdate -expand -group sio_udp /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/udppyltx_trdy
@@ -64,7 +66,7 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/si
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/srcgtdst_g/mod0_g/line__236/acc
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8061738310 fs} 0}
+WaveRestoreCursors {{Cursor 1} {6604423390 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 303
 configure wave -valuecolwidth 100
@@ -80,4 +82,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {6206783920 fs} {13704986200 fs}
+WaveRestoreZoom {4997159260 fs} {10538817520 fs}
