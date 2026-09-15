@@ -56,12 +56,15 @@ add wave -noupdate -group sio_flow /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_u
 add wave -noupdate -group sio_flow /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rx_trdy
 add wave -noupdate -group sio_flow -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rx_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/rmii_clk
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/srcgtdst_g/mod0_g/line__236/shr
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/srcgtdst_g/mod0_g/line__236/acc
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/dst_irdy
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/srcgtdst_g/mod0_g/line__236/vld
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/srcgtdst_g/mod0_g/line__236/shr
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/srcgtdst_g/mod0_g/line__236/acc
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6630000000 fs} 0} {{Cursor 5} {6778985830 fs} 0}
+WaveRestoreCursors {{Cursor 1} {8061738310 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 303
 configure wave -valuecolwidth 100
@@ -77,4 +80,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {4534564250 fs} {9014413850 fs}
+WaveRestoreZoom {6206783920 fs} {13704986200 fs}
