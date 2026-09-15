@@ -159,14 +159,15 @@ begin
 			end if;
 		end process;
 
-		process (miirx_clk)
+		process (udprx_frm, miirx_clk)
 			type states is (s_flush, s_queue);
 			variable state : states;
 			variable sy_irdy : std_logic;
 		begin
 			if rising_edge(miirx_clk) then
 				if udprx_frm='1' then
-					mode <= "10"; -- fifo commit
+					mode  <= "10"; -- fifo commit
+					state := s_queue;
 				elsif sy_irdy='0' then
 					case state is
 					when s_flush =>
@@ -181,7 +182,7 @@ begin
 						end if;
 					end case;
 				end if;
-				sy_irdy := pyltx_irdy;
+				sy_irdy := pylrx_irdy;
 			end if;
 		end process;
 

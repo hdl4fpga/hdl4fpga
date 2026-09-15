@@ -88,7 +88,7 @@ architecture struct of sio_udp is
 	signal srztx_trdy    : std_logic;
 	signal srztx_data    : std_logic_vector(si_data'range);
 
-	signal udppyltx_frm  : std_logic;
+	signal udppyltx_frm  : std_logic := '0';
 	signal udppyltx_irdy : std_logic;
 	signal udppyltx_trdy : std_ulogic;
 	signal udppyltx_data : std_logic_vector(miitx_data'range);
@@ -213,6 +213,13 @@ begin
 		tx_irdy => srztx_irdy,
 		tx_trdy => srztx_trdy,
 		tx_data => srztx_data);
+
+	process (miitx_clk)
+	begin
+		if rising_edge(miitx_clk) then
+			udppyltx_frm <= srztx_frm;
+		end if;
+	end process;
 
 	txserlzr_e : entity hdl4fpga.serlzr
 	generic map (

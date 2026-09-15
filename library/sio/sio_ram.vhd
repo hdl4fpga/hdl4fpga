@@ -59,59 +59,59 @@ begin
 
 	rd_b : block
 		signal cntr : unsigned(0 to rd_addr'length) := to_unsigned(0, rd_addr'length+1)-bitdata'length/so_data'length;
-		signal last : std_logic;
 	begin
 		process (so_clk)
+			variable active : std_logic;
 		begin
 			if rising_edge(so_clk) then
 				if (so_frm or so_irdy)='0' then
 					cntr <= to_unsigned(0, cntr'length)-bitdata'length/so_data'length;
-				elsif ((last or so_frm) and so_irdy)='1' then
+				elsif so_irdy='1' then
 					cntr <= cntr + 1;
 				end if;
 				if so_frm='0' then
 					if so_irdy='0' then
-						last <= '0';
-					elsif last='1' then
-						last <= '0';
+						active := '0';
+					elsif active='1' then
+						active := '0';
 					end if;
 				elsif so_irdy='1' then
-					last <= '1';
+					active := '1';
 				end if;
 			end if;
 		end process;
 		rd_addr <= std_logic_vector(cntr(rd_addr'range));
 		so_last <= '1' when cntr(rd_addr'range)=(rd_addr'range => '1') else '0';
+		so_trdy <= so_irdy;
 		so_fin  <= cntr(0);
-		so_trdy <= (so_frm or last) and so_irdy;
 	end block;
 
 	wr_b : block
 		signal cntr : unsigned(0 to wr_addr'length);
-		signal last : std_logic;
 	begin
-		process (si_clk)
+		process (si_irdy, si_clk)
+			variable active : std_logic;
 		begin
 			if rising_edge(si_clk) then
 				if (si_frm or si_irdy)='0' then
 					cntr <= to_unsigned(0, cntr'length)-bitdata'length/so_data'length;
-				elsif ((last or si_frm) and si_irdy)='1' then
+				elsif si_irdy='1' then
 					cntr <= cntr + 1;
 				end if;
 				if si_frm='0' then
 					if si_irdy='0' then
-						last <= '0';
-					elsif last='1' then
-						last <= '0';
+						active := '0';
+					elsif active='1' then
+						active := '0';
 					end if;
 				elsif si_irdy='1' then
-					last <= '1';
+					active := '1';
 				end if;
 			end if;
+			wr_ena  <= si_irdy;
+			si_trdy <= si_irdy;
 		end process;
 		wr_addr <= std_logic_vector(cntr(wr_addr'range));
-		wr_ena  <= (si_frm or last) and si_irdy;
-		si_trdy <= (si_frm or last) and si_irdy;
 	end block;
 
 	ram_b : block

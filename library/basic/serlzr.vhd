@@ -236,15 +236,19 @@ begin
 			process (dst_clk)
 				variable shr : unsigned(rgtr'range);
 				variable acc : unsigned(0 to shf'length);
+				variable vld : std_logic;
 			begin
 				if rising_edge(dst_clk) then
 					if acc >= dst_data'length then 
 						fifo_trdy <= '0';
 						dst_irdy  <= '1';
+						dst_irdy  <= vld;
 					end if;
 					if (src_frm or src_irdy)='0' then
+						vld := '0';
 						acc := (others => '0');
 						dst_irdy  <= '0';
+						dst_irdy  <= vld;
 						fifo_trdy <= '0';
 					else
 						if acc >= dst_data'length then 
@@ -264,9 +268,11 @@ begin
 								acc := acc + (src_data'length- dst_data'length);
 								fifo_trdy <= '1';
 								if fifo_trdy='1' then
+									vld       := '1';
 									dst_irdy  <= src_frm;
+									dst_irdy  <= vld;
 								else
-									dst_irdy  <= '1';
+									dst_irdy  <= vld;
 								end if;
 							else
 								acc := acc + src_data'length;

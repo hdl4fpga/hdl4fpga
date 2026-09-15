@@ -61,13 +61,14 @@ begin
 		mii_frm  => mii_frm,
 		mii_irdy => mii_irdy,
 		mii_data => mii_data,
-		dll_frm  => dll_frm);
+		dll_frm  => dll_frm,
+		dll_irdy => dll_irdy);
 
 	dllrx_i : entity hdl4fpga.dll_rx
 	port map (
 		mii_clk  => mii_clk,
 		dll_frm  => dll_frm,
-		dll_irdy => mii_irdy,
+		dll_irdy => dll_irdy,
 		dll_trdy => mii_trdy,
 		dll_data => mii_data,
 

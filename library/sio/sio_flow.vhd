@@ -158,7 +158,6 @@ begin
 
 	dup_b : block
 
-		signal mr_irdy   : std_logic;
 		signal cmp_frm   : std_logic;
 		signal cmp_irdy  : std_logic;
 		signal cmp_data  : std_logic_vector(rx_data'range);
@@ -173,23 +172,6 @@ begin
 		signal ram_t     : std_logic := '0';
 
 	begin
-
-		process (rgtr1_irdy, rx_clk)
-			variable equ : std_logic;
-		begin
-			if rising_edge(rx_clk) then
-				if equ='0' then
-					if (rgtr_frm or rgtr_irdy)='1' then
-						equ := rgtr1_frm;
-					end if;
-				elsif (rgtr_frm or rgtr_irdy)='0' then
-					equ := '0';
-				elsif (rgtr_frm or not rgtr_trdy)='0' then
-					equ := '0';
-				end if;
-			end if;
-			mr_irdy <= equ and rgtr1_irdy;
-		end process;
 
 		process (rx_clk)
 		begin
@@ -218,18 +200,18 @@ begin
 		cmp_i : entity hdl4fpga.sio_cmp
 		port map (
 			clk     => rx_clk,
-			mr_frm  => rgtr_frm,
-			mr_irdy => mr_irdy,
+			mr_frm  => rgtr1_frm,
+			mr_irdy => rgtr1_irdy,
 			mr_data => rx_data,
 			sl_frm  => cmp_frm,
 			sl_irdy => cmp_irdy,
 			sl_data => cmp_data,
 			equ     => cmp_equ);
 
-		ram1_frm  <= rgtr_frm and not ram_t;
-		ram1_irdy <= mr_irdy  and not ram_t;
-		ram2_frm  <= rgtr_frm and ram_t;
-		ram2_irdy <= mr_irdy  and ram_t;
+		ram1_frm  <= rgtr1_frm  and not ram_t;
+		ram1_irdy <= rgtr1_irdy and not ram_t;
+		ram2_frm  <= rgtr1_frm  and ram_t;
+		ram2_irdy <= rgtr1_irdy and ram_t;
 
 		ram1_i : entity hdl4fpga.sio_ram
 		generic map (
