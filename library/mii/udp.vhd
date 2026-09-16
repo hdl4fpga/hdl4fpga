@@ -326,7 +326,7 @@ begin
 			buffer_trdy when         da_act='1' else
 			buffer_trdy when      ports_act='1' else
 			buffer_trdy when  udplength_act='1' else
-			buffer_trdy when     chksum_act='1' else
+			'0' when     chksum_act='1' else
 			buffer_trdy when        pyl_act='1' else
 			'0';
 
