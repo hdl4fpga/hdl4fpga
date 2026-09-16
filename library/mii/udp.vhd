@@ -269,14 +269,13 @@ begin
 			hdo(frames)**".format.udp.dp";  -- Lattice Semi error
 		constant ports_value : string := natural'image(ports_length); -- Lattice Semi error
 		constant udptx_frame : string := compact('{' &
-				      "tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
-				"pyllength:" & string'(hdo(frames)**".format.udp.length")  & ',' &
-				       "da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
-				"ckslength:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
-				       "sa:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
-				    "ports:" & ports_value                                 & ',' & -- Lattice Semi error
-				"udplength:" & string'(hdo(frames)**".format.udp.length")  & ',' &
-				   "chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}');
+				       "tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
+				 "pyllength:" & string'(hdo(frames)**".format.udp.length")  & ',' &
+				"ipv4length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+				        "da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
+				     "ports:" & ports_value                                 & ',' & -- Lattice Semi error
+				 "udplength:" & string'(hdo(frames)**".format.udp.length")  & ',' &
+			        "chksum:" & string'(hdo(frames)**".format.udp.chksum")  & '}');
 
 		signal udptx_acts  : std_logic_vector(0 to length(udptx_frame));
 		signal udptx_fins  : std_logic_vector(udptx_acts'range);
@@ -286,26 +285,32 @@ begin
 
 		alias tha_act        is udptx_acts(0);
 		alias pyllength_act  is udptx_acts(1);
-		alias da_act         is udptx_acts(2);
-		alias ckslength_act  is udptx_acts(3);
-		alias sa_act         is udptx_acts(4);
-		alias ports_act      is udptx_acts(5);
-		alias udplength_act  is udptx_acts(6);
-		alias chksum_act     is udptx_acts(7);
-		alias pyl_act        is udptx_acts(8);
+		alias ipv4length_act is udptx_acts(2);
+		alias da_act         is udptx_acts(3);
+		alias ports_act      is udptx_acts(4);
+		alias udplength_act  is udptx_acts(5);
+		alias chksum_act     is udptx_acts(6);
+		alias pyl_act        is udptx_acts(7);
 
-		alias tha_irdy       is udptx_irdys(0);
-		alias pyllength_irdy is udptx_irdys(1);
-		alias da_irdy        is udptx_irdys(2);
-		alias ckslength_irdy is udptx_irdys(3);
-		alias sa_irdy        is udptx_irdys(4);
-		alias ports_irdy     is udptx_irdys(5);
-		alias udplength_irdy is udptx_irdys(6);
-		alias chksum_irdy    is udptx_irdys(7);
-		alias pyl_irdy       is udptx_irdys(8);
+		alias tha_irdy        is udptx_irdys(0);
+		alias pyllength_irdy  is udptx_irdys(1);
+		alias ipv4length_irdy is udptx_irdys(2);
+		alias da_irdy         is udptx_irdys(3);
+		alias ports_irdy      is udptx_irdys(4);
+		alias udplength_irdy  is udptx_irdys(5);
+		alias chksum_irdy     is udptx_irdys(6);
+		alias pyl_irdy        is udptx_irdys(7);
+
+		alias tha_trdy        is udptx_trdys(0);
+		alias pyllength_trdy  is udptx_trdys(1);
+		alias ipv4length_trdy is udptx_trdys(2);
+		alias da_trdy         is udptx_trdys(3);
+		alias ports_trdy      is udptx_trdys(4);
+		alias udplength_trdy  is udptx_trdys(5);
+		alias chksum_trdy     is udptx_trdys(6);
+		alias pyl_trdy        is udptx_trdys(7);
 
 		signal udplength_data : std_logic_vector(udptx_data'range);
-		signal decode_irdy : std_logic;
 
 		alias  buffer_frm  is pyltx_frm;
 		signal buffer_irdy : std_logic;
@@ -314,6 +319,18 @@ begin
 
 	begin
 
+		pyltx_trdy <=
+			buffer_trdy when        tha_act='1' else
+			buffer_trdy when  pyllength_act='1' else
+			'0'         when ipv4length_act='1' else
+			buffer_trdy when         da_act='1' else
+			buffer_trdy when      ports_act='1' else
+			buffer_trdy when  udplength_act='1' else
+			buffer_trdy when     chksum_act='1' else
+			buffer_trdy when        pyl_act='1' else
+			'0';
+
+			
 		udptx_i : entity hdl4fpga.frame_decode
 		generic map (
 			frame => udptx_frame,
@@ -322,12 +339,19 @@ begin
 			clk   => miitx_clk,
 			frm   => pyltx_frm,
 			irdy  => pyltx_irdy,
-			trdy  => pyltx_trdy, 
 			acts  => udptx_acts,
 			fins  => udptx_fins,
 			frms  => udptx_frms,
 			irdys => udptx_irdys,
 			trdys => udptx_trdys);
+
+		tha_trdy        <= buffer_trdy;
+		ipv4length_trdy <= buffer_trdy;
+		da_trdy         <= buffer_trdy;
+		ports_trdy      <= buffer_trdy;
+		udplength_trdy  <= buffer_trdy;
+		chksum_trdy     <= buffer_trdy;
+		pyl_trdy        <= buffer_trdy;
 
 		miiadjlen_i : entity hdl4fpga.mii_adjlen
 		port map (
@@ -335,6 +359,7 @@ begin
 			init    => udphdr_value,
 			frm     => pyltx_frm,
 			irdy    => pyllength_irdy,
+			trdy    => pyllength_trdy,
 			si_data => pyltx_data,
 			so_irdy => udplength_irdy,
 			so_data => udplength_data);
@@ -343,6 +368,9 @@ begin
 			udplength_data            when udplength_act='1' else
 			(udptx_data'range => '0') when    chksum_act='1' else
 			pyltx_data;
+
+		buffer_irdy <= 
+			tha_irdy or ipv4length_irdy or da_irdy or ports_irdy or udplength_irdy or chksum_irdy or pyl_irdy;
 
 		buffer_i : entity hdl4fpga.mii_buffer
 		generic map (
