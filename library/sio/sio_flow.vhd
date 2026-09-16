@@ -338,6 +338,9 @@ begin
 				alias header_irdy is irdys(0);
 				alias dp_irdy     is irdys(1);
 
+				alias header_trdy is trdys(0);
+				alias dp_trdy     is trdys(1);
+
 			begin
 
 				frame_i : entity hdl4fpga.frame_decode
@@ -358,7 +361,7 @@ begin
 
 				acktx_frm  <= dst_irdy;
 				acktx_irdy <= dst_irdy;
-				dst_trdy   <= acktx_trdy;
+				dst_trdy   <= '0' when dp_act='1' else acktx_trdy;
 
 				acktx_data <=
 					txdp_data when dp_act='1' else
