@@ -324,6 +324,9 @@ begin
 					"header:" & header_value                           & ',' &
 						"dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
+				signal frm   : std_logic;
+				signal irdy  : std_logic;
+				signal fin   : std_logic;
 				signal acts  : std_logic_vector(0 to length(frame));
 				signal frms  : std_logic_vector(acts'range);
 				signal irdys : std_logic_vector(acts'range);
@@ -343,24 +346,42 @@ begin
 
 			begin
 
+				frm_p : process (fin, tx_clk)
+					variable acktx_rdy : std_logic := '0';
+					variable acktx_req : std_logic := '0';
+				begin
+					if rising_edge(tx_clk) then
+						if dst_irdy='1' then
+							acktx_req := not acktx_rdy;
+						elsif (acktx_rdy xor acktx_req)='1' then
+							if fin='1' then
+								acktx_rdy := acktx_req;
+							end if;
+						end if;
+					end if;
+					frm <= (acktx_rdy xor acktx_req) and not fin;
+				end process;
+
+				irdy <= dst_irdy or dp_irdy;
 				frame_i : entity hdl4fpga.frame_decode
 				generic map (
 					frame => frame,
 					size  => tx_data'length)
 				port map (
 					clk   => tx_clk,
-					frm   => dst_irdy,
-					irdy  => dst_irdy,
+					frm   => frm,
+					irdy  => irdy,
+					fin   => fin,
 					acts  => acts,
 					frms  => frms,
 					irdys => irdys,
 					trdys => trdys);
-				trdys <= (others => acktx_trdy);
+				trdys     <= (others => acktx_trdy);
 				txdp_frm  <= dp_frm;
 				txdp_irdy <= dp_irdy and acktx_trdy;
 
-				acktx_frm  <= dst_irdy;
-				acktx_irdy <= dst_irdy;
+				acktx_frm  <= frm;
+				acktx_irdy <= irdy;
 				dst_trdy   <= '0' when dp_act='1' else acktx_trdy;
 
 				acktx_data <=
