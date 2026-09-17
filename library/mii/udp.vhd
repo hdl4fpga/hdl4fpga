@@ -49,11 +49,15 @@ entity udp is
 
 		sharx_frm  : in  std_logic;
 		sharx_irdy : in  std_logic;
-		sharx_trdy : buffer std_logic := '1';
+		sharx_trdy : out std_logic := '1';
 		
 		sparx_frm  : in  std_logic;
 		sparx_irdy : in  std_logic;
-		sparx_trdy : buffer std_logic := '1';
+		sparx_trdy : out std_logic := '1';
+
+		ipv4lenrx_frm  : in  std_logic;
+		ipv4lenrx_irdy : in  std_logic;
+		ipv4lenrx_trdy : out std_logic := '1';
 
 		udprx_frm  : in  std_logic := '0';
 		udprx_irdy : in  std_logic := '0';
@@ -173,7 +177,7 @@ begin
 				rx_frm      <= shr_frm(0);
 				rx_irdy     <= shr_irdy(0);
 				shr_frm(0)  := udprx_frm;
-				shr_irdy(0) := sharx_irdy or sparx_irdy or sp_irdy or dp_irdy or pyl_irdy;
+				shr_irdy(0) := sharx_irdy or ipv4lenrx_irdy or sparx_irdy or sp_irdy or dp_irdy or pyl_irdy;
 				shr_data    := unsigned(udprx_data);
 				shr_frm     := rotate_left(shr_frm, 1);
 				shr_irdy    := rotate_left(shr_irdy, 1);

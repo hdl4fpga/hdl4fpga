@@ -78,36 +78,39 @@ architecture struct of sio_flow is
 
 	alias rgtr0_frm  is rgtr_frms(0);
 	alias rgtr0_irdy is rgtr_irdys(0);
+	alias rgtr0_trdy is rgtr_trdys(0);
 	alias rgtr1_frm  is rgtr_frms(1);
 	alias rgtr1_irdy is rgtr_irdys(1);
+	alias rgtr1_trdy is rgtr_trdys(1);
 
-	constant thada_length : natural :=     -- lattice semi complains
-		hdo(frames)**".format.mac.hwda" +  -- lattice semi complains
-		hdo(frames)**".format.ipv4.da";    -- lattice semi complains
-	constant thada_value : string := natural'image(thada_length);  -- lattice semi complains
-	constant rgtr0_frame : string := compact('{'                       &
-		 "thada:" & thada_value                            & ',' &
-			"sp:" & string'(hdo(frames)**".format.udp.dp") & ',' &
-			"dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
+	constant rgtr0_frame : string := compact('{'                      &
+		   "tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
+		"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
+		    "da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
+		    "sp:" & string'(hdo(frames)**".format.udp.sp")      & ',' &
+		    "dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
 	signal rgtr0_acts  : std_logic_vector(0 to length(rgtr0_frame));
 	signal rgtr0_frms  : std_logic_vector(rgtr0_acts'range);
 	signal rgtr0_irdys : std_logic_vector(rgtr0_acts'range);
 
-	alias thada_act   is rgtr0_acts(0);
-	alias sp_act      is rgtr0_acts(1);
+	alias tha_act     is rgtr0_acts(0);
 	alias length_act  is rgtr0_acts(1);
-	alias dp_act      is rgtr0_acts(2);
+	alias da_act      is rgtr0_acts(2);
+	alias sp_act      is rgtr0_acts(3);
+	alias dp_act      is rgtr0_acts(4);
 
-	alias thada_frm   is rgtr0_frms(0);
-	alias sp_frm      is rgtr0_frms(1);
+	alias tha_frm     is rgtr0_frms(0);
 	alias length_frm  is rgtr0_frms(1);
-	alias dp_frm      is rgtr0_frms(2);
+	alias da_frm      is rgtr0_frms(2);
+	alias sp_frm      is rgtr0_frms(3);
+	alias dp_frm      is rgtr0_frms(4);
 
-	alias thada_irdy  is rgtr0_irdys(0);
-	alias sp_irdy     is rgtr0_irdys(1);
+	alias tha_irdy    is rgtr0_irdys(0);
 	alias length_irdy is rgtr0_irdys(1);
-	alias dp_irdy     is rgtr0_irdys(2);
+	alias da_irdy     is rgtr0_irdys(2);
+	alias sp_irdy     is rgtr0_irdys(3);
+	alias dp_irdy     is rgtr0_irdys(4);
 
 	signal tx_frms  : std_logic_vector(0 to 2-1) := (others => '0');
 	signal tx_irdys : std_logic_vector(0 to 2-1) := (others => '0');
@@ -142,7 +145,6 @@ begin
 		pyl_frms   => rgtr_frms,
 		pyl_irdys  => rgtr_irdys,
 		pyl_trdys  => rgtr_trdys);
-	rgtr_trdys <= (others => '1');
 
 	rxrgtr_i : entity hdl4fpga.frame_decode
 	generic map (
@@ -152,6 +154,7 @@ begin
 		clk   => rx_clk,
 		frm   => rgtr0_frm,
 		irdy  => rgtr0_irdy,
+		trdy  => rgtr0_trdy,
 		acts  => rgtr0_acts,
 		frms  => rgtr0_frms,
 		irdys => rgtr0_irdys);
@@ -202,6 +205,7 @@ begin
 			clk     => rx_clk,
 			mr_frm  => rgtr1_frm,
 			mr_irdy => rgtr1_irdy,
+			mr_trdy => rgtr1_trdy,
 			mr_data => rx_data,
 			sl_frm  => cmp_frm,
 			sl_irdy => cmp_irdy,
@@ -277,7 +281,7 @@ begin
 				sio_trdy => open,
 				so_data  => length_data);
 
-			src_irdy <= thada_irdy or length_irdy or dp_irdy;
+			src_irdy <= tha_irdy or length_irdy or da_irdy or dp_irdy;
 			src_data <= 
 				length_data when length_act='1' else
 				rx_data;
@@ -316,8 +320,8 @@ begin
 			dst_b : block
 				constant header_length : natural :=     -- lattice semi complains
 					hdo(frames)**".format.mac.hwda"   + -- lattice semi complains
-					hdo(frames)**".format.ipv4.da"    + -- lattice semi complains
 					hdo(frames)**".format.udp.length" + -- lattice semi complains
+					hdo(frames)**".format.ipv4.da"    + -- lattice semi complains
 					hdo(frames)**".format.udp.sp";      -- lattice semi complains
 				constant header_value : string := natural'image(header_length);  -- lattice semi complains
 				constant frame : string := compact('{'                       &

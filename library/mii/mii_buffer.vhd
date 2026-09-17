@@ -81,13 +81,17 @@ begin
 	begin
 		if rising_edge(dst_clk) then
 			if dst_irdy='0' then
-				dst_frm  <= shr_irdy;
+				if not (dst_frm and src_frm)='1' then
+					dst_frm  <= shr_irdy;
+				end if;
 				dst_irdy <= shr_irdy;
 				dst_data <= shr_data;
 				shr_irdy := fifo_irdy;
 				shr_data := fifo_data;
 			elsif dst_trdy='1' then
-				dst_frm  <= fifo_irdy;
+				if not (dst_frm and src_frm)='1' then
+					dst_frm  <= fifo_irdy;
+				end if;
 				dst_irdy <= shr_irdy;
 				dst_data <= shr_data;
 				shr_irdy := fifo_irdy;

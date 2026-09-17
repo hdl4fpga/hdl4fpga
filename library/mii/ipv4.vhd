@@ -98,6 +98,7 @@ architecture def of ipv4 is
 	signal udprx_trdy     : std_logic;
 	signal udprx_data     : std_logic_vector(ipv4rx_data'range);
 	signal udptharx_trdy  : std_logic := '1';
+	signal udplenrx_trdy  : std_logic := '1';
 	signal udpsparx_trdy  : std_logic := '1';
 
 	signal ipv4pyltx_frms  : std_logic_vector(0 to 2-1) := (others => '0');
@@ -668,6 +669,10 @@ begin
 		sharx_frm  => tha1rx_frm,
 		sharx_irdy => tha1rx_irdy,
 		sharx_trdy => udptharx_trdy,
+
+		ipv4lenrx_frm  => ipv4lenrx_frm,
+		ipv4lenrx_irdy => ipv4lenrx_irdy,
+		ipv4lenrx_trdy => udplenrx_trdy,
 
 		sparx_frm  => sparx_frm,
 		sparx_irdy => sparx_irdy,
