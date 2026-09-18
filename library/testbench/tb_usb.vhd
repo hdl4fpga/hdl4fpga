@@ -288,7 +288,7 @@ begin
 		src_trdy => srctx_trdy,
 		src_data => srctx_data,
 		dst_clk  => usb_clk,
-		dst_frm  => hdlctx_frm,
+--		dst_frm  => hdlctx_frm,
 		dst_irdy => slzrtx_irdy,
 		dst_trdy => slzrtx_trdy,
 		dst_data => slzrtx_data);

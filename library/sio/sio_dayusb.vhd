@@ -194,7 +194,7 @@ begin
 			src_trdy => usbtx_trdy,
 			src_data => src_data,
 			dst_clk  => usb_clk,
-			dst_frm  => dst_frm,
+--			dst_frm  => dst_frm,
 			dst_irdy => usb_txen,
 			dst_trdy => dst_trdy,
 			dst_data => usb_txd);

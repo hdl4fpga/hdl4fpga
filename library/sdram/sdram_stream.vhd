@@ -174,7 +174,7 @@ begin
 		dst_trdy => fifo1_trdy,
 		dst_data => fifo1_data);
 
-	serdes_e : entity hdl4fpga.serlzr
+	serlzr_i : entity hdl4fpga.serlzr
 	generic map (
 		fifo_mode => false,
 		lsdfirst  => false)
@@ -185,7 +185,7 @@ begin
 		src_trdy  => fifo1_trdy,
 		src_data  => fifo1_data,
 		dst_clk   => ctlr_clk,
-		dst_frm   => fifo1_frm,
+	--	dst_frm   => fifo1_frm,
 		dst_irdy  => fifo_irdy,
 		dst_trdy  => fifo_trdy,
 		dst_data  => fifo_data);

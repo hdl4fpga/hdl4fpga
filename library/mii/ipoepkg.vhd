@@ -87,10 +87,11 @@ package ipoepkg is
     			"iprequest:48,"                   &
     			"  endmark:8},"                   &
     		"pyl:{"                               &
-    			"tha:48,"                         &
-    			"tpa:32,"                         &
-    			" dp:16,"                         &
-    			" sp:16}},"                       &
+    			"   tha:48,"                      &
+    			"length:16,"                      &
+    			"   tpa:32,"                      &
+    			"    dp:16,"                      &
+    			"    sp:16}},"                    &
 		"data:{"                                  &
     		"mac:{"                               &
 				"type:{"                          &

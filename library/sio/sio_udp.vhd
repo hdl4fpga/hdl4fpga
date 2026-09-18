@@ -217,7 +217,7 @@ begin
 	process (miitx_clk)
 	begin
 		if rising_edge(miitx_clk) then
-			udppyltx_frm <= srztx_frm;
+--			udppyltx_frm <= srztx_frm;
 		end if;
 	end process;
 

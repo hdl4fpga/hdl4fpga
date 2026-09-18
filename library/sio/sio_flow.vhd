@@ -449,8 +449,9 @@ begin
 
 		src_irdy <= 
 			rx_irdy when rgtr_frms=(rgtr_frms'range => '0') else
-			'1'     when rgtr0_irdys(0)='1' else
-			'1'     when rgtr0_irdys(2)='1' else
+			'1'     when tha_irdy='1' else
+			'1'     when length_irdy='1' else
+			'1'     when da_irdy='1' else
 			'0';
 
 		commit   <= (not fcs_sb or     fcs_vld); -- and not dup_equ;
