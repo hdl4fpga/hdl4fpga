@@ -262,7 +262,7 @@ begin
 	begin
 		tbipoe_e : entity work.tb_ipoe
 		generic map(
-			sha  => "0x00_27_0e_0f_f5_95",
+			sha  => "0x45_27_0e_0f_f5_95",
 			data => "{"  &
 				"udp:" & string'(hdo(data)**"[3]") &
 				"}")

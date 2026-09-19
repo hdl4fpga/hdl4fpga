@@ -37,7 +37,7 @@ entity serlzr is
 		src_trdy  : out std_logic := '0';
 		src_data  : in  std_logic_vector;
 		dst_clk   : in  std_logic := '1';
-		dst_frm   : buffer std_logic := '0';
+		dst_frm   : buffer  std_logic := '0';
 		dst_irdy  : buffer std_logic := '0';
 		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector);
@@ -232,30 +232,27 @@ begin
 		end generate;
 
 		mod0_g : if src_data'length mod dst_data'length = 0 generate 
-			src_trdy <= fifo_trdy;
-			process (dst_clk)
+			src_trdy <= fifo_trdy and (src_frm or src_irdy);
+			process (src_frm, dst_clk)
 				variable shr : unsigned(rgtr'range);
 				variable acc : unsigned(0 to shf'length) := (others => '0');
-				variable vld : std_logic;
 			begin
 				if rising_edge(dst_clk) then
 					if acc >= dst_data'length then 
 						fifo_trdy <= '0';
 						dst_irdy  <= '1';
-						dst_irdy  <= vld;
 					end if;
 					if (src_frm or src_irdy)='0' and acc < dst_data'length then
-						vld := '0';
 						acc := (others => '0');
 						dst_irdy  <= '0';
-						dst_irdy  <= vld;
-						fifo_trdy <= '0';
+						fifo_trdy <= '1';
 					else
-						if acc >= dst_data'length then 
+						if acc > dst_data'length then 
 							if dst_trdy='1' then
 								shr := shift_right(shr, dst_data'length);
 								acc := acc - dst_data'length;
 							end if;
+							dst_irdy  <= '1';
 						elsif src_irdy='1' then
 							-- Xilinx 14.7 synthesys bug
 							-- shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
@@ -267,28 +264,25 @@ begin
 							if dst_trdy='1' then
 								acc := acc + (src_data'length- dst_data'length);
 								fifo_trdy <= '1';
-								if fifo_trdy='1' then
-									vld       := '1';
-									dst_irdy  <= src_frm;
-									dst_irdy  <= vld;
-								else
-									dst_irdy  <= vld;
-								end if;
 							else
 								acc := acc + src_data'length;
-								dst_irdy  <= '0';
 							end if;
+							dst_irdy <= '1';
 						end if;
-						if acc < dst_data'length then
+						if acc <= dst_data'length then
 							fifo_trdy <= dst_trdy;
 						else
 							fifo_trdy <= '0';
 						end if;
 					end if;
-					if acc < dst_data'length then
-						dst_frm <= src_frm;
-					end if;
 					rgtr <= std_logic_vector(shr);
+					if src_frm='1' then
+						dst_frm <= '1';
+					elsif acc >= dst_data'length then
+						dst_frm <= '1';
+					else
+						dst_frm <= '0';
+					end if;
 				end if;
 			end process;
 
