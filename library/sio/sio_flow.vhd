@@ -385,7 +385,7 @@ begin
 
 			begin
 
-				frm_p : process (fin, tx_clk)
+				frm_p : process (dst_irdy, tx_clk)
 					variable acktx_rdy : std_logic := '0';
 					variable acktx_req : std_logic := '0';
 				begin
@@ -398,7 +398,7 @@ begin
 							end if;
 						end if;
 					end if;
-					frm <= (acktx_rdy xor acktx_req) and not fin;
+					frm <= (acktx_rdy xor acktx_req) and dst_irdy;
 				end process;
 
 				irdy <= dst_irdy or dp_irdy;
