@@ -214,13 +214,6 @@ begin
 		tx_trdy => srztx_trdy,
 		tx_data => srztx_data);
 
-	process (miitx_clk)
-	begin
-		if rising_edge(miitx_clk) then
---			udppyltx_frm <= srztx_frm;
-		end if;
-	end process;
-
 	txserlzr_e : entity hdl4fpga.serlzr
 	generic map (
 		lsdfirst => false)
