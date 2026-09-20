@@ -32,7 +32,7 @@ entity udp is
 	generic (
 		hwaddr     : std_logic_vector(0 to 48-1));
 	port (
-		tp : out std_logic_vector(1 to 32);
+		tp         : out std_logic_vector(1 to 32);
 
 		dhcpcd_req : in  std_logic := '0';
 		dhcpcd_rdy : buffer std_logic := '0';
@@ -329,8 +329,8 @@ begin
 			'0'         when ipv4length_act='1' else
 			buffer_trdy when         da_act='1' else
 			buffer_trdy when      ports_act='1' else
-			buffer_trdy when  udplength_act='1' else
-			'0' when     chksum_act='1' else
+			'0'         when  udplength_act='1' else
+			'0'         when     chksum_act='1' else
 			buffer_trdy when        pyl_act='1' else
 			'0';
 
