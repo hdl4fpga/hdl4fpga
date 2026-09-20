@@ -241,7 +241,7 @@ begin
 						fifo_trdy <= '0';
 						dst_irdy  <= '1';
 					end if;
-					if (src_frm or src_irdy)='0' and acc < dst_data'length then
+					if (src_frm or src_irdy)='0' and acc <= dst_data'length then
 						acc := (others => '0');
 						dst_irdy  <= '0';
 						fifo_trdy <= '1';
