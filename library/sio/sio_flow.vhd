@@ -68,49 +68,56 @@ architecture struct of sio_flow is
 	signal rgtr_irdy  : std_logic;
 	signal rgtr_trdy  : std_logic;
 	signal rid_act    : std_logic;
+	signal len_act    : std_logic;
+	signal len_frms   : std_logic_vector(0 to 2-1);
+	signal len_irdys  : std_logic_vector(0 to 2-1);
+	signal len_trdys  : std_logic_vector(0 to 2-1) := (others => '1');
 	signal pyl_act    : std_logic;
-	signal rgtr_frms  : std_logic_vector(0 to 2-1);
-	signal rgtr_irdys : std_logic_vector(0 to 2-1);
-	signal rgtr_trdys : std_logic_vector(0 to 2-1);
+	signal pyl_frms   : std_logic_vector(0 to 2-1);
+	signal pyl_irdys  : std_logic_vector(0 to 2-1);
+	signal pyl_trdys  : std_logic_vector(0 to 2-1);
 
 	signal acktx_data : std_logic_vector(tx_data'range);
 	signal dup_equ    : std_logic := '0';
 
-	alias rgtr0_frm  is rgtr_frms(0);
-	alias rgtr0_irdy is rgtr_irdys(0);
-	alias rgtr0_trdy is rgtr_trdys(0);
-	alias rgtr1_frm  is rgtr_frms(1);
-	alias rgtr1_irdy is rgtr_irdys(1);
-	alias rgtr1_trdy is rgtr_trdys(1);
+	alias pyl0_frm  is pyl_frms(0);
+	alias pyl0_irdy is pyl_irdys(0);
+	alias pyl0_trdy is pyl_trdys(0);
+	alias pyl1_frm  is pyl_frms(1);
+	alias pyl1_irdy is pyl_irdys(1);
+	alias pyl1_trdy is pyl_trdys(1);
+	alias len1_frm  is len_frms(1);
+	alias len1_irdy is len_irdys(1);
+	alias len1_trdy is len_trdys(1);
 
-	constant rgtr0_frame : string := compact('{'                      &
+	constant pyl0_frame : string := compact('{'                      &
 		   "tha:" & string'(hdo(frames)**".format.mac.hwda")    & ',' &
 		"length:" & string'(hdo(frames)**".format.ipv4.length") & ',' &
 		    "da:" & string'(hdo(frames)**".format.ipv4.da")     & ',' &
 		    "sp:" & string'(hdo(frames)**".format.udp.sp")      & ',' &
 		    "dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
-	signal rgtr0_acts  : std_logic_vector(0 to length(rgtr0_frame));
-	signal rgtr0_frms  : std_logic_vector(rgtr0_acts'range);
-	signal rgtr0_irdys : std_logic_vector(rgtr0_acts'range);
+	signal pyl0_acts  : std_logic_vector(0 to length(pyl0_frame));
+	signal pyl0_frms  : std_logic_vector(pyl0_acts'range);
+	signal pyl0_irdys : std_logic_vector(pyl0_acts'range);
 
-	alias tha_act     is rgtr0_acts(0);
-	alias length_act  is rgtr0_acts(1);
-	alias da_act      is rgtr0_acts(2);
-	alias sp_act      is rgtr0_acts(3);
-	alias dp_act      is rgtr0_acts(4);
+	alias tha_act     is pyl0_acts(0);
+	alias length_act  is pyl0_acts(1);
+	alias da_act      is pyl0_acts(2);
+	alias sp_act      is pyl0_acts(3);
+	alias dp_act      is pyl0_acts(4);
 
-	alias tha_frm     is rgtr0_frms(0);
-	alias length_frm  is rgtr0_frms(1);
-	alias da_frm      is rgtr0_frms(2);
-	alias sp_frm      is rgtr0_frms(3);
-	alias dp_frm      is rgtr0_frms(4);
+	alias tha_frm     is pyl0_frms(0);
+	alias length_frm  is pyl0_frms(1);
+	alias da_frm      is pyl0_frms(2);
+	alias sp_frm      is pyl0_frms(3);
+	alias dp_frm      is pyl0_frms(4);
 
-	alias tha_irdy    is rgtr0_irdys(0);
-	alias length_irdy is rgtr0_irdys(1);
-	alias da_irdy     is rgtr0_irdys(2);
-	alias sp_irdy     is rgtr0_irdys(3);
-	alias dp_irdy     is rgtr0_irdys(4);
+	alias tha_irdy    is pyl0_irdys(0);
+	alias length_irdy is pyl0_irdys(1);
+	alias da_irdy     is pyl0_irdys(2);
+	alias sp_irdy     is pyl0_irdys(3);
+	alias dp_irdy     is pyl0_irdys(4);
 
 	signal tx_frms  : std_logic_vector(0 to 2-1) := (others => '0');
 	signal tx_irdys : std_logic_vector(0 to 2-1) := (others => '0');
@@ -126,6 +133,7 @@ begin
 		trdy      => rx_trdy,
 		data      => rx_data,
 		rid_act   => rid_act,
+		len_act   => len_act,
 		pyl_act   => pyl_act,
 		rgtr_frm  => rgtr_frm,
 		rgtr_irdy => rgtr_irdy,
@@ -135,29 +143,33 @@ begin
 	generic map (
 		rids => "[0x00,0x01]")
 	port map (
-		clk        => rx_clk,
-		frm        => rgtr_frm,
-		irdy       => rgtr_irdy,
-		trdy       => rgtr_trdy,
-		data       => rx_data,
-		rid_act    => rid_act,
-		pyl_act    => pyl_act,
-		pyl_frms   => rgtr_frms,
-		pyl_irdys  => rgtr_irdys,
-		pyl_trdys  => rgtr_trdys);
+		clk       => rx_clk,
+		frm       => rgtr_frm,
+		irdy      => rgtr_irdy,
+		trdy      => rgtr_trdy,
+		data      => rx_data,
+		rid_act   => rid_act,
+		len_act   => len_act,
+		len_frms  => len_frms,
+		len_irdys => len_irdys,
+		len_trdys => len_trdys,
+		pyl_act   => pyl_act,
+		pyl_frms  => pyl_frms,
+		pyl_irdys => pyl_irdys,
+		pyl_trdys => pyl_trdys);
 
 	rxrgtr_i : entity hdl4fpga.frame_decode
 	generic map (
-		frame => rgtr0_frame,
+		frame => pyl0_frame,
 		size  => rx_data'length)
 	port map (
 		clk   => rx_clk,
-		frm   => rgtr0_frm,
-		irdy  => rgtr0_irdy,
-		trdy  => rgtr0_trdy,
-		acts  => rgtr0_acts,
-		frms  => rgtr0_frms,
-		irdys => rgtr0_irdys);
+		frm   => pyl0_frm,
+		irdy  => pyl0_irdy,
+		trdy  => pyl0_trdy,
+		acts  => pyl0_acts,
+		frms  => pyl0_frms,
+		irdys => pyl0_irdys);
 
 	dup_b : block
 
@@ -203,19 +215,19 @@ begin
 		cmp_i : entity hdl4fpga.sio_cmp
 		port map (
 			clk     => rx_clk,
-			mr_frm  => rgtr1_frm,
-			mr_irdy => rgtr1_irdy,
-			mr_trdy => rgtr1_trdy,
+			mr_frm  => pyl1_frm,
+			mr_irdy => pyl1_irdy,
+			mr_trdy => pyl1_trdy,
 			mr_data => rx_data,
 			sl_frm  => cmp_frm,
 			sl_irdy => cmp_irdy,
 			sl_data => cmp_data,
 			equ     => cmp_equ);
 
-		ram1_frm  <= rgtr1_frm  and not ram_t;
-		ram1_irdy <= rgtr1_irdy and not ram_t;
-		ram2_frm  <= rgtr1_frm  and ram_t;
-		ram2_irdy <= rgtr1_irdy and ram_t;
+		ram1_frm  <= pyl1_frm  and not ram_t;
+		ram1_irdy <= pyl1_irdy and not ram_t;
+		ram2_frm  <= pyl1_frm  and ram_t;
+		ram2_irdy <= pyl1_irdy and ram_t;
 
 		ram1_i : entity hdl4fpga.sio_ram
 		generic map (
@@ -249,19 +261,25 @@ begin
 			alias  acktx_irdy is tx_irdys(1);
 			alias  acktx_trdy is tx_trdys(1);
 
-			signal mode      : std_logic_vector(0 to 1);
-			signal rxsp_frm  : std_logic;
-			signal rxsp_irdy : std_logic;
+			signal mode        : std_logic_vector(0 to 1);
+			signal rxsp_frm    : std_logic;
+			signal rxsp_irdy   : std_logic;
 			signal length_data : std_logic_vector(rx_data'range);
-			signal src_irdy  : std_logic;
-			signal src_trdy  : std_logic;
-			signal src_data  : std_logic_vector(rx_data'range);
-			signal dst_irdy  : std_logic;
-			signal dst_trdy  : std_logic;
-			signal dst_data  : std_logic_vector(tx_data'range);
-			signal txdp_frm  : std_logic;
-			signal txdp_irdy : std_logic;
-			signal txdp_data : std_logic_vector(tx_data'range);
+			signal src_irdy    : std_logic;
+			signal src_trdy    : std_logic;
+			signal src_data    : std_logic_vector(rx_data'range);
+			signal dst_irdy    : std_logic;
+			signal dst_trdy    : std_logic;
+			signal dst_data    : std_logic_vector(tx_data'range);
+			signal txdp_frm    : std_logic;
+			signal txdp_irdy   : std_logic;
+			signal txdp_data   : std_logic_vector(tx_data'range);
+
+			signal rx01_frm    : std_logic;
+			signal rx01_irdy   : std_logic;
+			signal r01_irdy    : std_logic;
+			signal r01_data    : std_logic_vector(rx_data'range);
+
 		begin
 
 			rxsp_frm  <= sp_frm;
@@ -281,23 +299,27 @@ begin
 				sio_trdy => open,
 				so_data  => length_data);
 
-			src_irdy <= tha_irdy or length_irdy or da_irdy or dp_irdy;
+			rx01_frm  <= len1_frm  or pyl1_frm;
+			rx01_irdy <= len1_irdy or pyl1_irdy;
+			r01pack_e : entity hdl4fpga.sio_pack
+			generic map (
+				no_length => true)
+			port map (
+				sio_clk => so_clk,
+				si_frm  => rx01_frm,
+				si_rid  => x"01",
+				si_irdy => rx01_irdy,
+				si_trdy => len1_trdy,
+				si_data => rx_data,
+
+				so_irdy => r01_irdy,
+				so_data => r01_data);
+
+			src_irdy <= tha_irdy or length_irdy or da_irdy or dp_irdy or r01_irdy;
 			src_data <= 
 				length_data when length_act='1' else
+				r01_data    when   r01_irdy='1' else
 				rx_data;
-
-			dp_i : entity hdl4fpga.sio_ram
-			generic map (
-				bitdata => x"0000")
-			port map (
-				si_clk  => rx_clk,
-				si_frm  => rxsp_frm,
-				si_irdy => rxsp_irdy,
-				si_data => rx_data,
-				so_clk  => tx_clk,
-				so_frm  => txdp_frm,
-				so_irdy => txdp_irdy,
-				so_data => txdp_data);
 
 			fifo_i : entity hdl4fpga.fifo
 			generic map (
@@ -316,6 +338,19 @@ begin
 				dst_irdy => dst_irdy,
 				dst_trdy => dst_trdy,
 				dst_data => dst_data);
+
+			dp_i : entity hdl4fpga.sio_ram
+			generic map (
+				bitdata => x"0000")
+			port map (
+				si_clk  => rx_clk,
+				si_frm  => rxsp_frm,
+				si_irdy => rxsp_irdy,
+				si_data => rx_data,
+				so_clk  => tx_clk,
+				so_frm  => txdp_frm,
+				so_irdy => txdp_irdy,
+				so_data => txdp_data);
 
 			dst_b : block
 				constant header_length : natural :=     -- lattice semi complains
@@ -448,7 +483,7 @@ begin
 	begin
 
 		src_irdy <= 
-			rx_irdy when rgtr_frms=(rgtr_frms'range => '0') else
+			rx_irdy when pyl_frms=(pyl_frms'range => '0') else
 			'1'     when tha_irdy='1' else
 			'1'     when length_irdy='1' else
 			'1'     when da_irdy='1' else
@@ -495,8 +530,8 @@ begin
 			bitdata => (0 to 16-1 => '-'))
 		port map (
 			si_clk  => rx_clk,
-			si_frm  => rgtr0_frms(1),
-			si_irdy => rgtr0_irdys(1),
+			si_frm  => pyl0_frms(1),
+			si_irdy => pyl0_irdys(1),
 			si_data => rx_data,
 			so_clk  => so_clk,
 			so_frm  => dst_frms(1),

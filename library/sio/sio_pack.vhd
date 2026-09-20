@@ -27,25 +27,28 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity sio_pack is
+	generic (
+		no_length : boolean := false);
 	port (
 		sio_clk : in  std_logic;
 		si_frm  : in  std_logic;
 		si_rid  : in  std_logic_vector(8-1 downto 0);
-		si_len  : in  std_logic_vector(8-1 downto 0);
+		si_len  : in  std_logic_vector(8-1 downto 0) := (others => '-');
 		si_irdy : in  std_logic;
 		si_trdy : out std_logic;
 		si_data : in  std_logic_vector;
 
+		so_act  : out std_logic;
 		so_frm  : out std_logic;
 		so_irdy : out std_logic;
-		so_trdy : in  std_logic;
+		so_trdy : in  std_logic := '1';
 		so_data : out std_logic_vector);
 end;
 
 architecture def of sio_pack is
 begin
 	process (si_frm, si_irdy, si_data, sio_clk)
-		variable shr_data : unsigned(0 to 16-1);
+		variable shr_data : unsigned(0 to setif(no_length, 8, 16)-1);
 		variable shr_irdy : unsigned(0 to shr_data'length/si_data'length-1);
 		variable shr_trdy : unsigned(0 to shr_data'length/si_data'length-1);
 		variable active   : std_logic;
@@ -60,10 +63,16 @@ begin
 			if (si_frm or si_irdy)='0' then
 				shr_irdy := (others => '1');
 				shr_trdy := (others => '0');
-				shr_data := unsigned(reverse(si_rid & si_len, 8));
+				shr_data(0 to si_rid'length-1) := unsigned(reverse(si_rid));
+				shr_data := rotate_left(shr_data, si_rid'length);
+				if not no_length then
+					shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
+					shr_data := rotate_left(shr_data, si_len'length);
+				end if;
 			end if;
 		end if;
 
+		so_act  <= si_frm or si_irdy;
 		so_frm  <= si_frm;
 		so_irdy <= si_irdy or (si_frm and shr_irdy(0));
 		si_trdy <= (si_frm or si_irdy) and shr_trdy(0);
