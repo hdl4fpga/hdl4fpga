@@ -314,7 +314,8 @@ begin
 		alias chksum_trdy     is udptx_trdys(6);
 		alias pyl_trdy        is udptx_trdys(7);
 
-		signal udplength_data : std_logic_vector(udptx_data'range);
+		signal adjlength_irdy : std_logic;
+		signal adjlength_data : std_logic_vector(udptx_data'range);
 
 		alias  buffer_frm  is pyltx_frm;
 		signal buffer_irdy : std_logic;
@@ -357,6 +358,7 @@ begin
 		chksum_trdy     <= buffer_trdy;
 		pyl_trdy        <= buffer_trdy;
 
+		adjlength_irdy <= ipv4length_irdy or udplength_irdy;
 		miiadjlen_i : entity hdl4fpga.mii_adjlen
 		port map (
 			clk     => miitx_clk,
@@ -365,12 +367,13 @@ begin
 			irdy    => pyllength_irdy,
 			trdy    => pyllength_trdy,
 			si_data => pyltx_data,
-			so_irdy => udplength_irdy,
-			so_data => udplength_data);
+			so_irdy => adjlength_irdy,
+			so_data => adjlength_data);
 
 		buffer_data <= 
-			udplength_data            when udplength_act='1' else
-			(udptx_data'range => '0') when    chksum_act='1' else
+			adjlength_data            when ipv4length_act='1' else
+			adjlength_data            when  udplength_act='1' else
+			(udptx_data'range => '0') when     chksum_act='1' else
 			pyltx_data;
 
 		buffer_irdy <= 

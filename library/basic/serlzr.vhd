@@ -37,7 +37,7 @@ entity serlzr is
 		src_trdy  : out std_logic := '0';
 		src_data  : in  std_logic_vector;
 		dst_clk   : in  std_logic := '1';
-		dst_frm   : buffer  std_logic := '0';
+		dst_frm   : out std_logic := '0';
 		dst_irdy  : buffer std_logic := '0';
 		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector);
@@ -187,7 +187,7 @@ begin
 				variable acc : unsigned(shf'range) := (others => '0');
 			begin 
 				if rising_edge(dst_clk) then
-					if dst_frm='0' then
+					if src_frm='0' then
 						acc := (others => '0');
 						dst_irdy  <= '0';
 						fifo_trdy <= '0';

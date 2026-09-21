@@ -1,0 +1,2 @@
+#!/bin/sh
+nping --icmp --rate 1000 -c 10000 kit
