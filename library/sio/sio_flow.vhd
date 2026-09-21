@@ -262,8 +262,6 @@ begin
 			alias  acktx_trdy is tx_trdys(1);
 
 			signal mode        : std_logic_vector(0 to 1);
-			signal rxsp_frm    : std_logic;
-			signal rxsp_irdy   : std_logic;
 			signal length_data : std_logic_vector(rx_data'range);
 			signal src_irdy    : std_logic;
 			signal src_trdy    : std_logic;
@@ -281,9 +279,6 @@ begin
 			signal r01_data    : std_logic_vector(rx_data'range);
 
 		begin
-
-			rxsp_frm  <= sp_frm;
-			rxsp_irdy <= sp_irdy;
 
 			mode <= 
 				"10" when (fcs_sb and     fcs_vld)='1' else
@@ -344,15 +339,15 @@ begin
 				bitdata => x"0000")
 			port map (
 				si_clk  => rx_clk,
-				si_frm  => rxsp_frm,
-				si_irdy => rxsp_irdy,
+				si_frm  => sp_frm,
+				si_irdy => sp_irdy,
 				si_data => rx_data,
 				so_clk  => tx_clk,
 				so_frm  => txdp_frm,
 				so_irdy => txdp_irdy,
 				so_data => txdp_data);
 
-			dst_b : block
+			tx_b : block
 				constant header_length : natural :=     -- lattice semi complains
 					hdo(frames)**".format.mac.hwda"   + -- lattice semi complains
 					hdo(frames)**".format.udp.length" + -- lattice semi complains
@@ -401,7 +396,7 @@ begin
 					frm <= (acktx_rdy xor acktx_req) and dst_irdy;
 				end process;
 
-				irdy <= dst_irdy or dp_irdy;
+				irdy <= dst_irdy;
 				frame_i : entity hdl4fpga.frame_decode
 				generic map (
 					frame => frame,
@@ -458,39 +453,32 @@ begin
 			(tx_data'range => '-');
 	end block;
 
-	fifo_b : block
-		constant tha_length: natural := 
-			16 +
-			hdo(frames)**".format.mac.hwda" +
-			hdo(frames)**".format.ipv4.da"  +
-			hdo(frames)**".format.udp.sp";
-		constant tha_value : string := natural'image(tha_length);
-		constant dst_frame : string := compact('{' &
-			"tha:" & tha_value & ',' & --"tha:" & natural'image( -- Lattice Semi error
-			" dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
+	so_b : block
+		signal mode     : std_logic_vector(0 to 1);
+		signal src_irdy : std_logic;
+		signal dst_irdy : std_logic;
+		signal dst_trdy : std_logic;
+		signal dst_data : std_logic_vector(so_data'range);
 
-		signal commit    : std_logic;
-		signal rollback  : std_logic;
-		signal src_irdy  : std_logic;
-		signal dst_irdy  : std_logic;
-		signal dst_trdy  : std_logic;
-		signal dst_data  : std_logic_vector(so_data'range);
-		signal dst_acts  : std_logic_vector(0 to length(dst_frame));
-		signal dst_frms  : std_logic_vector(0 to length(dst_frame));
-		signal dst_trdys : std_logic_vector(0 to length(dst_frame)) := (others => '1');
-		signal dp_data   : std_logic_vector(so_data'range);
+		signal txdp_frm  : std_logic;
+		signal txdp_irdy : std_logic;
+		signal txdp_data : std_logic_vector(tx_data'range);
 
 	begin
 
 		src_irdy <= 
-			rx_irdy when pyl_frms=(pyl_frms'range => '0') else
-			'1'     when tha_irdy='1' else
+			rx_irdy when    pyl_frms=(pyl_frms'range => '0') else
+			'1'     when    tha_irdy='1' else
 			'1'     when length_irdy='1' else
-			'1'     when da_irdy='1' else
+			'1'     when     da_irdy='1' else
 			'0';
 
-		commit   <= (not fcs_sb or     fcs_vld); -- and not dup_equ;
-		rollback <= (not fcs_sb or not fcs_vld);
+		src_irdy <= tha_irdy or length_irdy or da_irdy or dp_irdy;
+		mode <= 
+			"10" when (fcs_sb and     fcs_vld)='1' else
+			"00" when (fcs_sb and not fcs_vld)='1' else
+			"11";
+
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
 			latency   => 1,
@@ -498,49 +486,87 @@ begin
 			check_dov => true,
 			max_depth => (2048*8)/rx_data'length)
 		port map (
+			mode     => mode,
 			src_clk  => rx_clk,
 			src_irdy => src_irdy,
 			src_trdy => open,
 			src_data => rx_data,
-
-			mode(0)  => commit,
-			mode(1)  => rollback,
 
 			dst_clk  => so_clk,
 			dst_irdy => dst_irdy,
 			dst_trdy => dst_trdy,
 			dst_data => dst_data);
 
-		dst_trdy <= '0' when dst_frms(1)='1' else so_trdy;
-		dst_i : entity hdl4fpga.frame_decode
-		generic map (
-			frame => dst_frame,
-			size  => so_data'length)
-		port map (
-			clk   => so_clk,
-			frm   => dst_irdy,
-			irdy  => dst_irdy,
-			frms  => dst_frms,
-			trdys => dst_trdys,
-			acts  => dst_acts);
-		dst_trdys <= (others => so_trdy);
-
 		dp_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => (0 to 16-1 => '-'))
+			bitdata => x"0000")
 		port map (
 			si_clk  => rx_clk,
-			si_frm  => pyl0_frms(1),
-			si_irdy => pyl0_irdys(1),
+			si_frm  => sp_frm,
+			si_irdy => sp_irdy,
 			si_data => rx_data,
-			so_clk  => so_clk,
-			so_frm  => dst_frms(1),
-			so_irdy => so_trdy,
-			so_data => dp_data);
+			so_clk  => tx_clk,
+			so_frm  => txdp_frm,
+			so_irdy => txdp_irdy,
+			so_data => txdp_data);
 
-		so_frm  <= dst_irdy;
-		so_irdy <= dst_irdy;
-		so_data <= dp_data when dst_frms(1)='1' else dst_data;
+		tx_b : block
+			constant header_length : natural :=     -- lattice semi complains
+				hdo(frames)**".format.mac.hwda"   + -- lattice semi complains
+				hdo(frames)**".format.udp.length" + -- lattice semi complains
+				hdo(frames)**".format.ipv4.da"    + -- lattice semi complains
+				hdo(frames)**".format.udp.sp";      -- lattice semi complains
+			constant header_value : string := natural'image(header_length);  -- lattice semi complains
+			constant frame : string := compact('{'                       &
+				"header:" & header_value                           & ',' &
+					"dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
+
+			signal frm   : std_logic;
+			signal irdy  : std_logic;
+			signal fin   : std_logic;
+			signal acts  : std_logic_vector(0 to length(frame));
+			signal frms  : std_logic_vector(acts'range);
+			signal irdys : std_logic_vector(acts'range);
+			signal trdys : std_logic_vector(acts'range);
+
+			alias header_act  is acts(0);
+			alias dp_act      is acts(1);
+
+			alias header_frm  is frms(0);
+			alias dp_frm      is frms(1);
+
+			alias header_irdy is irdys(0);
+			alias dp_irdy     is irdys(1);
+
+			alias header_trdy is trdys(0);
+			alias dp_trdy     is trdys(1);
+		begin
+			frame_i : entity hdl4fpga.frame_decode
+			generic map (
+				frame => frame,
+				size  => so_data'length)
+			port map (
+				clk   => so_clk,
+				frm   => frm,
+				irdy  => irdy,
+				fin   => fin,
+				acts  => acts,
+				frms  => frms,
+				irdys => irdys,
+				trdys => trdys);
+			trdys     <= (others => so_trdy);
+			dst_trdy  <= '0' when dp_act='1' else so_trdy;
+			txdp_frm  <= dp_frm;
+			txdp_irdy <= dp_irdy and so_trdy;
+
+			so_frm  <= frm;
+			so_irdy <= irdy;
+
+			so_data <=
+				txdp_data when dp_act='1' else
+				dst_data;
+
+		end block;
 
 	end block;
 
