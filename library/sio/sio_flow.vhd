@@ -42,10 +42,10 @@ entity sio_flow is
 		fcs_vld : in  std_logic;
 
 		so_clk  : in  std_logic;
-		so_frm  : buffer std_logic;
-		so_irdy : buffer std_logic;
+		so_frm  : out std_logic;
+		so_irdy : out std_logic;
 		so_trdy : in  std_logic := '1';
-		so_data : buffer std_logic_vector;
+		so_data : out std_logic_vector;
 
 		si_clk  : in  std_logic := '-';
 		si_frm  : in  std_logic;
@@ -55,7 +55,7 @@ entity sio_flow is
 
 		tx_clk  : in  std_logic;
 		tx_frm  : out std_logic;
-		tx_irdy : buffer std_logic;
+		tx_irdy : out std_logic;
 		tx_trdy : in  std_logic := '1';
 		tx_data : out std_logic_vector;
 		tp      : out std_logic_vector(1 to 32));
@@ -471,9 +471,9 @@ begin
 			'1'     when    tha_irdy='1' else
 			'1'     when length_irdy='1' else
 			'1'     when     da_irdy='1' else
+			'1'     when     dp_irdy='1' else
 			'0';
 
-		src_irdy <= tha_irdy or length_irdy or da_irdy or dp_irdy;
 		mode <= 
 			"10" when (fcs_sb and     fcs_vld)='1' else
 			"00" when (fcs_sb and not fcs_vld)='1' else
