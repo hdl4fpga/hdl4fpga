@@ -467,7 +467,7 @@ begin
 	begin
 
 		src_irdy <= 
-			rx_irdy when    pyl_frms=(pyl_frms'range => '0') else
+			rx_irdy when   pyl0_irdy='0' else
 			'1'     when    tha_irdy='1' else
 			'1'     when length_irdy='1' else
 			'1'     when     da_irdy='1' else
@@ -511,7 +511,10 @@ begin
 			so_data => txdp_data);
 
 		tx_b : block
+			constant rid_size : natural := 8;
+			constant len_size : natural := 8;
 			constant header_length : natural :=     -- lattice semi complains
+				rid_size+len_size +
 				hdo(frames)**".format.mac.hwda"   + -- lattice semi complains
 				hdo(frames)**".format.udp.length" + -- lattice semi complains
 				hdo(frames)**".format.ipv4.da"    + -- lattice semi complains
@@ -521,8 +524,8 @@ begin
 				"header:" & header_value                           & ',' &
 					"dp:" & string'(hdo(frames)**".format.udp.dp") & '}');
 
-			signal frm   : std_logic;
-			signal irdy  : std_logic;
+			alias frm   is dst_irdy;
+			alias irdy  is dst_irdy;
 			signal fin   : std_logic;
 			signal acts  : std_logic_vector(0 to length(frame));
 			signal frms  : std_logic_vector(acts'range);
@@ -541,6 +544,7 @@ begin
 			alias header_trdy is trdys(0);
 			alias dp_trdy     is trdys(1);
 		begin
+
 			frame_i : entity hdl4fpga.frame_decode
 			generic map (
 				frame => frame,
