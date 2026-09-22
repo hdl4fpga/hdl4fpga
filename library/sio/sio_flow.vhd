@@ -316,7 +316,7 @@ begin
 				end if;
 				if rx_frm='0' then
 					bridge <= '0';
-				elsif pyl0_frm='1' then
+				elsif (pyl0_frm or pyl0_irdy)='1' then
 					bridge <= '0';
 				elsif state=s_bridge then
 					bridge <= '1';
