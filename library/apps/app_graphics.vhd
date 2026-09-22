@@ -208,7 +208,7 @@ begin
 		signal rgtr_trdy     : std_logic;
 
 		signal rgtr_frms     : std_logic_vector(0 to length(rids)-1);
-		signal rgtr_irdys    : std_logic_vector(0 to length(rids)-1);
+		signal rgtr_irdys    : std_logic_vector(rgtr_frms'range);
 		signal soutrgtr0_data    : std_logic_vector(sout_data'range);
 		signal ack_rgtr      : std_logic_vector(0 to 8-1);
 		signal addr_rgtr     : std_logic_vector(0 to 32-1);
