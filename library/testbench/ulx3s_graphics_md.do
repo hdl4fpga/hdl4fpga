@@ -83,14 +83,71 @@ add wave -noupdate -group sio_udp -group sio_flow -radix hexadecimal -childforma
 add wave -noupdate -group sio_udp -group sio_flow -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rev_tx_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sin_clk
-add wave -noupdate /testbench/du_e/graphics_e/sin_frm
-add wave -noupdate /testbench/du_e/graphics_e/sin_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sin_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sin_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/rev_sin_data
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sin_clk
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sin_frm
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sin_irdy
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sin_trdy
+add wave -noupdate -expand -group app_graphics -radix hexadecimal /testbench/du_e/graphics_e/sin_data
+add wave -noupdate -expand -group app_graphics -radix hexadecimal /testbench/du_e/graphics_e/rev_sin_data
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_alat
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_blat
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_al
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_bl
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_cl
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_cwl
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_rtt
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_ods
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_rst
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_clk
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_cfgrdy
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_inirdy
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_frm
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_trdy
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_fch
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_cmd
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_rw
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_b
+add wave -noupdate -group sdram -group ctlr -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_a
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di_dv
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di_req
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do_dv
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_act
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_dm
+add wave -noupdate -group sdram -group ctlr -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_di
+add wave -noupdate -group sdram -group ctlr -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_do
+add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_refreq
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_frm
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_trdy
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_rw
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_inirdy
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_wlrdy
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_wlreq
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_rlreq
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_rlrdy
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_rst
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_cke
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_cs
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_ras
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_cas
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_we
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_b
+add wave -noupdate -group sdram -group phy -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_a
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_odt
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dmi
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dmo
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqso
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqst
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqt
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqv
+add wave -noupdate -group sdram -group phy -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqo
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_sti
+add wave -noupdate -group sdram -group phy /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_sto
+add wave -noupdate -group sdram -group phy -radix hexadecimal /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_dqi
+add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_tcp
+add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/chip_data
+add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6658938050 fs} 0} {{Cursor 2} {564955750 fs} 0}
+WaveRestoreCursors {{Cursor 1} {7533911500 fs} 0} {{Cursor 2} {564955750 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
@@ -106,4 +163,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {4524 ns} {17964 ns}
+WaveRestoreZoom {7202 ns} {8042 ns}
