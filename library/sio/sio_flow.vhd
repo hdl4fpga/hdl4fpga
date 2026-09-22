@@ -272,11 +272,7 @@ begin
 			signal txdp_frm    : std_logic;
 			signal txdp_irdy   : std_logic;
 			signal txdp_data   : std_logic_vector(tx_data'range);
-
-			signal rx01_frm    : std_logic;
-			signal rx01_irdy   : std_logic;
-			signal r01_irdy    : std_logic;
-			signal r01_data    : std_logic_vector(rx_data'range);
+			signal bridge      : std_logic;
 
 		begin
 
@@ -294,26 +290,46 @@ begin
 				sio_trdy => open,
 				so_data  => length_data);
 
-			rx01_frm  <= len1_frm  or pyl1_frm;
-			rx01_irdy <= len1_irdy or pyl1_irdy;
-			r01pack_e : entity hdl4fpga.sio_pack
-			generic map (
-				no_length => true)
-			port map (
-				sio_clk => so_clk,
-				si_frm  => rx01_frm,
-				si_rid  => x"01",
-				si_irdy => rx01_irdy,
-				si_trdy => len1_trdy,
-				si_data => rx_data,
+			process (pyl_frms, pyl_irdys, rx_frm, rx_clk)
+				type states is (s_pyl0, s_bridge, s_pyl1);
+				variable state : states;
+			begin
+				if rising_edge(rx_clk) then
+					if rx_frm='0' then
+						state := s_pyl0;
+					else
+						case state is
+						when s_pyl0 =>
+							if pyl0_frm='1' then
+								state := s_bridge;
+							end if;
+						when s_bridge =>
+							if pyl1_frm='1' then
+								state := s_pyl1;
+							end if;
+						when s_pyl1 =>
+							if pyl1_frm='0' then
+								state := s_pyl0;
+							end if;
+						end case;
+					end if;
+				end if;
+				if rx_frm='0' then
+					bridge <= '0';
+				elsif pyl0_frm='1' then
+					bridge <= '0';
+				elsif state=s_bridge then
+					bridge <= '1';
+				elsif (pyl1_frm or pyl1_irdy)='1' then
+					bridge <= '1';
+				else
+					bridge <= '0';
+				end if;
+			end process;
 
-				so_irdy => r01_irdy,
-				so_data => r01_data);
-
-			src_irdy <= tha_irdy or length_irdy or da_irdy or dp_irdy or r01_irdy;
+			src_irdy <= tha_irdy or length_irdy or da_irdy or dp_irdy or (bridge and rx_irdy);
 			src_data <= 
 				length_data when length_act='1' else
-				r01_data    when   r01_irdy='1' else
 				rx_data;
 
 			fifo_i : entity hdl4fpga.fifo
