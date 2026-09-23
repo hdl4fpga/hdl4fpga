@@ -275,6 +275,9 @@ begin
 			alias  baddr_frm   is rgtr_frms(4);
 			alias  baddr_irdy  is rgtr_irdys(4);
 			signal ctlr_di_rdy : std_logic;
+			signal data_rgtr   : std_logic_vector(ctlr_di'range);
+			signal fifo_irdy   : std_logic;
+			signal fifo_trdy   : std_logic;
 		begin
 			
 			rgtr0_b : block
@@ -352,25 +355,36 @@ begin
 				dst_data => length_rgtr);
 
 			dmaio_len <= std_logic_vector(resize(shift_right(unsigned(length_rgtr), blword_bits), dmaio_len'length));
-			-- data_e : entity hdl4fpga.fifo
-			-- generic map (
-				-- max_depth  => fifodata_depth,
-				-- async_mode => true,
-				-- latency    => latencies_tab(profile).dmaio,
-				-- check_sov  => true,
-				-- check_dov  => true)
-			-- port map (
-				-- mode(0)  => '-',
-				-- mode(1)  => '-',
--- 
-				-- src_clk  => sin_clk,
-				-- src_irdy => data_irdy,
-				-- src_data => sin_data,
--- 
-				-- dst_clk  => ctlr_clk,
-				-- dst_irdy => ctlr_di_rdy,
-				-- dst_trdy => ctlr_di_req,
-				-- dst_data => ctlr_di);
+			datain_e : entity hdl4fpga.serlzr
+			port map (
+				src_clk  => sin_clk,
+				src_frm  => data_frm,
+				src_irdy => data_irdy,
+				src_data => sin_data,
+				dst_irdy => fifo_irdy,
+				dst_trdy => fifo_trdy,
+				dst_data => data_rgtr);
+
+			data_e : entity hdl4fpga.fifo
+			generic map (
+				max_depth  => fifodata_depth,
+				async_mode => true,
+				latency    => latencies_tab(profile).dmaio,
+				check_sov  => true,
+				check_dov  => true)
+			port map (
+				mode(0)  => '1',
+				mode(1)  => '0',
+
+				src_clk  => sin_clk,
+				src_irdy => fifo_irdy,
+				src_trdy => fifo_trdy,
+				src_data => data_rgtr,
+
+				dst_clk  => ctlr_clk,
+				dst_irdy => ctlr_di_rdy,
+				dst_trdy => ctlr_di_req,
+				dst_data => ctlr_di);
 
 			baddr_e : entity hdl4fpga.serlzr
 			port map (
