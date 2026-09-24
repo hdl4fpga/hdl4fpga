@@ -507,7 +507,7 @@ begin
 				signal dmaso_trdy  : std_logic;
 				signal dmaso_data  : std_logic_vector(ctlr_do'range);
 
-				signal commit : std_logic;
+				signal mode1 : std_logic;
 			begin
 
 				dmao_dv_e : entity hdl4fpga.latency
@@ -525,11 +525,11 @@ begin
 					d => (0 to dmaso_data'length-1 => dma_lat))
 				port map (
 					clk => ctlr_clk,
-					--di  => x"01234567", --dma_do,
-					di  => dma_do,
+					di  => x"0123", --dma_do,
+					--di  => dma_do,
 					do  => dmaso_data);
 
-				commit <= ctlr_inirdy and (dmaio_req xor dmaio_rdy);
+				mode1 <= ctlr_inirdy and (dmaio_req xor dmaio_rdy);
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (dataout_size/(ctlr_di'length/siobyte_size)),
@@ -538,7 +538,7 @@ begin
 					check_dov => true)
 				port map (
 					mode(0)  => ctlr_inirdy,
-					mode(1)  => commit,
+					mode(1)  => mode1,
 					src_clk  => ctlr_clk,
 					src_irdy => dmaso_irdy,
 					src_trdy => dmaso_trdy,
