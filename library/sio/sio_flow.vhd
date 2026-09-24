@@ -191,16 +191,10 @@ begin
 		process (rx_clk)
 		begin
 			if rising_edge(rx_clk) then
-				if (fcs_sb and fcs_vld and not dup_equ)='1' then
-					ram_t <= not ram_t;
-				end if;
-			end if;
-		end process;
-
-		process (rx_clk)
-		begin
-			if rising_edge(rx_clk) then
-				if fcs_vld='1' then
+				if fcs_sb='1' then
+					if (fcs_vld and not dup_equ)='1' then
+						ram_t <= not ram_t;
+					end if;
 					dup_equ <= '0';
 				elsif cmp_equ='1' then
 					dup_equ <= '1';
@@ -231,7 +225,8 @@ begin
 
 		ram1_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => (0 to 8-1 => '-'))
+			bitdata => x"10")
+--			bitdata => (0 to 8-1 => '-'))
 		port map (
 			si_clk  => rx_clk,
 			si_frm  => ram1_frm,
@@ -244,7 +239,8 @@ begin
 
 		ram2_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => (0 to 16-1 => '-'))
+			bitdata => x"90")
+			--bitdata => (0 to 8-1 => '-'))
 		port map (
 			si_clk  => rx_clk,
 			si_frm  => ram2_frm,
@@ -277,8 +273,8 @@ begin
 		begin
 
 			mode <= 
-				"10" when (fcs_sb and     fcs_vld)='1' else
-				"00" when (fcs_sb and not fcs_vld)='1' else
+				"10" when (fcs_sb and     (fcs_vld and dup_equ))='1' else
+				"00" when (fcs_sb and not (fcs_vld and dup_equ))='1' else
 				"11";
 
 			length_i : entity hdl4fpga.sio_mux
@@ -491,8 +487,8 @@ begin
 			'0';
 
 		mode <= 
-			"10" when (fcs_sb and     fcs_vld)='1' else
-			"00" when (fcs_sb and not fcs_vld)='1' else
+			"10" when (fcs_sb and     (fcs_vld and  not dup_equ))='1' else
+			"00" when (fcs_sb and not (fcs_vld and  not dup_equ))='1' else
 			"11";
 
 		fifo_i : entity hdl4fpga.fifo
