@@ -280,6 +280,43 @@ begin
 			signal fifo_trdy   : std_logic;
 		begin
 			
+			process (pyl_frms, pyl_irdys, rx_frm, rx_clk)
+				type states is (s_pyl0, s_bridge, s_pyl1);
+				variable state : states;
+			begin
+				if rising_edge(rx_clk) then
+					if rx_frm='0' then
+						state := s_pyl0;
+					else
+						case state is
+						when s_pyl0 =>
+							if pyl0_frm='1' then
+								state := s_bridge;
+							end if;
+						when s_bridge =>
+							if pyl1_frm='1' then
+								state := s_pyl1;
+							end if;
+						when s_pyl1 =>
+							if pyl1_frm='0' then
+								state := s_pyl0;
+							end if;
+						end case;
+					end if;
+				end if;
+				if rx_frm='0' then
+					bridge <= '0';
+				elsif (pyl0_frm or pyl0_irdy)='1' then
+					bridge <= '0';
+				elsif state=s_bridge then
+					bridge <= '1';
+				elsif (pyl1_frm or pyl1_irdy)='1' then
+					bridge <= '1';
+				else
+					bridge <= '0';
+				end if;
+			end process;
+
 			rgtr0_b : block
 				signal mode     : std_logic_vector(0 to 2-1);
 				signal src_irdy : std_logic;
