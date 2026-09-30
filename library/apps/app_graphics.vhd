@@ -207,8 +207,8 @@ begin
 		signal rgtr_irdy     : std_logic;
 		signal rgtr_trdy     : std_logic;
 
-		signal rgtr_frms     : std_logic_vector(0 to length(rids)-1);
-		signal rgtr_irdys    : std_logic_vector(rgtr_frms'range);
+		signal pyl_frms     : std_logic_vector(0 to length(rids)-1);
+		signal pyl_irdys    : std_logic_vector(pyl_frms'range);
 		signal soutrgtr0_data    : std_logic_vector(sout_data'range);
 		signal ack_rgtr      : std_logic_vector(0 to 8-1);
 		signal addr_rgtr     : std_logic_vector(0 to 32-1);
@@ -258,34 +258,35 @@ begin
 			data       => sin_data,
 			rid_act    => rid_act,
 			pyl_act    => pyl_act,
-			pyl_frms   => rgtr_frms,
-			pyl_irdys  => rgtr_irdys);
+			pyl_frms   => pyl_frms,
+			pyl_irdys  => pyl_irdys);
 
 		rx_b : block
-			alias  rgtr0_frm   is rgtr_frms(0);
-			alias  rgtr0_irdy  is rgtr_irdys(0);
+			alias  rgtr0_frm   is pyl_frms(0);
+			alias  rgtr0_irdy  is pyl_irdys(0);
 			signal ack_frm     : std_logic;
-			alias  ack_irdy    is rgtr_irdys(1);
+			alias  ack_irdy    is pyl_irdys(1);
 			signal addr_frm    : std_logic;
-			alias  addr_irdy   is rgtr_irdys(2);
+			alias  addr_irdy   is pyl_irdys(2);
 			signal length_frm  : std_logic;
-			alias  length_irdy is rgtr_irdys(3);
-			alias  data_frm    is rgtr_irdys(4);
-			alias  data_irdy   is rgtr_irdys(4);
-			alias  baddr_frm   is rgtr_frms(4);
-			alias  baddr_irdy  is rgtr_irdys(4);
+			alias  length_irdy is pyl_irdys(3);
+			alias  data_frm    is pyl_irdys(4);
+			alias  data_irdy   is pyl_irdys(4);
+			alias  baddr_frm   is pyl_frms(4);
+			alias  baddr_irdy  is pyl_irdys(4);
 			signal ctlr_di_rdy : std_logic;
 			signal data_rgtr   : std_logic_vector(ctlr_di'range);
 			signal fifo_irdy   : std_logic;
 			signal fifo_trdy   : std_logic;
+			signal bridge      : std_logic;
 		begin
 			
-			process (pyl_frms, pyl_irdys, rx_frm, rx_clk)
+			process (pyl_frms, pyl_irdys, si_frm, si_clk)
 				type states is (s_pyl0, s_bridge, s_pyl1);
 				variable state : states;
 			begin
-				if rising_edge(rx_clk) then
-					if rx_frm='0' then
+				if rising_edge(si_clk) then
+					if si_frm='0' then
 						state := s_pyl0;
 					else
 						case state is
@@ -304,7 +305,7 @@ begin
 						end case;
 					end if;
 				end if;
-				if rx_frm='0' then
+				if si_frm='0' then
 					bridge <= '0';
 				elsif (pyl0_frm or pyl0_irdy)='1' then
 					bridge <= '0';
@@ -362,7 +363,7 @@ begin
 					'0';
 			end block;
 
-			ack_frm <= rgtr_frms(1) or rgtr_irdys(1);
+			ack_frm <= pyl_frms(1) or pyl_irdys(1);
 			ack_e : entity hdl4fpga.serlzr
 			port map (
 				src_clk  => sin_clk,
@@ -371,7 +372,7 @@ begin
 				src_data => sin_data,
 				dst_data => ack_rgtr);
 
-			addr_frm <= rgtr_frms(2) or rgtr_irdys(2);
+			addr_frm <= pyl_frms(2) or pyl_irdys(2);
 			addr_e : entity hdl4fpga.serlzr
 			port map (
 				src_clk  => sin_clk,
@@ -382,7 +383,7 @@ begin
 				dst_irdy => dmaio_irdy,
 				dst_data => addr_rgtr);
 
-			length_frm <= rgtr_frms(3) or rgtr_irdys(3);
+			length_frm <= pyl_frms(3) or pyl_irdys(3);
 			length_e : entity hdl4fpga.serlzr
 			port map (
 				src_clk  => sin_clk,
