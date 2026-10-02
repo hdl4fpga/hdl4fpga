@@ -262,8 +262,8 @@ begin
 			pyl_irdys  => pyl_irdys);
 
 		rx_b : block
-			alias  pyl0_frm   is pyl_frms(0);
-			alias  pyl0_irdy  is pyl_irdys(0);
+			alias  pyl0_frm    is pyl_frms(0);
+			alias  pyl0_irdy   is pyl_irdys(0);
 			signal ack_frm     : std_logic;
 			alias  ack_irdy    is pyl_irdys(1);
 			signal addr_frm    : std_logic;
@@ -300,38 +300,38 @@ begin
 					end if;
 				end process;
 
-				process (si_frm, si_irdy, pyl0_frm, pyl0_irdy, si_clk)
+				process (sin_frm, sin_irdy, pyl0_frm, pyl0_irdy, sin_clk)
 					type states is (s_pyl0, s_others);
 					variable state : states;
 				begin
-					if rising_edge(si_clk) then
-						if si_frm='0' then
-							state := s_pyl0;
-						else
-							case state is
-							when s_pyl0 =>
-								if (pyl0_frm or pyl0_irdy)='1' then
-									state := s_others;
-								end if;
-							when s_others =>
+					if rising_edge(sin_clk) then
+						case state is
+						when s_pyl0 =>
+							if sin_frm='0' then
 								state := s_pyl0;
-							end case;
-						end if;
+							elsif (pyl0_frm or pyl0_irdy)='1' then
+								state := s_others;
+							end if;
+						when s_others =>
+							if sin_frm='0' then
+								state := s_pyl0;
+							end if;
+						end case;
 					end if;
 					if state=s_pyl0 then
-						frm  <= si_frm;
-						irdy <= si_irdy;
+						frm  <= sin_frm;
+						irdy <= sin_irdy;
 					else
 						frm  <= pyl0_frm;
 						irdy <= pyl0_irdy;
 					end if;
 				end process;
 
-				mode(0) <= (ctlr_inirdy and     (not frm and irdy)) or (ctlr_inirdy and rgtr_frm);
+				mode(0) <= (ctlr_inirdy and     (not frm and irdy));
 				mode(1) <= (ctlr_inirdy and not (not frm and irdy));
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
-					max_depth => (8*32)/sin_data'length,
+					max_depth => (8*128)/sin_data'length,
 					latency   => latencies_tab(profile).dmaio,
 					check_sov => true,
 					check_dov => true)
