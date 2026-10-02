@@ -146,14 +146,13 @@ add wave -noupdate -group sdram -group phy -radix hexadecimal /testbench/du_e/gr
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_tcp
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/chip_data
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_data
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/src_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/src_trdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/dst_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/dst_trdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rgtr0_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rgtr0_rdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/src_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/src_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/mode
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {7426004470 fs} 0} {{Cursor 2} {564955750 fs} 0}
+WaveRestoreCursors {{Cursor 1} {9397608510 fs} 0} {{Cursor 2} {7530108510 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
@@ -169,4 +168,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {7170535720 fs} {7826785720 fs}
+WaveRestoreZoom {7017500 ps} {23967500 ps}
