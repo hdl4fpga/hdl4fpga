@@ -461,32 +461,33 @@ begin
 			signal sodata_trdy  : std_logic;
 			signal sodata_data  : std_logic_vector(sout_data'range);
 
-			constant pfix_size  : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
-			signal pay_length   : unsigned(trans_length'range);
-			signal data_length  : unsigned(trans_length'range);
-			signal hdr_length   : unsigned(trans_length'range);
+			constant prefix_size  : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
+			signal payload_length : unsigned(trans_length'range);
+			signal data_length    : unsigned(trans_length'range);
+			signal header_length  : unsigned(trans_length'range);
 
 		begin
 
-			trans_length <= unsigned(length_rgtr(trans_length'range));
 			process (sout_clk)
-				variable value : unsigned(pay_length'range);
+				variable value : unsigned(payload_length'range);
 			begin
 				if rising_edge(sout_clk) then
-					value := (others => '1');
-					value := value srl (value'length-(unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length)-1));
+					value := to_unsigned(1, value'length);
+					value := shift_left(value, unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length))-1;
 					value := value or resize(unsigned(length_rgtr), value'length);
 					data_length <= value;
+
 					value := value srl unsigned_num_bits(256-1);
 					value := value + 1;
 					value := value sll 1;
-					hdr_length <= value;
+					header_length   <= value;
+					trans_length <= unsigned(length_rgtr(trans_length'range));
 				end if;
 			end process;
 
-			pay_length <= 
-				hdr_length + data_length when status_rw='1' else
-				pfix_size;
+			payload_length <= 
+				header_length + data_length when status_rw='1' else
+				prefix_size;
 
 			rgtr1_b : block
 				signal src_irdy : std_logic;
@@ -495,7 +496,7 @@ begin
 				signal dst_trdy : std_logic;
 			begin
 				dmaio_data <= 
-					reverse(reverse(std_logic_vector(resize(pay_length,16))),8) & reverse(
+					reverse(reverse(std_logic_vector(resize(payload_length,16))),8) & reverse(
 					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
 					to_stdlogicvector(rid_addr) & x"00" & status, 8);
 

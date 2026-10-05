@@ -8,6 +8,7 @@ quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_
 quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/so_data  } rev_so_data
 quietly virtual signal -install /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e { (context /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e )( so_data(7) & so_data(6) & so_data(5) & so_data(4) & so_data(3) & so_data(2) & so_data(1) & so_data(0) )} rev_so_data001
 quietly virtual signal -install /testbench/du_e/graphics_e { (context /testbench/du_e/graphics_e )( sin_data(7) & sin_data(6) & sin_data(5) & sin_data(4) & sin_data(3) & sin_data(2) & sin_data(1) & sin_data(0) )} rev_sin_data
+quietly virtual signal -install /testbench/du_e/graphics_e { (context /testbench/du_e/graphics_e )( sout_data(7) & sout_data(6) & sout_data(5) & sout_data(4) & sout_data(3) & sout_data(2) & sout_data(1) & sout_data(0) )} rev_sout_data
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {CGA CODE}
 add wave -noupdate /testbench/du_e/video_g/ser_debug_e/ser_display_e/cga_we
@@ -89,6 +90,11 @@ add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sin_ir
 add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sin_trdy
 add wave -noupdate -expand -group app_graphics -radix hexadecimal /testbench/du_e/graphics_e/sin_data
 add wave -noupdate -expand -group app_graphics -radix hexadecimal /testbench/du_e/graphics_e/rev_sin_data
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sout_frm
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sout_irdy
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sout_trdy
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sout_data
+add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/rev_sout_data
 add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_alat
 add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_blat
 add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_al
@@ -152,8 +158,8 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/src_trdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/src_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/mode
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9397608510 fs} 0} {{Cursor 2} {7530108510 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {9021725660 fs} 0} {{Cursor 2} {7223252210 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -168,4 +174,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {7017500 ps} {23967500 ps}
+WaveRestoreZoom {5015 ns} {12365 ns}
