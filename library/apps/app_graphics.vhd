@@ -480,8 +480,8 @@ begin
 					value := value srl unsigned_num_bits(256-1);
 					value := value + 1;
 					value := value sll 1;
-					header_length   <= value;
-					trans_length <= unsigned(length_rgtr(trans_length'range));
+					header_length <= value;
+					trans_length  <= unsigned(length_rgtr(trans_length'range));
 				end if;
 			end process;
 
