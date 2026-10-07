@@ -93,8 +93,8 @@ add wave -noupdate -expand -group app_graphics -radix hexadecimal /testbench/du_
 add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sout_frm
 add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sout_irdy
 add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sout_trdy
-add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sout_data
-add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/rev_sout_data
+add wave -noupdate -expand -group app_graphics -radix hexadecimal /testbench/du_e/graphics_e/sout_data
+add wave -noupdate -expand -group app_graphics -radix hexadecimal /testbench/du_e/graphics_e/rev_sout_data
 add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_alat
 add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_blat
 add wave -noupdate -group sdram -group ctlr /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_al
@@ -152,13 +152,15 @@ add wave -noupdate -group sdram -group phy -radix hexadecimal /testbench/du_e/gr
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_tcp
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/chip_data
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_data
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/dst_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/dst_trdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/src_trdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/fifo_e/src_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/mode
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr0_req
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr0_rdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr1_req
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr1_rdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/dmaio_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_length
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9021725660 fs} 0} {{Cursor 2} {7223252210 fs} 0}
+WaveRestoreCursors {{Cursor 1} {11930000000 fs} 0} {{Cursor 2} {9416924750 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
@@ -174,4 +176,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {5015 ns} {12365 ns}
+WaveRestoreZoom {9231664780 fs} {9800801980 fs}

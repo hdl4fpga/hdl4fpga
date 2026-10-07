@@ -293,7 +293,7 @@ begin
 						case state is
 						when s_rgtr0 =>
 							if txrgtr0_irdy='1' then
-								state := s_rgtr0;
+								state := s_rgtr1;
 							end if;
 						when s_rgtr1 =>
 							if txrgtr0_irdy='0' then
@@ -461,10 +461,10 @@ begin
 			signal sodata_trdy  : std_logic;
 			signal sodata_data  : std_logic_vector(sout_data'range);
 
-			constant prefix_size  : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
 			signal payload_length : unsigned(trans_length'range);
 			signal data_length    : unsigned(trans_length'range);
 			signal header_length  : unsigned(trans_length'range);
+			constant prefix_size  : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
 
 		begin
 
@@ -477,14 +477,15 @@ begin
 					value := value or resize(unsigned(length_rgtr), value'length);
 					data_length <= value;
 
-					value := value srl unsigned_num_bits(256-1);
-					value := value + 1;
-					value := value sll 1;
+					-- add the rid and length fields for each data packets to the total length
+					value := value srl unsigned_num_bits(256-1); -- get number of data packets
+					value := value + 1;   -- round up the number of data packets
+					value := value sll 1; -- double value to account for the rid and length fields
 					header_length <= value;
-					trans_length  <= unsigned(length_rgtr(trans_length'range));
 				end if;
 			end process;
 
+			trans_length   <= unsigned(length_rgtr(trans_length'range));
 			payload_length <= 
 				header_length + data_length when status_rw='1' else
 				prefix_size;
@@ -664,13 +665,13 @@ begin
 				sout_irdy <= 
 					txrgtr0_irdy when (txrgtr0_rdy xor txrgtr0_req)='1' else
 					txrgtr1_irdy when (txrgtr1_rdy xor txrgtr1_req)='1' else
-					sodata_irdy    when (pack_rdy  xor  pack_req)='1' else
+					sodata_irdy  when (pack_rdy    xor pack_req)='1'    else
 					'0';
 -- 
 				sout_data <= 
 					txrgtr0_data when (txrgtr0_rdy xor txrgtr0_req)='1' else
 					txrgtr1_data when (txrgtr1_rdy xor txrgtr1_req)='1' else
-					sodata_data    when (pack_rdy  xor  pack_req)='1' else
+					sodata_data  when (pack_rdy    xor pack_req)='1'    else
 					(sout_data'range => '-');
 
 			end block;
