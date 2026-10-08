@@ -284,29 +284,6 @@ begin
 			signal irdy        : std_logic;
 		begin
 			
-			process (sout_clk)
-				type states is (s_rgtr0, s_rgtr1);
-				variable state : states;
-			begin
-				if rising_edge(sout_clk) then
-					if (txrgtr0_rdy xor txrgtr0_req)='1' then
-						case state is
-						when s_rgtr0 =>
-							if txrgtr0_irdy='1' then
-								state := s_rgtr1;
-							end if;
-						when s_rgtr1 =>
-							if txrgtr0_irdy='0' then
-								txrgtr0_rdy <= txrgtr0_req;
-								txrgtr1_req <= not txrgtr1_rdy;
-							end if;
-						end case;
-					else
-						state := s_rgtr0;
-					end if;
-				end if;
-			end process;
-
 			rgtr0_b : block
 				signal mode     : std_logic_vector(0 to 2-1);
 				signal dst_trdy : std_logic;
@@ -469,6 +446,62 @@ begin
 		begin
 
 			process (sout_clk)
+				type states is (s_init, s_rgtr0, s_rgtr1, s_data);
+				variable state : states;
+			begin
+				if rising_edge(sout_clk) then
+					if (txrgtr0_rdy xor txrgtr0_req)='1' then
+						case state is
+						when s_init =>
+							if txrgtr0_irdy='1' then
+								state := s_rgtr0;
+							end if;
+						when s_rgtr0 =>
+							if txrgtr0_irdy='0' then
+								txrgtr0_rdy <= txrgtr0_req;
+								txrgtr1_req <= not txrgtr1_rdy;
+								state := s_rgtr1;
+							end if;
+						when s_rgtr1 =>
+							if txrgtr1_irdy='1' then
+								txrgtr1_rdy <= txrgtr1_req;
+								pack_req  <= not pack_rdy;
+								state := s_data;
+							end if;
+						when s_data =>
+						end case;
+					else
+						state := s_init;
+					end if;
+				end if;
+			end process;
+
+			rgtr1_b : block
+				signal src_irdy : std_logic;
+				signal src_trdy : std_logic;
+				signal dst_trdy : std_logic;
+			begin
+				dmaio_data <= 
+					reverse(reverse(std_logic_vector(resize(payload_length,16))),8) & reverse(
+					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
+					to_stdlogicvector(rid_addr) & x"00" & status, 8);
+
+				src_irdy <= txrgtr1_rdy xor txrgtr1_req;
+				dst_trdy <= sout_trdy when (txrgtr1_rdy xor txrgtr1_req)='1' else '0';
+				serlzr_e : entity hdl4fpga.serlzr
+				port map (
+					src_clk  => sout_clk,
+					src_frm  => '0',
+					src_irdy => src_irdy,
+					src_trdy => src_trdy,
+					src_data => dmaio_data,
+					dst_clk  => sout_clk,
+					dst_irdy => txrgtr1_irdy,
+					dst_trdy => dst_trdy,
+					dst_data => txrgtr1_data);
+			end block;
+
+			process (sout_clk)
 				variable value : unsigned(payload_length'range);
 			begin
 				if rising_edge(sout_clk) then
@@ -489,42 +522,6 @@ begin
 			payload_length <= 
 				header_length + data_length when status_rw='1' else
 				prefix_size;
-
-			rgtr1_b : block
-				signal src_irdy : std_logic;
-				signal src_trdy : std_logic;
-				signal dst_irdy : std_logic;
-				signal dst_trdy : std_logic;
-			begin
-				dmaio_data <= 
-					reverse(reverse(std_logic_vector(resize(payload_length,16))),8) & reverse(
-					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
-					to_stdlogicvector(rid_addr) & x"00" & status, 8);
-
-				src_irdy <= txrgtr1_rdy xor txrgtr1_req;
-				process (sout_clk)
-				begin
-					if rising_edge(sout_clk) then
-						if src_trdy='1' then
-							txrgtr1_rdy <= txrgtr1_req;
-							pack_req  <= not pack_rdy;
-						end if;
-					end if;
-				end process;
-
-				dst_trdy <= sout_trdy when (txrgtr1_rdy xor txrgtr1_req)='1' else '0';
-				serlzr_e : entity hdl4fpga.serlzr
-				port map (
-					src_clk  => sout_clk,
-					src_frm  => '0',
-					src_irdy => src_irdy,
-					src_trdy => src_trdy,
-					src_data => dmaio_data,
-					dst_clk  => sout_clk,
-					dst_irdy => txrgtr1_irdy,
-					dst_trdy => dst_trdy,
-					dst_data => txrgtr1_data);
-			end block;
 
 			sodata_b : block
 				constant dma_lat   : natural := latencies_tab(profile).sodata;
