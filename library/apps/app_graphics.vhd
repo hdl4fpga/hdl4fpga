@@ -623,7 +623,6 @@ begin
 									end if;
 								end if;
 								serlzr_frm  <= not value(value'left);
-								pack_length <= std_logic_vector(value(8-1 downto 0)+1);
 								if value(value'left)='1' then
 									pack_frm <= '0';
 									pack_rdy <= pack_req;
@@ -640,6 +639,7 @@ begin
 								cy := value(cy'range);
 							end if;
 						end if;
+						pack_length <= std_logic_vector(value(8-1 downto 0)+1);
 					end if;
 				end process;
 
