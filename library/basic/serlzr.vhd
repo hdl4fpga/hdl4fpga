@@ -262,7 +262,6 @@ begin
 							end if;
 							if (dst_irdy and dst_trdy)='1' then
 								acc := acc + (src_data'length- dst_data'length);
-								fifo_trdy <= '1';
 							else
 								acc := acc + src_data'length;
 							end if;
