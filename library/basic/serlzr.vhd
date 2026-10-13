@@ -244,7 +244,7 @@ begin
 					if (src_frm or src_irdy)='0' and acc <= dst_data'length then
 						acc := (others => '0');
 						dst_irdy  <= '0';
-						fifo_trdy <= '1';
+						fifo_trdy <= '0';
 					else
 						if acc > dst_data'length then 
 							if dst_trdy='1' then
@@ -255,22 +255,21 @@ begin
 						elsif src_irdy='1' then
 							-- Xilinx 14.7 synthesys bug
 							-- shr(src_data'length-1 downto 0) := unsigned(setif(not lsdfirst,reverse(fifo_data), fifo_data));
-							if not lsdfirst then
-								shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
+							if acc >= dst_data'length then
+								dst_irdy <= '1';
 							else
-								shr(src_data'length-1 downto 0) := unsigned(fifo_data);
 							end if;
-							if (dst_irdy and dst_trdy)='1' then
-								acc := acc + (src_data'length- dst_data'length);
-							else
+							if dst_trdy='1' then
+								if not lsdfirst then
+									shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
+								else
+									shr(src_data'length-1 downto 0) := unsigned(fifo_data);
+								end if;
 								acc := acc + src_data'length;
+								fifo_trdy <= '1';
+							else
+								fifo_trdy <= '0';
 							end if;
-							dst_irdy <= '1';
-						end if;
-						if acc <= dst_data'length then
-							fifo_trdy <= dst_trdy;
-						else
-							fifo_trdy <= '0';
 						end if;
 					end if;
 					if src_frm='1' then

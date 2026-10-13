@@ -161,24 +161,27 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr1_req
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr1_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr1_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_frm
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_data
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_frm
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_length
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/pack_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/pack_rdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/src_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/src_trdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr1_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/dst_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_clk
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_data
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_clk
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/shf
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/rgtr
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/shfd
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/wide_size
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/narrow_size
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/debug_mm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/mm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/srcgtdst_g/fifo_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/srcgtdst_g/fifo_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9394084820 fs} 0} {{Cursor 2} {11970000000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {7882085180 fs} 0} {{Cursor 2} {11970000000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
@@ -194,4 +197,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {9206250 ps} {9534375 ps}
+WaveRestoreZoom {6995625 ps} {13295625 ps}
