@@ -166,22 +166,12 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_fr
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_data
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_clk
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_frm
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_data
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/shf
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/rgtr
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/shfd
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/wide_size
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/narrow_size
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/debug_mm
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/mm
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/srcgtdst_g/fifo_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/srcgtdst_g/fifo_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {7882085180 fs} 0} {{Cursor 2} {11970000000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {9691406250 fs} 0} {{Cursor 2} {10570000000 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
@@ -197,4 +187,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {6995625 ps} {13295625 ps}
+WaveRestoreZoom {9332678570 fs} {10054553570 fs}
