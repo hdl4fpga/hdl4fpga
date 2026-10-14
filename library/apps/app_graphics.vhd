@@ -485,6 +485,9 @@ begin
 								state := s_rgtr1;
 							end if;
 						when s_rgtr1 =>
+							if (src_trdy and dst_irdy and dst_trdy)='1' then
+								txrgtr1_rdy <= txrgtr1_req;
+							end ifl
 						when s_data =>
 						end case;
 					else
