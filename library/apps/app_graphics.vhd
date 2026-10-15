@@ -217,13 +217,9 @@ begin
 		constant word_bits   : natural := unsigned_num_bits(ctlrphy_dmo'length)-1;
 		constant blword_bits : natural := word_bits+unsigned_num_bits(setif(burst_length=0, gear, burst_length)/gear)-1;
 
-		signal txrgtr0_req   : std_logic := '0';
-		signal txrgtr0_rdy   : std_logic := '0';
 		signal txrgtr0_irdy  : std_logic;
+		signal txrgtr0_trdy  : std_logic;
 		signal txrgtr0_data  : std_logic_vector(sout_data'range);
-
-		signal txrgtr1_req   : std_logic := '0';
-		signal txrgtr1_rdy   : std_logic := '0';
 
 		signal pack_req      : std_logic := '0';
 		signal pack_rdy      : std_logic := '0';
@@ -318,7 +314,6 @@ begin
 
 				mode(0)  <= ctlr_inirdy and (frm or     irdy);
 				mode(1)  <= ctlr_inirdy and (frm or not irdy);
-				dst_trdy <= sout_trdy when (txrgtr0_rdy xor txrgtr0_req)='1' else '0';
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (8*64)/sin_data'length,
@@ -334,7 +329,7 @@ begin
 
 					dst_clk  => sout_clk,
 					dst_irdy => txrgtr0_irdy,
-					dst_trdy => dst_trdy,
+					dst_trdy => txrgtr0_trdy,
 					dst_data => txrgtr0_data);
 
 			end block;
@@ -427,16 +422,21 @@ begin
 
 		tx_b : block
 			constant dataout_size : natural := 2*1024;
-			signal trans_length : unsigned(unsigned_num_bits(dataout_size-1)-1 downto 0);
+			signal trans_length   : unsigned(unsigned_num_bits(dataout_size-1)-1 downto 0);
 
-			signal dmaio_irdy   : std_logic;
-			signal dmaio_data   : std_logic_vector(0 to (2+2+((2+1)+(2+1)))*8-1);
+			signal dmaio_irdy     : std_logic;
+			signal dmaio_data     : std_logic_vector(0 to (2+2+((2+1)+(2+1)))*8-1);
 
-			signal txrgtr1_irdy : std_logic;
-			signal txrgtr1_data : std_logic_vector(sout_data'range);
-			signal sodata_irdy  : std_logic;
-			signal sodata_trdy  : std_logic;
-			signal sodata_data  : std_logic_vector(sout_data'range);
+			signal txrgtr0_req    : std_logic := '0';
+			signal txrgtr0_rdy    : std_logic := '0';
+			signal txrgtr1_req    : std_logic := '0';
+			signal txrgtr1_rdy    : std_logic := '0';
+
+			signal txrgtr1_irdy   : std_logic;
+			signal txrgtr1_data   : std_logic_vector(sout_data'range);
+			signal sodata_irdy    : std_logic;
+			signal sodata_trdy    : std_logic;
+			signal sodata_data    : std_logic_vector(sout_data'range);
 
 			signal payload_length : unsigned(trans_length'range);
 			signal data_length    : unsigned(trans_length'range);
@@ -467,7 +467,20 @@ begin
 				header_length + data_length when status_rw='1' else
 				prefix_size;
 
-			process (sout_clk)
+			tgr_rgtr0_p : process (ctlr_clk)
+			begin
+				if rising_edge(ctlr_clk) then
+					if (sout_req xor sout_rdy)='0' then
+						if (dmaio_rdy xor dmaio_req)='1' then
+							sout_req    <= not sout_rdy;
+							txrgtr0_req <= not txrgtr0_rdy;
+						end if;
+					end if;
+				end if;
+			end process;
+			txrgtr0_trdy <= sout_trdy when (txrgtr0_rdy xor txrgtr0_req)='1' else '0';
+
+			tgr_rgtr1_p : process (sout_clk)
 			begin
 				if rising_edge(sout_clk) then
 					if (txrgtr0_rdy xor txrgtr0_req)='1' then
@@ -534,7 +547,7 @@ begin
 				signal dmaso_trdy  : std_logic;
 				signal dmaso_data  : std_logic_vector(ctlr_do'range);
 
-				signal mode1 : std_logic;
+				signal mode1       : std_logic;
 			begin
 
 				dmao_dv_e : entity hdl4fpga.latency
@@ -575,18 +588,6 @@ begin
 					dst_irdy => serlzr_irdy,
 					dst_trdy => serlzr_trdy,
 					dst_data => serlzr_data);
-
-				process (ctlr_clk)
-				begin
-					if rising_edge(ctlr_clk) then
-						if (sout_req xor sout_rdy)='0' then
-							if (dmaio_rdy xor dmaio_req)='1' then
-								sout_req <= not sout_rdy;
-								txrgtr0_req <= not txrgtr0_rdy;
-							end if;
-						end if;
-					end if;
-				end process;
 
 				serlzr_e : entity hdl4fpga.serlzr
 				port map (
