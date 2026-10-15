@@ -468,36 +468,19 @@ begin
 				prefix_size;
 
 			process (sout_clk)
-				type states is (s_init, s_rgtr0, s_rgtr1, s_data);
-				variable state : states;
 			begin
 				if rising_edge(sout_clk) then
 					if (txrgtr0_rdy xor txrgtr0_req)='1' then
-						case state is
-						when s_init =>
-							if txrgtr0_irdy='1' then
-								state := s_rgtr0;
-							end if;
-						when s_rgtr0 =>
-							if txrgtr0_irdy='0' then
-								txrgtr0_rdy <= txrgtr0_req;
-								txrgtr1_req <= not txrgtr1_rdy;
-								state := s_rgtr1;
-							end if;
-						when s_rgtr1 =>
-							if (src_trdy and dst_irdy and dst_trdy)='1' then
-								txrgtr1_rdy <= txrgtr1_req;
-							end ifl
-						when s_data =>
-						end case;
-					else
-						state := s_init;
+						if txrgtr0_irdy='0' then
+							txrgtr0_rdy <= txrgtr0_req;
+							txrgtr1_req <= not txrgtr1_rdy;
+						end if;
 					end if;
 				end if;
 			end process;
 
 			rgtr1_b : block
-				signal src_frm : std_logic;
+				signal src_frm  : std_logic;
 				signal src_irdy : std_logic;
 				signal src_trdy : std_logic;
 				signal dst_trdy : std_logic;
@@ -506,9 +489,8 @@ begin
 				process (sout_clk)
 				begin
 					if rising_edge(sout_clk) then
-						if src_trdy='1' then
---							txrgtr1_rdy <= txrgtr1_req;
---							pack_req    <= not pack_rdy;
+						if (src_trdy and txrgtr1_irdy and dst_trdy)='1' then
+							txrgtr1_rdy <= txrgtr1_req;
 						end if;
 					end if;
 				end process;
