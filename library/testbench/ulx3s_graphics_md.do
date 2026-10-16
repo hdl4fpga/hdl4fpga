@@ -152,14 +152,19 @@ add wave -noupdate -group sdram -group phy -radix hexadecimal /testbench/du_e/gr
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/ctlr_tcp
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/chip_data
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_data
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr0_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr0_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/txrgtr0_data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/dmaio_data
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr1_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/txrgtr1_rdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr1_data
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr0_req
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr0_rdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr1_req
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr1_rdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/pack_req
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/pack_rdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_trdy
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_clk
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_frm
@@ -171,8 +176,8 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_ir
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {9691406250 fs} 0} {{Cursor 2} {10570000000 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {8710000000 fs} 0} {{Cursor 2} {11012320600 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -187,4 +192,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {9332678570 fs} {10054553570 fs}
+WaveRestoreZoom {9138391510 fs} {12025892310 fs}

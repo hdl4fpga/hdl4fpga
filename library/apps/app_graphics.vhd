@@ -221,8 +221,6 @@ begin
 		signal txrgtr0_trdy  : std_logic;
 		signal txrgtr0_data  : std_logic_vector(sout_data'range);
 
-		signal pack_req      : std_logic := '0';
-		signal pack_rdy      : std_logic := '0';
 		signal sout_req      : std_logic := '0';
 		signal sout_rdy      : std_logic := '0';
 
@@ -431,6 +429,8 @@ begin
 			signal txrgtr0_rdy    : std_logic := '0';
 			signal txrgtr1_req    : std_logic := '0';
 			signal txrgtr1_rdy    : std_logic := '0';
+		signal pack_req      : std_logic := '0';
+		signal pack_rdy      : std_logic := '0';
 
 			signal txrgtr1_irdy   : std_logic;
 			signal txrgtr1_data   : std_logic_vector(sout_data'range);
@@ -467,7 +467,7 @@ begin
 				header_length + data_length when status_rw='1' else
 				prefix_size;
 
-			tgr_rgtr0_p : process (ctlr_clk)
+			rqst_sout_p : process (ctlr_clk)
 			begin
 				if rising_edge(ctlr_clk) then
 					if (sout_req xor sout_rdy)='0' then
@@ -480,7 +480,7 @@ begin
 			end process;
 			txrgtr0_trdy <= sout_trdy when (txrgtr0_rdy xor txrgtr0_req)='1' else '0';
 
-			tgr_rgtr1_p : process (sout_clk)
+			rqst_rgtr0_p : process (sout_clk)
 			begin
 				if rising_edge(sout_clk) then
 					if (txrgtr0_rdy xor txrgtr0_req)='1' then
@@ -499,14 +499,16 @@ begin
 				signal dst_trdy : std_logic;
 			begin
 
-				process (sout_clk)
+				rqst_rgtr1_p : process (sout_clk)
 				begin
 					if rising_edge(sout_clk) then
 						if (src_trdy and txrgtr1_irdy and dst_trdy)='1' then
 							txrgtr1_rdy <= txrgtr1_req;
+							pack_req  <= not pack_rdy;
 						end if;
 					end if;
 				end process;
+
 				src_frm <= (txrgtr1_rdy xor txrgtr1_req);
 
 				dmaio_data <= reverse(
@@ -606,30 +608,26 @@ begin
 					variable cy    : unsigned(sout_data'length downto sout_data'length-1);
 				begin
 					if rising_edge(sout_clk) then
-   						if (dmaio_rdy xor dmaio_req)='0' then
-							if (pack_rdy xor pack_req)='1' then
-								if pack_irdy='1' then
-									if pack_trdy='1' then
-										cy := value(cy'range);
-										value := value - 1;
-									end if;
-								end if;
-								serlzr_frm  <= not value(value'left);
-								if value(value'left)='1' then
-									pack_frm <= '0';
-									pack_rdy <= pack_req;
-									sout_rdy <= sout_req;
-								elsif (value(cy'range) xor cy)="11" then
-									pack_frm <= '0';
-								else
-									pack_frm <= not value(value'left);
-								end if;
-							else
-								serlzr_frm <= '0';
-								pack_frm   <= '0';
-								value := resize(data_length, value'length)-1;
-								cy := value(cy'range);
+						if (pack_rdy xor pack_req)='1' then
+							if (pack_irdy and pack_trdy)='1' then
+								cy    := value(cy'range);
+								value := value - 1;
 							end if;
+							serlzr_frm <= not value(value'left);
+							if value(value'left)='1' then
+								pack_frm <= '0';
+								pack_rdy <= pack_req;
+								sout_rdy <= sout_req;
+							elsif (value(cy'range) xor cy)="11" then
+								pack_frm <= '0';
+							else
+								pack_frm <= not value(value'left);
+							end if;
+						else
+							serlzr_frm <= '0';
+							pack_frm   <= '0';
+							value := resize(data_length, value'length)-1;
+							cy := value(cy'range);
 						end if;
 						pack_length <= std_logic_vector(value(8-1 downto 0)+1);
 					end if;
