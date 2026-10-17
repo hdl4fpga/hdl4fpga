@@ -535,6 +535,7 @@ begin
 			sodata_b : block
 				constant dma_lat   : natural := latencies_tab(profile).sodata;
 
+				signal fifo_irdy   : std_logic;
 				signal serlzr_frm  : std_logic;
 				signal serlzr_irdy : std_logic;
 				signal serlzr_trdy : std_logic;
@@ -587,10 +588,11 @@ begin
 					src_data => dmaso_data,
 
 					dst_clk  => sout_clk,
-					dst_irdy => serlzr_irdy,
+					dst_irdy => fifo_irdy,
 					dst_trdy => serlzr_trdy,
 					dst_data => serlzr_data);
 
+				serlzr_irdy <= serlzr_frm and fifo_irdy;
 				serlzr_e : entity hdl4fpga.serlzr
 				port map (
 					src_clk  => sout_clk,
