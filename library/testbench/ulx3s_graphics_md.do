@@ -176,8 +176,8 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_ir
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8710000000 fs} 0} {{Cursor 2} {11012320600 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {11490000000 fs} 0} {{Cursor 2} {2887500800 fs} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
