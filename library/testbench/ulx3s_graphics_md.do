@@ -166,19 +166,9 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_frm
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_clk
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_frm
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_trdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_data
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_clk
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_frm
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_trdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {10730000000 fs} 0} {{Cursor 2} {2887500800 fs} 0}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {11479955210 fs} 0} {{Cursor 2} {14001160450 fs} 0}
+quietly wave cursor active 2
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -193,4 +183,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {9138391510 fs} {12025892310 fs}
+WaveRestoreZoom {6842810260 fs} {12617811850 fs}
