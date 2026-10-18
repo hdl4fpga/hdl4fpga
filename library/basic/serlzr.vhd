@@ -234,12 +234,12 @@ begin
 		mod0_g : if src_data'length mod dst_data'length = 0 generate 
 			process (dst_trdy, dst_clk)
 				variable shr : unsigned(rgtr'range);
-				variable acc : unsigned(0 to shf'length) := (others => '0');
+				variable acc : natural range 0 to 2**shf'length := 0;
 				variable shr_empty : std_logic;
 			begin
 				if rising_edge(dst_clk) then
 					if (src_frm or src_irdy)='0' and acc < dst_data'length then
-						acc := (others => '0');
+						acc := 0;
 						dst_irdy  <= '0';
 						shr_empty := '0';
 					elsif dst_trdy='1' then
@@ -253,9 +253,9 @@ begin
 								shr(src_data'length-1 downto 0) := unsigned(fifo_data);
 							end if;
 							if src_irdy='1' then
-								acc := acc + src_data'length;
+								acc := src_data'length;
 							else
-							    acc := (others => '0');
+							    acc := 0;
 							end if;
 						end if;
 					end if;

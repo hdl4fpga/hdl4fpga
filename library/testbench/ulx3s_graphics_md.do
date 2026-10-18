@@ -166,17 +166,18 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_frm
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_clk
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_frm
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/src_data
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_frm
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/rgtr1_b/serlzr_e/dst_data
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_clk
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_data
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_clk
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {11490000000 fs} 0} {{Cursor 2} {2887500800 fs} 0}
+WaveRestoreCursors {{Cursor 1} {10730000000 fs} 0} {{Cursor 2} {2887500800 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
