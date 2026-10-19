@@ -95,6 +95,13 @@ architecture struct of sio_udp is
 
 	signal pylfcs_sb     : std_logic;
 	signal pylfcs_vld    : std_logic;
+   
+	constant si_frame    : string := "{header:16}";
+	signal si_acts       : std_logic_vector(0 to length(si_frame));
+	signal si_frms       : std_logic_vector(si_acts'range);
+	signal si_irdys      : std_logic_vector(si_acts'range);
+	signal si_trdys      : std_logic_vector(si_acts'range) := (others => '1');
+
 
 begin
 
@@ -186,6 +193,20 @@ begin
 		end if;
 	end process;
 
+	si_decode_i : entity hdl4fpga.frame_decode
+	generic map (
+		frame => si_frame,
+		size  => si_data'length)
+	port map (
+		clk   => si_clk,
+		frm   => si_frm,
+		irdy  => si_irdy,
+		trdy  => si_trdy,
+		acts  => si_acts,
+		frms  => si_frms,
+		irdys => si_irdys,
+		trdys => si_trdys);
+
 	sio_flow_e : entity hdl4fpga.sio_flow
 	port map (
 		rx_clk  => miirx_clk,
@@ -203,9 +224,9 @@ begin
 		so_data => so_data,
 
 		si_clk  => si_clk,
-		si_frm  => si_frm,
-		si_irdy => si_irdy,
-		si_trdy => si_trdy,
+		si_frm  => si_frms(1),
+		si_irdy => si_irdys(1),
+		si_trdy => si_trdys(1),
 		si_data => si_data,
 
 		tx_clk  => miitx_clk,

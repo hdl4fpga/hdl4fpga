@@ -242,6 +242,15 @@ begin
 						acc := 0;
 						dst_irdy  <= '0';
 						shr_empty := '0';
+					elsif acc=0 then
+						if not lsdfirst then
+							shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
+						else
+							shr(src_data'length-1 downto 0) := unsigned(fifo_data);
+						end if;
+						if src_irdy='1' then
+							acc := src_data'length;
+						end if;
 					elsif dst_trdy='1' then
 						if acc > dst_data'length then 
 							shr := shift_right(shr, dst_data'length);
