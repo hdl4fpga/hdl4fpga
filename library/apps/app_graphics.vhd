@@ -444,6 +444,7 @@ begin
 			constant rgtr1_size  : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
 
 			signal xxx_xxx : std_logic;
+			signal xxx_data : std_logic_vector(sout_data'range);
 		begin
 
 			process (sout_clk)
@@ -494,6 +495,19 @@ begin
 					frms  => xxx_frms,
 					irdys => xxx_irdys,
 					trdys => xxx_trdys);
+
+				process (sout_clk)
+					variable shr : unsigned(0 to 16-1);
+				begin
+					if rising_edge(sout_clk) then
+						if (xxx_irdys(1) and xxx_trdys(1))='1' then
+							shr := shift_left(shr, xxx_data'length);
+						elsif (txrgtr0_req xor txrgtr0_rdy)='0' then
+							shr := x"1234";
+						end if;
+						xxx_data <= std_logic_vector(shr(0 to xxx_data'length-1));
+					end if;
+				end process;
 				xxx_trdys <= (others => sout_trdy);
 			end block;
 
@@ -691,7 +705,7 @@ begin
 					'0';
 -- 
 				sout_data <= 
-					x"aa"        when ((txrgtr0_rdy xor txrgtr0_req) and xxx_xxx)='1' else
+					xxx_data        when ((txrgtr0_rdy xor txrgtr0_req) and xxx_xxx)='1' else
 					txrgtr0_data when (txrgtr0_rdy xor txrgtr0_req)='1' else
 					txrgtr1_data when (txrgtr1_rdy xor txrgtr1_req)='1' else
 					sodata_data  when (pack_rdy    xor pack_req)='1'    else
