@@ -102,7 +102,6 @@ architecture struct of sio_udp is
 	signal si_irdys      : std_logic_vector(si_acts'range);
 	signal si_trdys      : std_logic_vector(si_acts'range) := (others => '1');
 
-
 begin
 
 	miiipoe_i : entity hdl4fpga.mii_ipoe

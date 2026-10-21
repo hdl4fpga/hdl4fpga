@@ -441,8 +441,9 @@ begin
 			signal payload_length : unsigned(trans_length'range);
 			signal data_length    : unsigned(trans_length'range);
 			signal header_length  : unsigned(trans_length'range);
-			constant prefix_size  : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
+			constant rgtr1_size  : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
 
+			signal xxx_xxx : std_logic;
 		begin
 
 			process (sout_clk)
@@ -465,7 +466,36 @@ begin
 			trans_length   <= unsigned(length_rgtr(trans_length'range));
 			payload_length <= 
 				header_length + data_length when status_rw='1' else
-				prefix_size;
+				rgtr1_size;
+
+			xxx_b : block
+				constant xxx_frame : string := "{header:64,length:16}";
+				signal xxx_frm   : std_logic;
+				signal xxx_irdy  : std_logic;
+				signal xxx_acts  : std_logic_vector(0 to length(xxx_frame));
+				signal xxx_frms  : std_logic_vector(xxx_acts'range);
+				signal xxx_irdys : std_logic_vector(xxx_acts'range);
+				signal xxx_trdys : std_logic_vector(xxx_acts'range) := (others => '1');
+
+			begin
+				xxx_frm <= (txrgtr0_rdy xor txrgtr0_req);
+				xxx_irdy <= xxx_frm and txrgtr0_irdy;
+				xxx_xxx <= xxx_irdys(1);
+				xxx_decode_i : entity hdl4fpga.frame_decode
+				generic map (
+					frame => xxx_frame,
+					size  => sout_data'length)
+				port map (
+					clk   => sout_clk,
+					frm   => xxx_frm,
+					irdy  => xxx_irdy,
+					trdy  => open,
+					acts  => xxx_acts,
+					frms  => xxx_frms,
+					irdys => xxx_irdys,
+					trdys => xxx_trdys);
+				xxx_trdys <= (others => sout_trdy);
+			end block;
 
 			rqst_sout_p : process (ctlr_clk)
 			begin
@@ -512,7 +542,7 @@ begin
 				src_frm <= (txrgtr1_rdy xor txrgtr1_req);
 
 				dmaio_data <= reverse(
-					x"01" & x"0d" &
+					x"01" & std_logic_vector(resize(rgtr1_size, siobyte_size)) &
 					reverse(reverse(std_logic_vector(resize(payload_length,16))),8) & 
 					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
 					to_stdlogicvector(rid_addr) & x"00" & status);
@@ -661,6 +691,7 @@ begin
 					'0';
 -- 
 				sout_data <= 
+					x"aa"        when ((txrgtr0_rdy xor txrgtr0_req) and xxx_xxx)='1' else
 					txrgtr0_data when (txrgtr0_rdy xor txrgtr0_req)='1' else
 					txrgtr1_data when (txrgtr1_rdy xor txrgtr1_req)='1' else
 					sodata_data  when (pack_rdy    xor pack_req)='1'    else
