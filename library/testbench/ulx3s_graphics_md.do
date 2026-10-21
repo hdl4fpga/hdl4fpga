@@ -91,6 +91,7 @@ add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_irdy
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/data_length
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sin_clk
 add wave -noupdate -expand -group app_graphics /testbench/du_e/graphics_e/sin_frm
@@ -162,6 +163,9 @@ add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/c
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/txrgtr0_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/xxx_b/xxx_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/xxx_b/xxx_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/xxx_xxx
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/src_clk
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/src_frm
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/src_irdy
@@ -176,7 +180,7 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/srcgtdst_g/mod0_g/line__235/acc
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/txserlzr_e/srcgtdst_g/mod0_g/line__235/shr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {7540000000 fs} 0} {{Cursor 2} {14082187500 fs} 0}
+WaveRestoreCursors {{Cursor 1} {8235714290 fs} 0} {{Cursor 2} {11618750000 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
@@ -192,4 +196,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {6620625 ps} {21320625 ps}
+WaveRestoreZoom {10550 ns} {13175 ns}

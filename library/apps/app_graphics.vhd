@@ -466,7 +466,7 @@ begin
 
 			trans_length   <= unsigned(length_rgtr(trans_length'range));
 			payload_length <= 
-				header_length + data_length when status_rw='1' else
+				rgtr1_size + header_length + data_length when status_rw='1' else
 				rgtr1_size;
 
 			xxx_b : block
@@ -503,7 +503,7 @@ begin
 						if (xxx_irdys(1) and xxx_trdys(1))='1' then
 							shr := shift_left(shr, xxx_data'length);
 						elsif (txrgtr0_req xor txrgtr0_rdy)='0' then
-							shr := x"1234";
+							shr := reverse(resize(payload_length, shr'length) + 1,8);
 						end if;
 						xxx_data <= std_logic_vector(shr(0 to xxx_data'length-1));
 					end if;
@@ -556,7 +556,7 @@ begin
 				src_frm <= (txrgtr1_rdy xor txrgtr1_req);
 
 				dmaio_data <= reverse(
-					x"01" & std_logic_vector(resize(rgtr1_size, siobyte_size)) &
+					x"01" & std_logic_vector(resize(rgtr1_size-1, siobyte_size)) &
 					reverse(reverse(std_logic_vector(resize(payload_length,16))),8) & 
 					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
 					to_stdlogicvector(rid_addr) & x"00" & status);
