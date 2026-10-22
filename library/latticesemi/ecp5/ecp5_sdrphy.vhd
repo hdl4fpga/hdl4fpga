@@ -63,9 +63,9 @@ entity ecp5_sdrphy is
 		phy_locked : out std_logic;
 
 		phywl_req  : in  std_logic := '0';
-		phywl_rdy  : buffer std_logic := '0';
+		phywl_rdy  : out std_logic := '0';
 		phyrl_req  : in  std_logic := '0';
-		phyrl_rdy  : buffer std_logic := '0';
+		phyrl_rdy  : out std_logic := '0';
 
 		sys_rst    : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
 		sys_cs     : in  std_logic_vector((gear+1)/2-1 downto 0) := (others => '1');
@@ -256,13 +256,14 @@ begin
 		end process;
 
 		process (ctlr_rst, sclk)
-			variable z : std_logic;
+			variable z   : std_logic;
+			variable rdy : std_logic;
 		begin
 			if rising_edge(sclk) then
 				if ctlr_rst='1' then
-					phyrl_rdy <= phyrl_req;
+					rdy := phyrl_req;
 					phy_ini <= '0';
-				elsif (phyrl_rdy xor phyrl_req)='1' then
+				elsif (rdy xor phyrl_req)='1' then
 					z := '1';
 					for i in rl_req'reverse_range loop
 						if (rl_rdy(i) xor phyrl_req)='1' then
@@ -270,10 +271,11 @@ begin
 						end if;
 					end loop;
 					if z='1' then
-						phy_ini   <= '1';
-						phyrl_rdy <= phyrl_req;
+						phy_ini <= '1';
+						rdy := phyrl_req;
 					end if;
 				end if;
+				phyrl_rdy <= rdy;
 			end if;
 		end process;
 		rl_req <= (others => phyrl_req);

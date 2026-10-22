@@ -38,7 +38,7 @@ entity serlzr is
 		src_data  : in  std_logic_vector;
 		dst_clk   : in  std_logic := '1';
 		dst_frm   : out std_logic := '0';
-		dst_irdy  : buffer std_logic := '0';
+		dst_irdy  : out std_logic := '0';
 		dst_trdy  : in  std_logic := '1';
 		dst_data  : buffer std_logic_vector);
 end;
@@ -183,20 +183,21 @@ begin
 		none0_g : if src_data'length mod dst_data'length /= 0 generate 
 			src_trdy <= fifo_trdy;
 			process (dst_clk)
-				variable shr : unsigned(rgtr'range);
-				variable acc : unsigned(shf'range) := (others => '0');
+				variable shr  : unsigned(rgtr'range);
+				variable acc  : unsigned(shf'range) := (others => '0');
+				variable irdy : std_logic;
 			begin 
 				if rising_edge(dst_clk) then
 					if src_frm='0' then
 						acc := (others => '0');
-						dst_irdy  <= '0';
+						irdy := '0';
 						fifo_trdy <= '0';
 					elsif acc >= dst_data'length then 
 						if dst_trdy='1' then
 							acc := acc - dst_data'length;
 						end if;
 						fifo_trdy <= '0';
-						dst_irdy  <= '1';
+						irdy := '1';
 	   				elsif dst_trdy='1' then
 						if src_irdy='1' then
 							shr := shift_left(shr, src_data'length);
@@ -209,13 +210,14 @@ begin
 							end if;
 							acc := acc + (src_data'length - dst_data'length);
 							fifo_trdy <= '1';
-							dst_irdy  <= '1';
+							irdy := '1';
 						else
-							dst_irdy  <= '0';
+							irdy := '0';
 						end if;
 					end if;
 					shf  <= std_logic_vector(acc(shf'range) and to_unsigned(mm(1), shf'length));
 					rgtr <= std_logic_vector(shr);
+					dst_irdy <= irdy;
 				end if;
 			end process;
 
@@ -233,14 +235,15 @@ begin
 
 		mod0_g : if src_data'length mod dst_data'length = 0 generate 
 			process (dst_trdy, dst_clk)
-				variable shr : unsigned(rgtr'range);
-				variable acc : natural range 0 to 2**shf'length := 0;
+				variable irdy : std_logic;
+				variable shr  : unsigned(rgtr'range);
+				variable acc  : natural range 0 to 2**shf'length := 0;
 				variable shr_empty : std_logic;
 			begin
 				if rising_edge(dst_clk) then
 					if (src_frm or src_irdy)='0' and acc < dst_data'length then
-						acc := 0;
-						dst_irdy  <= '0';
+						acc  := 0;
+						irdy := '0';
 						shr_empty := '0';
 					elsif acc=0 then
 						if not lsdfirst then
@@ -274,9 +277,9 @@ begin
 						shr_empty := '1';
 					end if;
 					if acc >= dst_data'length then
-						dst_irdy  <= '1';
+						irdy := '1';
 					else
-						dst_irdy  <= '0';
+						irdy := '0';
 					end if;
 					if src_frm='1' then
 						dst_frm <= '1';
@@ -286,6 +289,7 @@ begin
 						dst_frm <= '0';
 					end if;
 					rgtr <= std_logic_vector(shr);
+					dst_irdy <= irdy;
 				end if;
 				if acc=0 then
 					fifo_trdy <= '1';
