@@ -263,6 +263,8 @@ begin
 			mii_txc    => rmii_clk,
 			mii_txen   => rmii_txen,
 			mii_txd    => rmii_txd,
+			fcs_sb     => fcs_sb,
+			fcs_vld    => fcs_vld,
 
 			mii_rxc    => rmii_clk,
 			mii_rxdv   => rmii_crsdv,

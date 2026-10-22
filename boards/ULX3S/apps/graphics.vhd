@@ -112,7 +112,7 @@ begin
 	generic map (
 		settings     => settings**".video")
 	port map (
-		rst         => right,
+		rst         => sys_rst,
 		clk         => sys_clk,
 		videoio_clk => videoio_clk,
 		video_clk   => video_clk,
@@ -221,6 +221,8 @@ begin
 		alias dhcpc_btn is fire2;
 
 		alias  rmii_clk  : std_logic is rmii_nintclk;
+		signal rmii_rxdv : std_logic;
+		signal rmii_rxd  : std_logic_vector(0 to 2-1);
 		signal rmii_txen : std_logic;
 		signal rmii_txd  : std_logic_vector(0 to 2-1);
 
@@ -232,15 +234,7 @@ begin
 
 		signal fcs_sb    : std_logic;
 		signal fcs_vld   : std_logic;
-
 	begin
-
-		process (sys_clk)
-		begin
-			if rising_edge(sys_clk) then
-				led <= tp(1 to 8);
-			end if;
-		end process;
 
 		mii_e : entity hdl4fpga.link_mii
 		generic map (
@@ -261,25 +255,32 @@ begin
 			mii_txc    => rmii_clk,
 			mii_txen   => rmii_txen,
 			mii_txd    => rmii_txd,
+			fcs_sb     => fcs_sb,
+			fcs_vld    => fcs_vld,
 
 			mii_rxc    => rmii_clk,
 			mii_rxdv   => rmii_crsdv,
 			mii_rxd(0) => rmii_rxd0,
-			mii_rxd(1) => rmii_rxd1);
+			mii_rxd(1) => rmii_rxd1,
+			rmii_rxdv  => rmii_rxdv,
+			rmii_rxd   => rmii_rxd);
+
 
 		rmii_tx_en <= rmii_txen;
 		(rmii_txd0, rmii_txd1) <= rmii_txd;
+
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
 		rmii_rxd0    <= 'Z';
 		rmii_rxd1    <= 'Z';
 
 		mdclk_p : process(rmii_clk)
-			variable cntr : integer range -1 to 50/5-2; -- 50MHz/2.5MHz/2
+			constant max : natural := (50+2*2-1)/(2*2)-2; -- 50MHz/(2MHz*2);
+			variable cntr : integer range -1 to max;
 		begin
 			if rising_edge(rmii_clk) then
 				if cntr < 0 then
-					cntr := 10-2;
+					cntr := max;
 					md_clk <= not md_clk;
 				else
 					cntr := cntr-1 ;
@@ -299,12 +300,14 @@ begin
 						state := s_req;
 					end if;
 				when s_req =>
-					if to_bit(md_req xor md_rdy)='0' then
+					if (md_req xor md_rdy)='0' then
 						if md_btn='0' then
 							state := s_rdy;
 						end if;
 					end if;
 				end case;
+				led(0) <= md_req;
+				led(1) <= md_rdy;
 			end if;
 		end process;
 
@@ -319,11 +322,18 @@ begin
 			din => x"1200",
 			mdt => md_t);
 
-		rmii_mdc  <= md_clk; 
+		rmii_mdc  <= not md_clk; 
 		rmii_mdio <= '0' when md_t='0' else 'Z';
 
-		sio_clk   <= rmii_clk;
-		wifi_en   <= '0';
+		process(rmii_clk)
+		begin
+			if rising_edge(rmii_clk) then
+				if fcs_sb='1' then
+					led(7) <= fcs_vld;
+				end if;
+			end if;
+		end process;
+
 
 		ser_clk  <= rmii_clk;
 		process(ser_clk)
@@ -337,7 +347,9 @@ begin
 --				ser_data <= rmii_rxd0 & rmii_rxd1;
 			end if;
 		end process;
+		wifi_en   <= '0';
 
+		sio_clk <= rmii_clk;
 	end generate;
 
 	graphics_e : entity hdl4fpga.app_graphics
@@ -485,7 +497,6 @@ begin
 	end generate;
 		
 	hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
-
 	begin
 		ddr_g : for i in gpdi_d'range generate
 			oddr_i : oddrx1f
