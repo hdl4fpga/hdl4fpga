@@ -675,7 +675,7 @@ begin
 							value := resize(data_length, value'length);
 							cy := value(cy'range);
 						end if;
-						pack_length <= std_logic_vector(value(8-1 downto 0)+1);
+						pack_length <= std_logic_vector(value(8-1 downto 0));
 					end if;
 				end process;
 
