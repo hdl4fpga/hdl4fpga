@@ -654,10 +654,10 @@ begin
 						if (pack_rdy xor pack_req)='1' then
 							if (pack_irdy and pack_trdy)='1' then
 								value := value - 1;
-							if value(value'left)='1' then
-								pack_rdy <= pack_req;
-								sout_rdy <= sout_req;
-							end if;
+								if value(value'left)='1' then
+									pack_rdy <= pack_req;
+									sout_rdy <= sout_req;
+								end if;
 							end if;
 						else
 							value := resize(data_length, value'length);

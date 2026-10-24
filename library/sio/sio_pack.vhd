@@ -47,19 +47,20 @@ end;
 
 architecture def of sio_pack is
 begin
-	process (si_frm, si_irdy, si_data, sio_clk)
+	process (si_frm, si_irdy, so_trdy, si_data, sio_clk)
 		variable shr_data : unsigned(0 to setif(no_length, 8, 16)-1);
 		variable shr_irdy : unsigned(0 to shr_data'length/si_data'length-1);
 		variable shr_trdy : unsigned(0 to shr_data'length/si_data'length-1);
-		variable active   : std_logic;
 	begin
 		if rising_edge(sio_clk) then
 			if so_trdy='1' then
 				shr_irdy := shift_left(shr_irdy, 1);
 				shr_data := shift_left(shr_data, so_data'length);
 			end if;
-			shr_trdy(0) := so_trdy;
-			shr_trdy    := rotate_left(shr_trdy, 1);
+			if so_trdy='1' then
+				shr_trdy(0) := '1';
+				shr_trdy    := rotate_left(shr_trdy, 1);
+			end if;
 			if (si_frm or si_irdy)='0' then
 				shr_irdy := (others => '1');
 				shr_trdy := (others => '0');
@@ -75,7 +76,7 @@ begin
 		so_act  <= si_frm or si_irdy;
 		so_frm  <= si_frm;
 		so_irdy <= si_irdy or (si_frm and shr_irdy(0));
-		si_trdy <= (si_frm or si_irdy) and shr_trdy(0);
+		si_trdy <= (si_frm or si_irdy) and shr_trdy(0) and so_trdy;
 		if shr_irdy(0)='1' then
 			so_data <= std_logic_vector(shr_data(0 to so_data'length-1));
 		else
