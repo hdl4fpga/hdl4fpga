@@ -423,7 +423,7 @@ begin
 			signal trans_length   : unsigned(unsigned_num_bits(dataout_size-1)-1 downto 0);
 
 			signal dmaio_irdy     : std_logic;
-			signal dmaio_data     : std_logic_vector(0 to (2+2+((2+1)+(2+1)))*8-1);
+			signal dmaio_data     : std_logic_vector(0 to ((2+1)+(2+1))*8-1);
 
 			signal txrgtr0_req    : std_logic := '0';
 			signal txrgtr0_rdy    : std_logic := '0';
@@ -441,7 +441,7 @@ begin
 			signal payload_length : unsigned(trans_length'range);
 			signal data_length    : unsigned(trans_length'range);
 			signal header_length  : unsigned(trans_length'range);
-			constant rgtr1_size   : unsigned := to_unsigned(dmaio_data'length/siobyte_size-2, trans_length'length);
+			constant status_size   : unsigned := to_unsigned(dmaio_data'length/siobyte_size, trans_length'length);
 
 			signal xxx_xxx : std_logic;
 			signal xxx_data : std_logic_vector(sout_data'range);
@@ -466,8 +466,8 @@ begin
 
 			trans_length   <= unsigned(length_rgtr(trans_length'range));
 			payload_length <= 
-				rgtr1_size + header_length + data_length when status_rw='1' else
-				rgtr1_size;
+				status_size + header_length + data_length when status_rw='1' else
+				status_size;
 
 			xxx_b : block
 				constant xxx_frame : string := "{header:64,length:16}";
@@ -556,8 +556,6 @@ begin
 				src_frm <= (txrgtr1_rdy xor txrgtr1_req);
 
 				dmaio_data <= reverse(
-					x"01" & std_logic_vector(resize(rgtr1_size-1, siobyte_size)) &
-					reverse(reverse(std_logic_vector(resize(payload_length,16))),8) & 
 					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
 					to_stdlogicvector(rid_addr) & x"00" & status);
 
@@ -651,33 +649,24 @@ begin
 
 				process (sin_clk, sout_clk)
 					variable value : unsigned(data_length'length downto 0) := (others => '1');
-					variable cy    : unsigned(sout_data'length downto sout_data'length-1);
 				begin
 					if rising_edge(sout_clk) then
 						if (pack_rdy xor pack_req)='1' then
 							if (pack_irdy and pack_trdy)='1' then
-								cy    := value(cy'range);
 								value := value - 1;
-							end if;
-							serlzr_frm <= not value(value'left);
 							if value(value'left)='1' then
-								pack_frm <= '0';
 								pack_rdy <= pack_req;
 								sout_rdy <= sout_req;
-							elsif (value(cy'range) xor cy)="11" then
-								pack_frm <= '0';
-							else
-								pack_frm <= not value(value'left);
+							end if;
 							end if;
 						else
-							serlzr_frm <= '0';
-							pack_frm   <= '0';
 							value := resize(data_length, value'length);
-							cy := value(cy'range);
 						end if;
 						pack_length <= std_logic_vector(value(8-1 downto 0));
 					end if;
 				end process;
+				serlzr_frm <= pack_req xor pack_rdy;
+				pack_frm   <= serlzr_frm;
 
 				sout_frm <= sout_req xor sout_rdy;
 				sopack_e : entity hdl4fpga.sio_pack

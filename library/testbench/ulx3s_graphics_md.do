@@ -163,9 +163,16 @@ add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/c
 add wave -noupdate -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_data
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/txrgtr0_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/fifo_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_frm
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_length
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {8235714290 fs} 0} {{Cursor 2} {14063611730 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {9862053600 fs} 0} {{Cursor 2} {11017857160 fs} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 160
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -180,4 +187,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {13413750 ps} {14726250 ps}
+WaveRestoreZoom {9063839310 fs} {10577232170 fs}
