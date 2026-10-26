@@ -610,8 +610,8 @@ begin
 					d => (0 to dmaso_data'length-1 => dma_lat))
 				port map (
 					clk => ctlr_clk,
-					di  => x"c480", --dma_do,
-					--di  => dma_do,
+--					di  => x"c480", --dma_do,
+					di  => dma_do,
 					do  => dmaso_data);
 
 				mode1 <= ctlr_inirdy and (dmaio_req xor dmaio_rdy);
