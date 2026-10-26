@@ -182,7 +182,7 @@ architecture ulx3s_graphics of testbench is
 
 begin
 
-	fire1 <= '0', '1' after 100 ns;
+	fire1 <= '1', '0' after 100 ns;
 	fire2 <= '0', '0' after 100 ns;
 	clk_25mhz  <= not clk_25mhz  after 20 ns;
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;

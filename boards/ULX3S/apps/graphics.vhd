@@ -451,7 +451,7 @@ begin
 	-- VGA --
 	---------
 
-	hdmibrd_g : if settings**".video.gear"=2 generate 
+	hdmibrd_g : if string'(settings**".video.gear")="2" generate 
 		signal crgb : std_logic_vector(dvid_crgb'range);
 	begin
 		reg_e : entity hdl4fpga.latency
