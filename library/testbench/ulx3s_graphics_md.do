@@ -166,8 +166,26 @@ add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_req
 add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_rdy
 add wave -noupdate /testbench/du_e/graphics_e/dmavideo_req
 add wave -noupdate /testbench/du_e/graphics_e/dmavideo_rdy
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_inirdy
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_clk
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di_dv
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di
+add wave -noupdate -expand -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/base_addr
+add wave -noupdate -expand -group graphics_e -radix unsigned /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_len
+add wave -noupdate -expand -group graphics_e -radix unsigned /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_addr
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_clk
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_req
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_rdy
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_req
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_rdy
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_clk
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_hzon
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_vton
+add wave -noupdate -expand -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
+add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_frm
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {13681743360 fs} 0} {{Cursor 2} {7607929690 fs} 0}
+WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {53659879340 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 232
 configure wave -valuecolwidth 100
@@ -183,4 +201,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {16410 ns}
+WaveRestoreZoom {26882 ns} {79382 ns}

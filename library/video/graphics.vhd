@@ -37,9 +37,9 @@ entity graphics is
 		ctlr_di     : in  std_logic_vector;
 		base_addr   : in  std_logic_vector;
 		dmacfg_clk  : in  std_logic;
-		dmacfg_req  : buffer std_logic;
+		dmacfg_req  : buffer std_logic := '0';
 		dmacfg_rdy  : in  std_logic;
-		dma_req     : buffer std_logic;
+		dma_req     : out std_logic;
 		dma_rdy     : in  std_logic;
 		dma_len     : out std_logic_vector;
 		dma_addr    : buffer std_logic_vector;
@@ -58,8 +58,8 @@ architecture def of graphics is
 	signal video_frm     : std_logic;
 	signal video_trdy    : std_logic;
 	signal video_on      : std_logic;
-	signal video_rdy     : std_logic;
-	signal video_req     : std_logic;
+	signal video_rdy     : std_logic := '0';
+	signal video_req     : std_logic := '0';
 
 	signal src_irdy      : std_logic;
 	signal src_data      : std_logic_vector(ctlr_di'range);
@@ -71,10 +71,10 @@ architecture def of graphics is
 begin
 
 	dma_b : block
-		signal trdy : std_logic;
-		signal treq : std_logic;
-		signal vrdy : std_logic;
-		signal vreq : std_logic;
+		signal trdy : std_logic := '0';
+		signal treq : std_logic := '0';
+		signal vrdy : std_logic := '0';
+		signal vreq : std_logic := '0';
 	begin
 		dmacfg_p : process(dmacfg_clk)
 			type states is (s_idle, s_cfg, s_trans);
@@ -83,23 +83,23 @@ begin
 		begin
 			if rising_edge(dmacfg_clk) then
 				if ctlr_inirdy='0' then
-					vrdy <= to_stdulogic(to_bit(vreq));
+					vrdy <= vreq;
 					state := s_idle;
 				else
 					case state is
 					when s_idle =>
-						if (to_bit(vrdy) xor to_bit(vreq))='1' then
-							dmacfg_req <= not to_stdulogic(to_bit(dmacfg_rdy));
+						if (vrdy xor vreq)='1' then
+							dmacfg_req <= not dmacfg_rdy;
 							state := s_cfg;
 						end if;
 					when s_cfg =>
-						if (to_bit(dmacfg_req) xor to_bit(dmacfg_rdy))='0' then
-							treq <= not to_stdulogic(to_bit(trdy));
+						if (dmacfg_req xor dmacfg_rdy)='0' then
+							treq <= not trdy;
 							state := s_trans;
 						end if;
 					when s_trans =>
-						if (to_bit(treq) xor to_bit(trdy))='0' then
-							vrdy <= to_stdulogic(to_bit(vreq));
+						if (treq xor trdy)='0' then
+							vrdy <= vreq;
 							state := s_idle;
 						end if;
 					end case;
@@ -135,7 +135,7 @@ begin
 			type states is (s_frm, s_vtpoll, s_hzpoll, s_line);
 			variable state : states;
 
-			variable new_level : unsigned(level'range);
+			variable new_level : unsigned(level'range) := (others => '0');
 		begin
 			if rising_edge(video_clk) then
 				case state is
@@ -143,17 +143,17 @@ begin
 					dma_addr <= to_stdlogicvector(to_bitvector(base_addr));
 					dma_len  <= std_logic_vector(to_unsigned(dpage_size-1, dma_len'length));
 					dma_step <= to_unsigned(dpage_size, dma_step'length);
-					if (to_bit(video_rdy) xor to_bit(video_req))='0' then
+					if (video_rdy xor video_req)='0' then
 						if video_frm='1' then
 							video_frm <= '0';
 						else
-							video_req <= not to_stdulogic(to_bit(video_rdy));
+							video_req <= not video_rdy;
 							video_frm <= '1';
 							state     := s_vtpoll;
 						end if;
 					end if;
 				when s_vtpoll =>
-					if (to_bit(video_rdy) xor to_bit(video_req))='0' then
+					if (video_rdy xor video_req)='0' then
 						if video_vton='1' then
 							state := s_hzpoll;
 						end if;
@@ -178,10 +178,10 @@ begin
 					end if;
 					dma_len  <= std_logic_vector(to_unsigned(dslice_size-1, dma_len'length));
 				when s_line =>
-					if (to_bit(video_rdy) xor to_bit(video_req))='0' then
+					if (video_rdy xor video_req)='0' then
 						dma_addr  <= std_logic_vector(unsigned(dma_addr) + dma_step);
 						dma_step  <= to_unsigned(dslice_size, dma_step'length);
-						video_req <= not to_stdulogic(to_bit(video_rdy));
+						video_req <= not video_rdy;
 						state     := s_hzpoll;
 					end if;
 				end case;
@@ -196,10 +196,10 @@ begin
 		signal slzr_frm : std_logic;
 	begin
 		process (video_clk, ctlr_clk)
-			variable slzr_rdy  : bit;
-			variable slzr_req  : bit;
-			variable video_req : bit;
-			variable video_rdy : bit;
+			variable slzr_rdy  : std_logic := '0';
+			variable slzr_req  : std_logic := '0';
+			variable video_req : std_logic := '0';
+			variable video_rdy : std_logic := '0';
 		begin
 			if rising_edge(ctlr_clk) then
 				if video_frm='1' then
@@ -217,7 +217,7 @@ begin
 				end if;
 				video_rdy := slzr_rdy;
 			end if;
-			slzr_frm <= not to_stdulogic(slzr_rdy xor slzr_req);
+			slzr_frm <= not (slzr_rdy xor slzr_req);
 		end process;
 
     	deslzr_e : entity hdl4fpga.serlzr
@@ -253,8 +253,8 @@ begin
 	end generate;
 
 	srcgtdst_g : if ctlr_di'length > video_pixel'length generate
-		signal vram_irdy : std_logic;
-		signal vram_trdy : std_logic;
+		signal vram_irdy : std_logic := '0';
+		signal vram_trdy : std_logic := '0';
 		signal vram_word : std_logic_vector(ctlr_di'range);
 	begin
     	vram_e : entity hdl4fpga.fifo

@@ -62,7 +62,7 @@ architecture def of box_edges is
 begin
 
 	process (video_clk)
-		variable div : std_logic_vector(video_div'length-1 downto 0) := (others => '1');
+		variable div : std_logic_vector(video_div'length-1 downto 0) := (others => '0');
 	begin
 		if rising_edge(video_clk) then
 			if video_ini='1' then
