@@ -242,7 +242,7 @@ begin
     		check_dov  => true)
     	port map (
     		mode(0)  => slzr_frm,
-    		mode(1)  => slzr_frm,
+    		mode(1)  => '0',
     		src_clk  => ctlr_clk,
     		src_irdy => vram_trdy,
     		src_data => vram_word,

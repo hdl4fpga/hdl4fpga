@@ -161,7 +161,6 @@ add wave -noupdate -group app_graphics -group sdram -expand /testbench/du_e/grap
 add wave -noupdate -group app_graphics -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_data
 add wave -noupdate -group app_graphics -group sdram -radix hexadecimal /testbench/du_e/graphics_e/sout_data
 add wave -noupdate -group app_graphics -group sdram -radix hexadecimal /testbench/du_e/graphics_e/rev_sout_data
-add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_req
 add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_rdy
 add wave -noupdate /testbench/du_e/graphics_e/dmavideo_req
@@ -184,8 +183,11 @@ add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_
 add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_vton
 add wave -noupdate -expand -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
 add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_frm
+add wave -noupdate -expand -group graphics_e -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/slzr_frm
+add wave -noupdate -expand /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_e/mode
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {53659879340 fs} 0}
+WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {48512111520 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 232
 configure wave -valuecolwidth 100
@@ -201,4 +203,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {26882 ns} {79382 ns}
+WaveRestoreZoom {0 fs} {115500 ns}

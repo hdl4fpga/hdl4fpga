@@ -368,7 +368,7 @@ begin
 			signal rgtr : std_logic_vector(mcm(src_data'length,dst_data'length)-1 downto 0);
 			signal sel  : unsigned(0 to unsigned_num_bits(rgtr'length/dst_data'length-1)-1) := (others => '0');
 			signal full : bit;
-			signal acc  : unsigned(0 to unsigned_num_bits(rgtr'length-1)-1);
+			signal acc  : unsigned(0 to unsigned_num_bits(rgtr'length-1)-1) := (others => '0');
 		begin
 			full <= 
 				'0' when src_frm='0'  else
@@ -382,7 +382,7 @@ begin
 				-- variable full : bit; -- Xilinx 14.7 systenthis bug It should be wire not a ff
 			begin 
 				if rising_edge(src_clk) then
-					if to_bit(src_frm)='0' then
+					if src_frm='0' then
 						acc  <= (others => '0');
 						-- full <= '0'; -- Xilinx 14.7 systenthis bug It should be wire not a ff
 					elsif src_irdy='1' then
