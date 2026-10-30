@@ -224,7 +224,6 @@ begin
 		settings     => settings,
 		fifo_size    => mem_size)
 	port map (
-		tp_sel       => "0000",
 		sin_clk      => mii_rxc,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,

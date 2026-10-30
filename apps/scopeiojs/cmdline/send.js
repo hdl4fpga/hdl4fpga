@@ -23,15 +23,16 @@ const program = require('commander');
 const commjs  = require('./comm.js');
 
 program
-	.requiredOption('-l, --link <type>', 'udp      | serial')
+	.requiredOption('-l, --link <type>', 'udp | serial')
 	.requiredOption('-n, --name <name>', 'hostname | ip address | serial port')
 	.parse(process.argv);
 
 switch(program.link) {
 case 'serial':
 	commjs.setCommOption('UART');
-	commjs.createUART(program.name, "115200");
+	commjs.createUART({ path: program.name, baudRate: 115200 });
 	break;
+case 'udp':
 case 'ip':
 	commjs.setCommOption('TCPIP');
 	commjs.setHost(program.name);
@@ -41,31 +42,50 @@ default:
 	break;
 }
 
-process.stdin.resume();
-process.stdin.setEncoding('utf8');
+const MAX_PACKET_SIZE = 1024 + 8;
+let pending = Buffer.alloc(0);
+let packet = [];
+let packetLength = 0;
 
-var data = "";
+function sendPacket() {
+	if (packetLength === 0) return;
+	const data = Buffer.concat(packet, packetLength);
+	packet = [];
+	packetLength = 0;
+	Promise.resolve(commjs.send(data)).catch((error) => {
+		console.error('Send failed:', error.message || error);
+		process.exitCode = 1;
+	});
+}
+
 process.stdin.on('data', function(chunk) {
-	data += chunk;
+	pending = Buffer.concat([pending, chunk]);
 
-	let length = 0;
-	while ((length+1) < data.length) {
-		let step = ((data.charCodeAt(length+1) % 256) + 3);
-		console.log("step", step);
-		if ((length+step) <= data.length) {
-			if (length+step <= (1024+8)) {
-				length += step;
-			} else if (length > 0) {
-				commjs.send(data.slice(0, length));
-				data = data.slice(length);
-				length = 0;
-			}
-		} else break;
+	while (pending.length >= 2) {
+		const registerLength = pending[1] + 3;
+		if (pending.length < registerLength) break;
+
+		if (packetLength > 0 && packetLength + registerLength > MAX_PACKET_SIZE)
+			sendPacket();
+
+		packet.push(pending.subarray(0, registerLength));
+		packetLength += registerLength;
+		pending = pending.subarray(registerLength);
 	}
-	if (length > 0) {
-		commjs.send(data.slice(0, length));
-		data = data.slice(length);
+
+	if (packetLength >= MAX_PACKET_SIZE) sendPacket();
+});
+
+process.stdin.on('end', function() {
+	if (pending.length !== 0) {
+		console.error('Truncated register at end of input (%d bytes remain)', pending.length);
+		process.exitCode = 1;
+		return;
 	}
-	if (data.length > 0) 
-		console.log("length %d, data left %s", data.length, data);
+	sendPacket();
+});
+
+process.stdin.on('error', function(error) {
+	console.error('Failed to read stdin:', error.message || error);
+	process.exitCode = 1;
 });

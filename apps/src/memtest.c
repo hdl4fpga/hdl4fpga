@@ -75,7 +75,10 @@ int sio_memtrans(char *siobuf, size_t mem_address, size_t mem_length)
 	int nmem_address;
 	int nmem_length;
 
-	nmem_address = htonl(mem_address);
+	if (!siobuf || mem_length == 0 || mem_length > 0x1000000u || mem_address > 0xffffffffu)
+		return -1;
+
+	nmem_address = htonl((unsigned int)mem_address);
 	nmem_length  = htonl(mem_length-1);
 	nmem_length  >>= 8;
 
@@ -93,11 +96,17 @@ int sio_memread(size_t address, char *buffer, size_t length)
 	int rawbuf_len;
 	char *sioptr;
 
-	assert(length < sizeof(siobuf));
+	if (!buffer || length == 0 || length >= sizeof(siobuf) ||
+	    address > 0x7fffffffu || length > 0x1000000u) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	rawbuf_len = sizeof(rawbuf);
 	sioptr = siobuf;
-	sioptr += sio_memtrans(sioptr, 0x80000000 | address, length);
+	int trans_len = sio_memtrans(sioptr, 0x80000000u | address, length);
+	if (trans_len < 0) return -1;
+	sioptr += trans_len;
 	delete_queue(rgtr2raw(rawbuf, &rawbuf_len, sio_request(siobuf, sioptr-siobuf)));
 	return sio2raw(buffer, 0x18, rawbuf, rawbuf_len);
 }
@@ -108,11 +117,17 @@ int sio_memwrite(size_t address, const char *buffer, size_t length)
 	static char siobuf[8*1024];
 	char *sioptr;
 
-	assert(length < sizeof(siobuf)-sizeof(char)*prefix_length);
+	if (!buffer || length == 0 || length >= sizeof(siobuf)-prefix_length ||
+	    address > 0xffffffffu || length > 0x1000000u) {
+		errno = EINVAL;
+		return -1;
+	}
 
 	sioptr =  siobuf;
 	sioptr += raw2sio(sioptr, 0x18, buffer, length);
-	sioptr += sio_memtrans(sioptr, address, length);
+	int trans_len = sio_memtrans(sioptr, address, length);
+	if (trans_len < 0) return -1;
+	sioptr += trans_len;
 	delete_queue(sio_request(siobuf, sioptr-siobuf));
 	return sioptr-siobuf;
 }

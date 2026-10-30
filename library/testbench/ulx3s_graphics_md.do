@@ -11,8 +11,8 @@ quietly virtual signal -install /testbench/du_e/graphics_e { (context /testbench
 quietly virtual signal -install /testbench/du_e/graphics_e { (context /testbench/du_e/graphics_e )( sout_data(7) & sout_data(6) & sout_data(5) & sout_data(4) & sout_data(3) & sout_data(2) & sout_data(1) & sout_data(0) )} rev_sout_data
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {CGA CODE}
-add wave -noupdate /testbench/du_e/video_g/ser_debug_e/ser_display_e/cga_we
-add wave -noupdate -radix ascii /testbench/du_e/video_g/ser_debug_e/ser_display_e/cga_codes
+add wave -noupdate /testbench/du_e/monitor_g/ser_debug_e/ser_display_e/cga_we
+add wave -noupdate -radix ascii /testbench/du_e/monitor_g/ser_debug_e/ser_display_e/cga_codes
 add wave -noupdate -divider RX
 add wave -noupdate /testbench/rmii_clk
 add wave -noupdate /testbench/rmii_rxdv
@@ -161,33 +161,34 @@ add wave -noupdate -group app_graphics -group sdram -expand /testbench/du_e/grap
 add wave -noupdate -group app_graphics -group sdram /testbench/du_e/graphics_e/sdrctlr_b/sdrctlr_e/phy_data
 add wave -noupdate -group app_graphics -group sdram -radix hexadecimal /testbench/du_e/graphics_e/sout_data
 add wave -noupdate -group app_graphics -group sdram -radix hexadecimal /testbench/du_e/graphics_e/rev_sout_data
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_inirdy
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_clk
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di_dv
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di
+add wave -noupdate -group app_graphics -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/base_addr
+add wave -noupdate -group app_graphics -group graphics_e -radix unsigned /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_len
+add wave -noupdate -group app_graphics -group graphics_e -radix unsigned /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_addr
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_clk
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_req
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_rdy
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_req
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_rdy
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_clk
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_hzon
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_vton
+add wave -noupdate -group app_graphics -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
+add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_frm
+add wave -noupdate -group app_graphics -group graphics_e -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_req
 add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_rdy
 add wave -noupdate /testbench/du_e/graphics_e/dmavideo_req
 add wave -noupdate /testbench/du_e/graphics_e/dmavideo_rdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/pyl_frms(1)
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/pyl_irdys(1)
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/ack_rgtr
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_inirdy
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_clk
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di_dv
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/ctlr_di
-add wave -noupdate -expand -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/base_addr
-add wave -noupdate -expand -group graphics_e -radix unsigned /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_len
-add wave -noupdate -expand -group graphics_e -radix unsigned /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_addr
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_clk
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_req
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dmacfg_rdy
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_req
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/dma_rdy
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_clk
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_hzon
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_vton
-add wave -noupdate -expand -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
-add wave -noupdate -expand -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_frm
-add wave -noupdate -expand -group graphics_e -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/slzr_frm
-add wave -noupdate -expand /testbench/du_e/graphics_e/adapter_b/graphics_e/srcltdst_g/vram_e/mode
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {48512111520 fs} 0}
+WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {7010000000 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 232
 configure wave -valuecolwidth 100
@@ -203,4 +204,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {115500 ns}
+WaveRestoreZoom {51571093750 fs} {55180468750 fs}

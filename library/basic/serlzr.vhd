@@ -161,7 +161,7 @@ begin
 		report CR & "(MAX => " & natural'image(mm(0)) & ", MASK0 => " & hdl4fpga.base.to_string((to_unsigned(mm(1), shf'length))) & ", MASK1 => " & hdl4fpga.base.to_string((to_unsigned(mm(2), shf'length))) & ")"
 		severity note;
 
-	srcgtdst_g : if src_data'length > dst_data'length generate
+	srcgedst_g : if src_data'length >= dst_data'length generate
 		signal fifo_trdy : std_logic := '0';
 		signal fifo_data : std_logic_vector(src_data'range);
 	begin
@@ -242,33 +242,30 @@ begin
 			begin
 				if rising_edge(dst_clk) then
 					if (src_frm or src_irdy)='0' and acc < dst_data'length then
-						acc  := 0;
 						irdy := '0';
-						shr_empty := '0';
+						acc  :=  0;
 					elsif acc=0 then
-						if not lsdfirst then
-							shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
-						else
-							shr(src_data'length-1 downto 0) := unsigned(fifo_data);
-						end if;
 						if src_irdy='1' then
+							if not lsdfirst then
+								shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
+							else
+								shr(src_data'length-1 downto 0) := unsigned(fifo_data);
+							end if;
 							acc := src_data'length;
 						end if;
 					elsif dst_trdy='1' then
 						if acc > dst_data'length then 
 							shr := shift_right(shr, dst_data'length);
 							acc := acc - dst_data'length;
-						else
+						elsif (src_frm and src_irdy)='1' then
 							if not lsdfirst then
 								shr(src_data'length-1 downto 0) := unsigned(reverse(fifo_data));
 							else
 								shr(src_data'length-1 downto 0) := unsigned(fifo_data);
 							end if;
-							if src_irdy='1' then
-								acc := src_data'length;
-							else
-							    acc := 0;
-							end if;
+							acc := src_data'length;
+						else
+						    acc := 0;
 						end if;
 					end if;
 					if acc > dst_data'length then
@@ -430,9 +427,4 @@ begin
 
 	end generate;
 
-	srceqdst_g : if src_data'length = dst_data'length generate
-		src_trdy <= dst_trdy;
-		dst_irdy <= src_irdy;
-		dst_data <= src_data;
-	end generate;
 end;

@@ -100,7 +100,6 @@ entity app_graphics is
 		ctlrphy_dqv   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
 		ctlrphy_sto   : out std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"-1 downto 0);
 		ctlrphy_sti   : in  std_logic_vector(hdo(settings)**".sdram.phy_data.orgz.gear=1"*hdo(settings)**".sdram.chip_data.orgz.data.dm=1"-1 downto 0) := (others => '-');
-		tp_sel        : in  std_logic_vector(0 to 4-1) := (others => '0');
 		tp            : out std_logic_vector(1 to 32));
 
 	constant fifodata_depth : natural := (fifo_size/(ctlrphy_dqi'length));
@@ -276,6 +275,7 @@ begin
 			signal fifo_trdy   : std_logic;
 			signal frm         : std_logic;
 			signal irdy        : std_logic;
+			signal ack_trdy    : std_logic;
 		begin
 			
 			rgtr0_b : block
@@ -332,15 +332,19 @@ begin
 
 			end block;
 
-			ack_frm <= pyl_frms(1) or pyl_irdys(1);
+			ack_frm <= pyl_frms(1); -- or pyl_irdys(1);
 			ack_e : entity hdl4fpga.serlzr
 			port map (
 				src_clk  => sin_clk,
 				src_frm  => ack_frm,
 				src_irdy => ack_irdy,
 				src_data => sin_data,
+				dst_clk  => sin_clk,
+				dst_irdy => ack_trdy,
+				dst_trdy => ack_trdy,
 				dst_data => ack_rgtr);
 
+			tp(1 to 8) <= ack_rgtr;
 			addr_frm <= pyl_frms(2) or pyl_irdys(2);
 			addr_e : entity hdl4fpga.serlzr
 			port map (
@@ -556,7 +560,7 @@ begin
 				src_frm <= (txrgtr1_rdy xor txrgtr1_req);
 
 				dmaio_data <= reverse(
-					to_stdlogicvector(rid_ack)  & x"00" & ack_rgtr &
+					to_stdlogicvector(rid_ack)  & x"00" & reverse(ack_rgtr) &
 					to_stdlogicvector(rid_addr) & x"00" & status);
 
 				src_irdy <= txrgtr1_rdy xor txrgtr1_req;
@@ -564,7 +568,7 @@ begin
 				serlzr_e : entity hdl4fpga.serlzr
 				port map (
 					src_clk  => sout_clk,
-					src_frm  => src_frm,
+					src_frm  => '0', --src_frm,
 					src_irdy => src_irdy,
 					src_trdy => src_trdy,
 					src_data => dmaio_data,

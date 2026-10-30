@@ -63,7 +63,7 @@ architecture graphics of ulx3s is
 	signal video_shift_clk : std_logic;
 	signal video_eclk      : std_logic;
 	signal video_pixel     : std_logic_vector(settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1 downto 0);
-	signal dvid_crgb       : std_logic_vector(4*settings**".video.gear=2"-1 downto 0);
+	signal graphichs_crgb  : std_logic_vector(4*settings**".video.gear=2"-1 downto 0);
 	signal videoio_clk     : std_logic;
 
 	constant sdram_gear    : natural := hdo(settings)**".sdram.phy_data.orgz.gear";
@@ -100,12 +100,13 @@ architecture graphics of ulx3s is
 	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(0 to 8-1);
 
-	constant monitor : boolean := true;
+	constant monitor       : boolean := true;
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
 	signal ser_irdy        : std_logic :='1';
 	signal ser_data        : std_logic_vector(0 to setif(io_link="io_ipoe", 2,1)-1);
-	signal extdvid_crgb    : std_logic_vector(dvid_crgb'range);
+	signal monitor_crgb    : std_logic_vector(graphichs_crgb'range);
+	signal tp              : std_logic_vector(1 to 32);
 begin
 
 	videodcm_e : entity hdl4fpga.ecp5_videodcm
@@ -157,7 +158,6 @@ begin
 			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 			sio_clk  <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
 		end generate;
-		led(7) <= video_lck;
 
 		hdlc_e : entity hdl4fpga.link_hdlc
 		generic map (
@@ -306,8 +306,8 @@ begin
 						end if;
 					end if;
 				end case;
-				led(0) <= md_req;
-				led(1) <= md_rdy;
+--				led(0) <= md_req;
+--				led(1) <= md_rdy;
 			end if;
 		end process;
 
@@ -329,7 +329,7 @@ begin
 		begin
 			if rising_edge(rmii_clk) then
 				if fcs_sb='1' then
-					led(7) <= fcs_vld;
+--					led(7) <= fcs_vld;
 				end if;
 			end if;
 		end process;
@@ -362,6 +362,7 @@ begin
 		fifo_size    => mem_size)
 
 	port map (
+		tp => tp,
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
@@ -376,7 +377,7 @@ begin
 		video_clk    => video_clk,
 		video_shift_clk => video_shift_clk,
 		video_pixel  => video_pixel,
-		dvid_crgb    => dvid_crgb,
+		dvid_crgb    => graphichs_crgb,
 
 		ctlr_clk     => ctlr_clk,
 		ctlr_rst     => ctlr_rst,
@@ -397,6 +398,7 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
+	led <= tp(1 to 8);
 
 	latsti_e : entity hdl4fpga.latency
 	generic map (
@@ -451,17 +453,72 @@ begin
 	-- VGA --
 	---------
 
-	hdmibrd_g : if string'(settings**".video.gear")="2" generate 
-		signal crgb : std_logic_vector(dvid_crgb'range);
+	monitor_g : if monitor generate
+		signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+		signal irdy : std_logic;
 	begin
+		irdy <= si_irdy and si_trdy;
+		ser_debug_e : entity hdl4fpga.ser_debug
+		generic map (
+			settings        => hdo(settings)**".video")
+		port map (
+			ser_clk         => ser_clk, 
+			ser_frm         => si_frm, 
+			ser_irdy        => irdy, 
+			ser_data        => si_data, 
+			
+			video_clk       => video_clk,
+			video_shift_clk => video_shift_clk,
+			video_pixel     => video_pixel,
+			dvid_crgb       => monitor_crgb);
+	end generate;
+		
+--	monitor_g : if monitor generate
+--		signal video_pixel : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
+--	begin
+--		ser_debug_e : entity hdl4fpga.ser_debug
+--		generic map (
+--			settings        => hdo(settings)**".video")
+--		port map (
+--			ser_clk         => ser_clk, 
+--			ser_frm         => ser_frm, 
+--			ser_irdy        => ser_irdy, 
+--			ser_data        => ser_data, 
+--			
+--			video_clk       => video_clk,
+--			video_shift_clk => video_shift_clk,
+--			video_pixel     => video_pixel,
+--			dvid_crgb       => monitor_crgb);
+--	end generate;
+		
+	gpdix4x7_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
+		signal crgb : std_logic_vector(graphichs_crgb'range);
+	begin
+		crgb <= monitor_crgb when monitor else graphichs_crgb;
+		ddr_g : for i in gpdi_d'range generate
+			oddr_i : oddrx1f
+			port map(
+				sclk => video_shift_clk,
+				rst  => '0',
+				d0   => crgb(2*i),
+				d1   => crgb(2*i+1),
+				q    => gpdi_d(i));
+		end generate;
+	end generate;
+
+	gpdix2_g : if string'(settings**".video.gear")="2" generate 
+		signal crgb         : std_logic_vector(graphichs_crgb'range);
+		signal latency_crgb : std_logic_vector(graphichs_crgb'range);
+	begin
+		crgb <= monitor_crgb when monitor else graphichs_crgb;
 		reg_e : entity hdl4fpga.latency
 		generic map (
-			n => dvid_crgb'length,
-			d => (dvid_crgb'range => 1))
+			n => graphichs_crgb'length,
+			d => (graphichs_crgb'range => 1))
 		port map (
 			clk => video_shift_clk,
-			di  => dvid_crgb,
-			do  => crgb);
+			di  => crgb,
+			do  => latency_crgb);
 
 		gbx_g : entity hdl4fpga.ecp5_ogbx
 		generic map (
@@ -473,41 +530,10 @@ begin
 		port map (
 			sclk      => video_shift_clk,
 			eclk      => video_eclk,
-			d         => crgb,
+			d         => latency_crgb,
 			q         => gpdi_d);
-
 	end generate;
 
-	video_g : if monitor generate
-		signal video_pixel     : std_logic_vector(0 to settings**".video.pixel.R=8"+settings**".video.pixel.G=8"+settings**".video.pixel.B=8"-1);
-	begin
-		ser_debug_e : entity hdl4fpga.ser_debug
-		generic map (
-			settings        => hdo(settings)**".video")
-		port map (
-			ser_clk         => ser_clk, 
-			ser_frm         => ser_frm, 
-			ser_irdy        => ser_irdy, 
-			ser_data        => ser_data, 
-			
-			video_clk       => video_clk,
-			video_shift_clk => video_shift_clk,
-			video_pixel     => video_pixel,
-			dvid_crgb       => extdvid_crgb);
-	end generate;
-		
-	hdmiext_g : if settings**".video.gear"=7 or settings**".video.gear"=4 generate 
-	begin
-		ddr_g : for i in gpdi_d'range generate
-			oddr_i : oddrx1f
-			port map(
-				sclk => video_shift_clk,
-				rst  => '0',
-				d0   => extdvid_crgb(2*i),
-				d1   => extdvid_crgb(2*i+1),
-				q    => gpdi_d(i));
-		end generate;
-	end generate;
 
 	-- SDRAM-clk-divided-by-2 monitor
 	tp_p : process (ctlr_clk)

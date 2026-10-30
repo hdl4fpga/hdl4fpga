@@ -54,30 +54,39 @@ function handler (req, res) { //create server
 }
 
 io.sockets.on('connection', function (socket) {
-	socket.on('listUART', function(args) { 
-		commjs.listUART().then((ports) => {
-			socket.emit('listUART', ports);
+	function rpc(ack, operation) {
+		if (typeof ack !== 'function') return;
+		Promise.resolve().then(operation).then(
+			(value) => ack({ ok: true, value: value }),
+			(error) => ack({ ok: false, error: error && error.message ? error.message : String(error) })
+		);
+	}
+
+	socket.on('listUART', function(args, ack) {
+		rpc(ack, () => commjs.listUART());
+	});
+
+	socket.on('createUART', function(args, ack) {
+		rpc(ack, () => {
+			commjs.createUART(args.uartName, args.options);
+			return true;
 		});
 	});
 
-	socket.on('createUART', function(args) { 
-		commjs.createUART(args.uartName, args.options);
+	socket.on('setCommOption', function(args, ack) {
+		rpc(ack, () => commjs.setCommOption(args.option));
 	});
 
-	socket.on('setCommOption', function(args) { 
-		commjs.setCommOption(args.option);
+	socket.on('send', function(args, ack) {
+		rpc(ack, () => commjs.send(args.data));
 	});
 
-	socket.on('send', function(args) { 
-		commjs.send(args.data);
+	socket.on('setHost', function(args, ack) {
+		rpc(ack, () => commjs.setHost(args.name));
 	});
 
-	socket.on('setHost', function(args) { 
-		commjs.setHost(args.name);
-	});
-
-	socket.on('getHost', function(args) { 
-		commjs.getHost();
+	socket.on('getHost', function(args, ack) {
+		rpc(ack, () => commjs.getHost());
 	});
 
 });

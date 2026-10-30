@@ -201,11 +201,30 @@ struct rgtr_node *rawdata2rgtr(char unsigned *data, int len)
 {
 	struct rgtr_node *head;
 	struct rgtr_node *node;
-	char unsigned *ptr;
+	int offset;
 
+	if (!data || len < 0)
+		return NULL;
 	head = NULL;
-	ptr = data;
-	while (ptr-data < len) {
+	offset = 0;
+	while (offset < len) {
+		int payload_len;
+		int remaining = len-offset;
+
+		/* Each register has a two-byte header and len+1 data bytes. */
+		if (remaining < 2) {
+			delete_queue(head);
+			return NULL;
+		}
+		payload_len = (int)data[offset+1] + 1;
+		if (payload_len > remaining-2) {
+			delete_queue(head);
+			return NULL;
+		}
+		if (head && node-head >= 255) {
+			delete_queue(head);
+			return NULL;
+		}
 		if (!head) {
 			head = new_rgtrnode();
 			node = head;
@@ -213,9 +232,9 @@ struct rgtr_node *rawdata2rgtr(char unsigned *data, int len)
 			node->next = new_rgtrnode();
 			node = node->next;
 		}
-		node->rgtr = (struct rgtr *) ptr;
+		node->rgtr = (struct rgtr *) (data+offset);
 		node->next = 0;
-		ptr  += node->rgtr->len + 3;
+		offset += payload_len + 2;
 
 	}
 	return head;
@@ -286,6 +305,13 @@ int usb_send(char * data, int len)
 	static char buffer[2048];
 	char *ptr = buffer;
 	u16 fcs;
+	const size_t capacity = sizeof(buffer);
+	const size_t encoded_len = 2u * ((size_t)len + sizeof(fcs)) + 2u;
+
+	if (len < 0 || encoded_len > capacity) {
+		fprintf(stderr, "USB frame too large: %d bytes\n", len);
+		return -1;
+	}
 
 	fcs = ~pppfcs16(PPPINITFCS16, data, len);
 	*ptr++ = 0x7e;
@@ -321,7 +347,12 @@ int usb_send(char * data, int len)
 			abort();
 		}
 	}
+	if (transferred != ptr-buffer) {
+		fprintf(stderr, "Short USB write: %d of %ld bytes\n", transferred, (long)(ptr-buffer));
+		return -1;
+	}
 	pkt_sent++;
+	return len;
 }
 
 int socket_send(char * data, int len)

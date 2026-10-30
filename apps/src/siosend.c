@@ -129,19 +129,35 @@ int main (int argc, char *argv[])
 			fprintf (stderr, ">>> READING PACKET <<<\n");
 		}
 		if (pktmd) {
-			if ((n = fread(&length, sizeof(unsigned short), 1, stdin)) > 0) {
+			n = fread(&length, sizeof(unsigned short), 1, stdin);
+			if (n == 1) {
 				if (log) {
 					fprintf (stderr, "Packet length %d\n", length);
 				}
 				totaldata += n;
-			} else if (n < 0) {
-				break;
 			} else {
+				if (!feof(stdin)) {
+					fprintf(stderr, "Failed to read packet length\n");
+					return 1;
+				}
 				break;
+			}
+			if (length > MAXLEN) {
+				fprintf(stderr, "Packet length %u exceeds maximum %u\n", length, MAXLEN);
+				return 1;
 			}
 		}
 
-		if ((n = fread(buffer, sizeof(unsigned char), length, stdin)) > 0) {
+		if (pktmd) {
+			n = fread(buffer, sizeof(unsigned char), length, stdin);
+			if (n != length) {
+				fprintf(stderr, "Truncated packet: expected %u bytes, received %d\n", length, n);
+				return 1;
+			}
+		} else {
+			n = fread(buffer, sizeof(unsigned char), length, stdin);
+		}
+		if (n > 0) {
 			totaldata += n;
 			if (log) {
 				fprintf (stderr, "Packet read length %d\n", n);

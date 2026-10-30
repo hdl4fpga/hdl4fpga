@@ -202,7 +202,24 @@ int main(int argc, char **argv)
 					}
 					saved_seq = seq;
 					seq_init();
-					while(libusb_bulk_transfer(usbdev, rd_endp, rd_buffer, sizeof(rd_buffer), &rd_transferred, 0) || rd_transferred);
+						for (int drain = 0; drain < 64; drain++) {
+							rd_transferred = 0;
+							rd_result = libusb_bulk_transfer(usbdev, rd_endp, rd_buffer,
+								sizeof(rd_buffer), &rd_transferred, 1000);
+							if (rd_result == LIBUSB_ERROR_TIMEOUT) break;
+							if (rd_result != 0) {
+								fprintf(stderr, "Error draining USB input: %s(%d)\n",
+									libusb_strerror(rd_result), rd_result);
+								if (rd_result == LIBUSB_ERROR_PIPE)
+									libusb_clear_halt(usbdev, rd_endp);
+								goto exit;
+							}
+							if (rd_transferred == 0) break;
+							if (drain == 63) {
+								fprintf(stderr, "USB input did not drain after 64 reads\n");
+								goto exit;
+							}
+						}
 
 					gettimeofday(&start_time, NULL);
 					for (k = 0; k < 12e6/(sizeof(wr_buffer)*8*2)*5*4; k++) {

@@ -98,6 +98,11 @@ function toHex(buffer)
 }
 
 function streamout (data) {
+	if (typeof data === 'string') {
+		data = Uint8Array.from(data, (character) => character.charCodeAt(0) & 0xff);
+	} else {
+		data = Buffer.from(data);
+	}
 
 	const esc = 0x5c;
 	const eod = 0x00;
@@ -130,7 +135,7 @@ function streamout (data) {
 			buffer[j++] = esc;
 
 		default:
-			buffer[j++] = data.charCodeAt(i);
+			buffer[j++] = data[i];
 		}
 	}
 	buffer[j++] = eod;

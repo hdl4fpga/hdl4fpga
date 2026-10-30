@@ -23,9 +23,40 @@ var ws = io();
 
 function rpcScopeIO(eventName, arg)
 {
-	var promise = new Promise((resolve, reject) => { ws.once(eventName, function(data) { resolve(data) }); });
-	ws.emit(eventName, arg);
-	return promise;
+	const timeoutMs = 10000;
+	return new Promise((resolve, reject) => {
+		if (!ws.connected) {
+			reject(new Error('Socket is not connected'));
+			return;
+		}
+
+		let settled = false;
+		const cleanup = () => {
+			clearTimeout(timer);
+			ws.off('disconnect', onDisconnect);
+			ws.off('connect_error', onConnectError);
+		};
+		const settle = (fn, value) => {
+			if (settled) return;
+			settled = true;
+			cleanup();
+			fn(value);
+		};
+		const onDisconnect = (reason) => settle(reject, new Error('Socket disconnected: ' + reason));
+		const onConnectError = (error) => settle(reject, error instanceof Error ? error : new Error(String(error)));
+		const timer = setTimeout(() => settle(reject, new Error(eventName + ' timed out')), timeoutMs);
+
+		ws.once('disconnect', onDisconnect);
+		ws.once('connect_error', onConnectError);
+		ws.emit(eventName, arg, (response) => {
+			if (!response || response.ok !== true) {
+				const message = response && response.error ? response.error : 'Invalid RPC acknowledgement';
+				settle(reject, new Error(message));
+				return;
+			}
+			settle(resolve, response.value);
+		});
+	});
 }
 
 function createUART(uartName, options)
