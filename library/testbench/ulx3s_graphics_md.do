@@ -179,16 +179,10 @@ add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphic
 add wave -noupdate -group app_graphics -group graphics_e -radix hexadecimal /testbench/du_e/graphics_e/adapter_b/graphics_e/video_pixel
 add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_frm
 add wave -noupdate -group app_graphics -group graphics_e -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_req
-add wave -noupdate /testbench/du_e/graphics_e/dmacfgvideo_rdy
-add wave -noupdate /testbench/du_e/graphics_e/dmavideo_req
-add wave -noupdate /testbench/du_e/graphics_e/dmavideo_rdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/pyl_frms(1)
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/pyl_irdys(1)
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/ack_rgtr
+add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {7010000000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {9706024920 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 232
 configure wave -valuecolwidth 100
@@ -204,4 +198,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {51571093750 fs} {55180468750 fs}
+WaveRestoreZoom {7905312500 fs} {11514687500 fs}
