@@ -180,9 +180,13 @@ add wave -noupdate -group app_graphics -group graphics_e -radix hexadecimal /tes
 add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_frm
 add wave -noupdate -group app_graphics -group graphics_e -divider {New Divider}
 add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_trdy
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/line__654/value
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {9706024920 fs} 0}
+WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {30720178240 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 232
 configure wave -valuecolwidth 100
@@ -198,4 +202,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {7905312500 fs} {11514687500 fs}
+WaveRestoreZoom {28162962750 fs} {32756712750 fs}

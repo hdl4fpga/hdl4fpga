@@ -638,20 +638,7 @@ begin
 					dst_trdy => serlzr_trdy,
 					dst_data => serlzr_data);
 
-				serlzr_irdy <= serlzr_frm and fifo_irdy;
-				serlzr_e : entity hdl4fpga.serlzr
-				port map (
-					src_clk  => sout_clk,
-					src_frm  => serlzr_frm,
-					src_irdy => serlzr_irdy,
-					src_trdy => serlzr_trdy,
-					src_data => serlzr_data,
-					dst_clk  => sout_clk,
-					dst_irdy => pack_irdy,
-					dst_trdy => pack_trdy,
-					dst_data => pack_data);
-
-				process (sin_clk, sout_clk)
+				process (serlzr_frm, sout_clk)
 					variable value : unsigned(data_length'length downto 0) := (others => '1');
 				begin
 					if rising_edge(sout_clk) then
@@ -668,9 +655,27 @@ begin
 						end if;
 						pack_length <= std_logic_vector(value(8-1 downto 0));
 					end if;
+
+					if value(8-1 downto 0)=x"00" then
+						pack_frm <= '0';
+					else
+						pack_frm <= serlzr_frm;
+					end if;
 				end process;
-				serlzr_frm <= pack_req xor pack_rdy;
-				pack_frm   <= serlzr_frm;
+
+				serlzr_frm  <= pack_req xor pack_rdy;
+				serlzr_irdy <= serlzr_frm and fifo_irdy;
+				serlzr_e : entity hdl4fpga.serlzr
+				port map (
+					src_clk  => sout_clk,
+					src_frm  => serlzr_frm,
+					src_irdy => serlzr_irdy,
+					src_trdy => serlzr_trdy,
+					src_data => serlzr_data,
+					dst_clk  => sout_clk,
+					dst_irdy => pack_irdy,
+					dst_trdy => pack_trdy,
+					dst_data => pack_data);
 
 				sout_frm <= sout_req xor sout_rdy;
 				sopack_e : entity hdl4fpga.sio_pack

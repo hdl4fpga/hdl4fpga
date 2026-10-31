@@ -70,6 +70,15 @@ begin
 					shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
 					shr_data := rotate_left(shr_data, si_len'length);
 				end if;
+			elsif si_frm='0' and (si_irdy and so_trdy)='1' then
+				shr_irdy := (others => '1');
+				shr_trdy := (others => '0');
+				shr_data(0 to si_rid'length-1) := unsigned(reverse(si_rid));
+				shr_data := rotate_left(shr_data, si_rid'length);
+				if not no_length then
+					shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
+					shr_data := rotate_left(shr_data, si_len'length);
+				end if;
 			end if;
 		end if;
 
