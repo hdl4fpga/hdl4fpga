@@ -19,12 +19,11 @@
 <!-- SOFTWARE.                                                                      -->
 <!--                                                                                -->
 
-<html>
+<html lang="en">
 	<head>
 		<meta charset="utf-8">
 		<title>ScopeIO</title>
 		<link rel="stylesheet" href="scopeio.css">
-		<meta charset="utf-8">
 		<script>
 			// require('nw.gui').Window.get().showDevTools();
 		  </script>
@@ -43,7 +42,7 @@
 		<div style="text-align:left;padding:0pt;margin:1pt;background-color:#444444;display:inline-block;vertical-align:middle;border:solid #404040 1pt;">
 			<!-- Languages -->
 			<div style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:middle;border:solid #888888 2pt;text-align:left">
-				<select id="lang-select" style="display:inline-block;">
+				<select id="lang-select" aria-label="Language selection" style="display:inline-block;">
 					<option value="0">en</option>
 					<option value="1">es</option>
 				</select>
@@ -55,7 +54,7 @@
 			</div>
 			<!-- Communication container -->
 			<div id="comm" style="background-color:#000000;padding:2pt;margin:0pt;display:inline-block;vertical-align:middle;border:solid #888888 1pt;text-align:left">
-				<select id="comm-select" style="display:inline-block;">
+				<select id="comm-select" aria-label="Communication selection" style="display:inline-block;">
 					<option id="USB" value="2">USB</option>
 					<option id="TCPIP" value="0">TCPIP</option>
 					<option id="UART" value="1">UART</option>
