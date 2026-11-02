@@ -242,6 +242,7 @@ begin
 			ipv4addr   => aton("192.168.0.14"),
 			n          => 2)
 		port map (
+			tp => tp,
 			si_frm     => si_frm,
 			si_irdy    => si_irdy,
 			si_trdy    => si_trdy,
@@ -339,10 +340,11 @@ begin
 		process(ser_clk)
 		begin
 			if rising_edge(ser_clk) then
---				ser_frm  <= tp(1);
---				ser_data <= tp(2 to 2+rmii_txd'length-1);
-				ser_frm  <= rmii_txen;
-				ser_data <= rmii_txd;
+				ser_frm  <= tp(1);
+				ser_irdy <= tp(2);
+				ser_data <= tp(3 to 3+rmii_txd'length-1);
+--				ser_frm  <= rmii_txen;
+--				ser_data <= rmii_txd;
 --				ser_frm  <= rmii_crsdv;
 --				ser_data <= rmii_rxd0 & rmii_rxd1;
 			end if;
@@ -463,6 +465,9 @@ begin
 			settings        => hdo(settings)**".video")
 		port map (
 			ser_clk         => ser_clk, 
+--			ser_frm         => ser_frm, 
+--			ser_irdy        => ser_irdy, 
+--			ser_data        => ser_data, 
 			ser_frm         => si_frm, 
 			ser_irdy        => irdy, 
 			ser_data        => si_data, 

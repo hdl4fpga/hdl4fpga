@@ -456,7 +456,7 @@ begin
 			begin
 				if rising_edge(sout_clk) then
 					value := to_unsigned(1, value'length);
-					value := shift_left(value, unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length))-1;
+					value := shift_left(value, unsigned_num_bits(2**blword_bits*byte_size/sodata_data'length-1))-1;
 					value := value or resize(unsigned(length_rgtr), value'length);
 					data_length <= value;
 

@@ -48,9 +48,9 @@ end;
 architecture def of sio_pack is
 begin
 	process (si_frm, si_irdy, so_trdy, si_data, sio_clk)
-		variable shr_data : unsigned(0 to setif(no_length, 8, 16)-1);
-		variable shr_irdy : unsigned(0 to shr_data'length/si_data'length-1);
-		variable shr_trdy : unsigned(0 to shr_data'length/si_data'length-1);
+		variable shr_data : unsigned(0 to 8-1);
+		variable shr_irdy : unsigned(0 to 2*shr_data'length/si_data'length-1);
+		variable shr_trdy : unsigned(0 to 2*shr_data'length/si_data'length-1);
 	begin
 		if rising_edge(sio_clk) then
 			if so_trdy='1' then
@@ -65,17 +65,23 @@ begin
 				shr_irdy := (others => '1');
 				shr_trdy := (others => '0');
 				shr_data(0 to si_rid'length-1) := unsigned(reverse(si_rid));
-				shr_data := rotate_left(shr_data, si_rid'length);
-				if not no_length then
-					shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
-					shr_data := rotate_left(shr_data, si_len'length);
-				end if;
+--				shr_data := rotate_left(shr_data, si_rid'length);
+--				if not no_length then
+--					shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
+--					shr_data := rotate_left(shr_data, si_len'length);
+--				end if;
 			elsif si_frm='0' and (si_irdy and so_trdy)='1' then
 				shr_irdy := (others => '1');
 				shr_trdy := (others => '0');
 				shr_data(0 to si_rid'length-1) := unsigned(reverse(si_rid));
-				shr_data := rotate_left(shr_data, si_rid'length);
-				if not no_length then
+--				shr_data := rotate_left(shr_data, si_rid'length);
+--				if not no_length then
+--					shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
+--					shr_data := rotate_left(shr_data, si_len'length);
+--				end if;
+			end if;
+			if not no_length then
+				if shr_irdy(shr_irdy'length/2-1 to shr_irdy'length/2)="10" then
 					shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
 					shr_data := rotate_left(shr_data, si_len'length);
 				end if;

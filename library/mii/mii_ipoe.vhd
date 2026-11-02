@@ -248,6 +248,10 @@ begin
 			ipv4tx_data when gntd(1)='1' else
 			(pyl_data'range => '-');
 
+		tp(1) <= ipv4tx_frm or ipv4tx_irdy;
+		tp(2) <= ipv4tx_irdy and ipv4tx_trdy;
+		tp(3 to 3+ipv4tx_data'length-1) <= ipv4tx_data;
+
 --		pyl_frm    <= arptx_frm;
 --		pyl_irdy   <= arptx_irdy;
 --		arptx_trdy <= pyl_trdy;
@@ -310,7 +314,7 @@ begin
 		hwaddr        => hwaddr,
 		ipv4addr      => ipv4addr)
 	port map (
-		tp => tp,
+--		tp => tp,
 
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
