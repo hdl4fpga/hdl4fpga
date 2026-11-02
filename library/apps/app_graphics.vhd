@@ -638,7 +638,7 @@ begin
 					dst_trdy => serlzr_trdy,
 					dst_data => serlzr_data);
 
-				process (serlzr_frm, sout_clk)
+				process (pack_req, pack_rdy, sout_clk)
 					variable value : unsigned(data_length'length downto 0) := (others => '1');
 				begin
 					if rising_edge(sout_clk) then
@@ -659,12 +659,12 @@ begin
 					if value(8-1 downto 0)=x"00" then
 						pack_frm <= '0';
 					else
-						pack_frm <= serlzr_frm;
+						pack_frm <= (pack_req xor pack_rdy);
 					end if;
 				end process;
 
-				serlzr_frm  <= pack_req xor pack_rdy;
-				serlzr_irdy <= serlzr_frm and fifo_irdy;
+				serlzr_frm  <= (pack_req xor pack_rdy) and fifo_irdy;
+				serlzr_irdy <= serlzr_frm;
 				serlzr_e : entity hdl4fpga.serlzr
 				port map (
 					src_clk  => sout_clk,
@@ -703,7 +703,7 @@ begin
 					'0';
 -- 
 				sout_data <= 
-					xxx_data        when ((txrgtr0_rdy xor txrgtr0_req) and xxx_xxx)='1' else
+					xxx_data     when ((txrgtr0_rdy xor txrgtr0_req) and xxx_xxx)='1' else
 					txrgtr0_data when (txrgtr0_rdy xor txrgtr0_req)='1' else
 					txrgtr1_data when (txrgtr1_rdy xor txrgtr1_req)='1' else
 					sodata_data  when (pack_rdy    xor pack_req)='1'    else

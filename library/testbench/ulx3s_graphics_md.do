@@ -189,9 +189,22 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_frm
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/line__641/value
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_clk
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/src_data
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_clk
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_frm
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_irdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_trdy
+add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/serlzr_e/dst_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/pack_length
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/data_length
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/length_rgtr
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/tx_b/sodata_b/sopack_e/so_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {16607414019660 fs} 0} {{Cursor 2} {7533750000 fs} 0}
+WaveRestoreCursors {{Cursor 1} {10398510870 fs} 0} {{Cursor 2} {9671557700 fs} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 255
 configure wave -valuecolwidth 100
@@ -207,4 +220,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {7428949650 fs} {7619262150 fs}
+WaveRestoreZoom {9107249700 fs} {12152250020 fs}

@@ -45,8 +45,8 @@ package sdrampkg is
 			"  al:{ '000':0 }," &
 			"  bl:{ '000':0, '001':1, '010':2, '011':4 }," &
 			"  cl:{ '001':1, '010':2, '011':3 }," &
-			"tmng:{ tPreRST:100.0e-6, cDLL:200, tCAS:15.0e-9}}" &
---			"tmng:{ tPreRST:1.0e-6, cDLL:200, tCAS:15.0e-9}}" &
+--			"tmng:{ tPreRST:100.0e-6, cDLL:200, tCAS:15.0e-9}}" &
+			"tmng:{ tPreRST:1.0e-6, cDLL:200, tCAS:15.0e-9}}" &
 		"ddr : {" &
 			"  al:{ '000':0},"                   &
 			"  bl:{ '001':2, '010':4, '011':8}," &
