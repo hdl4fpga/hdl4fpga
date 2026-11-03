@@ -267,13 +267,21 @@ begin
 			rmii_rxd   => rmii_rxd);
 
 
-		rmii_tx_en <= rmii_txen;
-		(rmii_txd0, rmii_txd1) <= rmii_txd;
+--		rmii_tx_en <= rmii_txen;
+--		(rmii_txd0, rmii_txd1) <= rmii_txd;
 
 		rmii_nintclk <= 'Z';
 		rmii_crsdv   <= 'Z';
 		rmii_rxd0    <= 'Z';
 		rmii_rxd1    <= 'Z';
+
+		process(rmii_clk)
+		begin
+			if rising_edge(rmii_clk) then
+				rmii_tx_en <= rmii_txen;
+				(rmii_txd0, rmii_txd1) <= rmii_txd;
+			end if;
+		end process;
 
 		mdclk_p : process(rmii_clk)
 			constant max : natural := (50+2*2-1)/(2*2)-2; -- 50MHz/(2MHz*2);
@@ -465,12 +473,12 @@ begin
 			settings        => hdo(settings)**".video")
 		port map (
 			ser_clk         => ser_clk, 
---			ser_frm         => ser_frm, 
---			ser_irdy        => ser_irdy, 
---			ser_data        => ser_data, 
-			ser_frm         => si_frm, 
-			ser_irdy        => irdy, 
-			ser_data        => si_data, 
+			ser_frm         => ser_frm, 
+			ser_irdy        => ser_irdy, 
+			ser_data        => ser_data, 
+--			ser_frm         => si_frm, 
+--			ser_irdy        => irdy, 
+--			ser_data        => si_data, 
 			
 			video_clk       => video_clk,
 			video_shift_clk => video_shift_clk,

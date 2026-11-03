@@ -27,8 +27,6 @@ library hdl4fpga;
 use hdl4fpga.base.all;
 
 entity sio_pack is
-	generic (
-		no_length : boolean := false);
 	port (
 		sio_clk : in  std_logic;
 		si_frm  : in  std_logic;
@@ -54,12 +52,13 @@ begin
 	begin
 		if rising_edge(sio_clk) then
 			if so_trdy='1' then
-				shr_irdy := shift_left(shr_irdy, 1);
-				shr_data := shift_left(shr_data, so_data'length);
-			end if;
-			if so_trdy='1' then
+				shr_irdy    := shift_left(shr_irdy, 1);
+				shr_data    := shift_left(shr_data, so_data'length);
 				shr_trdy(0) := '1';
 				shr_trdy    := rotate_left(shr_trdy, 1);
+			end if;
+			if shr_irdy(shr_irdy'length/2-1 to shr_irdy'length/2)="10" then
+				shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
 			end if;
 			if (si_frm or si_irdy)='0' then
 				shr_irdy := (others => '1');
@@ -70,18 +69,12 @@ begin
 				shr_trdy := (others => '0');
 				shr_data(0 to si_rid'length-1) := unsigned(reverse(si_rid));
 			end if;
-			if not no_length then
-				if shr_irdy(shr_irdy'length/2-1 to shr_irdy'length/2)="10" then
-					shr_data(0 to si_len'length-1) := unsigned(reverse(si_len));
-					shr_data := rotate_left(shr_data, si_len'length);
-				end if;
-			end if;
 		end if;
 
 		so_act  <= si_frm or si_irdy;
 		so_frm  <= si_frm;
 		so_irdy <= si_irdy or (si_frm and shr_irdy(0));
-		si_trdy <= (si_frm or si_irdy) and shr_trdy(0) and so_trdy;
+		si_trdy <= si_irdy and so_trdy and shr_trdy(0);
 		if shr_irdy(0)='1' then
 			so_data <= std_logic_vector(shr_data(0 to so_data'length-1));
 		else
