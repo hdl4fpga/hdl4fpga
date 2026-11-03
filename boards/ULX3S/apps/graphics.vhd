@@ -100,7 +100,7 @@ architecture graphics of ulx3s is
 	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(0 to 8-1);
 
-	constant monitor       : boolean := false;
+	constant monitor       : boolean := true;
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
 	signal ser_irdy        : std_logic :='1';
@@ -465,12 +465,12 @@ begin
 			settings        => hdo(settings)**".video")
 		port map (
 			ser_clk         => ser_clk, 
-			ser_frm         => ser_frm, 
-			ser_irdy        => ser_irdy, 
-			ser_data        => ser_data, 
---			ser_frm         => si_frm, 
---			ser_irdy        => irdy, 
---			ser_data        => si_data, 
+--			ser_frm         => ser_frm, 
+--			ser_irdy        => ser_irdy, 
+--			ser_data        => ser_data, 
+			ser_frm         => si_frm, 
+			ser_irdy        => irdy, 
+			ser_data        => si_data, 
 			
 			video_clk       => video_clk,
 			video_shift_clk => video_shift_clk,
