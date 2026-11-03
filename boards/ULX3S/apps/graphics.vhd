@@ -372,7 +372,7 @@ begin
 		fifo_size    => mem_size)
 
 	port map (
-		tp => tp,
+		-- tp => tp,
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
@@ -408,7 +408,8 @@ begin
 		ctlrphy_dqo  => ctlrphy_dqo,
 		ctlrphy_sto  => ctlrphy_sto,
 		ctlrphy_sti  => ctlrphy_sti);
-	led <= tp(1 to 8);
+	led(0) <= si_frm;
+	led(1) <= si_irdy;
 
 	latsti_e : entity hdl4fpga.latency
 	generic map (

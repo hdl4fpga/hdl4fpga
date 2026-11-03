@@ -142,60 +142,22 @@ package body hdo is
 		return false;
 	end;
 
-	-- VHDL-87 has no predefined 'image attributes. Keep diagnostics
-	-- self-contained so the source also compiles without preprocessing.
-	function image (
-		constant value : integer)
-		return string is
-		variable image_buf : string(1 to 32) := (others => ' ');
-		variable magnitude : natural;
-		variable digit     : natural;
-		variable first     : positive := image_buf'right;
-		variable negative  : boolean := false;
-	begin
-		if value < 0 then
-			negative  := true;
-			magnitude := natural(-(value+1)) + 1;
-		else
-			magnitude := natural(value);
-		end if;
-		loop
-			digit := magnitude mod 10;
-			image_buf(first) := character'val(character'pos('0') + digit);
-			exit when magnitude < 10;
-			magnitude := magnitude / 10;
-			first := first - 1;
-		end loop;
-		if negative then
-			first := first - 1;
-			image_buf(first) := '-';
-		end if;
-		return image_buf(first to image_buf'right);
-	end;
-
-	function image (
-		constant value : character)
-		return string is
-	begin
-		return "'" & value & "'";
-	end;
-
 	function compact (
 		constant object : string)
 		return string is
 		variable retval : string(1 to object'length);
-		variable quote  : character;
+		variable escape : boolean;
 		variable bkslh  : boolean;
 		variable n      : positive;
 	begin
 		bkslh  := false;
-		quote  := NUL;
+		escape := false;
 		n      := retval'left;
 		for i in object'range loop
 			if bkslh then
 				retval(n) := object(i);
 				n := n + 1;
-			elsif quote/=NUL then
+			elsif escape then
 				retval(n) := object(i);
 				n := n + 1;
 			elsif not isws(object(i)) then
@@ -206,18 +168,10 @@ package body hdo is
 				bkslh := false;
 			elsif object(i)='\' then
 				bkslh := true;
-			elsif quote=NUL and (object(i)=''' or object(i)='"') then
-				quote := object(i);
-			elsif quote/=NUL and object(i)=quote then
-				quote := NUL;
+			elsif object(i)=''' or object(i)='"' then
+				escape := not escape;
 			end if;
 		end loop;
-		assert not bkslh
-			report "compact: trailing escape character"
-			severity failure;
-		assert quote=NUL
-			report "compact: unterminated quoted string"
-			severity failure;
 		return retval(1 to n-1);
 	end;
 
@@ -299,80 +253,41 @@ package body hdo is
 		when 'a'|'b'|'c'|'d'|'e'|'f' =>
 			return character'pos(char)-character'pos('a')+10;
 		when others =>
-			assert false
-				report "wrong digit " & image(char)
-				severity failure;
+			report "wrong digit " & character'image(char);
 			return -1;
 		end case;
 	end;
 
 	function to_integer (
 		constant value : string;
-		constant base  : natural)
+		constant base  : natural) 
 		return integer is
-		variable sign      : integer;
-		variable digit     : integer;
-		variable retval    : integer;
-		variable limit     : integer;
-		variable multmin   : integer;
-		variable digits    : natural;
+		variable sign   : integer;
+		variable digit  : natural;
+		variable retval : integer;
 	begin
-		assert base >= 2 and base <= 16
-			report "to_integer: base must be in the range 2 to 16"
-			severity failure;
-		if base < 2 or base > 16 then
-			return 0;
-		end if;
-		sign   := 1;
 		retval := 0;
-		digits := 0;
+		sign   := 1;
 		for i in value'range loop
-			if i=value'left and (value(i)='-' or value(i)='+') then
-				if value(i)='-' then
-					sign := -1;
-				end if;
+			if i=value'left and value(i)='-' then
+				sign := -1;
 			elsif value(i)/='_' then
-				digit := to_integer(value(i));
-				assert digit >= 0 and digit < base
-						report "Wrong number " & value & " " & image(integer(base))
-					severity failure;
-				if digit < 0 or digit >= base then
-					return 0;
-				end if;
-				digits := digits + 1;
-				if sign < 0 then
-					limit := integer'low;
+				retval := base*retval;
+				digit  := to_integer(value(i));
+				if digit < 0 then
+					assert false
+						report "Wrong number " & value & " " & natural'image(base)
+						severity failure; 
+				elsif digit < base then
+					retval := retval + digit;
 				else
-					limit := -integer'high;
+					assert false
+						report "Wrong number " & character'image(value(i)) & " " & natural'image(base) 
+						severity failure; 
 				end if;
-				multmin := limit / base;
-				assert retval >= multmin
-					report "to_integer: value out of integer range: " & value
-					severity failure;
-				if retval < multmin then
-					return 0;
-				end if;
-				retval := retval*base;
-				assert retval >= limit + digit
-					report "to_integer: value out of integer range: " & value
-					severity failure;
-				if retval < limit + digit then
-					return 0;
-				end if;
-				retval := retval - digit;
 			end if;
 		end loop;
-		assert digits > 0
-			report "to_integer: number contains no digits: " & value
-			severity failure;
-		if digits=0 then
-			return 0;
-		end if;
-		if sign < 0 then
-			return retval;
-		else
-			return -retval;
-		end if;
+		return sign*retval;
 	end;
 
 	function to_stdulogic (
@@ -422,7 +337,7 @@ package body hdo is
 			n := value'left;
 			i := 0;
 			for j in value'range loop
-				for k in value'range loop    -- avoid synthesizes tools loop-warnings
+				for l in value'range loop    -- avoid synthesizes tools loop-warnings
 					exit when value(n)/='_'; -- avoid synthesizes tools loop-warnings
 
 					n := n + 1;
@@ -431,11 +346,11 @@ package body hdo is
 					end if;
 				end loop;
 				retval(i*log2base to (i+1)*log2base-1) := to_stdlogicvector(value(n), base);
+				i := i + 1;
 				n := n + 1;
 				if n > value'right then
-					return retval(0 to (i+1)*log2base-1);
+					return retval(0 to i*log2base-1);
 				end if;
-				i := i + 1;
 			end loop;
 			return retval;
 		end;
@@ -457,13 +372,17 @@ package body hdo is
 		elsif value'length > 0 then
 			return to_bin(value(value'left to value'right), 2);
 		else
-			return "";
+			assert false
+				report "value'range is null"
+				severity failure;
+			return "X";
 		end if;
 	end;
 
 	function to_integer (
 		constant value : string)
 		return integer is
+		variable retval : integer;
 	begin
 		if value'length > 1 then
 			if value(value'left)='0' then
@@ -484,116 +403,88 @@ package body hdo is
 	end;
 
 	function to_real(
-		constant value : string)
+		constant value : string) 
 		return real is
-		variable pos         : integer;
-		variable sign        : real := 1.0;
-		variable mant        : real := 0.0;
-		variable exponent    : integer := 0;
-		variable exp_sign    : integer := 1;
-		variable frac_digits : natural := 0;
-		variable digits      : natural := 0;
-		variable exp_digits  : natural := 0;
+		variable pos  : natural;
+		variable sign : character;
+		variable mant : real;
+		variable exp  : integer;
 	begin
-		assert value'length > 0
-			report "to_real: empty string"
-			severity failure;
-		if value'length=0 then
-			return 0.0;
-		end if;
-
 		pos := value'left;
-		if value(pos)='-' then
-			sign := -1.0;
-			pos := pos + 1;
-		elsif value(pos)='+' then
-			pos := pos + 1;
-		end if;
+		case value(pos) is
+		when '+'|'-' =>
+			sign := value(pos);
+			pos  := pos + 1;
+		when others =>
+			sign := '+';
+		end case;
 
-		-- Mantissa: digits with an optional decimal point.
-		while pos <= value'right loop
-			exit when not isdigit(value(pos));
-			mant := mant*10.0 + real(character'pos(value(pos))-character'pos('0'));
-			digits := digits + 1;
-			pos := pos + 1;
-		end loop;
-		if pos <= value'right and value(pos)='.' then
-			pos := pos + 1;
-			while pos <= value'right loop
-				exit when not isdigit(value(pos));
-				mant := mant*10.0 + real(character'pos(value(pos))-character'pos('0'));
-				digits := digits + 1;
-				frac_digits := frac_digits + 1;
-				pos := pos + 1;
-			end loop;
-		end if;
-		assert digits > 0
-			report "to_real: mantissa contains no digits: " & value
-			severity failure;
-		if digits=0 then
-			return 0.0;
-		end if;
+		mant := 0.0;
+		for l in value'range loop -- avoid synthesizes tools loop-warnings
+			exit when pos > value'right; -- avoid synthesizes tools loop-warnings
 
-		-- Optional exponent; accept both lower- and upper-case E.
-		if pos <= value'right then
-			if value(pos)='e' or value(pos)='E' then
+			if value(pos)='.' then
 				pos := pos + 1;
-				if pos <= value'right then
-					if value(pos)='-' then
-						exp_sign := -1;
-						pos := pos + 1;
-					elsif value(pos)='+' then
-						pos := pos + 1;
-					end if;
-				end if;
-				while pos <= value'right loop
-					assert isdigit(value(pos))
-						report "to_real: invalid exponent in " & value
-						severity failure;
-					if not isdigit(value(pos)) then
-						return 0.0;
-					end if;
-					exp_digits := exp_digits + 1;
-					assert exponent < integer'high/10 or
-					       (exponent = integer'high/10 and
-					        character'pos(value(pos))-character'pos('0') <= integer'high mod 10)
-						report "to_real: exponent is too large in " & value
-						severity failure;
-					if exponent < integer'high/10 or
-					   (exponent = integer'high/10 and
-					    character'pos(value(pos))-character'pos('0') <= integer'high mod 10) then
-						exponent := exponent*10 + character'pos(value(pos))-character'pos('0');
-					else
-						return 0.0;
-					end if;
-					pos := pos + 1;
-				end loop;
-				assert exp_digits > 0
-					report "to_real: missing exponent digits in " & value
-					severity failure;
-				if exp_digits=0 then
-					return 0.0;
-				end if;
-			else
-				assert false
-					report "to_real: unexpected character in " & value
-					severity failure;
-				return 0.0;
+				exit;
 			end if;
-		end if;
-		assert pos > value'right
-			report "to_real: trailing characters in " & value
-			severity failure;
-		if pos <= value'right then
-			return 0.0;
-		end if;
-
-		for i in 1 to frac_digits loop
-			mant := mant / 10.0;
+			mant := 10.0*mant + real(character'pos(value(pos))-character'pos('0'));
+			pos  := pos + 1;
 		end loop;
-		return sign*mant*10.0**(exp_sign*exponent);
-	end;
 
+		exp := 0;
+		for l in value'range loop -- avoid synthesizes tools loop-warnings
+			exit when pos > value'right; -- avoid synthesizes tools loop-warnings
+
+			if value(pos)='e' then
+				pos := pos + 1;
+				exit;
+			end if;
+			if not isdigit(value(pos)) then -- Xilinx ISE 14.7 warning complain
+				report "to_real() : wrong character " & character'image(value(pos)) & " in value : " & value
+				severity failure; 
+			end if; 
+			mant := 10.0*mant + real(character'pos(value(pos))-character'pos('0'));
+			exp  := exp + 1;
+			pos  := pos + 1;
+		end loop;
+
+	
+		for i in value'range loop	-- while exp > 0 loop
+			exit when exp <= 0;	    -- while exp > 0 loop
+			mant := mant / 10.0;
+			exp  := exp - 1;
+		end loop;
+
+		if sign='-' then
+			mant := -mant;
+		end if;
+
+		if pos > value'right then
+			return mant;
+		end if;
+
+		case value(pos) is
+		when '+'|'-' =>
+			sign := value(pos);
+			pos  := pos + 1;
+		when others =>
+			sign := '+';
+		end case;
+
+		exp := 0;
+		for l in value'range loop           -- avoid synthesizes tools loop-warnings
+			exit when pos > value'right;    -- avoid synthesizes tools loop-warnings
+
+			exp := 10*exp + (character'pos(value(pos))-character'pos('0'));
+			pos := pos + 1;
+		end loop;
+		if sign='-' then
+			exp := -exp;
+		end if;
+
+		return mant*10.0**exp;
+	end;
+	
 	function field (
 		constant arg      : string;
 		constant position : positive;
@@ -622,14 +513,14 @@ package body hdo is
 				j := j - 1;
 				content(i) := arg(j);
 			end loop;
-			return '(' & image(integer(position)) & " to " & image(integer(position+length-1)) & ')' & '=' & content;
+			return '(' & positive'image(position) & " to " & natural'image(position+length-1) & ')' & '=' & content;
 		else
 			if length > 0 then 
 				content(1 to length+2) := '"' & arg(position to position+length-1) & '"';
 			else
 				content(1 to 2) := '"' & '"';
 			end if;
-			return '(' & image(integer(position)) & " to " & image(integer(position+length-1)) & ')' & '=' & content(1 to length+2);
+			return '(' & positive'image(position) & " to " & natural'image(position+length-1) & ')' & '=' & content(1 to length+2);
 		end if;
 	end;
 
@@ -735,9 +626,6 @@ package body hdo is
 				end if;
 		end loop;
 		value_length := position-value_position;
-		assert not bkslh
-			report "unterminated escape sequence " & field(object, value_position, value_length)
-			severity failure;
 		assert quote=NUL
 			report "unterminated quoted string " & field(object, value_position, value_length)
 			severity failure;
@@ -784,13 +672,47 @@ package body hdo is
 			severity note;                                                                                  --|note
 	end;
 
+	function max (
+		constant arg1 : natural;
+		constant arg2 : natural)
+		return natural is
+	begin
+		if arg1 > arg2 then
+			return arg1;
+		else
+			return arg2;
+		end if;
+	end;
+
+	function format (
+		constant arg   : string;
+		constant width : natural) 
+		return string is
+		variable formatted : string(1 to max(width,1));
+		variable j : positive;
+	begin
+		if width > 0 then
+			j := arg'left;
+			for i in 1 to width loop
+				if j <= arg'right then
+					formatted(i) := arg(j);
+					j := j + 1;
+				else
+					formatted(i) := ' ';
+				end if;
+			end loop;
+			return formatted;
+		else
+			return arg;
+		end if;
+	end;
 
 	function at (
 		constant arg      : string;
 		constant position : positive)
 		return string is
 	begin
-		return '(' & image(integer(position)) & ')' & "=" & image(arg(position));
+		return '(' & positive'image(position) & ')' & "=" & character'image(arg(position));
 	end;
 
 	procedure resolve (
@@ -809,13 +731,13 @@ package body hdo is
 		variable default_position : positive;
 		variable default_length   : natural;
 
-		function indent (
-			constant msg : string)
-			return string is
-		begin
-			-- Preserve the complete diagnostic message; do not truncate it.
-			return msg;
-		end;
+		function indent (                                               --|note
+			constant msg : string)                                       --|note
+			return   string is                                           --|note
+			variable indentation : string(1 to 40) := (others => ' ');   --|note
+		begin                                                            --|note
+			return format(msg, 80);                                      --|note
+		end;                                                             --|note
 
 		procedure parse_domain (
 			constant object          : in    string;
@@ -855,17 +777,11 @@ package body hdo is
 					end if;
 
 					skipws(object, position);
-					assert position <= object'right
-						report "unterminated path domain: " & field(object, domain_position, domain_length)
-						severity failure;
-					if position > object'right then
-						return;
-					end if;
 					case object(position) is
 					when ']' => 
 						if open_char/='[' then -- Xilinx ISE 14.7 warning complain
 							assert false                                                                                             
-								report "wrong closing character " & at(object, position) & " opened by " & image(open_char)
+								report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
 								severity failure;                                                                                       
 						end if;                                                                                                        
 
@@ -878,7 +794,7 @@ package body hdo is
 
 						if open_char/='{' then -- Xilinx ISE 14.7 warning complain
 							assert false
-								report "wrong closing character " & at(object, position) & " opened by " & image(open_char)
+								report "wrong closing character " & at(object, position) & " opened by " & character'image(open_char)
 								severity failure; 
 						end if;
 
@@ -1003,7 +919,7 @@ package body hdo is
 							end if;
 						end if;
 						assert stptr<=stack'right
-							report "parse_value nesting exceeds " & image(integer(stack'length))
+							report "parse_value nesting exceeds " & natural'image(stack'length)
 							severity failure;
 						if stptr<=stack'right then
 							push(stptr, object(position));
@@ -1054,9 +970,6 @@ package body hdo is
 				end if;
 		end loop;
 		value_length := position-value_position;
-		assert not bkslh
-			report "unterminated escape sequence " & field(object, value_position, value_length)
-			severity failure;
 		assert quote=NUL
 			report "unterminated quoted value " & field(object, value_position, value_length)
 			severity failure;
@@ -1238,7 +1151,6 @@ package body hdo is
 				exit when position > object'right; -- Avoid synthesizes tools loop-warnings
 			
 				skipws(object, position);
-				exit when position > object'right;
 				case object(position) is
 				when '['|'{' =>
 					assert ((log_flags/log_locatevalue) mod 2=0)          --|note
@@ -1269,7 +1181,7 @@ package body hdo is
 
 					if open_char/='[' then
 						assert false
-								report "wrong close token " & at(object, position) & " opened by " & image(open_char)
+							report "wrong close token " & at(object, position) & " opened by " & character'image(open_char)
 							severity failure;
 					end if;
 
@@ -1288,7 +1200,7 @@ package body hdo is
 					end if;
 					if open_char/='{' then
 						assert false
-								report "wrong close path at " & at(object, position) & " opened by " & image(open_char)
+								report "wrong close path at " & at(object, position) & " opened by " & character'image(open_char)
 							severity failure;
 					end if;
 
@@ -1306,7 +1218,7 @@ package body hdo is
 						default_position, default_length);
 	
 					assert ((log_flags/log_locatevalue) mod 2=0)                                                       --|note
-						report indent("[" & image(integer(index)) & "]=" & field(object, value_position, value_length)) --|note
+						report indent("[" & natural'image(index) & "]=" & field(object, value_position, value_length)) --|note
 						severity note;                                                                                 --|note
 				end if;
 
@@ -1419,13 +1331,13 @@ package body hdo is
 						report indent(field("default", object, default_position, default_length)) --|note
 						severity note;                                                            --|note
 					assert ((log_flags/log_resolve) mod 2=0)                                      --|note
-						report indent("object_position  : " & image(integer(object_position)))    --|note
+						report indent("object_position  : " & positive'image(object_position))    --|note
 						severity note;                                                            --|note
 					assert ((log_flags/log_resolve) mod 2=0)                                      --|note
-						report indent("default_position : " & image(integer(default_position)))   --|note
+						report indent("default_position : " & positive'image(default_position))   --|note
 						severity note;                                                            --|note
 					assert ((log_flags/log_resolve) mod 2=0)                                      --|note
-						report indent("default_length   : " & image(integer(default_length)))   --|note
+						report indent("default_length   : " & natural'image(default_length))   --|note
 						severity note;                                                            --|note
 
 					value_position  := default_position;
@@ -1619,9 +1531,6 @@ package body hdo is
 		return character is
 		constant retval : string := resolve(string(object) & path);
 	begin
-		if retval'length=0 then
-			return NUL;
-		end if;
 		if retval(retval'left)='\' then
 			return retval(retval'left+1);
 		end if;
@@ -1641,7 +1550,7 @@ package body hdo is
 		constant position : natural)
 		return hdo is
 	begin
-		return resolve(string(object) & '[' & image(integer(position)) & ']');
+		return resolve(string(object) & '[' & natural'image(position) & ']');
 	end;
 
 	function tag (
@@ -1660,18 +1569,18 @@ package body hdo is
 		variable retval : inout string;
 		variable length : inout natural;
 		constant object : in    string) is
-		variable quote  : character;
+		variable escape : boolean;
 		variable bkslh  : boolean;
 	begin
 		length := 0;
-		quote  := NUL;
+		escape := false;
 		bkslh  := false;
 		for i in object'range loop
 			if bkslh then
 				retval(retval'left+length) := object(i);
 				length := length + 1;
-			elsif quote/=NUL then
-				if object(i)/=quote then
+			elsif escape then
+				if not (object(i)=''' or object(i)='"' or object(i)='\') then
 					retval(retval'left+length) := object(i);
 					length := length + 1;
 				end if;
@@ -1683,18 +1592,10 @@ package body hdo is
 				bkslh := false;
 			elsif object(i)='\' then
 				bkslh := true;
-			elsif quote=NUL and (object(i)=''' or object(i)='"') then
-				quote := object(i);
-			elsif quote/=NUL and object(i)=quote then
-				quote := NUL;
+			elsif object(i)=''' or object(i)='"' then
+				escape := not escape;
 			end if;
 		end loop;
-		assert not bkslh
-			report "escaped: trailing escape character"
-			severity failure;
-		assert quote=NUL
-			report "escaped: unterminated quoted string"
-			severity failure;
 	end;
 
 	function escaped (
@@ -1702,6 +1603,7 @@ package body hdo is
 		return string is
 		variable length : natural;
 		variable retval : string(1 to object'length);
+		variable escape : boolean;
 	begin
 		escaped(retval, length, object);
 		if length/=0 then

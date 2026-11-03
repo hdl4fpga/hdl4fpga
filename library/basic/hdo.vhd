@@ -331,10 +331,12 @@ package body hdo is
 			return std_logic_vector is
 			constant log2base : natural := unsigned_num_bits(base-1);
 			variable n        : natural;
+			variable i        : natural;
 			variable retval   : std_logic_vector(0 to log2base*value'length-1);
 		begin
 			n := value'left;
-			for i in 0 to value'length-1 loop
+			i := 0;
+			for j in value'range loop
 				for l in value'range loop    -- avoid synthesizes tools loop-warnings
 					exit when value(n)/='_'; -- avoid synthesizes tools loop-warnings
 
@@ -344,9 +346,10 @@ package body hdo is
 					end if;
 				end loop;
 				retval(i*log2base to (i+1)*log2base-1) := to_stdlogicvector(value(n), base);
+				i := i + 1;
 				n := n + 1;
 				if n > value'right then
-					return retval(0 to (i+1)*log2base-1);
+					return retval(0 to i*log2base-1);
 				end if;
 			end loop;
 			return retval;
@@ -510,14 +513,14 @@ package body hdo is
 				j := j - 1;
 				content(i) := arg(j);
 			end loop;
-			return '(' & positive'image(position) & " to " & positive'image(position+length-1) & ')' & '=' & content;
+			return '(' & positive'image(position) & " to " & natural'image(position+length-1) & ')' & '=' & content;
 		else
 			if length > 0 then 
 				content(1 to length+2) := '"' & arg(position to position+length-1) & '"';
 			else
 				content(1 to 2) := '"' & '"';
 			end if;
-			return '(' & positive'image(position) & " to " & positive'image(position+length-1) & ')' & '=' & content(1 to length+2);
+			return '(' & positive'image(position) & " to " & natural'image(position+length-1) & ')' & '=' & content(1 to length+2);
 		end if;
 	end;
 
@@ -718,7 +721,6 @@ package body hdo is
 		variable domain_length    : natural;
 		variable default_position : positive;
 		variable default_length   : natural;
-
 
 
 		procedure parse_domain (
@@ -1226,6 +1228,9 @@ package body hdo is
 		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
+		if value_length=0 then
+			return 0.0;
+		end if;
 		return to_real(object(value_position to value_position+value_length-1));
 	end;
 
@@ -1238,6 +1243,9 @@ package body hdo is
 		variable tag_length     : natural;
 	begin
 		resolve (object, value_position, value_length, tag_position, tag_length);
+		if value_length=0 then
+			return "X";
+		end if;
 		return to_stdlogicvector(escaped(object(value_position to value_position+value_length-1)));
 	end;
 
