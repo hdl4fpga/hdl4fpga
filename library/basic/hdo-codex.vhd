@@ -427,6 +427,9 @@ package body hdo is
 				pos := pos + 1;
 				exit;
 			end if;
+			assert isdigit(value(pos))
+				report "to_real() : wrong character " & character'image(value(pos)) & " in value : " & value
+				severity failure;
 			mant := 10.0*mant + real(character'pos(value(pos))-character'pos('0'));
 			pos  := pos + 1;
 		end loop;
@@ -1244,10 +1247,12 @@ package body hdo is
 						value_position := position;
 						value_length   := 0;
 
-						assert ((log_flags/log_locatevalue) mod 2=0)                                             --|note
-							report indent("domain not found : " & field(object, domain_position, domain_length)) --|note
-							severity note;                                                                       --|note
-						exit;
+						if closed then
+							assert ((log_flags/log_locatevalue) mod 2=0)                                             --|note
+								report indent("domain not found : " & field(object, domain_position, domain_length)) --|note
+								severity note;                                                                       --|note
+							exit;
+						end if;
 					end if;
 				elsif to_integer(object(domain_position to domain_position+domain_length-1)) <= index then
 					value_position := tag_position;
