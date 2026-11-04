@@ -190,8 +190,6 @@ begin
 
 	sio_b : block
 
-		constant siobyte_size : natural := 8;
-
 		constant rid_ack     : string := "0x01";
 		constant rid_addr    : string := "0x16";
 		constant rid_length  : string := "0x17";
@@ -445,7 +443,7 @@ begin
 			signal payload_length : unsigned(trans_length'range);
 			signal data_length    : unsigned(trans_length'range);
 			signal header_length  : unsigned(trans_length'range);
-			constant status_size   : unsigned := to_unsigned(dmaio_data'length/siobyte_size, trans_length'length);
+			constant status_size   : unsigned := to_unsigned(dmaio_data'length/sout_data'length, trans_length'length);
 
 			signal xxx_xxx : std_logic;
 			signal xxx_data : std_logic_vector(sout_data'range);
@@ -515,17 +513,33 @@ begin
 				xxx_trdys <= (others => sout_trdy);
 			end block;
 
-			rqst_sout_p : process (ctlr_clk)
+			sout_req_p : process (ctlr_clk)
 			begin
 				if rising_edge(ctlr_clk) then
-					if (sout_req xor sout_rdy)='0' then
-						if (dmaio_rdy xor dmaio_req)='1' then
-							sout_req    <= not sout_rdy;
-							txrgtr0_req <= not txrgtr0_rdy;
+					if (dmaio_rdy xor dmaio_req)='1' then
+						sout_req <= not sout_rdy;
+					end if;
+				end if;
+			end process;
+
+			sout_rdy_p : process (sout_clk)
+				type states is (s_rdy, s_req);
+				variable state : states;
+			begin
+				if rising_edge(sout_clk) then
+					case state is
+					when s_rdy =>
+						if (sout_rdy xor sout_req)='1' then
+							if (dmaio_req xor dmaio_rdy)='0' then
+								sout_frm <= '1';
+								txrgtr0_req <= not txrgtr0_rdy;
+								state := s_req;
+							end if;
 						end if;
 					end if;
 				end if;
 			end process;
+
 			txrgtr0_trdy <= sout_trdy when (txrgtr0_rdy xor txrgtr0_req)='1' else '0';
 
 			rqst_rgtr0_p : process (sout_clk)
@@ -621,7 +635,7 @@ begin
 				mode1 <= ctlr_inirdy and (dmaio_req xor dmaio_rdy);
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
-					max_depth => (dataout_size/(ctlr_di'length/siobyte_size)),
+					max_depth => (dataout_size*sout_data'length/ctlr_di'length),
 					latency   => 0,
 					check_sov => false,
 					check_dov => true)
@@ -677,7 +691,6 @@ begin
 					dst_trdy => pack_trdy,
 					dst_data => pack_data);
 
-				sout_frm <= sout_req xor sout_rdy;
 				sopack_e : entity hdl4fpga.sio_pack
 				port map (
 					sio_clk => sout_clk,
@@ -692,6 +705,11 @@ begin
 					so_trdy => sodata_trdy,
 					so_data => sodata_data);
 
+				sout_frm <= 
+					(txrgtr0_rdy xor txrgtr0_req) or
+					(txrgtr1_rdy xor txrgtr1_req) or
+					(pack_rdy    xor pack_req);
+-- 
 				sodata_trdy <=
 					sout_trdy when (pack_rdy  xor  pack_req)='1' else
 					'0';

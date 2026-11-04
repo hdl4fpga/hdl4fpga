@@ -82,7 +82,8 @@ begin
 		signal dhcpcdoffer_frms  : std_logic_vector(dhcpcdoffer_acts'range);
 		signal dhcpcdoffer_irdys : std_logic_vector(dhcpcdoffer_acts'range);
 		signal dhcpcdoffer_trdys : std_logic_vector(dhcpcdoffer_acts'range);
-
+		signal arp_test : std_logic;
+		constant delay : time := 6 us;
 	begin
 		decode_i : entity hdl4fpga.frame_decode
 		generic map (
@@ -99,6 +100,7 @@ begin
 		yiaddr_frm  <= dhcpcdoffer_frms(1);
 		yiaddr_irdy <= dhcpcdoffer_irdys(1);
 		
+		arp_test <= '0', '0' after delay, '0' after delay+0.1 us;
 		process (miirx_clk)
 			variable refresh_req : std_logic := '0';
 			variable refresh_rdy : std_logic := '0';
@@ -108,6 +110,8 @@ begin
 					refresh_req := not refresh_rdy;
 				elsif (refresh_rdy xor refresh_req)='1' then
 					refresh_rdy := refresh_req;
+					arp_req     <= not arp_rdy;
+				elsif arp_test='1' then
 					arp_req     <= not arp_rdy;
 				end if;
 			end if;

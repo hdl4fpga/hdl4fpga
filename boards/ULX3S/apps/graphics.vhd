@@ -410,6 +410,7 @@ begin
 		ctlrphy_sti  => ctlrphy_sti);
 	led(0) <= si_frm;
 	led(1) <= si_irdy;
+	led(2) <= si_trdy;
 
 	latsti_e : entity hdl4fpga.latency
 	generic map (
