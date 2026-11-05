@@ -32,11 +32,11 @@ entity serlzr is
 		lsdfirst  : boolean := true);
 	port (
 		src_clk   : in  std_logic;
-		src_frm   : in  std_logic := '1';
+		src_frm   : in  std_logic := '0';
 		src_irdy  : in  std_logic := '1';
-		src_trdy  : out std_logic := '0';
+		src_trdy  : out std_logic := '1';
 		src_data  : in  std_logic_vector;
-		dst_clk   : in  std_logic := '1';
+		dst_clk   : in  std_logic := '-';
 		dst_frm   : out std_logic := '0';
 		dst_irdy  : out std_logic := '0';
 		dst_trdy  : in  std_logic := '1';

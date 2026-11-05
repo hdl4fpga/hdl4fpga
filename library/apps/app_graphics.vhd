@@ -434,7 +434,9 @@ begin
 			signal pack_req       : std_logic := '0';
 			signal pack_rdy       : std_logic := '0';
 
+			signal r1src_trdy : std_logic;
 			signal txrgtr1_irdy   : std_logic;
+			signal txrgtr1_trdy   : std_logic;
 			signal txrgtr1_data   : std_logic_vector(sout_data'range);
 			signal sodata_irdy    : std_logic;
 			signal sodata_trdy    : std_logic;
@@ -523,72 +525,67 @@ begin
 			end process;
 
 			sout_rdy_p : process (sout_clk)
-				type states is (s_rdy, s_req);
+				type states is (s_idle, s_rgtr0, s_rgtr1, s_data);
 				variable state : states;
 			begin
 				if rising_edge(sout_clk) then
-					case state is
-					when s_rdy =>
-						if (sout_rdy xor sout_req)='1' then
-							if (dmaio_req xor dmaio_rdy)='0' then
-								sout_frm <= '1';
-								txrgtr0_req <= not txrgtr0_rdy;
-								state := s_req;
+					if (sout_rdy xor sout_req)='1' then
+						case state is
+						when s_idle =>
+							if (sout_rdy xor sout_req)='1' then
+								if (dmaio_req xor dmaio_rdy)='0' then
+									txrgtr0_req <= not txrgtr0_rdy;
+									state := s_rgtr0;
+								end if;
 							end if;
-						end if;
+						when s_rgtr0 =>
+							if txrgtr0_irdy='0' then
+								txrgtr0_rdy <= txrgtr0_req;
+								txrgtr1_req <= not txrgtr1_rdy;
+								state := s_rgtr1;
+							end if;
+						when s_rgtr1 =>
+							if (r1src_trdy and txrgtr1_irdy and txrgtr1_trdy)='1' then
+								txrgtr1_rdy <= txrgtr1_req;
+								pack_req    <= not pack_rdy;
+								state := s_data;
+							end if;
+						when s_data =>
+							if (pack_req xor pack_rdy)='0' then
+								sout_rdy <= sout_req;
+								state := s_idle;
+							end if;
+						end case;
+					else
+						txrgtr0_rdy <= txrgtr0_req;
+						txrgtr1_rdy <= txrgtr1_req;
+						state := s_idle;
 					end if;
 				end if;
 			end process;
 
 			txrgtr0_trdy <= sout_trdy when (txrgtr0_rdy xor txrgtr0_req)='1' else '0';
 
-			rqst_rgtr0_p : process (sout_clk)
-			begin
-				if rising_edge(sout_clk) then
-					if (txrgtr0_rdy xor txrgtr0_req)='1' then
-						if txrgtr0_irdy='0' then
-							txrgtr0_rdy <= txrgtr0_req;
-							txrgtr1_req <= not txrgtr1_rdy;
-						end if;
-					end if;
-				end if;
-			end process;
-
 			rgtr1_b : block
 				signal src_frm  : std_logic;
 				signal src_irdy : std_logic;
-				signal src_trdy : std_logic;
-				signal dst_trdy : std_logic;
 			begin
-
-				rqst_rgtr1_p : process (sout_clk)
-				begin
-					if rising_edge(sout_clk) then
-						if (src_trdy and txrgtr1_irdy and dst_trdy)='1' then
-							txrgtr1_rdy <= txrgtr1_req;
-							pack_req  <= not pack_rdy;
-						end if;
-					end if;
-				end process;
-
-				src_frm <= (txrgtr1_rdy xor txrgtr1_req);
 
 				dmaio_data <= reverse(
 					to_stdlogicvector(rid_ack)  & x"00" & reverse(ack_rgtr) &
 					to_stdlogicvector(rid_addr) & x"00" & status);
 
 				src_irdy <= txrgtr1_rdy xor txrgtr1_req;
-				dst_trdy <= sout_trdy when (txrgtr1_rdy xor txrgtr1_req)='1' else '0';
+				txrgtr1_trdy <= sout_trdy when (txrgtr1_rdy xor txrgtr1_req)='1' else '0';
 				serlzr_e : entity hdl4fpga.serlzr
 				port map (
 					src_clk  => sout_clk,
-					src_frm  => '0', --src_frm,
 					src_irdy => src_irdy,
-					src_trdy => src_trdy,
+					src_trdy => r1src_trdy,
 					src_data => dmaio_data,
 					dst_clk  => sout_clk,
 					dst_irdy => txrgtr1_irdy,
-					dst_trdy => dst_trdy,
+					dst_trdy => txrgtr1_trdy,
 					dst_data => txrgtr1_data);
 			end block;
 
@@ -661,7 +658,6 @@ begin
 								value := value - 1;
 								if value(value'left)='1' then
 									pack_rdy <= pack_req;
-									sout_rdy <= sout_req;
 								end if;
 							end if;
 						else
