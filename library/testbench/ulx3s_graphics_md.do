@@ -97,13 +97,6 @@ add wave -noupdate -group sio_udp -group sio_flow /testbench/du_e/ipoe_g/mii_e/u
 add wave -noupdate -group sio_udp -group sio_flow /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_trdy
 add wave -noupdate -group sio_udp -group sio_flow -radix hexadecimal -childformat {{/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(0) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(1) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(2) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(3) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(4) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(5) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(6) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(0) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(1) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(2) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(3) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(4) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(5) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(6) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data(7) {-height 20 -radix hexadecimal}} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/tx_data
 add wave -noupdate -group sio_udp -group sio_flow -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/rev_tx_data
-add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr0_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr0_rdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr1_irdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/sodata_irdy
-add wave -noupdate /testbench/du_e/graphics_e/dmacfg_rdy(1)
-add wave -noupdate /testbench/du_e/graphics_e/dmacfg_req(1)
 add wave -noupdate -group app_graphics /testbench/du_e/graphics_e/sin_clk
 add wave -noupdate -group app_graphics /testbench/du_e/graphics_e/sin_frm
 add wave -noupdate -group app_graphics /testbench/du_e/graphics_e/sin_irdy
@@ -191,17 +184,8 @@ add wave -noupdate -group app_graphics -group graphics_e -radix hexadecimal /tes
 add wave -noupdate -group app_graphics -group graphics_e /testbench/du_e/graphics_e/adapter_b/graphics_e/video_frm
 add wave -noupdate -group app_graphics -group graphics_e -divider {New Divider}
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/dev_req(1)
-add wave -noupdate /testbench/du_e/graphics_e/dev_rdy(1)
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/sout_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/sout_rdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr0_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr0_rdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr1_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/txrgtr1_rdy
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/pack_req
-add wave -noupdate /testbench/du_e/graphics_e/sio_b/tx_b/pack_rdy
+add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {8490000000 fs} 0} {{Cursor 2} {33369630480 fs} 0}
 quietly wave cursor active 1
