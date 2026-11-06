@@ -181,7 +181,11 @@ int main (int argc, char *argv[])
 			break;
 		case'u':
 			if (optarg) {
-				sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
+				if (sscanf(optarg,  "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp) != 5 ||
+					colon != ':' || dot != '.') {
+					fprintf(stderr, "invalid USB device specification: %s\n", optarg);
+					return 2;
+				}
 				u = true;
 			}
 			break;

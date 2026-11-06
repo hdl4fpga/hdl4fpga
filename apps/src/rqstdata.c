@@ -52,7 +52,7 @@ int main (int argc, char *argv[])
     	*ptr++ = hton.byte[2];
     	*ptr++ = hton.byte[3];
 		*(short *)buff = ptr-buff-sizeof(short);
-		if (fwrite (buff, sizeof(char), ptr-buff, stdout) < 0) {
+		if (fwrite (buff, sizeof(char), (size_t)(ptr-buff), stdout) != (size_t)(ptr-buff)) {
 			perror("exit\n");
 			exit(-1);
 		}

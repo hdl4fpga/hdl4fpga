@@ -792,7 +792,11 @@ void init_socket (char * hostname)
 	memset (&sa_trgt, 0, sizeof (sa_trgt));
 	sa_trgt.sin_family = AF_INET;
 	sa_trgt.sin_port   = htons(PORT);
-	memcpy (&sa_trgt.sin_addr, host->h_addr, sizeof(sa_trgt.sin_addr));
+	if (!host->h_addr_list || !host->h_addr_list[0]) {
+		fprintf(stderr, "Hostname '%s' has no IPv4 address\n", hostname);
+		exit(1);
+	}
+	memcpy (&sa_trgt.sin_addr, host->h_addr_list[0], sizeof(sa_trgt.sin_addr));
 
 	memset (&sa_host, 0, sizeof (sa_host));
 	sa_host.sin_family = AF_INET;

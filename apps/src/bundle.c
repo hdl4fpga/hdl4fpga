@@ -48,8 +48,10 @@ int main (int argc, char *argv[])
 			pktmd = 1;
 			break;
 		case 'b':
-			if (optarg)
-				sscanf (optarg, "%x", &baddr);
+			if (!optarg || sscanf (optarg, "%x", &baddr) != 1) {
+				fprintf(stderr, "invalid base address: %s\n", optarg ? optarg : "");
+				exit(2);
+			}
 			break;
 		case '?':
 			fprintf (stderr, "usage : bundle -b base_address\n");
@@ -80,7 +82,7 @@ int main (int argc, char *argv[])
 				fprintf (stderr, "buffer size required %ld, buffer size %ld\n", sizeof(buffer), bufptr-buffer+len+1);
 				exit(-1);
 			}
-			if (fread(bufptr, sizeof(char), len+1, stdin) > 0) {
+			if (fread(bufptr, sizeof(char), len+1, stdin) == (size_t)(len+1)) {
 				bufptr += (len+1);
 				switch (rid) {
 				case 0x18:
@@ -123,6 +125,7 @@ int main (int argc, char *argv[])
 					break;
 				}
 			} else {
+				fprintf(stderr, "truncated register record\n");
 				exit(-1);
 			}
 		} else {

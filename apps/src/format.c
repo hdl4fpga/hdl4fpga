@@ -51,7 +51,10 @@ int main (int argc, char *argv[])
 		switch (c) {
 		case 'b':
 			if (optarg){
-				sscanf (optarg, "%d", &bsize);
+				if (sscanf (optarg, "%u", &bsize) != 1) {
+					fprintf(stderr, "invalid buffer size: %s\n", optarg);
+					exit(2);
+				}
 				if (bsize > (BUF_NUM*BUF_SIZE)) {
 					fprintf (stderr, "Maximun buffer_size is %d\n", BUF_NUM*BUF_SIZE);
 					help();
