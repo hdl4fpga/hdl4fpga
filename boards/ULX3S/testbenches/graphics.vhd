@@ -230,8 +230,8 @@ begin
 			    "length:0x0054,"                           &
 					"sa:192.168.0.2,"                      &
 					"da:192.168.0.14},"                    &
-				  "sp:0x0001,"                             &
-				  "dp:0x0002,"                             & 
+				  "sp:0x0099,"                             &
+				  "dp:0x0066,"                             & 
 				"data:0x"                                  &
 					"01007e" &
 					"18ff"   &
@@ -243,6 +243,9 @@ begin
 					"a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf" &
 					"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 					"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
+					"17020000ff"                           & 
+					"160300000000"                         &
+					"ffff"                                 &
 					"},"                                   &
 			"udp:{"                                        &
 				   "mac:{tha:0x00_40_00_01_02_03},"        &
@@ -264,7 +267,7 @@ begin
 		generic map(
 			sha  => "0x00_27_0e_0f_f5_95",
 			data => "{"  &
-				"udp:" & string'(hdo(data)**"[3]") &
+				"udp:" & string'(hdo(data)**"[2]") &
 				"}")
 		port map (
 			req  => rmii_req,

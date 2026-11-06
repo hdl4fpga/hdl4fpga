@@ -145,7 +145,7 @@ architecture mix of app_graphics is
 	signal dmaio_ack      : std_logic_vector(0 to 8-1);
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(32-1 downto 0);
-	signal dmaio_we       : std_logic;
+	alias  dmaio_rd       is dmaio_addr(dmaio_addr'left);
 
 	signal ctlr_frm       : std_logic;
 	signal ctlr_trdy      : std_logic;
@@ -207,7 +207,6 @@ begin
 		signal pyl_frms      : std_logic_vector(0 to length(rids)-1);
 		signal pyl_irdys     : std_logic_vector(pyl_frms'range);
 		signal ack_rgtr      : std_logic_vector(0 to 8-1);
-		signal addr_rgtr     : std_logic_vector(0 to 32-1);
 		signal length_rgtr   : std_logic_vector(24-1 downto 0);
 		signal baddr_rgtr    : std_logic_vector(0 to 24-1);
 
@@ -352,7 +351,7 @@ begin
 				src_data => sin_data,
 				dst_clk  => sin_clk,
 				dst_irdy => dmaio_irdy,
-				dst_data => addr_rgtr);
+				dst_data => dmaio_addr);
 
 			length_frm <= pyl_frms(3) or pyl_irdys(3);
 			length_e : entity hdl4fpga.serlzr
@@ -370,6 +369,7 @@ begin
 				src_frm  => data_frm,
 				src_irdy => data_irdy,
 				src_data => sin_data,
+				dst_clk  => sin_clk,
 				dst_irdy => fifo_irdy,
 				dst_trdy => fifo_trdy,
 				dst_data => data_rgtr);
@@ -377,9 +377,8 @@ begin
 			data_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => fifodata_depth,
-				async_mode => true,
 				latency    => latencies_tab(profile).dmaio,
-				check_sov  => true,
+				check_sov  => false,
 				check_dov  => true)
 			port map (
 				mode(0)  => '1',
@@ -547,8 +546,13 @@ begin
 						when s_rgtr1 =>
 							if (r1src_trdy and txrgtr1_irdy and txrgtr1_trdy)='1' then
 								txrgtr1_rdy <= txrgtr1_req;
-								pack_req    <= not pack_rdy;
-								state := s_data;
+								if dmaio_rd='1' then
+									pack_req <= not pack_rdy;
+									state := s_data;
+								else
+									sout_rdy <= sout_req;
+									state := s_idle;
+								end if;
 							end if;
 						when s_data =>
 							if (pack_req xor pack_rdy)='0' then
@@ -653,14 +657,19 @@ begin
 					variable value : unsigned(data_length'length downto 0) := (others => '1');
 				begin
 					if rising_edge(sout_clk) then
-						if (pack_rdy xor pack_req)='1' then
-							if (pack_irdy and pack_trdy)='1' then
-								value := value - 1;
-								if value(value'left)='1' then
-									pack_rdy <= pack_req;
+						if (sout_rdy xor sout_req)='1' then
+							if (pack_rdy xor pack_req)='1' then
+								if (pack_irdy and pack_trdy)='1' then
+									value := value - 1;
+									if value(value'left)='1' then
+										pack_rdy <= pack_req;
+									end if;
 								end if;
+							else
+								value := resize(data_length, value'length);
 							end if;
 						else
+							pack_rdy <= pack_req;
 							value := resize(data_length, value'length);
 						end if;
 						pack_length <= std_logic_vector(value(8-1 downto 0));
@@ -893,9 +902,9 @@ begin
 
 	dev_req    <= (0 => dmavideo_req,    1 => dmaio_req);
 	dmacfg_req <= (0 => dmacfgvideo_req, 1 => dmacfgio_req);
-	dev_len    <= to_stdlogicvector(to_bitvector(dmavideo_len  & dmaio_len(dmactlr_len'range)));
-	dev_addr   <= to_stdlogicvector(to_bitvector(dmavideo_addr & dmaio_addr(dmactlr_addr'range)));
-	dev_we     <= '0'           & to_stdulogic(to_bit(dmaio_we));
+	dev_len    <= dmavideo_len  & dmaio_len(dmactlr_len'range);
+	dev_addr   <= dmavideo_addr & dmaio_addr(dmactlr_addr'range);
+	dev_we     <= '0'           & not dmaio_rd;
 	(dmacfgvideo_rdy, dmacfgio_rdy) <= to_stdlogicvector(to_bitvector(dmacfg_rdy));
 	(dmavideo_rdy,    dmaio_rdy)    <= to_stdlogicvector(to_bitvector(dev_rdy));
 
