@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include "siolib.h"
 
@@ -39,10 +40,8 @@ int main (int argc, char *argv[])
 {
 
 	int pktmd;
-	int nooutput;
 	pktmd    = 0;
 	opterr   = 0;
-	nooutput = 0;
 
 	setvbuf(stderr, NULL, _IONBF, 0);
 	setvbuf(stdout, NULL, _IONBF, 0);
@@ -72,14 +71,18 @@ int main (int argc, char *argv[])
 			break;
 		case'u':
 			if (optarg) {
-				sscanf(optarg, "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp);
+				if (sscanf(optarg, "%hx%c%hx%c%hhx", &vendor, &colon, &product, &dot, &endp) != 5 ||
+					colon != ':' || dot != '.') {
+					fprintf(stderr, "invalid USB device specification: %s\n", optarg);
+					return 2;
+				}
 				u = true;
 			}
 			break;
 		case '?':
 			exit(1);
 		default:
-			fprintf (stderr, "usage : siosend [ -l ] [ -o ] [ -p ] [ -h hostname ]\n");
+			fprintf (stderr, "usage : siosend [ -l ] [ -p ] [ -h hostname ] [ -u vendor:product.endp ]\n");
 			exit(-1);
 		}
 	}
@@ -129,12 +132,15 @@ int main (int argc, char *argv[])
 			fprintf (stderr, ">>> READING PACKET <<<\n");
 		}
 		if (pktmd) {
-			n = fread(&length, sizeof(unsigned short), 1, stdin);
+			uint8_t length_bytes[2];
+			n = fread(length_bytes, sizeof(length_bytes), 1, stdin);
 			if (n == 1) {
+				length = (short unsigned) length_bytes[0] |
+					((short unsigned) length_bytes[1] << 8);
 				if (log) {
 					fprintf (stderr, "Packet length %d\n", length);
 				}
-				totaldata += n;
+				totaldata += sizeof(length_bytes);
 			} else {
 				if (!feof(stdin)) {
 					fprintf(stderr, "Failed to read packet length\n");
@@ -164,7 +170,7 @@ int main (int argc, char *argv[])
 				for (int i=0; i < n; i++) {
 					fprintf (stderr, "%02x", buffer[i]);
 				}
-				fprintf (stderr, "\n", n);
+				fprintf (stderr, "\n");
 			}
 
 			length = n;
@@ -175,7 +181,7 @@ int main (int argc, char *argv[])
 				abort();
 			}
 
-			queue_in = sio_request(buffer, length);
+			queue_in = sio_request((char *) buffer, length);
 			sio_dump (stdout, queue_in);
 			delete_queue(queue_in);
 		} else  {

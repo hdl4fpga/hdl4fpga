@@ -27,17 +27,17 @@ SETUART="YES"
 STDOUT="YES"
 export TTY SPEED PKMODE DEVFD SETUART STDOUT
 
-if [ "${STDOUT}" == "NO" ] ; then
+if [ "${STDOUT:-YES}" = "NO" ] ; then
 	STDOUT="-o"
 else
 	unset STDOUT
 fi
 
-if [ "${LOG}" == "YES" ] ; then
+if [ "${LOG:-}" = "YES" ] ; then
 	LOG="-l 3"
 fi
 
-if [ "$HOST" == "" ] ; then
+if [ "${HOST:-}" = "" ] ; then
 	if [ "${SETUART}" == "YES" ] ; then
 		export TTY SPEED 
 		./scripts/setuart.sh

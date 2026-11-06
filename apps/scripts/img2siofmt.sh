@@ -30,5 +30,5 @@ if  [ "${PKTMD}" = "PKT" ] ; then
 	POPT="-p"
 fi
 
-echo Converting "${IMAGE}" to "${WIDTH}" pixel wide 1>&2
-convert - -resize "${WIDTH}" -size "${WIDTH}" rgb:- |./bin/rgb8topixel -f ${PIXEL}|./bin/format -b "${BSIZE}"|./bin/bundle -b "${BADDR}" "${POPT}"
+echo Converting "${IMAGE:-stdin}" to "${WIDTH}" pixel wide 1>&2
+convert - -resize "${WIDTH}" -size "${WIDTH}" rgb:- | ./bin/rgb8topixel -f "${PIXEL}" | ./bin/format -b "${BSIZE}" | ./bin/bundle -b "${BADDR}" ${POPT:+"${POPT}"}

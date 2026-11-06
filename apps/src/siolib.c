@@ -359,15 +359,16 @@ int socket_send(char * data, int len)
 {
 	if (sendto(sckt, data, len, 0, (struct sockaddr *) &sa_trgt, sl_trgt) == -1) {
 		perror ("sending packet");
-		abort();
+		return -1;
 	}
 	pkt_sent++;
+	return len;
 }
 
 void uart_send(char *data, int len, FILE *comm)
 {
 #ifndef __WIN32
-	if (fwrite (data, sizeof(char), len, comm) < 0) {
+	if (fwrite (data, sizeof(char), len, comm) != (size_t) len) {
 		abort();
 	}
 #else
@@ -418,7 +419,6 @@ int hdlc_esc(char *data, int len)
 
 int hdlc_send(char * data, int len)
 {
-	int  i;
 	char eof[1] = { 0x7e };
 	u16  fcs;
 
@@ -933,7 +933,7 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 		while(sio_init(0));
 	}
 
-	(ack = (ack += 1) % 0x40);
+	ack = (ack + 1) % 0x40;
 	if (LOG0) {
 		fprintf (stderr, ">>> SENDING PACKET <<<\n");
 	}
@@ -994,7 +994,7 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 					delete_queue(queue_out);
 
 					if (data & 0x80000000L) {
-						(ack = (ack += 1) % 0x40);
+					ack = (ack + 1) % 0x40;
 					} else {
 						break;
 					}
@@ -1057,13 +1057,14 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 		if (LOG1) {
 			fprintf (stderr, "\tsending new acknowlege\n");
 		}
-		set_acknode(ack_out, (ack = (ack += 1) % 0x40), 0x0);
+		ack = (ack + 1) % 0x40;
+		set_acknode(ack_out, ack, 0x0);
 		send_rgtr(ack_out);
 
 		for (;;) {
 			queue_in = rcvd_rgtr();
 			if (queue_in) {
-				if (ack_in = lookup(RGTRACK_ID, queue_in)) {
+				if ((ack_in = lookup(RGTRACK_ID, queue_in)) != NULL) {
 					if (((ack ^ rgtr2int(ack_in)) & 0x3f) == 0)
 						break;
 					else
@@ -1085,8 +1086,6 @@ struct rgtr_node *sio_request (char *buffer, size_t length)
 void sio_dump (FILE *fout, struct rgtr_node *queue_in)
 {
 	while(queue_in) {
-		struct rgtr_node *node;
-
 		if (fout && queue_in->rgtr->id != RGTR0_ID) {
 			fputc(queue_in->rgtr->id, fout);
 			fputc(queue_in->rgtr->len, fout);
@@ -1094,7 +1093,6 @@ void sio_dump (FILE *fout, struct rgtr_node *queue_in)
 				fputc(queue_in->rgtr->data[i], fout);
 			}
 		}
-		node = queue_in;
 		queue_in = queue_in->next;
 	}
 }

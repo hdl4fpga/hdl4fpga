@@ -27,13 +27,13 @@ DEVFD="${DEVFD:-3}"
 STDOUT="YES"
 export TTY SPEED PKMODE DEVFD STDOUT HOST
 
-ADDR="${ADDR:-${1}}"
+ADDR="${ADDR:-${1:-0}}"
 ADDR="${ADDR:-0}"
 ADDR="$((${ADDR} | (1 << 31)))"
 ADDR=`printf %08x ${ADDR}`
 ADDR="${ADDR: -8}"
 
-LENGTH="${LENGTH:-${2}}"
+LENGTH="${LENGTH:-${2:-0}}"
 LENGTH="${LENGTH:-0}"
 LENGTH=`printf %06x $(( ${LENGTH} ))`
 LENGTH="${LENGTH: -6}"

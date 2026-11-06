@@ -27,16 +27,26 @@ DEVFD="${DEVFD:-3}"
 STDOUT="YES"
 export TTY SPEED PKMODE DEVFD STDOUT HOST
 
-ADDR="${ADDR:-${1}}"
+ADDR="${ADDR:-${1:-0}}"
 ADDR="${ADDR:-0}"
 ADDR="$((${ADDR} & ~(1 << 31)))"
-ADDR=`printf %08x ${ADDR}`
-ADDR="${ADDR: -8}"
+ADDR=$(printf '%08x' "${ADDR}")
 
-LENGTH="${LENGTH:-${#2}}"
+DATA_ARG="${2:-}"
+case "$DATA_ARG" in
+	''|*[!0123456789abcdefABCDEF]*)
+		echo "usage: $0 address hexadecimal-data" >&2
+		exit 2
+		;;
+esac
+if [ $(( ${#DATA_ARG} % 2 )) -ne 0 ]; then
+	echo "write.sh: hexadecimal data must contain an even number of digits" >&2
+	exit 2
+fi
+LENGTH="${LENGTH:-${#DATA_ARG}}"
 LENGTH="${LENGTH:-0}"
-LEN=`printf %02x $(( ${LENGTH}/2-1 ))`
-LENGTH=`printf %06x 0x${LEN}`
-DATA=`echo -n "18${LEN}${2}1702${LENGTH}1603${ADDR}"`
+LEN=$(printf '%02x' $(( LENGTH/2-1 )))
+LENGTH=$(printf '%06x' "0x${LEN}")
+DATA="18${LEN}${DATA_ARG}1702${LENGTH}1603${ADDR}"
 echo $ADDR':'$LENGTH ' : ' "${DATA}"
 echo  "${DATA}"|xxd -r -ps|./scripts/siocomm.sh |xxd -ps| tr -d '\n'
