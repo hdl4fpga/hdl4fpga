@@ -139,11 +139,14 @@ begin
 
 		alias sp_frm   is udprx_frms(0);
 		alias dp_frm   is udprx_frms(1);
-		alias pyl_frm  is udprx_frms(4);
+--		alias pyl_frm  is udprx_frms(4);
+		signal pyl_frm : std_logic;
 
 		alias sp_irdy  is udprx_irdys(0);
 		alias dp_irdy  is udprx_irdys(1);
-		alias pyl_irdy is udprx_irdys(4);
+		alias len_irdy is udprx_irdys(2);
+		--alias pyl_irdy is udprx_irdys(4);
+		signal pyl_irdy : std_logic;
 
 		signal mode    : std_logic_vector(0 to 2-1) := "00";
 		signal rx_frm  : std_logic;
@@ -166,6 +169,28 @@ begin
 			irdys => udprx_irdys,
 			trdys => udprx_trdys);
 		udprx_trdys <= (others => rx_trdy);
+
+		process (udprx_frms(4), udprx_irdys(4), miirx_clk)
+			variable cntr : unsigned(0 to hdo(frames)**".format.udp.length"-1);
+		begin
+			if rising_edge(miirx_clk) then
+				if len_irdy='1' then
+					cntr (0 to udprx_data'length-1) := reverse(udprx_data);
+					cntr := rotate_left(cntr, udprx_data'length);
+				elsif pyl_irdy='1' then
+					if cntr > summation(udprx_frame) then
+						cntr := cntr - 1;
+					end if;
+				end if;
+			end if;
+			if cntr > summation(udprx_frame) then
+				pyl_frm  <= udprx_frms(4);
+				pyl_irdy <= udprx_irdys(4);
+			else
+				pyl_frm  <= '0';
+				pyl_irdy <= '0';
+			end if;
+		end process;
 
 		process (miirx_clk)
 			variable shr_data : unsigned(0 to rx_data'length-1);
