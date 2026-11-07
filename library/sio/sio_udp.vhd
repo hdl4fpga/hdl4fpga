@@ -178,12 +178,12 @@ begin
 		variable sb  : std_logic;
 	begin
 		if rising_edge(miirx_clk) then
-			if pylrx_frm='1' then
-				if fcs_sb='1' then
-					vld := fcs_vld;
-					sb  := '1';
-				end if;
-			else
+			if fcs_sb='1' then
+				vld := fcs_vld;
+				sb  := '1';
+			elsif sb='0' then
+				pylfcs_vld <= '0';
+			elsif pylrx_frm='0' then
 				pylfcs_vld <= vld;
 				pylfcs_sb  <= sb;
 				vld := '0';

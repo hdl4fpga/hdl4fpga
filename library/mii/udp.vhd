@@ -171,19 +171,25 @@ begin
 		udprx_trdys <= (others => rx_trdy);
 
 		process (udprx_frms(4), udprx_irdys(4), miirx_clk)
-			variable cntr : unsigned(0 to hdo(frames)**".format.udp.length"-1);
+			variable cntr : unsigned(0 to hdo(frames)**".format.udp.length"+unsigned_num_bits(8/udprx_data'length-1)-1);
+			alias    shr  is cntr(0 to hdo(frames)**".format.udp.length"-1);
+
 		begin
 			if rising_edge(miirx_clk) then
-				if len_irdy='1' then
-					cntr (0 to udprx_data'length-1) := reverse(udprx_data);
-					cntr := rotate_left(cntr, udprx_data'length);
+				if udprx_frm='0' then
+					cntr := (others => '0');
+				elsif len_irdy='1' then
+					shr := reverse(shr,8);
+					shr (0 to udprx_data'length-1) := unsigned(udprx_data);
+					shr := rotate_left(shr, udprx_data'length);
+					shr := reverse(shr,8);
 				elsif pyl_irdy='1' then
-					if cntr > summation(udprx_frame) then
+					if cntr > summation(udprx_frame)/udprx_data'length then
 						cntr := cntr - 1;
 					end if;
 				end if;
 			end if;
-			if cntr > summation(udprx_frame) then
+			if cntr > summation(udprx_frame)/udprx_data'length then
 				pyl_frm  <= udprx_frms(4);
 				pyl_irdy <= udprx_irdys(4);
 			else

@@ -225,7 +225,7 @@ begin
 
 		ram1_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => x"10")
+			bitdata => x"99")
 --			bitdata => (0 to 8-1 => '-'))
 		port map (
 			si_clk  => rx_clk,
@@ -239,7 +239,7 @@ begin
 
 		ram2_i : entity hdl4fpga.sio_ram
 		generic map (
-			bitdata => x"90")
+			bitdata => x"99")
 			--bitdata => (0 to 8-1 => '-'))
 		port map (
 			si_clk  => rx_clk,

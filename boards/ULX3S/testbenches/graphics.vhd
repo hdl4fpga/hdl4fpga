@@ -232,6 +232,7 @@ begin
 					"da:192.168.0.14},"                    &
 				  "sp:0x0099,"                             &
 				  "dp:0x0066,"                             & 
+				  "length:0xff,"                         &
 				"data:0x"                                  &
 					"01007e" &
 					"18ff"   &
@@ -245,21 +246,21 @@ begin
 					"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 					"17020000ff"                           & 
 					"160300000000"                         &
-					"ffff"                                 &
 					"},"                                   &
 			"udp:{"                                        &
 				   "mac:{tha:0x00_40_00_01_02_03},"        &
 				  "ipv4:{"                                 &
-			    "length:0x0054,"                           &
-					"sa:192.168.0.2,"                      &
-					"da:192.168.0.14},"                    &
+			        "length:0x0054,"                       &
+					    "sa:192.168.0.2,"                  &
+					    "da:192.168.0.14},"                &
+--				  "length:0x0016,"                         &
+				  "length:0x000b,"                         &
 				  "sp:0x0099,"                             &
 				  "dp:0x0066,"                             & 
 				"data:0x"                                  &
-					"010011"                               &
-					"17020000ff"                           & 
-					"160380000000"                         &
-					"ffff"                                 &
+					"010099"                               &
+--					"1702000000"                           & 
+--					"160380000080"                         &
 					"}}";
 
 	begin
@@ -267,7 +268,7 @@ begin
 		generic map(
 			sha  => "0x00_27_0e_0f_f5_95",
 			data => "{"  &
-				"udp:" & string'(hdo(data)**"[2]") &
+				"udp:" & string'(hdo(data)**"[3]") &
 				"}")
 		port map (
 			req  => rmii_req,
