@@ -364,8 +364,6 @@ begin
 
 			dmaio_len <= std_logic_vector(resize(shift_right(unsigned(length_rgtr), blword_bits), dmaio_len'length));
 			datain_e : entity hdl4fpga.serlzr
-			generic map (
-				lsdfirst => false)
 			port map (
 				src_clk  => sin_clk,
 				src_frm  => data_frm,
@@ -690,6 +688,8 @@ begin
 				serlzr_frm  <= (pack_req xor pack_rdy) and fifo_irdy;
 				serlzr_irdy <= serlzr_frm;
 				serlzr_e : entity hdl4fpga.serlzr
+				generic map (
+					lsdfirst => false)
 				port map (
 					src_clk  => sout_clk,
 					src_frm  => serlzr_frm,
@@ -734,7 +734,7 @@ begin
 					xxx_data     when ((txrgtr0_rdy xor txrgtr0_req) and xxx_xxx)='1' else
 					txrgtr0_data when (txrgtr0_rdy xor txrgtr0_req)='1' else
 					txrgtr1_data when (txrgtr1_rdy xor txrgtr1_req)='1' else
-					sodata_data  when (pack_rdy    xor pack_req)='1'    else
+					reverse(sodata_data,8)  when (pack_rdy    xor pack_req)='1'    else
 					(sout_data'range => '-');
 
 			end block;
