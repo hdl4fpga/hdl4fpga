@@ -232,7 +232,7 @@ begin
 					"da:192.168.0.14},"                    &
 				  "sp:0x0099,"                             &
 				  "dp:0x0066,"                             & 
-				  "length:0xff,"                         &
+				  "length:0x0118,"                         &
 				"data:0x"                                  &
 					"01007e" &
 					"18ff"   &
@@ -268,7 +268,7 @@ begin
 		generic map(
 			sha  => "0x00_27_0e_0f_f5_95",
 			data => "{"  &
-				"udp:" & string'(hdo(data)**"[3]") &
+				"udp:" & string'(hdo(data)**"[2]") &
 				"}")
 		port map (
 			req  => rmii_req,

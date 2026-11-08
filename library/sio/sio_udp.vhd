@@ -183,6 +183,7 @@ begin
 				sb  := '1';
 			elsif sb='0' then
 				pylfcs_vld <= '0';
+				pylfcs_sb  <= '0';
 			elsif pylrx_frm='0' then
 				pylfcs_vld <= vld;
 				pylfcs_sb  <= sb;

@@ -192,7 +192,7 @@ begin
 		begin
 			if rising_edge(rx_clk) then
 				if fcs_sb='1' then
-					if (fcs_vld and not dup_equ)='1' then
+					if ((fcs_sb and fcs_vld ) and not dup_equ)='1' then
 						ram_t <= not ram_t;
 					end if;
 					dup_equ <= '0';
@@ -273,8 +273,8 @@ begin
 		begin
 
 			mode <= 
-				"10" when (fcs_sb and     (fcs_vld and dup_equ))='1' else
-				"00" when (fcs_sb and not (fcs_vld and dup_equ))='1' else
+				"10" when ((fcs_sb and     fcs_vld) and dup_equ)='1' else
+				"00" when ((fcs_sb and not fcs_vld) and dup_equ)='1' else
 				"11";
 
 			length_i : entity hdl4fpga.sio_mux

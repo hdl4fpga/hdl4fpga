@@ -364,6 +364,8 @@ begin
 
 			dmaio_len <= std_logic_vector(resize(shift_right(unsigned(length_rgtr), blword_bits), dmaio_len'length));
 			datain_e : entity hdl4fpga.serlzr
+			generic map (
+				lsdfirst => false)
 			port map (
 				src_clk  => sin_clk,
 				src_frm  => data_frm,
@@ -469,7 +471,7 @@ begin
 
 			trans_length   <= unsigned(length_rgtr(trans_length'range));
 			payload_length <= 
-				status_size + header_length + data_length when status_rw='1' else
+				status_size + header_length + data_length when dmaio_rd='1' else
 				status_size;
 
 			xxx_b : block
@@ -534,13 +536,13 @@ begin
 							if (sout_rdy xor sout_req)='1' then
 								if (dmaio_req xor dmaio_rdy)='0' then
 									txrgtr0_req <= not txrgtr0_rdy;
+									txrgtr1_req <= not txrgtr1_rdy;
 									state := s_rgtr0;
 								end if;
 							end if;
 						when s_rgtr0 =>
 							if txrgtr0_irdy='0' then
 								txrgtr0_rdy <= txrgtr0_req;
-								txrgtr1_req <= not txrgtr1_rdy;
 								state := s_rgtr1;
 							end if;
 						when s_rgtr1 =>
@@ -580,7 +582,10 @@ begin
 					to_stdlogicvector(rid_addr) & x"00" & status);
 
 				src_irdy <= txrgtr1_rdy xor txrgtr1_req;
-				txrgtr1_trdy <= sout_trdy when (txrgtr1_rdy xor txrgtr1_req)='1' else '0';
+				txrgtr1_trdy <= 
+					'0'       when (txrgtr0_rdy xor txrgtr0_req)='1' else
+					sout_trdy when (txrgtr1_rdy xor txrgtr1_req)='1' else
+					'0';
 				serlzr_e : entity hdl4fpga.serlzr
 				port map (
 					src_clk  => sout_clk,

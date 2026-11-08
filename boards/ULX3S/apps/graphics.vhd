@@ -146,7 +146,7 @@ begin
 
 	hdlc_g : if io_link="io_hdlc" generate
 		constant uart_freq : real := 30.0e6;
-		signal uart_clk : std_logic;
+		signal uart_clk : std_logic := '0';
 	begin
 
 		nodebug_g : if not debug generate
@@ -155,8 +155,8 @@ begin
 		end generate;
 
 		debug_g : if debug generate
-			uart_clk <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
-			sio_clk  <= not to_stdulogic(to_bit(uart_clk)) after 0.1 ns /2;
+			uart_clk <= not uart_clk after 0.1 ns /2;
+			sio_clk  <= not uart_clk after 0.1 ns /2;
 		end generate;
 
 		hdlc_e : entity hdl4fpga.link_hdlc
