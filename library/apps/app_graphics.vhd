@@ -307,8 +307,31 @@ begin
 					end if;
 				end process;
 
-				mode(0)  <= ctlr_inirdy and (frm or     irdy);
-				mode(1)  <= ctlr_inirdy and (frm or not irdy);
+				process (frm, irdy, sin_clk)
+					type states is (s_flush, s_commit);
+					variable state : states;
+				begin
+					if rising_edge(sin_clk) then
+						if ctlr_inirdy='0' then 
+							mode(0) <= '0';
+						elsif (frm or irdy)='0' then
+							state := s_flush;
+						else
+							case state is
+							when s_flush =>
+							when s_commit =>
+
+							mode(0) <= '0';
+						else
+						end if;
+						and (frm or     irdy); 
+						mode(0)  <= ctlr_inirdy and (frm or     irdy);
+					end if;
+					case state is
+					when s_flush =>
+						mode(0) <= not (frm or irdy);
+				end process;
+				mode(1)  <= '0'; --ctlr_inirdy and (frm or not irdy);
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (8*64)/sin_data'length,

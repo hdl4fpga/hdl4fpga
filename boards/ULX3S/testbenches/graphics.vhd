@@ -179,7 +179,7 @@ architecture ulx3s_graphics of testbench is
 
 	alias rmii_mdc    is gp(13);
 	alias rmii_mdio   is gn(13);
-	constant delay : time := 25 us;
+	constant delay : time := 100 ns;
 
 begin
 
