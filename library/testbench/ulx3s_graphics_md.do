@@ -12,8 +12,6 @@ quietly virtual signal -install /testbench/du_e/graphics_e { (context /testbench
 quietly virtual signal -install /testbench/du_e/graphics_e/sio_b/rx_b/data_e { (context /testbench/du_e/graphics_e/sio_b/rx_b/data_e )( src_data(0) & src_data(1) & src_data(2) & src_data(3) & src_data(4) & src_data(5) & src_data(6) & src_data(7) & src_data(8) & src_data(9) & src_data(10) & src_data(11) & src_data(12) & src_data(13) & src_data(14) & src_data(15) )} rev_srcdata
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -divider {CGA CODE}
-add wave -noupdate /testbench/du_e/monitor_g/ser_debug_e/ser_display_e/cga_adapter_e/cga_we
-add wave -noupdate -radix ascii /testbench/du_e/monitor_g/ser_debug_e/ser_display_e/cga_adapter_e/cga_data
 add wave -noupdate -divider RX
 add wave -noupdate /testbench/rmii_clk
 add wave -noupdate /testbench/rmii_rxdv
@@ -198,10 +196,11 @@ add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/data_e/dst_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/data_e/dst_trdy
 add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/rx_b/data_e/dst_data
 add wave -noupdate -divider {New Divider}
+add wave -noupdate -expand /testbench/du_e/graphics_e/sio_b/rx_b/rgtr0_b/mode
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {53370000000 fs} 0} {{Cursor 2} {65246000000 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {26768847340 fs} 0} {{Cursor 2} {65246000000 fs} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 255
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -216,4 +215,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {42035 ns} {56735 ns}
+WaveRestoreZoom {26637812500 fs} {27622187500 fs}
