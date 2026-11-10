@@ -179,10 +179,11 @@ architecture ulx3s_graphics of testbench is
 
 	alias rmii_mdc    is gp(13);
 	alias rmii_mdio   is gn(13);
+	constant delay : time := 25 us;
 
 begin
 
-	fire1 <= '0', '1' after 100 ns, '0' after 200 ns;
+	fire1 <= '0', '1' after delay, '0' after delay + 100 ns;
 	fire2 <= '0', '0' after 100 ns;
 	clk_25mhz  <= not clk_25mhz  after 20 ns;
 	mii_refclk <= not mii_refclk after 1000 ns / 50 /2;

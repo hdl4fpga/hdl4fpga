@@ -377,9 +377,8 @@ begin
 			data_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => fifodata_depth,
-				latency    => latencies_tab(profile).dmaio,
-				check_sov  => false,
-				check_dov  => true)
+				latency    => 0, --latencies_tab(profile).dmaio,
+				check_sov  => false)
 			port map (
 				mode(0)  => '1',
 				mode(1)  => '0',
@@ -390,7 +389,6 @@ begin
 				src_data => data_rgtr,
 
 				dst_clk  => ctlr_clk,
-				dst_irdy => ctlr_di_rdy,
 				dst_trdy => ctlr_di_req,
 				dst_data => ctlr_di);
 

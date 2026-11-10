@@ -190,8 +190,8 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_clk
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_irdy
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_trdy
-add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/rx_b/data_e/rev_srcdata
 add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(15) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(14) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(13) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(12) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(11) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(10) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(9) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(8) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(7) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(6) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(5) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(4) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(3) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(2) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(1) -radix hexadecimal} {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(0) -radix hexadecimal}} -subitemconfig {/testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(15) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(14) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(13) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(12) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(11) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(10) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(9) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(8) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(7) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(6) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(5) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(4) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(3) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(2) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(1) {-radix hexadecimal} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data(0) {-radix hexadecimal}} /testbench/du_e/graphics_e/sio_b/rx_b/data_e/src_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/rx_b/data_e/rev_srcdata
 add wave -noupdate -divider {New Divider}
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/data_e/dst_clk
 add wave -noupdate /testbench/du_e/graphics_e/sio_b/rx_b/data_e/dst_irdy
@@ -200,8 +200,8 @@ add wave -noupdate -radix hexadecimal /testbench/du_e/graphics_e/sio_b/rx_b/data
 add wave -noupdate -divider {New Divider}
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {5999166320 fs} 0} {{Cursor 2} {32336430790 fs} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {33363801130 fs} 0} {{Cursor 2} {32359434400 fs} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 255
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -216,4 +216,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {30480916500 fs} {34136229 ps}
+WaveRestoreZoom {33135344090 fs} {33592258170 fs}

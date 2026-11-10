@@ -100,7 +100,7 @@ architecture graphics of ulx3s is
 	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(0 to 8-1);
 
-	constant monitor       : boolean := true;
+	constant monitor       : boolean := false;
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
 	signal ser_irdy        : std_logic :='1';
