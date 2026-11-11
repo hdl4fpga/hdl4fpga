@@ -487,8 +487,9 @@ begin
 			'0';
 
 		mode <= 
-			"10" when (fcs_sb and     (fcs_vld and  not dup_equ))='1' else
-			"00" when (fcs_sb and not (fcs_vld and  not dup_equ))='1' else
+			"00" when (fcs_sb and not fcs_vld)='1' else
+			"00" when (fcs_sb and     fcs_vld and     dup_equ)='1' else
+			"10" when (fcs_sb and     fcs_vld and not dup_equ)='1' else
 			"11";
 
 		fifo_i : entity hdl4fpga.fifo
