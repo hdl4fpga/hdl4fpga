@@ -406,7 +406,7 @@ begin
 				latency    => 0, --latencies_tab(profile).dmaio,
 				check_sov  => false)
 			port map (
-				mode(0)  => '1',
+				mode(0)  => mode0,
 				mode(1)  => '0',
 
 				src_clk  => sin_clk,
