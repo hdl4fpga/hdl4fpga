@@ -145,7 +145,7 @@ architecture mix of app_graphics is
 	signal dmaio_ack      : std_logic_vector(0 to 8-1);
 	signal dmaio_len      : std_logic_vector(dmactlr_len'range);
 	signal dmaio_addr     : std_logic_vector(32-1 downto 0);
-	alias  dmaio_rd       is dmaio_addr(dmaio_addr'left);
+	signal dmaio_rd       : std_logic;
 
 	signal ctlr_frm       : std_logic;
 	signal ctlr_trdy      : std_logic;
@@ -207,6 +207,7 @@ begin
 		signal pyl_frms      : std_logic_vector(0 to length(rids)-1);
 		signal pyl_irdys     : std_logic_vector(pyl_frms'range);
 		signal ack_rgtr      : std_logic_vector(0 to 8-1);
+		signal addr_rgtr     : std_logic_vector(0 to dmaio_addr'length-1);
 		signal length_rgtr   : std_logic_vector(24-1 downto 0);
 		signal baddr_rgtr    : std_logic_vector(0 to 24-1);
 
@@ -273,10 +274,34 @@ begin
 			signal frm         : std_logic;
 			signal irdy        : std_logic;
 			signal ack_trdy    : std_logic;
+			signal mode0    : std_logic;
 		begin
 			
+			process (sin_frm, sin_irdy, sin_clk)
+				type states is (s_flush, s_commit);
+				variable state : states;
+			begin
+				if rising_edge(sin_clk) then
+					case state is
+					when s_flush =>
+						if (sin_frm or sin_irdy)='1' then
+							state := s_commit;
+						end if;
+					when s_commit =>
+						if (sin_frm or sin_irdy)='0' then
+							state := s_flush;
+						end if;
+					end case;
+				end if;
+				case state is
+				when s_flush =>
+					mode0 <= not (sin_frm or sin_irdy);
+				when s_commit =>
+					mode0 <= '1';
+				end case;
+			end process;
+
 			rgtr0_b : block
-				signal mode     : std_logic_vector(0 to 2-1);
 				signal dst_trdy : std_logic;
 			begin
 
@@ -307,39 +332,15 @@ begin
 					end if;
 				end process;
 
-				process (frm, irdy, sin_clk)
-					type states is (s_flush, s_commit);
-					variable state : states;
-				begin
-					if rising_edge(sin_clk) then
-						if ctlr_inirdy='0' then 
-							mode(0) <= '0';
-						elsif (frm or irdy)='0' then
-							state := s_flush;
-						else
-							case state is
-							when s_flush =>
-							when s_commit =>
-
-							mode(0) <= '0';
-						else
-						end if;
-						and (frm or     irdy); 
-						mode(0)  <= ctlr_inirdy and (frm or     irdy);
-					end if;
-					case state is
-					when s_flush =>
-						mode(0) <= not (frm or irdy);
-				end process;
-				mode(1)  <= '0'; --ctlr_inirdy and (frm or not irdy);
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (8*64)/sin_data'length,
 					latency   => latencies_tab(profile).dmaio,
-					check_sov => true,
+					check_sov => false,
 					check_dov => true)
 				port map (
-					mode     => mode,
+					mode(0)  => mode0,
+					mode(1)  => '0',
 
 					src_clk  => sin_clk,
 					src_irdy => irdy,
@@ -374,7 +375,9 @@ begin
 				src_data => sin_data,
 				dst_clk  => sin_clk,
 				dst_irdy => dmaio_irdy,
-				dst_data => dmaio_addr);
+				dst_data => addr_rgtr);
+			dmaio_addr <= std_logic_vector(shift_right(unsigned('0' & addr_rgtr(1 to addr_rgtr'right)), word_bits));
+			dmaio_rd <= addr_rgtr(0);
 
 			length_frm <= pyl_frms(3) or pyl_irdys(3);
 			length_e : entity hdl4fpga.serlzr

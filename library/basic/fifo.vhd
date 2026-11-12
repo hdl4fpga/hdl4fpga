@@ -136,6 +136,7 @@ begin
 		severity FAILURE;
 
 	wr_ena <= 
+		src_irdy              when mode="00" else
 		src_irdy and src_trdy when check_sov else
 		src_irdy;
 
@@ -150,7 +151,9 @@ begin
 
 	begin
 
-		waddr <= std_logic_vector(wr_cntr(addr_range)); -- GHDL annoyance
+		waddr <= std_logic_vector(rd_cntr(addr_range)) when mode="00" else
+				 std_logic_vector(wr_cntr(addr_range)); -- GHDL annoyance
+--		waddr <= std_logic_vector(wr_cntr(addr_range)); -- GHDL annoyance
 		raddr <= std_logic_vector(rd_cntr(addr_range)); -- GHDL annoyance
 		wdata <= src_data;
 		mem_e : entity hdl4fpga.dpram(def)
@@ -369,6 +372,9 @@ begin
 				if async_mode then
 					wr_cntr <= unsigned(rd_cmp);
 					wr_ptr  <= unsigned(rd_cmp);
+				elsif src_irdy='1' then
+					wr_cntr <= rd_cntr + 1;
+					wr_ptr  <= rd_cntr + 1;
 				else
 					wr_cntr <= rd_cntr;
 					wr_ptr  <= rd_cntr;

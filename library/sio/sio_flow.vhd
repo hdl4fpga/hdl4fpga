@@ -273,9 +273,10 @@ begin
 		begin
 
 			mode <= 
-				"10" when ((fcs_sb and     fcs_vld) and dup_equ)='1' else
-				"00" when ((fcs_sb and not fcs_vld) and dup_equ)='1' else
-				"11";
+				"11" when  fcs_sb='0' else
+				"00" when fcs_vld='0' else
+				"00" when dup_equ='0' else
+				"10";
 
 			length_i : entity hdl4fpga.sio_mux
 			port map (
@@ -487,10 +488,10 @@ begin
 			'0';
 
 		mode <= 
-			"00" when (fcs_sb and not fcs_vld)='1' else
-			"00" when (fcs_sb and     fcs_vld and     dup_equ)='1' else
-			"10" when (fcs_sb and     fcs_vld and not dup_equ)='1' else
-			"11";
+			"11" when  fcs_sb='0' else
+			"00" when fcs_vld='0' else
+			"00" when dup_equ='1' else
+			"10";
 
 		fifo_i : entity hdl4fpga.fifo
 		generic map (
