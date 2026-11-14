@@ -403,8 +403,7 @@ begin
 			data_e : entity hdl4fpga.fifo
 			generic map (
 				max_depth  => fifodata_depth,
-				latency    => 0, --latencies_tab(profile).dmaio,
-				check_sov  => false)
+				latency    => 0) --latencies_tab(profile).dmaio,
 			port map (
 				mode(0)  => mode0,
 				mode(1)  => '0',
@@ -457,7 +456,7 @@ begin
 			signal pack_req       : std_logic := '0';
 			signal pack_rdy       : std_logic := '0';
 
-			signal r1src_trdy : std_logic;
+			signal r1src_trdy     : std_logic;
 			signal txrgtr1_irdy   : std_logic;
 			signal txrgtr1_trdy   : std_logic;
 			signal txrgtr1_data   : std_logic_vector(sout_data'range);
@@ -468,7 +467,7 @@ begin
 			signal payload_length : unsigned(trans_length'range);
 			signal data_length    : unsigned(trans_length'range);
 			signal header_length  : unsigned(trans_length'range);
-			constant status_size   : unsigned := to_unsigned(dmaio_data'length/sout_data'length, trans_length'length);
+			constant status_size  : unsigned := to_unsigned(dmaio_data'length/sout_data'length, trans_length'length);
 
 			signal xxx_xxx : std_logic;
 			signal xxx_data : std_logic_vector(sout_data'range);
@@ -656,7 +655,6 @@ begin
 					d => (0 to dmaso_data'length-1 => dma_lat))
 				port map (
 					clk => ctlr_clk,
---					di  => x"c480", --dma_do,
 					di  => dma_do,
 					do  => dmaso_data);
 
