@@ -129,7 +129,15 @@ architecture def of fifo is
 
 	signal feed_ena  : std_logic;
 
+	signal mode_dst  : std_logic_vector(mode'range);
 begin
+
+	process(dst_clk)
+	begin
+		if rising_edge(dst_clk) then
+			mode_dst <= mode;
+		end if;
+	end process;
 
 	assert max_depth=2**addr_length
 		report "fifo_depth should be a power of 2"
@@ -188,7 +196,7 @@ begin
 				if rising_edge(dst_clk) then
 					b := b_reg;			-- Xilinx XST confuses b with latches if it's not copied from a signal
 
-					if mode=flush then
+					if mode_dst=flush then
 						b := (others => '0');
 					elsif to_bit(b(b'right))='0' then
 						if dst_irdy1='0' then
@@ -235,7 +243,7 @@ begin
 					slr(rdata'range) := unsigned(rdata);
 					slr := slr rol rdata'length;
 
-					if mode=flush then
+					if mode_dst=flush then
 						q := (others => '0');
 						v := (others => '0');
 					else
@@ -278,7 +286,7 @@ begin
 				dstirdy_p : process (dst_clk)
 				begin
 					if rising_edge(dst_clk) then
-						if mode=flush then
+						if mode_dst=flush then
 							q <= '0';
 							v <= '0';
 						else
@@ -313,7 +321,7 @@ begin
 				process (dst_clk)
 				begin
 					if rising_edge(dst_clk) then
-						if mode=flush then
+						if mode_dst=flush then
 							v <= '0';
 						else
 							v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
@@ -407,7 +415,7 @@ begin
 	begin
 		if rising_edge(dst_clk) then
 			if feed_ena='1' then
-				if mode/=flush then
+				if mode_dst/=flush then
 					if dst_irdy1='1' or not check_dov then
 						rd_cntr <= rd_cntr + 1;
 					end if;
