@@ -28,7 +28,6 @@ use hdl4fpga.base.all;
 
 entity fifo is
 	generic (
-		sync_read  : boolean := true;
 		debug      : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '0');
@@ -107,7 +106,7 @@ begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => setif(latency > 0, setif(latency > 1, true, sync_read), false),
+			synchronous_rddata => false),
 			bitdata => mem_data)
 		port map (
 			wr_clk  => src_clk,
