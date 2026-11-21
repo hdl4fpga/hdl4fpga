@@ -157,7 +157,6 @@ begin
 	fifoa_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth  => 4,
-		async_mode => true,
 		latency    => 1,
 		check_sov  => false,
 		check_dov  => true)
@@ -193,7 +192,6 @@ begin
 	fifob_e : entity hdl4fpga.fifo
 	generic map (
 		max_depth  => buffer_size,
-		async_mode => false,
 		latency    => 1,
 		check_sov  => false,
 		check_dov  => true)

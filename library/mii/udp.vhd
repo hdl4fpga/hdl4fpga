@@ -73,7 +73,7 @@ entity udp is
 
 		pyltx_frm  : in  std_logic := '0';
 		pyltx_irdy : in  std_logic := '0';
-		pyltx_trdy : out std_logic := '1';
+		pyltx_trdy : buffer std_logic := '1';
 		pyltx_data : in  std_logic_vector;
 
 		udptx_frm  : buffer std_logic := '0';
@@ -409,6 +409,14 @@ begin
 
 		buffer_irdy <= 
 			tha_irdy or ipv4length_irdy or da_irdy or ports_irdy or udplength_irdy or chksum_irdy or pyl_irdy;
+
+--	tp(1) <= buffer_frm;
+--	tp(2) <= buffer_irdy and buffer_trdy;
+--	tp(3 to 3+buffer_data'length-1) <= buffer_data;
+
+	tp(1) <= pyltx_frm;
+	tp(2) <= pyltx_irdy and pyltx_trdy;
+	tp(3 to 3+pyltx_data'length-1) <= pyltx_data;
 
 		buffer_i : entity hdl4fpga.mii_buffer
 		generic map (

@@ -700,6 +700,8 @@ begin
 		udptx_trdy => udptx_trdy,
 		udptx_data => udptx_data);
 
-	-- tp(1) <= ipv4tx_frm;
-	-- tp(2 to 2+ipv4rx_data'length-1) <= ipv4tx_data;
+--	tp(1) <= udptx_frm;
+--	tp(2) <= udptx_irdy and udptx_trdy;
+--	tp(3 to 3+udptx_data'length-1) <= udptx_data;
+
 end;

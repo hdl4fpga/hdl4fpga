@@ -335,7 +335,7 @@ begin
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (8*64)/sin_data'length,
-					latency   => latencies_tab(profile).dmaio,
+					latency   => 0, --latencies_tab(profile).dmaio,
 					check_sov => false,
 					check_dov => true)
 				port map (

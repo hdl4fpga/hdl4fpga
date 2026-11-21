@@ -26,68 +26,10 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity sync_fifo is
-	port (
-		src_clk  : in  std_logic;
-		src_data : in  std_logic_vector;
-		dst_clk  : in  std_logic;
-		dst_data : out std_logic_vector);
-end;
-
-architecture def of sync_fifo is
-	signal req      : std_logic := '0';
-	signal rdy      : std_logic := '0';
-	signal src_addr : std_logic_vector(0 to 1) := (others => '0');
-	signal dst_addr : std_logic_vector(0 to 1) := (others => '0');
-	signal src2dst  : std_logic_vector(0 to 1) := (others => '0');
-	signal dst2src  : std_logic_vector(0 to 1) := (others => '0');
-begin
-	
-	mem_e : entity hdl4fpga.dpram
-	generic map (
-		synchronous_rdaddr => false,
-		synchronous_rddata => false)
-	port map (
-		wr_clk  => src_clk,
-		wr_addr => src_addr,
-		wr_data => src_data,
-
-		rd_clk  => dst_clk,
-		rd_addr => dst_addr,
-		rd_data => dst_data);
-
-	process (src_clk, dst_clk)
-	begin
-		if rising_edge(src_clk) then
-			src2dst <= bin2gray(std_logic_vector(src_addr));
-			if dst2src=src2dst then
-				src2dst  <= src_addr;
-				src_addr <= bin2gray(std_logic_vector(unsigned(gray2bin(src_addr)) + 1));
-			end if;
-		end if;
-	end process;
-
-	process (dst_clk)
-	begin
-		if rising_edge(dst_clk) then
-			dst2src  <= dst_addr;
-			dst_addr <= src2dst;
-		end if;
-	end process;
-end;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library hdl4fpga;
-use hdl4fpga.base.all;
-
 entity fifo is
 	generic (
 		sync_read  : boolean := true;
 		debug      : boolean := false;
-		async_mode : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '0');
 		latency    : natural := 1;
@@ -95,7 +37,6 @@ entity fifo is
 		check_dov  : boolean := false);
 	port (
 		mode       : in  std_logic_vector(0 to 1) := "11";
-		overflow   : out std_logic;
 
 		src_clk    : in  std_logic;
 		src_irdy   : in  std_logic := '1';
@@ -122,9 +63,9 @@ architecture def of fifo is
 	signal wr_ena    : std_logic;
 	signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
 	signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
-	signal wr_cmp    : std_logic_vector(0 to addr_length) := (others => '0');
+	signal wr_cmp    : unsigned(0 to addr_length) := (others => '0');
 	signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
-	signal rd_cmp    : std_logic_vector(0 to addr_length) := (others => '0');
+	signal rd_cmp    : unsigned(0 to addr_length) := (others => '0');
 	signal dst_irdy1 : std_logic;
 
 	signal feed_ena  : std_logic;
@@ -135,9 +76,9 @@ begin
 	process(dst_clk)
 	begin
 		if rising_edge(dst_clk) then
-			mode_dst <= mode;
 		end if;
 	end process;
+			mode_dst <= mode;
 
 	assert max_depth=2**addr_length
 		report "fifo_depth should be a power of 2"
@@ -160,9 +101,8 @@ begin
 	begin
 
 		waddr <= std_logic_vector(rd_cntr(addr_range)) when mode="00" else
-				 std_logic_vector(wr_cntr(addr_range)); -- GHDL annoyance
---		waddr <= std_logic_vector(wr_cntr(addr_range)); -- GHDL annoyance
-		raddr <= std_logic_vector(rd_cntr(addr_range)); -- GHDL annoyance
+				 std_logic_vector(wr_cntr(addr_range));
+		raddr <= std_logic_vector(rd_cntr(addr_range));
 		wdata <= src_data;
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
@@ -179,9 +119,7 @@ begin
 			rd_addr => raddr,
 			rd_data => rdata);
 
-		src_trdy <=
-			setif(wr_cntr(addr_range) /= rd_cntr(addr_range) or wr_cntr(0) = rd_cntr(0)) when not async_mode else
-			setif(wr_cntr(addr_range) /= unsigned(rd_cmp(addr_range)) or wr_cntr(0) = rd_cmp(0));
+		src_trdy <= '1' when wr_cmp /= rd_cmp else '0';
 
 		latencygt1_g : if latency > 1 generate
 			signal fill  : std_logic;
@@ -364,85 +302,68 @@ begin
 			end if;
 		end process;
 
-		src_trdy <= setif(wr_cntr(0) = rd_cntr(0));
+		src_trdy <= wr_cmp(0) xnor rd_cmp(0);
 		dst_irdy <= dst_irdy1;
 
 	end generate;
 
 	process(src_clk)
-		variable succ : unsigned(wr_cntr'range);
+		variable acc : unsigned(wr_cntr'range);
+		variable ptr : unsigned(wr_cntr'range) := (others => '0');
 	begin
 		if rising_edge(src_clk) then
-			if mode=rollback then
-				wr_cntr  <= wr_ptr;
-				overflow <= '0';
-			elsif mode=flush then
-				if async_mode then
-					wr_cntr <= unsigned(rd_cmp);
-					wr_ptr  <= unsigned(rd_cmp);
-				elsif src_irdy='1' then
-					wr_cntr <= rd_cntr + 1;
-					wr_ptr  <= rd_cntr + 1;
+			case mode is
+			when flush =>
+				if src_irdy='1' then
+					acc := rd_cntr + 1;
 				else
-					wr_cntr <= rd_cntr;
-					wr_ptr  <= rd_cntr;
+					acc := rd_cntr;
 				end if;
-			else
-				succ := wr_cntr;
+				wr_cntr <= acc;
+				ptr := acc;
+				acc := bin2gray(acc);
+				acc(0 to 1) := acc(0 to 1) xor "11";
+				wr_cmp <= acc;
+			when rollback =>
+				wr_cntr <= ptr;
+				acc := ptr;
+				acc := bin2gray(acc);
+				acc(0 to 1) := acc(0 to 1) xor "11";
+				wr_cmp <= acc;
+			when others =>
+				acc := wr_cntr;
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
-						succ := succ + 1;
-					end if;
-					if src_trdy='0' and not check_sov then
-						overflow <= '1';
-					else
-						overflow <= '0';
+						acc := acc + 1;
 					end if;
 				end if;
-				wr_cntr <= succ;
+				wr_cntr <= acc;
 				if mode=commit then
-					wr_ptr   <= succ;
-					overflow <= '0';
+					ptr := acc;
 				end if;
-			end if;
+				acc  := bin2gray(acc);
+				acc(0 to 1) := acc(0 to 1) xor "11";
+				wr_cmp <= acc;
+			end case;
+			wr_ptr <= bin2gray(ptr); 
 		end if;
 	end process;
 
-	dst_irdy1 <=
-		setif(wr_ptr /= rd_cntr) when not async_mode else
-		setif(unsigned(wr_cmp) /= rd_cntr);
+	dst_irdy1 <= '1' when wr_ptr /= rd_cmp else '0';
 	process(dst_clk)
+		variable acc : unsigned(rd_cntr'range);
 	begin
 		if rising_edge(dst_clk) then
 			if feed_ena='1' then
 				if mode_dst/=flush then
 					if dst_irdy1='1' or not check_dov then
-						rd_cntr <= rd_cntr + 1;
+						acc     := rd_cntr + 1;
+						rd_cntr <= acc;
+						rd_cmp  <= bin2gray(acc);
 					end if;
 				end if;
 			end if;
 		end if;
 	end process;
-
-	sync_b : block
-		signal wptr : std_logic_vector(wr_ptr'range); -- GHDL annoyance
-		signal rptr : std_logic_vector(rd_cntr'range); -- GHDL annoyance
-	begin
-		wptr <= std_logic_vector(wr_ptr);  -- GHDL annoyance
-		src2dst_e : entity hdl4fpga.sync_fifo
-		port map (
-			src_clk  => src_clk,     				
-			src_data => wptr,     
-			dst_clk  => dst_clk,     
-			dst_data => wr_cmp);
-	
-		rptr <= std_logic_vector(rd_cntr);  -- GHDL annoyance
-		dst2src_e : entity hdl4fpga.sync_fifo
-		port map (
-			src_clk  => dst_clk,     				
-			src_data => rptr,     
-			dst_clk  => src_clk,     
-			dst_data => rd_cmp);
-	end block;
 
 end;

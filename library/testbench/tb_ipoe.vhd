@@ -62,8 +62,7 @@ begin
 					state := s_rx;
 				when s_rx =>
 					if (ethtx_req xor ethtx_rdy)='0' then
-						wait for 2 us;
-						if true or fcs_sb='1' then
+						if fcs_sb='1' then
 							if id < length(data)-1 then
 								id <= id + 1;
 							else

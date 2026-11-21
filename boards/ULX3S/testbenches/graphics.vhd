@@ -193,11 +193,11 @@ begin
 	process (fire1, rmii_clk)
 		variable req : std_logic;
 	begin
-		if fire1='0' then
+		if fire1='1' then
 			rmii_req <= rmii_rdy;
 			req := rmii_rdy;
 		elsif rising_edge(rmii_clk) then
-			if fire1='1' then
+			if fire1='0' then
 				rmii_req <= not req;
 			end if;
 		end if;
@@ -246,7 +246,7 @@ begin
 					"c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf" &
 					"e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff" &
 					"17020000ff"                           & 
-					"160300000100"                         &
+					"160300000000"                         &
 					"},"                                   &
 			"udp:{"                                        &
 				   "mac:{tha:0x00_40_00_01_02_03},"        &
@@ -254,14 +254,27 @@ begin
 			        "length:0x0054,"                       &
 					    "sa:192.168.0.2,"                  &
 					    "da:192.168.0.14},"                &
---				  "length:0x0016,"                         &
-				  "length:0x000b,"                         &
+				  "length:0x0016,"                         &
 				  "sp:0x0099,"                             &
 				  "dp:0x0066,"                             & 
 				"data:0x"                                  &
-					"010099"                               &
---					"1702000000"                           & 
---					"160380000080"                         &
+					"010055"                               &
+					"1702000000"                           & 
+					"160380000000"                         &
+					"},"                                   &
+			"udp:{"                                        &
+				   "mac:{tha:0x00_40_00_01_02_03},"        &
+				  "ipv4:{"                                 &
+			        "length:0x0054,"                       &
+					    "sa:192.168.0.2,"                  &
+					    "da:192.168.0.14},"                &
+				  "length:0x0016,"                         &
+				  "sp:0x0099,"                             &
+				  "dp:0x0066,"                             & 
+				"data:0x"                                  &
+					"0100aa"                               &
+					"1702000000"                           & 
+					"160380000000"                         &
 					"}}";
 
 	begin
@@ -269,7 +282,9 @@ begin
 		generic map(
 			sha  => "0x00_27_0e_0f_f5_95",
 			data => "{"  &
-				"udp:" & string'(hdo(data)**"[2]") &
+				"udp:" & string'(hdo(data)**"[2]") & "," &
+				"udp:" & string'(hdo(data)**"[3]") & "," &
+				"udp:" & string'(hdo(data)**"[4]") &
 				"}")
 		port map (
 			req  => rmii_req,

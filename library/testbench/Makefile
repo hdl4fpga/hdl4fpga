@@ -104,8 +104,6 @@ HDL4FPGA__tmds_encoder__def = $(LIB_HDL4FPGA)/tmds_encoder/def.dat
 HDL4FPGA__tmds_encoder = $(LIB_HDL4FPGA)/tmds_encoder/_primary.dat
 HDL4FPGA__timer__def = $(LIB_HDL4FPGA)/timer/def.dat
 HDL4FPGA__timer = $(LIB_HDL4FPGA)/timer/_primary.dat
-HDL4FPGA__sync_fifo__def = $(LIB_HDL4FPGA)/sync_fifo/def.dat
-HDL4FPGA__sync_fifo = $(LIB_HDL4FPGA)/sync_fifo/_primary.dat
 HDL4FPGA__sio_udp__struct = $(LIB_HDL4FPGA)/sio_udp/struct.dat
 HDL4FPGA__sio_udp = $(LIB_HDL4FPGA)/sio_udp/_primary.dat
 HDL4FPGA__sio_sin__beh = $(LIB_HDL4FPGA)/sio_sin/beh.dat
@@ -437,8 +435,6 @@ whole_library :     $(HDL4FPGA__xc_sdrphy__xilinx) \
     $(HDL4FPGA__tmds_encoder) \
     $(HDL4FPGA__timer__def) \
     $(HDL4FPGA__timer) \
-    $(HDL4FPGA__sync_fifo__def) \
-    $(HDL4FPGA__sync_fifo) \
     $(HDL4FPGA__sio_udp__struct) \
     $(HDL4FPGA__sio_udp) \
     $(HDL4FPGA__sio_sin__beh) \
@@ -734,6 +730,8 @@ $(HDL4FPGA__app_graphics__mix) : ../apps/app_graphics.vhd \
 		$(HDL4FPGA__video_sync) \
 		$(HDL4FPGA__sio_pack) \
 		$(HDL4FPGA__latency) \
+		$(HDL4FPGA__ipoepkg) \
+		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__sio_dmahdsk) \
 		$(HDL4FPGA__serlzr) \
 		$(HDL4FPGA__fifo) \
@@ -1207,6 +1205,15 @@ $(HDL4FPGA__eth_tx__def) : ../mii/eth_tx.vhd \
 		$(IEEE__std_logic_1164) \
 		$(STD__textio)
 	$(VCOM) -93 -work hdl4fpga ../mii/eth_tx.vhd
+
+$(HDL4FPGA__fifo) \
+$(HDL4FPGA__fifo__def) : ../basic/fifo.vhd \
+		$(HDL4FPGA__dpram) \
+		$(HDL4FPGA__base) \
+		$(IEEE__numeric_std) \
+		$(STD__textio) \
+		$(IEEE__std_logic_1164)
+	$(VCOM) -93 -work hdl4fpga ../basic/fifo.vhd
 
 $(HDL4FPGA__frame_decode) \
 $(HDL4FPGA__frame_decode__def) : ../mii/frame_decode.vhd \
@@ -1732,8 +1739,8 @@ $(HDL4FPGA__sio_ff__def) : ../sio/sio_ff.vhd \
 $(HDL4FPGA__sio_flow) \
 $(HDL4FPGA__sio_flow__struct) : ../sio/sio_flow.vhd \
 		$(HDL4FPGA__mii_arbiter) \
-		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__fifo) \
+		$(HDL4FPGA__sio_mux) \
 		$(HDL4FPGA__sio_ram) \
 		$(HDL4FPGA__sio_cmp) \
 		$(HDL4FPGA__frame_decode) \
@@ -1817,6 +1824,7 @@ $(HDL4FPGA__sio_sin__beh) : ../sio/sio_sin.vhd \
 $(HDL4FPGA__sio_udp) \
 $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
 		$(HDL4FPGA__sio_flow) \
+		$(HDL4FPGA__frame_decode) \
 		$(HDL4FPGA__sio_pack) \
 		$(HDL4FPGA__serlzr) \
 		$(HDL4FPGA__mii_ipoe) \
@@ -1827,17 +1835,6 @@ $(HDL4FPGA__sio_udp__struct) : ../sio/sio_udp.vhd \
 		$(STD__textio) \
 		$(IEEE__std_logic_1164)
 	$(VCOM) -93 -work hdl4fpga ../sio/sio_udp.vhd
-
-$(HDL4FPGA__fifo) \
-$(HDL4FPGA__fifo__def) \
-$(HDL4FPGA__sync_fifo) \
-$(HDL4FPGA__sync_fifo__def) : ../basic/fifo.vhd \
-		$(HDL4FPGA__dpram) \
-		$(HDL4FPGA__base) \
-		$(IEEE__numeric_std) \
-		$(STD__textio) \
-		$(IEEE__std_logic_1164)
-	$(VCOM) -93 -work hdl4fpga ../basic/fifo.vhd
 
 $(HDL4FPGA__timer) \
 $(HDL4FPGA__timer__def) : ../basic/timer.vhd \
@@ -1876,11 +1873,12 @@ $(HDL4FPGA__uart_tx__def) : ../uart/uart_tx.vhd \
 $(HDL4FPGA__udp) \
 $(HDL4FPGA__udp__def) : ../mii/udp.vhd \
 		$(HDL4FPGA__dhcpcd) \
+		$(HDL4FPGA__mii_buffer) \
 		$(HDL4FPGA__mii_adjlen) \
-		$(HDL4FPGA__mii_arbiter) \
 		$(HDL4FPGA__mii_cmp) \
 		$(HDL4FPGA__fifo) \
 		$(HDL4FPGA__frame_decode) \
+		$(HDL4FPGA__mii_arbiter) \
 		$(HDL4FPGA__ipoepkg) \
 		$(HDL4FPGA__base) \
 		$(HDL4FPGA__hdo) \

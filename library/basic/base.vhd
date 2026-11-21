@@ -1437,15 +1437,8 @@ package body base is
 	function gray2bin (
 		constant gray : unsigned)
 		return unsigned is
-		variable retval : unsigned(gray'range);
-		variable aux : std_logic;
 	begin
-		aux := '0';
-		for i in gray'range loop
-			retval(i) := gray(i) xor aux;
-			aux := retval(i);
-		end loop;
-		return retval;
+		return gray xor shift_right(gray,1);
 	end;
 
 	function gray2bin (
