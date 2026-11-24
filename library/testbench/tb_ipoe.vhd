@@ -48,9 +48,21 @@ architecture def of tb_ipoe is
 	signal ethtx_rdy : std_logic := '0';
 	signal fcs_sb    : std_logic;
 	signal id : unsigned(0 to unsigned_num_bits(length(data)-1)-1);
+	signal w_req : std_logic := '0';
+	signal w_rdy : std_logic := '0';
 begin
 
-	process
+	process (txen)
+	begin 
+		if falling_edge(txen) then
+			w_req <= not w_rdy after 0.2 us;
+		end if;
+		if rising_edge(txen) then
+			w_req <= w_rdy;
+		end if;
+	end process;
+
+	process(txc)
 		type states is (s_tx, s_rx);
 		variable state : states;
 	begin
@@ -62,7 +74,8 @@ begin
 					state := s_rx;
 				when s_rx =>
 					if (ethtx_req xor ethtx_rdy)='0' then
-						if fcs_sb='1' then
+						if fcs_sb='1' or (w_rdy xor w_req)='1' then
+							w_rdy <= w_req;
 							if id < length(data)-1 then
 								id <= id + 1;
 							else
@@ -77,7 +90,6 @@ begin
 				state := s_tx;
 			end if;
 		end if;
-		wait on txc;
 	end process;
 
 	tbethtx_e : entity work.tb_ethtx

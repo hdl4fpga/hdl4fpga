@@ -198,6 +198,7 @@ begin
 		ipv4addr   => ipv4addr,
 		hwaddr     => hwaddr)
 	port map (
+--		tp => tp,
 		arp_req    => arp_req,
 		arp_rdy    => arp_rdy,
 
@@ -243,9 +244,9 @@ begin
 			ipv4tx_data when gntd(1)='1' else
 			(pyl_data'range => '-');
 
---		tp(1) <= ipv4tx_frm or ipv4tx_irdy;
---		tp(2) <= ipv4tx_irdy and ipv4tx_trdy;
---		tp(3 to 3+ipv4tx_data'length-1) <= ipv4tx_data;
+		tp(1) <= ipv4tx_frm or ipv4tx_irdy;
+		tp(2) <= ipv4tx_irdy and ipv4tx_trdy;
+		tp(3 to 3+ipv4tx_data'length-1) <= ipv4tx_data;
 
 		ethtx_i : entity hdl4fpga.eth_tx
 		port map (
@@ -304,7 +305,7 @@ begin
 		hwaddr        => hwaddr,
 		ipv4addr      => ipv4addr)
 	port map (
-		tp => tp,
+--		tp => tp,
 
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,

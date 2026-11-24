@@ -48,7 +48,7 @@ architecture def of mii_buffer is
 	signal fifo_trdy : std_logic;
 	signal fifo_data : std_logic_vector(dst_data'range);
 
-	signal mode      : std_logic_vector(0 to 2-1);
+	signal mode    : std_logic_vector(0 to 2-1);
 	alias commit   is mode(0);
 	alias rollback is mode(1);
 begin

@@ -190,37 +190,43 @@ add wave -noupdate -divider {New Divider}
 add wave -noupdate -radix ascii /testbench/du_e/monitor_g/ser_debug_e/ser_display_e/cga_codes
 add wave -noupdate /testbench/du_e/monitor_g/ser_debug_e/ser_display_e/cga_we
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/miitx_clk
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/pyltx_frm
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/pyltx_irdy
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/pyltx_trdy
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/pyltx_data
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/latency
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/check_sov
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/check_dov
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/mode
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/src_clk
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/src_irdy
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/src_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/src_data
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/dst_clk
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/ipv4length_act
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/lat_irdy
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/lat_trdy
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/check_sov
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/check_dov
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/src_clk
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/src_irdy
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/src_trdy
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/src_data
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/mode
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_ena
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cntr
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/rd_cntr
-add wave -noupdate -radix binary -childformat {{/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(0) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(1) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(2) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(3) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(4) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(5) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(6) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(7) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(0) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(1) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(2) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(3) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(4) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(5) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(6) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp(7) {-height 20 -radix hexadecimal}} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_cmp
-add wave -noupdate -radix binary /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/rd_cmp
-add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/line__310/acc
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__79/cntr
+add wave -noupdate -radix hexadecimal -childformat {{/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(0) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(1) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(2) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(3) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(4) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(5) -radix hexadecimal} {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(6) -radix hexadecimal}} -subitemconfig {/testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(0) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(1) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(2) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(3) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(4) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(5) {-height 20 -radix hexadecimal} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr(6) {-height 20 -radix hexadecimal}} /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/line__145/cntr
 add wave -noupdate -divider {New Divider}
-add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e/line__310/ptr
-add wave -noupdate /testbench/du_e/graphics_e/dmactlr_b/dmactlr_e/dmatrans_e/dma_b/col_e/line__310/ptr1
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/line__310/ptr
-add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/miiipoe_i/ipv4_i/udp_i/tx_b/buffer_i/fifo_i/wr_ptr
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/latency_g/pskid_g/valid
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/latency_g/pskid_g/empty
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/latency_g/pskid_g/src_irdy
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/latency_g/pskid_g/dst_trdy
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/rd_data
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/latency_g/pskid_g/buffr
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/dst_data
+add wave -noupdate -divider {New Divider}
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/dst_irdy
+add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/dst_trdy
+add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/dst_data
+add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {34982519870 fs} 1} {{Cursor 2} {47810000000 fs} 1} {{Cursor 4} {4662710 fs} 0} {{Cursor 5} {36288748020 fs} 1}
-quietly wave cursor active 3
-configure wave -namecolwidth 255
+WaveRestoreCursors {{Cursor 1} {6262731320 fs} 0} {{Cursor 2} {6487900620 fs} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 205
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
@@ -234,4 +240,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 fs} {5250 ps}
+WaveRestoreZoom {6040524770 fs} {6594559760 fs}

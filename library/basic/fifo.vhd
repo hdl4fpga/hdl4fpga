@@ -31,11 +31,11 @@ entity fifo is
 		debug      : boolean := false;
 		max_depth  : natural;
 		mem_data   : std_logic_vector := (0 to 0 => '0');
-		latency    : natural := 1;
+		latency    : natural := 0;
 		check_sov  : boolean := false;
 		check_dov  : boolean := false);
 	port (
-		mode       : in  std_logic_vector(0 to 1) := "11";
+		mode       : in  std_logic_vector(0 to 1) := "10";
 
 		src_clk    : in  std_logic;
 		src_irdy   : in  std_logic := '1';
@@ -49,320 +49,199 @@ entity fifo is
 		dst_data   : buffer std_logic_vector);
 
 	constant addr_length : natural := unsigned_num_bits(max_depth)-1;
+	constant flush       : std_logic_vector := "00";
+	constant rollback    : std_logic_vector := "01";
+	constant commit      : std_logic_vector := "10";
+	constant queue       : std_logic_vector := "11";
 
 end;
 
 architecture def of fifo is
 
-	constant flush    : std_logic_vector := "00";
-	constant rollback : std_logic_vector := "01";
-	constant commit   : std_logic_vector := "10";
-	constant queue    : std_logic_vector := "11";
+	subtype addr_range is natural range 1 to addr_length;
+	signal rd_data : std_logic_vector(0 to src_data'length-1);
 
-	signal wr_ena    : std_logic;
-	signal wr_ptr    : unsigned(0 to addr_length) := (others => '0');
-	signal wr_cntr   : unsigned(0 to addr_length) := (others => '0');
-	signal wr_cmp    : unsigned(0 to addr_length) := (others => '0');
-	signal rd_cntr   : unsigned(0 to addr_length) := (others => '0');
-	signal rd_cmp    : unsigned(0 to addr_length) := (others => '0');
-	signal dst_irdy1 : std_logic;
+	signal wr_bptr : std_logic_vector(addr_range);
+	signal rd_bptr : std_logic_vector(addr_range);
+	signal wr_gcmp : std_logic_vector(0 to addr_length) := (others => '0');
+	signal wr_gptr : std_logic_vector(0 to addr_length) := (others => '0');
+	signal rd_gptr : std_logic_vector(0 to addr_length) := (others => '0');
+	signal rd_gcmp : std_logic_vector(0 to addr_length) := (others => '0');
 
-	signal feed_ena  : std_logic;
-
-	signal mode_dst  : std_logic_vector(mode'range);
+	signal lat_irdy : std_logic;
+	signal lat_trdy : std_logic;
 begin
-
-	process(dst_clk)
-	begin
-		if rising_edge(dst_clk) then
-		end if;
-	end process;
-			mode_dst <= mode;
 
 	assert max_depth=2**addr_length
 		report "fifo_depth should be a power of 2"
 		severity FAILURE;
 
-	wr_ena <= 
-		src_irdy              when mode="00" else
-		src_irdy and src_trdy when check_sov else
-		src_irdy;
-
-	max_depthgt1_g : if max_depth > 1 generate
-
-		subtype addr_range is natural range 1 to addr_length;
-
-		signal waddr   : std_logic_vector(addr_range);  -- Ghdl annoyance
-		signal wdata   : std_logic_vector(0 to src_data'length-1);
-		signal raddr   : std_logic_vector(addr_range);  -- Ghdl annoyance
-		signal rdata   : std_logic_vector(0 to src_data'length-1);
-
-	begin
-
-		waddr <= std_logic_vector(rd_cntr(addr_range)) when mode="00" else
-				 std_logic_vector(wr_cntr(addr_range));
-		raddr <= std_logic_vector(rd_cntr(addr_range));
-		wdata <= src_data;
-		mem_e : entity hdl4fpga.dpram(def)
-		generic map (
-			synchronous_rdaddr => false,
-			synchronous_rddata => false),
-			bitdata => mem_data)
-		port map (
-			wr_clk  => src_clk,
-			wr_ena  => wr_ena,
-			wr_addr => waddr,
-			wr_data => wdata,
-
-			rd_clk  => dst_clk,
-			rd_addr => raddr,
-			rd_data => rdata);
-
-		src_trdy <= '1' when wr_cmp /= rd_cmp else '0';
-
-		latencygt1_g : if latency > 1 generate
-			signal fill  : std_logic;
-			signal b_reg : unsigned(0 to (latency-1))   := (others => '0');
-			signal v_reg : unsigned(0 to (latency-1)-1) := (others => '0');
-			signal q_reg : unsigned(0 to (latency-1))   := (others => '0');
-		begin
-
-			booking_p : process (dst_clk)
-				variable b : unsigned(0 to (latency-1)) := (others => '0');
-			begin
-				if rising_edge(dst_clk) then
-					b := b_reg;			-- Xilinx XST confuses b with latches if it's not copied from a signal
-
-					if mode_dst=flush then
-						b := (others => '0');
-					elsif to_bit(b(b'right))='0' then
-						if dst_irdy1='0' then
-							if dst_trdy='1' then
-								b := b ror 1;
-								b(b'right) := '0';
-							end if;
-						elsif dst_trdy='0' then
-							if b(0)='0' then
-								b(b'right) := '1';
-							end if;
-						else
-							b(b'right) := '1';
-							b := b rol 1;
-						end if;
-					elsif dst_irdy1='0' then
-						if dst_trdy='1' then
-							b(b'right) := '0';
-							b := b rol 1;
-						end if;
-					elsif dst_trdy='0' then
-						if b(0)='0' then
-							b := b rol 1;
-							b(b'right) := '1';
-						end if;
-					end if;
-					fill <= not b(0);
-
-					b_reg <= b;			-- Xilinx XST confuses b by latches if it's not copied from a signal
-				end if;
-			end process;
-
-			dstirdy_p : process (dst_clk)
-				variable q    : unsigned(0 to (latency-1)) := (others => '0');
-				variable v    : unsigned(0 to (latency-1)-1) := (others => '0');
-				variable slr  : unsigned(0 to v'length*dst_data'length-1);
-				variable data : unsigned(0 to q'length*dst_data'length-1);
-			begin
-				if rising_edge(dst_clk) then
-					-- Xilinx XST confuses the following variables with latches if they're not copied from signals
-					q    := q_reg;
-					v    := v_reg;
-
-					slr(rdata'range) := unsigned(rdata);
-					slr := slr rol rdata'length;
-
-					if mode_dst=flush then
-						q := (others => '0');
-						v := (others => '0');
-					else
-						if (dst_irdy and dst_trdy)='1' then
-							data := data sll dst_data'length;
-							q    := q    sll 1;
-						end if;
-
-						if to_bit(v(0))='1' then
-							for i in q'range loop
-								if to_bit(q(i))='0' then
-									data(i*dst_data'length to (i+1)*dst_data'length-1) := slr(rdata'range);
-									q(i) := '1';
-									exit;
-								end if;
-							end loop;
-						end if;
-						v(0) := (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
-						v    := v rol 1;
-					end if;
-					dst_irdy <= q(0);
-					dst_data <= std_logic_vector(data(rdata'range));
-
-					-- Copy the following variables to signals for them not to be confused for latches by XST
-					q_reg    <= q;
-					v_reg    <= v;
-				end if;
-			end process;
-			feed_ena <= dst_trdy or (fill and dst_irdy1);
-		end generate;
-
-		latencyeq1_g : if latency=1 generate
-			sync_read_g : if sync_read generate
-				signal fill : std_logic;
-				signal data : std_logic_vector(dst_data'range);
-				signal q    : std_logic := '0';
-				signal v    : std_logic := '0';
-			begin
-	
-				dstirdy_p : process (dst_clk)
-				begin
-					if rising_edge(dst_clk) then
-						if mode_dst=flush then
-							q <= '0';
-							v <= '0';
-						else
-							if dst_trdy='1' then
-								if v='0' then
-									q <= '0';
-								end if;
-							elsif v='1' then
-								q <= '1';
-							end if;
-	
-							if v='1' then
-								data <= rdata;
-							end if;
-	
-							v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
-						end if;
-					end if;
-				end process;
-	
-				dst_irdy <= v or q;
-				fill     <= not v and not q;
-				dst_data <= primux(data & rdata, q & v, rdata);
-				feed_ena <= dst_trdy or (fill and dst_irdy1);
-			end generate;
-
-			no_syncread_g : if not sync_read generate
-				signal v    : std_logic := '0';
-				signal fill : std_logic;
-			begin
-				
-				process (dst_clk)
-				begin
-					if rising_edge(dst_clk) then
-						if mode_dst=flush then
-							v <= '0';
-						else
-							v <= (dst_trdy and (dst_irdy1 or not setif(check_dov))) or (fill and dst_irdy1);
-						end if;
-					end if;
-				end process;
-
-				process (dst_clk)
-				begin
-					if rising_edge(dst_clk) then
-						if feed_ena='1' then
-							dst_data <= rdata;
-						end if;
-					end if;
-				end process;
-
-				dst_irdy <= v;
-				feed_ena <= dst_trdy or (fill and dst_irdy1);
-				fill     <= not v;
-			end generate;
-		end generate;
-
-		nolatency_g : if latency = 0 generate
-			feed_ena <= dst_trdy;
-			dst_irdy <= dst_irdy1;
-			dst_data <= rdata;
-		end generate;
-
-	end generate;
-
-	max_depth1_g : if max_depth = 1 generate
-	begin
-
-		process (src_clk)
-		begin
-			if rising_edge(src_clk) then
-				if wr_ena='1' then
-					dst_data <= src_data;
-				end if;
-			end if;
-		end process;
-
-		src_trdy <= wr_cmp(0) xnor rd_cmp(0);
-		dst_irdy <= dst_irdy1;
-
-	end generate;
-
 	process(src_clk)
-		variable acc : unsigned(wr_cntr'range);
-		variable ptr : unsigned(wr_cntr'range) := (others => '0');
+		variable cntr : unsigned(rd_gptr'range) := (others => '0');
+		variable cmp  : unsigned(wr_gptr'range) := (others => '0');
 	begin
 		if rising_edge(src_clk) then
 			case mode is
 			when flush =>
+				cntr := gray2bin(rd_gptr);
 				if src_irdy='1' then
-					acc := rd_cntr + 1;
-				else
-					acc := rd_cntr;
+					cntr := cntr + 1;
 				end if;
-				wr_cntr <= acc;
-				ptr := acc;
-				acc := bin2gray(acc);
-				acc(0 to 1) := acc(0 to 1) xor "11";
-				wr_cmp <= acc;
+				cmp := cntr;
 			when rollback =>
-				wr_cntr <= ptr;
-				acc := ptr;
-				acc := bin2gray(acc);
-				acc(0 to 1) := acc(0 to 1) xor "11";
-				wr_cmp <= acc;
+				cntr := cmp;
 			when others =>
-				acc := wr_cntr;
 				if src_irdy='1' then
 					if src_trdy='1' or not check_sov then
-						acc := acc + 1;
+						cntr := cntr + 1;
 					end if;
 				end if;
-				wr_cntr <= acc;
 				if mode=commit then
-					ptr := acc;
+					cmp := cntr;
 				end if;
-				acc  := bin2gray(acc);
-				acc(0 to 1) := acc(0 to 1) xor "11";
-				wr_cmp <= acc;
 			end case;
-			wr_ptr <= bin2gray(ptr); 
+			wr_bptr <= std_logic_vector(cntr(wr_bptr'range));
+			wr_gptr <= bin2gray(cntr);
+			wr_gcmp <= bin2gray(cmp); 
 		end if;
 	end process;
+	src_trdy <= '1' when wr_gptr /= rd_gcmp else '0';
 
-	dst_irdy1 <= '1' when wr_ptr /= rd_cmp else '0';
-	process(dst_clk)
-		variable acc : unsigned(rd_cntr'range);
+	fifo_b : block
+
+		signal wr_addr : std_logic_vector(addr_range);
+		signal rd_addr : std_logic_vector(addr_range);
+		signal wr_ena  : std_logic;
+	begin
+		wr_ena <= 
+			src_irdy              when mode=flush else
+			src_irdy and src_trdy when check_sov else
+			src_irdy;
+
+		wr_addr <= 
+			(others => '0') when mode=flush else
+			wr_gptr(addr_range);
+
+		rd_addr <= rd_gptr(addr_range);
+		mem_e : entity hdl4fpga.dpram(def)
+		generic map (
+			synchronous_rdaddr => false,
+			synchronous_rddata => setif(latency > 0),
+			bitdata => mem_data)
+		port map (
+			wr_clk  => src_clk,
+			wr_ena  => wr_ena,
+			wr_addr => wr_bptr,
+			wr_data => src_data,
+
+			rd_clk  => dst_clk,
+			rd_addr => rd_bptr,
+			rd_data => rd_data);
+
+	end block;
+
+	lat_irdy <= '1' when wr_gcmp /= rd_gptr else '0';
+
+	process(mode, dst_clk)
+		variable cntr : unsigned(rd_gptr'range) := (others => '0');
 	begin
 		if rising_edge(dst_clk) then
-			if feed_ena='1' then
-				if mode_dst/=flush then
-					if dst_irdy1='1' or not check_dov then
-						acc     := rd_cntr + 1;
-						rd_cntr <= acc;
-						rd_cmp  <= bin2gray(acc);
-					end if;
-				end if;
+			if (lat_irdy='1' or not check_dov) and lat_trdy='1' then
+				cntr := cntr + 1;
 			end if;
 		end if;
+		rd_bptr <= std_logic_vector(cntr(rd_bptr'range));
+		rd_gptr <= bin2gray(cntr);
+		rd_gcmp <= bin2gray(cntr) xor ("11" & (2 to rd_gcmp'length-1 => '0'));
 	end process;
 
+	latency_g : if latency > 0 generate 
+		pskid_g : block
+			port (
+				mode     : in  std_logic_vector(0 to 1);
+				clk      : in  std_logic;
+				src_irdy : in  std_logic; 
+				src_trdy : out std_logic;
+				src_data : in  std_logic_vector;
+				dst_irdy : out std_logic; 
+				dst_trdy : in  std_logic;
+				dst_data : out std_logic_vector);
+			port map (
+				mode     => mode,
+				clk      => dst_clk,
+				src_irdy => lat_irdy,
+				src_trdy => lat_trdy,
+				src_data => rd_data,
+				dst_irdy => dst_irdy,
+				dst_trdy => dst_trdy,
+				dst_data => dst_data);
+
+			signal valid : std_logic := '0';
+			signal empty : std_logic := '0';
+			signal buffr : std_logic_vector(src_data'range);
+		begin
+			
+			src_trdy <= 
+				'1' when valid='0' else
+				dst_trdy;
+
+			process (mode, clk)
+			begin
+				if mode=flush then
+					empty <= '1';
+				elsif rising_edge(clk) then
+					if empty='1' then
+						if dst_trdy='0' then
+							empty <= not valid; 
+						end if;
+					elsif dst_trdy='1' then
+						empty <= not valid;
+					end if;
+				end if;
+			end process;
+
+			process (clk)
+			begin
+				if mode="00" then
+					valid <= '0';
+				elsif rising_edge(dst_clk) then
+					if empty='1' then
+						valid <= src_irdy;
+					elsif (src_irdy and dst_trdy)='1' then
+						valid <= '1';
+					else
+						valid <= '0';
+					end if;
+				end if;
+			end process;
+
+			process (clk)
+			begin
+				if rising_edge(clk) then
+					if (empty or dst_trdy)='1' then
+						if valid='1' then
+							buffr <= src_data;
+						end if;
+					end if;
+				end if;
+			end process;
+
+			dst_irdy <=
+				'1' when empty='0' else
+				'1' when valid='1' else
+				'0';
+
+			dst_data <=
+				buffr    when empty='0' else
+				src_data when valid='1' else
+				(dst_data'range => '-');
+
+		end block;
+	end generate;
+
+	latency0_g : if latency = 0 generate
+		dst_irdy <= lat_irdy;
+		lat_trdy <= dst_trdy;
+		dst_data <= rd_data;
+	end generate;
 end;

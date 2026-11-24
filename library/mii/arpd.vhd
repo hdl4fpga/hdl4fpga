@@ -120,8 +120,8 @@ begin
 				sl_data => arprx_data,
 				equ     => tpa_equ);
 
-			tp(1) <= tx_req xor tx_rdy;
-			tp(2 to 2+arptx_data'length-1) <= arprx_data;
+--			tp(1) <= tx_req xor tx_rdy;
+--			tp(2 to 2+arptx_data'length-1) <= arprx_data;
 			process (miirx_clk)
 				variable lat1 : std_logic;
 			begin
@@ -270,6 +270,9 @@ begin
 			signal buffer_frm  : std_logic;
 			signal buffer_irdy : std_logic;
 		begin
+--			tp(1) <= buffer_frm or buffer_irdy;
+--			tp(2) <= buffer_irdy;
+--			tp(3 to 3+decode_data'length-1) <= decode_data;
 			buffer_frm  <= decode_frm and not decode_last;
 			buffer_irdy <= decode_frm;
 			buffer_i : entity hdl4fpga.mii_buffer
@@ -284,10 +287,9 @@ begin
 				dst_irdy => arptx_irdy,
 				dst_trdy => arptx_trdy,
 				dst_data => arptx_data);
---			tp(1) <= arptx_frm;
---			tp(2) <= arptx_irdy;
---			tp(3) <= arptx_trdy;
---			tp(4 to 4+arptx_data'length-1) <= arptx_data;
+			tp(1) <= arptx_frm;
+			tp(2) <= arptx_irdy and arptx_trdy;
+			tp(3 to 3+arptx_data'length-1) <= arptx_data;
 		end block;
 
 	end block;

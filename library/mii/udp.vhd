@@ -67,7 +67,7 @@ entity udp is
 		pylrx_frm  : buffer std_logic := '0';
 		pylrx_irdy : buffer std_logic := '0';
 		pylrx_trdy : in  std_logic := '1';
-		pylrx_data : out std_logic_vector;
+		pylrx_data : buffer std_logic_vector;
 
 		miitx_clk  : in  std_logic;
 
@@ -243,6 +243,10 @@ begin
 			end if;
 		end process;
 
+--		tp(1) <= '0' when mode="00" else '1';
+--		tp(2) <= rx_irdy;
+--		tp(3 to 3+rx_data'length-1) <= rx_data;
+
 		buffer_i : entity hdl4fpga.fifo
 		generic map(
 			latency   => 1,
@@ -260,6 +264,10 @@ begin
 			dst_trdy  => pylrx_trdy,
 			dst_data  => pylrx_data);
 		pylrx_frm <= pylrx_irdy;
+
+		tp(1) <= pylrx_frm;
+		tp(2) <= pylrx_irdy;
+		tp(3 to 3+pylrx_data'length-1) <= pylrx_data;
 
 		dhcpcd_b : block
 			signal dhcpcd_equ : std_logic;
@@ -414,9 +422,9 @@ begin
 --	tp(2) <= buffer_irdy and buffer_trdy;
 --	tp(3 to 3+buffer_data'length-1) <= buffer_data;
 
-	tp(1) <= pyltx_frm;
-	tp(2) <= pyltx_irdy and pyltx_trdy;
-	tp(3 to 3+pyltx_data'length-1) <= pyltx_data;
+--	tp(1) <= pyltx_frm;
+--	tp(2) <= pyltx_irdy and pyltx_trdy;
+--	tp(3 to 3+pyltx_data'length-1) <= pyltx_data;
 
 		buffer_i : entity hdl4fpga.mii_buffer
 		generic map (
