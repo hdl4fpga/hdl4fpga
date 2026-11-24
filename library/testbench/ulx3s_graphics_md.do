@@ -224,7 +224,7 @@ add wave -noupdate /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/
 add wave -noupdate -radix hexadecimal /testbench/du_e/ipoe_g/mii_e/udpdaisy_e/sio_udp_e/sio_flow_e/dup_b/ack_b/fifo_i/dst_data
 add wave -noupdate -divider {New Divider}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6262731320 fs} 0} {{Cursor 2} {6487900620 fs} 0}
+WaveRestoreCursors {{Cursor 1} {6242584590 fs} 0} {{Cursor 2} {6487900620 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 205
 configure wave -valuecolwidth 100

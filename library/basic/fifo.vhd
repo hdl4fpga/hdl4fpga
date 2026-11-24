@@ -183,6 +183,7 @@ begin
 			
 			src_trdy <= 
 				'1' when valid='0' else
+				'0' when empty='0' else
 				dst_trdy;
 
 			process (mode, clk)
