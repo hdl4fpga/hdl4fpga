@@ -161,7 +161,7 @@ begin
 				mode     : in  std_logic_vector(0 to 1);
 				clk      : in  std_logic;
 				src_irdy : in  std_logic; 
-				src_trdy : out std_logic;
+				src_trdy : buffer std_logic;
 				src_data : in  std_logic_vector;
 				dst_irdy : out std_logic; 
 				dst_trdy : in  std_logic;
@@ -181,37 +181,38 @@ begin
 			signal buffr : std_logic_vector(src_data'range);
 		begin
 			
-			src_trdy <= 
-				'1' when valid='0' else
-				'0' when empty='0' else
-				dst_trdy;
+			src_trdy <= empty or (valid and dst_trdy);
 
 			process (mode, clk)
 			begin
 				if mode=flush then
 					empty <= '1';
 				elsif rising_edge(clk) then
-					if empty='1' then
+					if valid='1' then
 						if dst_trdy='0' then
-							empty <= not valid; 
+							empty <= '0';
 						end if;
-					elsif dst_trdy='1' then
-						empty <= not valid;
+					elsif empty='0' then
+						if dst_trdy='1' then
+							empty <= '1'; 
+						end if;
 					end if;
 				end if;
 			end process;
 
 			process (clk)
 			begin
-				if mode="00" then
+				if mode=flush then
 					valid <= '0';
 				elsif rising_edge(dst_clk) then
-					if empty='1' then
-						valid <= src_irdy;
-					elsif (src_irdy and dst_trdy)='1' then
-						valid <= '1';
+					if empty='0' then
+						if dst_trdy='0' then
+							valid <= '0';
+						else
+							valid <= src_irdy;
+						end if;
 					else
-						valid <= '0';
+						valid <= src_irdy;
 					end if;
 				end if;
 			end process;
@@ -219,10 +220,8 @@ begin
 			process (clk)
 			begin
 				if rising_edge(clk) then
-					if (empty or dst_trdy)='1' then
-						if valid='1' then
-							buffr <= src_data;
-						end if;
+					if (empty and valid)='1' then
+						buffr <= src_data;
 					end if;
 				end if;
 			end process;
