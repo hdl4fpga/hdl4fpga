@@ -331,7 +331,6 @@ begin
 
 			fifo_i : entity hdl4fpga.fifo
 			generic map (
-				debug => true,
 				latency   => 1,
 				check_sov => true,
 				check_dov => true,

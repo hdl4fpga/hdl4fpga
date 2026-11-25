@@ -126,7 +126,7 @@ begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => setif(latency > 0 and debug),
+			synchronous_rddata => setif(latency > 0),
 			bitdata => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -155,7 +155,7 @@ begin
 		rd_gcmp <= bin2gray(cntr) xor ("11" & (2 to rd_gcmp'length-1 => '0'));
 	end process;
 
-	latency_g : if latency > 0  and debug generate 
+	latency_g : if latency > 0 generate 
 		pskid_g : block
 			port (
 				mode     : in  std_logic_vector(0 to 1);
@@ -185,7 +185,7 @@ begin
 			begin
 				if mode=flush then
 					loaded <= '0';
-					valid <= '0';
+					valid  <= '0';
 				elsif rising_edge(dst_clk) then
 					if dst_trdy='1' then
 						if valid='0' then
@@ -211,7 +211,7 @@ begin
 		end block;
 	end generate;
 
-	latency0_g : if latency = 0 or not debug generate
+	latency0_g : if latency = 0 generate
 		dst_irdy <= lat_irdy;
 		lat_trdy <= dst_trdy;
 		dst_data <= rd_data;
