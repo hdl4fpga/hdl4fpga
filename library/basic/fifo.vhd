@@ -126,7 +126,7 @@ begin
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
-			synchronous_rddata => setif(latency > 0),
+			synchronous_rddata => setif(latency > 0 and debug),
 			bitdata => mem_data)
 		port map (
 			wr_clk  => src_clk,
@@ -155,7 +155,7 @@ begin
 		rd_gcmp <= bin2gray(cntr) xor ("11" & (2 to rd_gcmp'length-1 => '0'));
 	end process;
 
-	latency_g : if latency > 0 generate 
+	latency_g : if latency > 0  and debug generate 
 		pskid_g : block
 			port (
 				mode     : in  std_logic_vector(0 to 1);
@@ -163,7 +163,7 @@ begin
 				src_irdy : in  std_logic; 
 				src_trdy : buffer std_logic;
 				src_data : in  std_logic_vector;
-				dst_irdy : out std_logic; 
+				dst_irdy : buffer std_logic; 
 				dst_trdy : in  std_logic;
 				dst_data : out std_logic_vector);
 			port map (
@@ -176,70 +176,42 @@ begin
 				dst_trdy => dst_trdy,
 				dst_data => dst_data);
 
-			signal valid : std_logic := '0';
-			signal empty : std_logic := '0';
-			signal buffr : std_logic_vector(src_data'range);
+			signal valid  : std_logic := '0';
+			signal loaded : std_logic := '0';
+			signal buffr  : std_logic_vector(src_data'range);
 		begin
 			
-			src_trdy <= empty or (valid and dst_trdy);
-
-			process (mode, clk)
+			process (mode, dst_clk)
 			begin
 				if mode=flush then
-					empty <= '1';
-				elsif rising_edge(clk) then
-					if valid='1' then
-						if dst_trdy='0' then
-							empty <= '0';
-						end if;
-					elsif empty='0' then
-						if dst_trdy='1' then
-							empty <= '1'; 
-						end if;
-					end if;
-				end if;
-			end process;
-
-			process (clk)
-			begin
-				if mode=flush then
+					loaded <= '0';
 					valid <= '0';
 				elsif rising_edge(dst_clk) then
-					if empty='0' then
-						if dst_trdy='0' then
-							valid <= '0';
-						else
-							valid <= src_irdy;
+					if dst_trdy='1' then
+						if valid='0' then
+							loaded <= '0';
 						end if;
-					else
-						valid <= src_irdy;
+					elsif valid='1' then
+						loaded <= '1';
 					end if;
-				end if;
-			end process;
 
-			process (clk)
-			begin
-				if rising_edge(clk) then
-					if (empty and valid)='1' then
+					if valid='1' then
 						buffr <= src_data;
 					end if;
+
+					valid <= (dst_trdy and (src_irdy or not setif(check_dov))) or (not dst_irdy and src_irdy);
 				end if;
 			end process;
 
-			dst_irdy <=
-				'1' when empty='0' else
-				'1' when valid='1' else
-				'0';
+			dst_irdy <= valid or loaded;
+			dst_data <= buffr when loaded='1' else src_data;
+			src_trdy <= dst_trdy or (not dst_irdy and src_irdy);
 
-			dst_data <=
-				buffr    when empty='0' else
-				src_data when valid='1' else
-				(dst_data'range => '-');
 
 		end block;
 	end generate;
 
-	latency0_g : if latency = 0 generate
+	latency0_g : if latency = 0 or not debug generate
 		dst_irdy <= lat_irdy;
 		lat_trdy <= dst_trdy;
 		dst_data <= rd_data;
