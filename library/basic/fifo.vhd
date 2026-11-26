@@ -110,7 +110,6 @@ begin
 	fifo_b : block
 
 		signal wr_addr : std_logic_vector(addr_range);
-		signal rd_addr : std_logic_vector(addr_range);
 		signal wr_ena  : std_logic;
 	begin
 		wr_ena <= 
@@ -120,9 +119,8 @@ begin
 
 		wr_addr <= 
 			(others => '0') when mode=flush else
-			wr_gptr(addr_range);
+			wr_bptr(addr_range);
 
-		rd_addr <= rd_gptr(addr_range);
 		mem_e : entity hdl4fpga.dpram(def)
 		generic map (
 			synchronous_rdaddr => false,
@@ -131,7 +129,7 @@ begin
 		port map (
 			wr_clk  => src_clk,
 			wr_ena  => wr_ena,
-			wr_addr => wr_bptr,
+			wr_addr => wr_addr,
 			wr_data => src_data,
 
 			rd_clk  => dst_clk,
