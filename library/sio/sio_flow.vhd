@@ -329,7 +329,7 @@ begin
 				length_data when length_act='1' else
 				rx_data;
 
-			fifo_i : entity hdl4fpga.fifo
+			fifo_i : entity hdl4fpga.fifo1
 			generic map (
 				latency   => 1,
 				check_sov => true,

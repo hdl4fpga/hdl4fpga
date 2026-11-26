@@ -59,10 +59,10 @@ begin
 	process (src_clk, dst_clk)
 	begin
 		if rising_edge(src_clk) then
-			src2dst <= bin2gray(std_logic_vector(src_addr));
+			src2dst <= bin2gray(unsigned(src_addr));
 			if dst2src=src2dst then
 				src2dst  <= src_addr;
-				src_addr <= bin2gray(std_logic_vector(unsigned(gray2bin(src_addr)) + 1));
+				src_addr <= bin2gray(gray2bin(src_addr) + 1);
 			end if;
 		end if;
 	end process;
@@ -83,7 +83,7 @@ use ieee.numeric_std.all;
 library hdl4fpga;
 use hdl4fpga.base.all;
 
-entity fifo is
+entity fifo1 is
 	generic (
 		sync_read  : boolean := true;
 		debug      : boolean := false;
@@ -112,7 +112,7 @@ entity fifo is
 
 end;
 
-architecture def of fifo is
+architecture def of fifo1 is
 
 	constant flush    : std_logic_vector := "00";
 	constant rollback : std_logic_vector := "01";
