@@ -230,7 +230,6 @@ begin
 		signal md_req    : std_logic := '0';
 		signal md_rdy    : std_logic := '0';
 		signal md_t      : std_logic;
-		signal tp        : std_logic_vector(1 to 32);
 
 		signal fcs_sb    : std_logic;
 		signal fcs_vld   : std_logic;
@@ -475,12 +474,12 @@ begin
 			settings        => hdo(settings)**".video")
 		port map (
 			ser_clk         => ser_clk, 
-			ser_frm         => ser_frm, 
-			ser_irdy        => ser_irdy, 
-			ser_data        => ser_data, 
---			ser_frm         => si_frm, 
---			ser_irdy        => irdy, 
---			ser_data        => si_data, 
+			-- ser_frm         => ser_frm, 
+			-- ser_irdy        => ser_irdy, 
+			-- ser_data        => ser_data, 
+			ser_frm         => si_frm, 
+			ser_irdy        => irdy, 
+			ser_data        => si_data, 
 			
 			video_clk       => video_clk,
 			video_shift_clk => video_shift_clk,

@@ -244,9 +244,9 @@ begin
 			ipv4tx_data when gntd(1)='1' else
 			(pyl_data'range => '-');
 
-		tp(1) <= ipv4tx_frm or ipv4tx_irdy;
-		tp(2) <= ipv4tx_irdy and ipv4tx_trdy;
-		tp(3 to 3+ipv4tx_data'length-1) <= ipv4tx_data;
+		tp(1) <= (ipv4rx_frm) or (ipv4tx_frm or ipv4tx_irdy);
+		tp(2) <= (ipv4rx_irdy)  or (ipv4tx_irdy and ipv4tx_trdy);
+		tp(3 to 3+ipv4tx_data'length-1) <= ipv4tx_data when (ipv4tx_frm or ipv4tx_irdy)='1' else ipv4rx_data;
 
 		ethtx_i : entity hdl4fpga.eth_tx
 		port map (

@@ -102,6 +102,7 @@ architecture struct of sio_udp is
 	signal si_irdys      : std_logic_vector(si_acts'range);
 	signal si_trdys      : std_logic_vector(si_acts'range) := (others => '1');
 
+	signal pp : std_logic_vector(1 to 32);
 begin
 
 	miiipoe_i : entity hdl4fpga.mii_ipoe
@@ -109,7 +110,7 @@ begin
 		hwaddr        => hwaddr,
 		ipv4addr      => ipv4addr)
 	port map (
-		tp            => tp,
+		tp            => pp,
 		dhcpcd_req    => dhcpcd_req,
 		dhcpcd_rdy    => dhcpcd_rdy,
 
@@ -209,6 +210,7 @@ begin
 
 	sio_flow_e : entity hdl4fpga.sio_flow
 	port map (
+		tp => tp,
 		rx_clk  => miirx_clk,
 		rx_frm  => pylrx_frm,
 		rx_irdy => pylrx_irdy,
