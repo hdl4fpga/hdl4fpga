@@ -55,7 +55,7 @@ begin
 	process (txen)
 	begin 
 		if falling_edge(txen) then
-			w_req <= not w_rdy after 0.2 us;
+			w_req <= not w_rdy after 10 us;
 		end if;
 		if rising_edge(txen) then
 			w_req <= w_rdy;

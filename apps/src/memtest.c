@@ -63,9 +63,10 @@ void arith_init ()
 
 void arith_fill (char *buffer, int length)
 {
-	for (int i = 0; i < length; i += sizeof(char)) {
+	typedef char word;
+	for (int i = 0; i < length; i += sizeof(word)) {
 		memcpy(buffer+i, &seq, sizeof(seq));
-		*(char *)&seq += 1;
+		*(word *)&seq += 1;
 	}
 }
 

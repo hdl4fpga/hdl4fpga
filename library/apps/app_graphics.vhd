@@ -269,6 +269,7 @@ begin
 			alias  baddr_irdy  is pyl_irdys(4);
 			signal ctlr_di_rdy : std_logic;
 			signal data_rgtr   : std_logic_vector(ctlr_di'range);
+			signal fifo_frm    : std_logic;
 			signal fifo_irdy   : std_logic;
 			signal fifo_trdy   : std_logic;
 			signal frm         : std_logic;
@@ -335,7 +336,7 @@ begin
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (8*64)/sin_data'length,
-					latency   => 0, --latencies_tab(profile).dmaio,
+					latency   => 0,
 					check_sov => false,
 					check_dov => true)
 				port map (
@@ -365,7 +366,7 @@ begin
 				dst_trdy => ack_trdy,
 				dst_data => ack_rgtr);
 
-			tp(1 to 8) <= ack_rgtr;
+--			tp(1 to 8) <= ack_rgtr;
 			addr_frm <= pyl_frms(2) or pyl_irdys(2);
 			addr_e : entity hdl4fpga.serlzr
 			port map (
@@ -396,14 +397,25 @@ begin
 				src_irdy => data_irdy,
 				src_data => sin_data,
 				dst_clk  => sin_clk,
+				dst_frm  => fifo_frm,
 				dst_irdy => fifo_irdy,
 				dst_trdy => fifo_trdy,
 				dst_data => data_rgtr);
 
+--			tp(1) <= data_frm;
+--			tp(2) <= data_irdy;
+--			tp(3 to 3+8-1) <= sin_data;
+
+			tp(1) <= data_frm;
+			tp(2) <= fifo_irdy and fifo_trdy;
+			tp(3 to 3+8-1) <= reverse(data_rgtr(16-1 downto 8));
+
 			data_e : entity hdl4fpga.fifo
 			generic map (
+				check_sov => false,
+				check_dov => true,
 				max_depth  => fifodata_depth,
-				latency    => 0) --latencies_tab(profile).dmaio,
+				latency    => 1)
 			port map (
 				mode(0)  => mode0,
 				mode(1)  => '0',
@@ -493,7 +505,7 @@ begin
 			trans_length   <= unsigned(length_rgtr(trans_length'range));
 			payload_length <= 
 				status_size + header_length + data_length when dmaio_rd='1' else
-				status_size;
+				status_size - 1;
 
 			xxx_b : block
 				constant xxx_frame : string := "{header:64,length:16}";
@@ -662,7 +674,7 @@ begin
 				fifo_e : entity hdl4fpga.fifo
 				generic map (
 					max_depth => (dataout_size*sout_data'length/ctlr_di'length),
-					latency   => 0,
+					latency   => 1,
 					check_sov => false,
 					check_dov => true)
 				port map (

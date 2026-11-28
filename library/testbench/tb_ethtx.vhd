@@ -135,7 +135,7 @@ architecture beh of tb_ethtx is
 
 	function data_content (
 		constant data : string;
-		constant max_size : natural := 1024)
+		constant max_size : natural := 4096)
 		return string is
 		function pick (
 			constant proto : string;

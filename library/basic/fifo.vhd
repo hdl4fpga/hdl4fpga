@@ -76,10 +76,14 @@ begin
 		report "fifo_depth should be a power of 2"
 		severity FAILURE;
 
-	process(src_clk)
-		variable cntr : unsigned(rd_gptr'range) := (others => '0');
+	process(src_clk, dst_clk)
+		variable cntr : unsigned(wr_gptr'range) := (others => '0');
 		variable cmp  : unsigned(wr_gptr'range) := (others => '0');
+		variable gcmp : std_logic_vector(wr_gptr'range) := (others => '0');
 	begin
+		if rising_edge(dst_clk) then
+			wr_gcmp <= gcmp; 
+		end if;
 		if rising_edge(src_clk) then
 			case mode is
 			when flush =>
@@ -102,10 +106,12 @@ begin
 			end case;
 			wr_bptr <= std_logic_vector(cntr(wr_bptr'range));
 			wr_gptr <= bin2gray(cntr);
-			wr_gcmp <= bin2gray(cmp); 
+			gcmp    := bin2gray(cmp); 
 		end if;
 	end process;
-	src_trdy <= '1' when wr_gptr /= rd_gcmp else '0';
+	src_trdy <= 
+		'1' when mode=flush else 
+		'1' when wr_gptr /= rd_gcmp else '0';
 
 	fifo_b : block
 
@@ -140,17 +146,19 @@ begin
 
 	lat_irdy <= '1' when wr_gcmp /= rd_gptr else '0';
 
-	process(mode, dst_clk)
+	process(src_clk, dst_clk)
 		variable cntr : unsigned(rd_gptr'range) := (others => '0');
 	begin
 		if rising_edge(dst_clk) then
 			if (lat_irdy='1' or not check_dov) and lat_trdy='1' then
 				cntr := cntr + 1;
 			end if;
+			rd_bptr <= std_logic_vector(cntr(rd_bptr'range));
+			rd_gptr <= bin2gray(cntr);
 		end if;
-		rd_bptr <= std_logic_vector(cntr(rd_bptr'range));
-		rd_gptr <= bin2gray(cntr);
-		rd_gcmp <= bin2gray(cntr) xor ("11" & (2 to rd_gcmp'length-1 => '0'));
+		if rising_edge(src_clk) then
+			rd_gcmp <= rd_gptr xor ("11" & (2 to rd_gcmp'length-1 => '0'));
+		end if;
 	end process;
 
 	latency_g : if latency > 0 generate 

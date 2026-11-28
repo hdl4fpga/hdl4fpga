@@ -159,6 +159,10 @@ begin
 		end if;
 	end process;
 
+-- tp(1) <= srzrx_frm;
+-- tp(2) <= srzrx_irdy and srzrx_trdy;
+-- tp(3 to 3+srzrx_data'length-1) <= srzrx_data;
+
 	rxpack_e : entity hdl4fpga.sio_pack
 	port map (
 		sio_clk => so_clk,
@@ -208,6 +212,10 @@ begin
 		irdys => si_irdys,
 		trdys => si_trdys);
 
+-- tp(1) <= pylrx_frm;
+-- tp(2) <= pylrx_irdy and pylrx_trdy;
+-- tp(3 to 3+pylrx_data'length-1) <= pylrx_data;
+
 	sio_flow_e : entity hdl4fpga.sio_flow
 	port map (
 		tp => tp,
@@ -251,5 +259,9 @@ begin
 		dst_irdy => udppyltx_irdy,
 		dst_trdy => udppyltx_trdy,
 		dst_data => udppyltx_data);
+
+--	tp(1) <= udppyltx_frm;
+--	tp(2) <= udppyltx_irdy and udppyltx_trdy;
+--	tp(3 to 3+udppyltx_data'length-1) <= udppyltx_data;
 
 end;

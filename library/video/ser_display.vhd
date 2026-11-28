@@ -93,17 +93,25 @@ begin
 		video_vton   => video_von);
 	von <= video_hon and video_von;
 
-	sellzr_i : entity hdl4fpga.serlzr
-	generic map (
-		lsdfirst => false)
-	port map (
-		src_clk   => phy_clk,
-		src_frm   => phy_frm,
-		src_irdy  => phy_irdy,
-		src_data  => phy_data,
-		dst_clk   => phy_clk,
-		dst_irdy  => des_irdy,
-		dst_data  => des_data);
+	serlzr_g : if des_data'length /= phy_data'length generate
+		sellzr_i : entity hdl4fpga.serlzr
+		generic map (
+			lsdfirst => false)
+		port map (
+			src_clk   => phy_clk,
+			src_frm   => phy_frm,
+			src_irdy  => phy_irdy,
+			src_data  => phy_data,
+			dst_clk   => phy_clk,
+			dst_irdy  => des_irdy,
+			dst_data  => des_data);
+	end generate;
+
+	direct_g : if des_data'length = phy_data'length generate
+		des_irdy <= phy_irdy;
+		des_data <= phy_data;
+	end generate;
+
 
 	process (phy_frm, des_irdy, phy_clk)
 		variable we : std_logic;

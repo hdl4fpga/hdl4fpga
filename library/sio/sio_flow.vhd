@@ -42,15 +42,15 @@ entity sio_flow is
 		fcs_vld : in  std_logic;
 
 		so_clk  : in  std_logic;
-		so_frm  : out std_logic;
-		so_irdy : out std_logic;
+		so_frm  : buffer std_logic;
+		so_irdy : buffer std_logic;
 		so_trdy : in  std_logic := '1';
-		so_data : out std_logic_vector;
+		so_data : buffer std_logic_vector;
 
 		si_clk  : in  std_logic := '-';
 		si_frm  : in  std_logic;
 		si_irdy : in  std_logic;
-		si_trdy : out std_logic;
+		si_trdy : buffer std_logic;
 		si_data : in  std_logic_vector;
 
 		tx_clk  : in  std_logic;
@@ -511,6 +511,10 @@ begin
 			dst_trdy => dst_trdy,
 			dst_data => dst_data);
 
+--		tp(1) <= rx_frm;
+--		tp(2) <= pyl0_irdy;
+--		tp(3 to 3+rx_data'length-1) <= rx_data;
+
 		dp_i : entity hdl4fpga.sio_ram
 		generic map (
 			bitdata => x"0000")
@@ -587,8 +591,8 @@ begin
 		end block;
 
 	end block;
-	tp(1) <= tx_frm;
-	tp(2) <= tx_irdy and tx_trdy;
-	tp(3 to 3+tx_data'length-1) <= tx_data;
+	tp(1) <= so_frm or si_frm;
+	tp(2) <= (so_irdy and so_trdy) or (si_irdy and si_trdy);
+	tp(3 to 3+tx_data'length-1) <= so_data when so_frm='1' else si_data;
 
 end;
