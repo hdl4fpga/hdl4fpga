@@ -406,9 +406,9 @@ begin
 --			tp(2) <= data_irdy;
 --			tp(3 to 3+8-1) <= sin_data;
 
-			tp(1) <= data_frm;
-			tp(2) <= fifo_irdy and fifo_trdy;
-			tp(3 to 3+8-1) <= reverse(data_rgtr(16-1 downto 8));
+--			tp(1) <= data_frm;
+--			tp(2) <= fifo_irdy and fifo_trdy;
+--			tp(3 to 3+8-1) <= reverse(data_rgtr(16-1 downto 8));
 
 			data_e : entity hdl4fpga.fifo
 			generic map (

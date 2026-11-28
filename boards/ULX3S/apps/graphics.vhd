@@ -100,7 +100,7 @@ architecture graphics of ulx3s is
 	signal si_end          : std_logic;
 	signal si_data         : std_logic_vector(0 to 8-1);
 
-	constant monitor       : boolean := true;
+	constant monitor       : boolean := false;
 	signal ser_clk         : std_logic;
 	signal ser_frm         : std_logic;
 	signal ser_irdy        : std_logic :='1';
@@ -241,7 +241,7 @@ begin
 			ipv4addr   => aton("192.168.0.14"),
 			n          => 2)
 		port map (
---			tp => tp,
+			tp => tp,
 			si_frm     => si_frm,
 			si_irdy    => si_irdy,
 			si_trdy    => si_trdy,
@@ -372,7 +372,7 @@ begin
 		fifo_size    => mem_size)
 
 	port map (
-		tp => tp,
+		-- tp => tp,
 		sin_clk      => sio_clk,
 		sin_frm      => so_frm,
 		sin_irdy     => so_irdy,
